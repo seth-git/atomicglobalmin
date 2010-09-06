@@ -2,14 +2,11 @@
 // Purpose: This file reads parameters from the input file.
 // Author: Seth Call
 // Note: This is free software and may be modified and/or redistributed under
-//    the terms of the GNU General Public License (Version 3).
-//    Copyright 2007 Seth Call.
+//    the terms of the GNU General Public License (Version 1.2 or any later
+//    version).  Copyright 2007 Seth Call.
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "input.h"
-#include "energy.h"
-
-string Input::s_program_directory = "";
 
 /////////////////////////////////////////////////////////////////////
 // Purpose: This constructor initializes important variables.
@@ -49,8 +46,6 @@ Input::Input (void)
 	                                  // is below this percentage for 3 or > generations/temperatures
 	m_iNumIterationsBeforeDecreasingTemp = 50;
 	m_prgAcceptedTransitions = new int[m_iNumIterationsBeforeDecreasingTemp];
-	for (int i = 0; i < m_iNumIterationsBeforeDecreasingTemp; ++i)
-		m_prgAcceptedTransitions[i] = 0;
 	m_iMaxIterations = 50000;
 	m_fAcceptanceRatio = 0.3;
 	m_fQuenchingFactor = 0.999; // between 0.950 and 0.999
@@ -63,6 +58,7 @@ Input::Input (void)
 	m_sOutputFileName = "output.txt";
 	m_sResumeFileName = "resume.txt";
 	m_iResumeFileNumIterations = 1;
+	m_sAtomicMassFileName = "periodic_table.csv";
 	m_iPrintSummaryInfoEveryNIterations = 20;
 	
 	m_sNodesFile = "";
@@ -84,8 +80,6 @@ Input::Input (void)
 	m_tElapsedSeconds = 0;
 	m_iNumEnergyEvaluations = 0;
 	m_iFreezeUntilIteration = 0;
-	m_iAcceptedTransitionsIndex = -1;
-
 	
 	// Varables used in PSO
 	m_sParticleSwarmParametersDisplayed = "Particle Swarm Optimization Parameters";
@@ -370,31 +364,14 @@ bool Input::readCartesianLine(const char *fileLine, const int maxLineLength, Poi
 {
 	char copyOfFileLine[maxLineLength];
 	char* myString;
-	int i;
 
 	strncpy(copyOfFileLine, fileLine, maxLineLength);
 
 	myString = strtok(copyOfFileLine, " ");
 	if (myString == NULL)
 		return false;
-	else {
+	else
 		atomicNumber = atoi(myString);
-		if (atomicNumber < 1) {
-			for (i = 1; i <= MAX_ATOMIC_NUMBERS; ++i)
-				if (myString == Atom::s_rgAtomcSymbols[i]) {
-					atomicNumber = i;
-					break;
-				}
-			if (atomicNumber < 1) {
-				cout << "Unidentified element symbol: " << myString << endl;
-				return false;
-			}
-		} else if (atomicNumber > MAX_ATOMIC_NUMBERS) {
-			cout << "No there is no information available the for element with atomic number " << atomicNumber << "." << endl;
-			cout << "Please update the periodic table file." << endl;
-			return false;
-		}
-	}
 
 	myString = strtok(NULL, " ");
 	if (myString == NULL)
@@ -524,6 +501,7 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 	int length;
 	string::size_type versionPos;
 	string version;
+	string::size_type pos;
 	
 	m_sInputFileName = "";
 	
@@ -867,7 +845,7 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			    (m_i3DStructures > 0) || (m_i3DStructuresWithMaxDist > 0) ||
 			    (m_i3DNonFragStructuresWithMaxDist == 0)) {
 				cout << "When searching for non-fragmented structures, the entire population must be initialized as non-fragmented." << endl;
-				return false;
+				exit(0);
 			}
 		
 		++lineNumber;
@@ -900,6 +878,14 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "You may not perform basin hopping and a transition state search at the same time." << endl;
 			return false;
 		}
+		if (m_bTransitionStateSearch && (m_iEnergyFunction == LENNARD_JONES)) {
+			cout << "Transition state searches are not implemented with the Lennard Jones Potential." << endl;
+			cout << "You may perform the search, but no transition states wll be found. Do you wish to continue? ";
+			cin >> temp;
+			if (strncmp(temp.c_str(),"yes",3) != 0)
+				return false;
+		}
+			
 		
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
@@ -956,8 +942,6 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		}
 		delete[] m_prgAcceptedTransitions;
 		m_prgAcceptedTransitions = new int[m_iNumIterationsBeforeDecreasingTemp];
-		for (i = 0; i < m_iNumIterationsBeforeDecreasingTemp; ++i)
-			m_prgAcceptedTransitions[i] = 0;
 		
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
@@ -1545,6 +1529,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		return false;
 	}
 	
+	// We used to read the m_sAtomicMassFileName, but now we just use the default name for simplicity
+	Atom::initAtomicMasses(m_sAtomicMassFileName); // Read the file containing the atomic masses of atoms
+	
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
@@ -1644,15 +1631,14 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			return false;
 		}
 	}
+	if (m_bOptimizationFileRead && (m_iEnergyFunction == GAUSSIAN) &&
+	    (m_sEnergyFileHeader.find("opt") == string::npos)) {
+		cout << "You haven't specified 'opt' in the energy file header.  Please do this." << endl;
+		return false;
+	}
 	if (m_bPerformBasinHopping && (m_iEnergyFunction == GAUSSIAN)) {
 		if (m_sEnergyFileHeader.find("opt") == string::npos) {
 			cout << "When performing basin hopping with Gaussian, please specify 'opt' in the energy file header." << endl;
-			return false;
-		}
-	}
-	if ((m_iEnergyFunction == GAUSSIAN) && (m_sEnergyFileFooter.length() > 0)) {
-		if (m_sEnergyFileFooter.find("--link1--\n") != 0) {
-			cout << "When specifying an energy file footer with Gaussian, make sure that '--link1--' is on the first line." << endl;
 			return false;
 		}
 	}
@@ -1775,14 +1761,15 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		}
 	}
 	// The createChild function in MoleculeSet relies on molecules being inserted in this order.
-	m_tempelateMoleculeSet.setNumberOfMolecules((int)moleculeVector.size());
+	m_tempelateMoleculeSet.setNumberOfMolecules((signed int)moleculeVector.size());
 	moleculeArray = m_tempelateMoleculeSet.getMolecules();
-	for (i = 0; i < (int)moleculeVector.size(); ++i)
+	for (i = 0; i < (signed int)moleculeVector.size(); ++i)
 	{
 		moleculeArray[i].copy(*moleculeVector[i]);
 		delete moleculeVector[i];
 	}
 	moleculeVector.clear();
+	m_tempelateMoleculeSet.initAtomIndexes();
 	if (m_iAlgorithmToDo == SIMULATED_ANNEALING)
 		if ((int)m_fNumPerterbations > m_tempelateMoleculeSet.getNumberOfMolecules()) {
 			cout << "Please enter a number between 1 and " << m_tempelateMoleculeSet.getNumberOfMolecules() << " for the parameter '" << m_sNumPerterbationsDisplayed << "' in the input file." << endl;
@@ -1890,11 +1877,8 @@ bool Input::containsFileExtension(const char *fileName, const char *extension)
 //          a pointer to "no" if aBool is false
 char *Input::trueFalseToYesNoStr(int aBool)
 {
-	static char yesStr[4];
-	static char noStr[3];
-	
-	strcpy(yesStr,"yes");
-	strcpy(noStr,"no");
+	static char *yesStr = "yes";
+	static char *noStr = "no";
 
 	if (aBool)
 		return yesStr;
@@ -2098,7 +2082,7 @@ void Input::printToFile(ofstream &outFile)
 	{
 		outFile << endl << m_sNumStructuresOfEachTypeDisplayed << ": " << m_iNumStructuresOfEachType[i] << endl;
 		outFile << m_sStructureFormatOfThisTypeDisplayed << ": " << m_sStructureFormats[i] << endl;
-		for (j = 0; j < (int)m_cartesianPoints[i].size(); ++j)
+		for (j = 0; j < (signed int)m_cartesianPoints[i].size(); ++j)
 		{
 			outFile << m_atomicNumbers[i][j] << " ";
 			outFile << Atom::printFloat(m_cartesianPoints[i][j].x) << " ";
@@ -2135,7 +2119,7 @@ void Input::writeResumeFile(string &fileName, vector<MoleculeSet*> &moleculeSets
                             time_t elapsedSeconds, bool resumeOrOptimizationFile)
 {
 	int i;
-	m_iTotalPopulationSize = (int)moleculeSets.size();
+	m_iTotalPopulationSize = (signed int)moleculeSets.size();
 	// Create the resume file just in case we need to stop the program
 	ofstream resumeFile(fileName.c_str(), ios::out);
 	if (!resumeFile.is_open()) {
@@ -2151,14 +2135,14 @@ void Input::writeResumeFile(string &fileName, vector<MoleculeSet*> &moleculeSets
 	}
 	printToFile(resumeFile);
 	resumeFile << "\n\n" << moleculeSets.size() << " structures in the current population:" << endl;
-	for (i = 0; i < (int)moleculeSets.size(); ++i)
+	for (i = 0; i < (signed int)moleculeSets.size(); ++i)
 	{
 		resumeFile << "Structure #: " << (i+1) << endl;
 		moleculeSets[i]->printToResumeFile(resumeFile, (m_iAlgorithmToDo == PARTICLE_SWARM_OPTIMIZATION) && !m_bOptimizationFileRead);
 	}
 	
 	resumeFile << "\nBest " << bestNMoleculeSets.size() << " structures: " << endl;
-	for (i = 0; i < (int)bestNMoleculeSets.size(); ++i)
+	for (i = 0; i < (signed int)bestNMoleculeSets.size(); ++i)
 	{
 		resumeFile << "Structure #: " << (i+1) << endl;
 		bestNMoleculeSets[i]->printToResumeFile(resumeFile, false);
@@ -2179,7 +2163,7 @@ void Input::writeResumeFile(string &fileName, vector<MoleculeSet*> &moleculeSets
 		           << m_iAcceptedTransitionsIndex << endl;
 	} else if (m_iAlgorithmToDo == PARTICLE_SWARM_OPTIMIZATION) {
 		resumeFile << "\nIndividual best structures:" << endl;
-		for (i = 0; i < (int)bestIndividualMoleculeSets.size(); ++i)
+		for (i = 0; i < (signed int)bestIndividualMoleculeSets.size(); ++i)
 		{
 			resumeFile << "Structure #: " << (i+1) << endl;
 			bestIndividualMoleculeSets[i]->printToResumeFile(resumeFile, false);
@@ -2190,6 +2174,7 @@ void Input::writeResumeFile(string &fileName, vector<MoleculeSet*> &moleculeSets
 		           << m_iNumIterationsBestEnergyHasntChanged << endl;
 	} else if (m_iAlgorithmToDo == GENETIC_ALGORITHM) {
 	}
+
 	
 	resumeFile << m_sIterationDisplayed << ": " << m_iIteration << endl;
 	resumeFile << m_sFreezeUntilIterationDisplayed << ": " << m_iFreezeUntilIteration << endl;
@@ -2213,18 +2198,7 @@ bool Input::open(string &fileName, bool setMinDistances, bool bReadNodesFile, ve
 	MoleculeSet* newMoleculeSet;
 	int numBestStructures;
 	char* myString;
-	char tempString[500];
 	unsigned long int myLong;
-
-	for (i = 0; i < (int)moleculeSets.size(); ++i)
-		delete moleculeSets[i];
-	moleculeSets.clear();
-	for (i = 0; i < (int)bestIndividualMoleculeSets.size(); ++i)
-		delete bestIndividualMoleculeSets[i];
-	bestIndividualMoleculeSets.clear();
-	for (i = 0; i < (int)bestNMoleculeSets.size(); ++i)
-		delete bestNMoleculeSets[i];
-	bestNMoleculeSets.clear();
 	
 	if (!infile)
 	{
@@ -2238,13 +2212,13 @@ bool Input::open(string &fileName, bool setMinDistances, bool bReadNodesFile, ve
 	
 	if (!(m_bResumeFileRead || m_bOptimizationFileRead)) {
 		m_sInputFileName = fileName;
-		for (i = 0; i < (int)moleculeSets.size(); ++i)
+		for (i = 0; i < (signed int)moleculeSets.size(); ++i)
 			delete moleculeSets[i];
 		moleculeSets.clear();
-		for (i = 0; i < (int)bestNMoleculeSets.size(); ++i)
+		for (i = 0; i < (signed int)bestNMoleculeSets.size(); ++i)
 			delete bestNMoleculeSets[i];
 		bestNMoleculeSets.clear();
-		for (i = 0; i < (int)bestIndividualMoleculeSets.size(); ++i)
+		for (i = 0; i < (signed int)bestIndividualMoleculeSets.size(); ++i)
 			delete bestIndividualMoleculeSets[i];
 		bestIndividualMoleculeSets.clear();
 		m_iIteration = 0;
@@ -2326,7 +2300,6 @@ bool Input::open(string &fileName, bool setMinDistances, bool bReadNodesFile, ve
 		infile.close();
 		return false;
 	}
-	string checkPointFileName = Energy::getGaussianCheckpointFile(m_sEnergyFileHeader.c_str());
 	for (i = 0; i < numBestStructures; ++i)
 	{
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
@@ -2354,16 +2327,6 @@ bool Input::open(string &fileName, bool setMinDistances, bool bReadNodesFile, ve
 			delete newMoleculeSet;
 			infile.close();
 			return false;
-		}
-		if (m_iEnergyFunction == GAUSSIAN) {
-			snprintf(tempString, 500, "%s/best%d.log", m_sSaveLogFilesInDirectory.c_str(), i+1);
-			newMoleculeSet->setEnergyFile(tempString);
-			
-			if (checkPointFileName.length() > 0) {
-				snprintf(tempString, 500, "%s/%s%d.chk", m_sSaveLogFilesInDirectory.c_str(), checkPointFileName.c_str(), i+1);
-				if (MoleculeSet::fileExists(tempString))
-					newMoleculeSet->setCheckPointFile(tempString);
-			}
 		}
 		bestNMoleculeSets.push_back(newMoleculeSet);
 	}
@@ -2430,7 +2393,7 @@ bool Input::open(string &fileName, bool setMinDistances, bool bReadNodesFile, ve
 		if (i != m_iNumIterationsBeforeDecreasingTemp) {
 			cout << "The list of numbers after this parameter should be of length " << m_iNumIterationsBeforeDecreasingTemp
 			     << " but it's of length " << i << ": " << m_sAcceptedTransitionsDisplayed << endl;
-			return false;
+			exit(0);
 		}
 		
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
@@ -2625,7 +2588,7 @@ bool Input::seedCompatible(Input &seedInput)
 			cout << "Different number of atoms found for structure type #" << (i+1) << " in the seed file: " << seedInput.m_sInputFileName << endl;
                         return false;
 		}
-                for (j = 0; j < (int)m_atomicNumbers[i].size(); ++j) {
+                for (j = 0; j < (signed int)m_atomicNumbers[i].size(); ++j) {
                         if (m_atomicNumbers[i][j] != seedInput.m_atomicNumbers[i][j]) {
 				cout << "Different atomic number found for atom #" << (j+1) << " in structure type #" << (i+1) << " in the seed file: " << seedInput.m_sInputFileName << endl;
                                 return false;
@@ -2648,695 +2611,6 @@ bool Input::seedCompatible(Input &seedInput)
 			return false;
 		}
 	}
-	return true;
-}
-
-bool Input::printBondInfo()
-{
-	int i;
-	int j;
-	Molecule* molecules = m_tempelateMoleculeSet.getMolecules();
-	int iSingleBonds, iDoubleBonds, iTripleBonds;
-	
-	j = 0;
-	for (i = 0; i < m_iNumStructureTypes; ++i) {
-		iSingleBonds = 0;
-		iDoubleBonds = 0;
-		iTripleBonds = 0;
-		cout << "Molecule No.: " << (i+1) << endl;
-		if (!molecules[j].findBonds())
-			return false;
-		if (!molecules[j].checkConnectivity())
-			return false;
-		molecules[j].printBondInfo();
-		j += m_iNumStructuresOfEachType[i];
-	}
-	cout << "Please check that bonds are in the correct locations." << endl;
-	cout << "If they are not, update the bond length criteria in the file: bondLengths.txt." << endl;
-	cout << "The format is: atomic symbol,atomic symbol,bond type (s for single, d for double, t for triple),minimum distance-maximum distance in angstroms." << endl;
-	return true;
-}
-
-bool Input::printTestFileHeader(int iterationNumber, MoleculeSet &startingGeometry)
-{
-	string logFileName;
-	string header = Input::s_program_directory+"/testfiles/header.txt";
-	string spacer1_1 = Input::s_program_directory+"/testfiles/spacer1.1.txt";
-	string spacer1_2 = Input::s_program_directory+"/testfiles/spacer1.2.txt";
-	char temp[500];
-	
-	logFileName = Input::s_program_directory+"/testfiles/test";
-	if (iterationNumber == 0) {
-		snprintf(temp,sizeof(temp),"rm %s/testfiles/test*.log", Input::s_program_directory.c_str());
-		system(temp);
-	} else {
-		sprintf(temp, "%d", (iterationNumber / 2000) + 1);
-		logFileName.append(temp);
-	}
-	logFileName.append(".log");
-	
-	m_testFile = fopen(logFileName.c_str(), "w");
-
-	if (m_testFile == NULL) {
-		cout << "Unable to write to file: " << logFileName << endl;
-		return false;
-	}
-	if (!copyFileLines(header.c_str(), m_testFile))
-		return false;
-	startingGeometry.writeToGausianLogFile(m_testFile);
-	if (!copyFileLines(spacer1_1.c_str(), m_testFile))
-		return false;
-	fprintf(m_testFile, "%0.9f", startingGeometry.getEnergy());
-	if (!copyFileLines(spacer1_2.c_str(), m_testFile))
-		return false;
-	return true;
-}
-
-bool Input::printTestFileGeometry(int iterationNumber, MoleculeSet &geometry)
-{
-	if (iterationNumber % 2000 == 0) {
-		printTestFileFooter();
-		return printTestFileHeader(iterationNumber, geometry);
-	} else {
-		string spacer2_1 = Input::s_program_directory+"/testfiles/spacer2.1.txt";
-		string spacer2_2 = Input::s_program_directory+"/testfiles/spacer2.2.txt";
-		
-		if (m_testFile == NULL)
-			return false;
-		
-		geometry.writeToGausianLogFile(m_testFile);
-		if (!copyFileLines(spacer2_1.c_str(), m_testFile))
-			return false;
-		fprintf(m_testFile, "%0.9f", geometry.getEnergy());
-		if (!copyFileLines(spacer2_2.c_str(), m_testFile))
-			return false;
-	}
-	return true;
-}
-
-bool Input::printTestFileFooter()
-{
-	string footer = Input::s_program_directory+"/testfiles/footer.txt";
-	
-	if (m_testFile == NULL)
-		return false;
-	
-	if (!copyFileLines(footer.c_str(), m_testFile)) {
-		fclose(m_testFile);
-		return false;
-	} else {
-		fclose(m_testFile);
-		return true;
-	}
-}
-
-bool Input::copyFileLines(const char* fromFileName, FILE* toFile)
-{
-	FILE* ifp;
-	size_t MAX_LINE_LENGTH = 5000;
-	char* fileLine;
-	
-	ifp = fopen(fromFileName, "r");
-	if (ifp == NULL)
-	{
-		cout << "Can't open the file: " << fromFileName << endl;
-		return false;
-	}
-	
-	fileLine = (char *) malloc (MAX_LINE_LENGTH);
-	while (getline(&fileLine, &MAX_LINE_LENGTH, ifp) != -1) {
-		if (strstr(fileLine,"Done") != NULL)
-			fileLine[strlen(fileLine)-1] = '\0'; // change the last character to 'end of string' (remove new line)
-		fprintf(toFile, "%s", fileLine);
-	}
-	delete[] fileLine;
-	fclose(ifp);
-	return true;
-}
-
-string Input::fileWithoutPath(const string &s)
-{
-	string::size_type pos;
-	string answer;
-	
-	pos = s.rfind("/");
-	if (pos == string::npos) // if we didn't find it
-		return s;
-	answer = s.c_str() + pos + 1;
-	return answer;
-}
-
-bool Input::setupForIndependentRun(vector<string> &inputFiles, vector<MoleculeSet*> &seededMoleculeSets, bool &bSetupPreviouslyDone)
-{
-	string savedInputFileName = m_sInputFileName;
-	string savedOutputFileName = m_sOutputFileName;
-	string savedResumeFileName = m_sResumeFileName;
-	string savedPathToEnergyFiles = m_sPathToEnergyFiles;
-	string inputFileDirectory;
-	string inputFileWithoutPath;
-	string tempName;
-	char inputFileName[500];
-	char tempFileName[500];
-	string::size_type pos;
-	int i;
-	struct stat fileStatistics;
-	bool success = true;
-	char commandLine[500];
-
-	int savediLinearSructures = m_iLinearSructures;
-	int savediPlanarStructures = m_iPlanarStructures;
-	int savedi3DStructures = m_i3DStructures;
-	int savedi3DStructuresWithMaxDist = m_i3DStructuresWithMaxDist;
-	int savedi3DNonFragStructuresWithMaxDist = m_i3DNonFragStructuresWithMaxDist;
-	int savediTotalPopulationSize = m_iTotalPopulationSize;
-	int iLinearSructures = m_iLinearSructures;
-	int iPlanarStructures = m_iPlanarStructures;
-	int i3DStructures = m_i3DStructures;
-	int i3DStructuresWithMaxDist = m_i3DStructuresWithMaxDist;
-	int i3DNonFragStructuresWithMaxDist = m_i3DNonFragStructuresWithMaxDist;
-	vector<MoleculeSet*> moleculeSetVectorOfOne;
-	vector<MoleculeSet*> emptyMoleculeSets;
-	
-	bSetupPreviouslyDone = false;
-	try {
-		inputFileDirectory = m_sInputFileName;
-		pos = inputFileDirectory.find(".inp");
-		if (pos != string::npos) // If we found it
-			inputFileDirectory.replace(pos, 4, "Runs");
-		else
-			inputFileDirectory = inputFileDirectory + "Runs";
-		if (stat(inputFileDirectory.c_str(), &fileStatistics) != 0) { // Errors occurred in getting stats, the directory doesn't exist
-			snprintf(commandLine, sizeof(commandLine), "mkdir %s", inputFileDirectory.c_str());
-			success = system(commandLine) != -1;
-			if (!success) {
-				cout << "Unable to create directory: " << inputFileDirectory << endl;
-				throw "";
-			}
-			bSetupPreviouslyDone = false;
-		} else {
-			bSetupPreviouslyDone = true;
-		}
-		
-		inputFileWithoutPath = fileWithoutPath(m_sInputFileName);
-		pos = inputFileWithoutPath.find(".inp");
-		if (pos != string::npos) // If we found it
-			inputFileWithoutPath.replace(pos, 4, "");
-		
-		m_iTotalPopulationSize = 1;
-		for (i = 0; i < savediTotalPopulationSize; ++i) {
-			m_iLinearSructures = 0;
-			m_iPlanarStructures = 0;
-			m_i3DStructures = 0;
-			m_i3DStructuresWithMaxDist = 0;
-			m_i3DNonFragStructuresWithMaxDist = 0;
-			if (iLinearSructures > 0) {
-				m_iLinearSructures = 1;
-				--iLinearSructures;
-			} else if (iPlanarStructures > 0) {
-				m_iPlanarStructures = 1;
-				--iPlanarStructures;
-			} else if (i3DStructures > 0) {
-				m_i3DStructures = 1;
-				--i3DStructures;
-			} else if (i3DStructuresWithMaxDist > 0) {
-				m_i3DStructuresWithMaxDist = 1;
-				--i3DStructuresWithMaxDist;
-			} else if (i3DNonFragStructuresWithMaxDist > 0) {
-				m_i3DNonFragStructuresWithMaxDist = 1;
-				--i3DNonFragStructuresWithMaxDist;
-			}
-			if (bSetupPreviouslyDone && (seededMoleculeSets.size() > 0)) {
-				cout << "You requested seeding, but it appears the run has already been started." << endl;
-				cout << "Either turn seeding off or restart the run with seeding (first delete " << inputFileDirectory << " and files in " << m_sPathToEnergyFiles << ")." << endl;
-				throw "You requested seeding, but it appears the population has already been seeded.";
-			}
-			if (bSetupPreviouslyDone || (seededMoleculeSets.size() > 0)) {
-				snprintf(inputFileName, sizeof(inputFileName), "%s/%s_%d.res", inputFileDirectory.c_str(), inputFileWithoutPath.c_str(), (i+1));
-				if ((seededMoleculeSets.size() == 0) && stat(inputFileName, &fileStatistics) != 0) { // if we aren't seeding and the file doesn't exist
-					snprintf(inputFileName, sizeof(inputFileName), "%s/%s_%d.inp", inputFileDirectory.c_str(), inputFileWithoutPath.c_str(), (i+1));
-				}
-			} else {
-				snprintf(inputFileName, sizeof(inputFileName), "%s/%s_%d.inp", inputFileDirectory.c_str(), inputFileWithoutPath.c_str(), (i+1));
-			}
-			
-			if (savedPathToEnergyFiles.length() > 0) {
-				snprintf(tempFileName, sizeof(tempFileName), "%s/Run%d", savedPathToEnergyFiles.c_str(), (i+1));
-				m_sPathToEnergyFiles = tempFileName;
-				if (stat(m_sPathToEnergyFiles.c_str(), &fileStatistics) != 0) { // Errors occurred in getting stats, the file doesn't exist
-					snprintf(commandLine, sizeof(commandLine), "mkdir %s", m_sPathToEnergyFiles.c_str());
-					success = system(commandLine) != -1;
-					if (!success) {
-						cout << "Unable to create directory: " << m_sPathToEnergyFiles << endl;
-						throw "";
-					}
-				}
-				if (m_iEnergyFunction != LENNARD_JONES) {
-					m_sNodesFile = m_sPathToEnergyFiles + "/nodes.txt";
-					ofstream nodesFile(m_sNodesFile.c_str(), ios::out);
-					nodesFile << m_srgNodeNames[i];
-					nodesFile.close();
-				}
-			}
-
-			if (stat(inputFileName, &fileStatistics) != 0) { // Errors occurred in getting stats, the file doesn't exist
-				// create the file
-				m_sInputFileName = inputFileName;
-
-				snprintf(tempFileName, sizeof(tempFileName), "%s/%s_%d.out", inputFileDirectory.c_str(), inputFileWithoutPath.c_str(), (i+1));
-				m_sOutputFileName = tempFileName;
-
-				snprintf(tempFileName, sizeof(tempFileName), "%s/%s_%d.res", inputFileDirectory.c_str(), inputFileWithoutPath.c_str(), (i+1));
-				m_sResumeFileName = tempFileName;
-				
-				if (seededMoleculeSets.size() == 0) {
-					ofstream inputFile(m_sInputFileName.c_str(), ios::out);
-					if (!inputFile.is_open())
-					{
-						cout << "Unable to write to the file: " << m_sInputFileName << endl;
-						throw "Unable to create a file.";
-					}
-					printToFile(inputFile);
-					inputFile.close();
-				} else {
-					moleculeSetVectorOfOne.push_back(seededMoleculeSets[i]);
-					writeResumeFile(m_sInputFileName, moleculeSetVectorOfOne, emptyMoleculeSets, emptyMoleculeSets, 0, true);
-					moleculeSetVectorOfOne.clear();
-				}
-			}
-			
-			inputFiles.push_back(inputFileName);
-		}
-	} catch (const char* message) {
-		if (PRINT_CATCH_MESSAGES)
-			cerr << "Caught message: " << message << endl;
-		success = false;
-	}
-	
-	m_sInputFileName = savedInputFileName;
-	m_sOutputFileName = savedOutputFileName;
-	m_sResumeFileName = savedResumeFileName;
-	m_iLinearSructures = savediLinearSructures;
-	m_iPlanarStructures = savediPlanarStructures;
-	m_i3DStructures = savedi3DStructures;
-	m_i3DStructuresWithMaxDist = savedi3DStructuresWithMaxDist;
-	m_i3DNonFragStructuresWithMaxDist = savedi3DNonFragStructuresWithMaxDist;
-	m_iTotalPopulationSize = savediTotalPopulationSize;
-	m_sPathToEnergyFiles = savedPathToEnergyFiles;
-	m_sNodesFile = m_sPathToEnergyFiles + "/nodes.txt";
-	
-	if (success && bSetupPreviouslyDone)
-		if (!compileIndependentRunData(false))
-			success = false;
-	
-	return success;
-}
-
-void Input::sortMoleculeSets(vector<MoleculeSet*> &moleculeSets, int lo, int hi)
-{
-	int left, right;
-	FLOAT median;
-	MoleculeSet* temp;
-	
-	if( hi > lo ) // if at least 2 elements, then
-	{
-		left=lo; right=hi;
-		median= moleculeSets[(lo+hi)/2]->getEnergy();  // just an estimate!
-		
-		while(right >= left) // partition moleculeSets[lo..hi]
-		// moleculeSets[lo..left-1] <= median and moleculeSets[right+1..hi] >= median
-		{
-			while(moleculeSets[left]->getEnergy() < median)
-				left++;
-			
-			while(moleculeSets[right]->getEnergy() > median)
-				right--;
-			
-			if(left > right)
-				break;
-			//swap
-			temp=moleculeSets[left];
-			moleculeSets[left]=moleculeSets[right];
-			moleculeSets[right]=temp;
-			left++;
-			right--;
-		}
-		sortMoleculeSets(moleculeSets, lo, right);
-		sortMoleculeSets(moleculeSets, left,  hi);
-	}
-}
-
-void Input::saveBestN(vector<MoleculeSet*> &moleculeSets, vector<MoleculeSet*> &bestN, int n,
-                     FLOAT fMinDistnaceBetweenSameMoleculeSets, int iNumEnergyFilesToSave, const char* sLogFilesDirectory, const char* checkPointFilePrefix)
-{
-	int i, ii, iii, indexToInsert;
-	MoleculeSet* temp;
-	vector<MoleculeSet*> sortedMoleculeSets;
-	const char* energyFilePrefix = "best";
-	
-	for (i = 0; i < (int)moleculeSets.size(); ++i)
-		sortedMoleculeSets.push_back(moleculeSets[i]);
-	
-	sortMoleculeSets(sortedMoleculeSets, 0, sortedMoleculeSets.size()-1);
-	
-	for (i = 0; i < (int)sortedMoleculeSets.size(); ++i)
-	{
-		// Find if/where to insert sortedMoleculeSets[i] in bestN
-		indexToInsert = (int)bestN.size();
-		while ((indexToInsert >= 1) && (sortedMoleculeSets[i]->getEnergy() < bestN[indexToInsert-1]->getEnergy()))
-			--indexToInsert;
-		if ((indexToInsert < (int)bestN.size()) || ((int)bestN.size() < n))
-		{
-			// Make sure there aren't any stuctures with lower energy that are "the same" as sortedMoleculeSets[i]
-			for (ii = indexToInsert-1; ii >= 0; --ii)
-				if (bestN[ii]->withinDistance(*sortedMoleculeSets[i],fMinDistnaceBetweenSameMoleculeSets))
-				{
-					indexToInsert = -1;
-					break;
-				}
-			if (indexToInsert == -1)
-				continue; // don't insert 
-			
-			// Insert
-			// First shift the MoleculeSets at indexToInsert to the right
-			bestN.push_back(NULL);
-			for (ii = (int)bestN.size()-1; ii > indexToInsert; --ii) {
-				bestN[ii] = bestN[ii-1];
-				
-				if ((ii+1) <= iNumEnergyFilesToSave)
-					bestN[ii]->moveOrCopyGaussianFiles(sLogFilesDirectory, energyFilePrefix, checkPointFilePrefix, ii+1, true);
-			}
-
-			// Insert a copy of sortedMoleculeSets[i]
-			temp = new MoleculeSet();
-			temp->copy(*sortedMoleculeSets[i]);
-			bestN[indexToInsert] = temp;
-				
-			if (indexToInsert < iNumEnergyFilesToSave)
-				bestN[indexToInsert]->moveOrCopyGaussianFiles(sLogFilesDirectory, energyFilePrefix, checkPointFilePrefix, indexToInsert+1, false);
-			
-			// Remove any structures higher in energy than sortedMoleculeSets[i] that are the same as sortedMoleculeSets[i]
-			for (ii = indexToInsert+1; ii < (int)bestN.size(); ++ii)
-				while (bestN[ii]->withinDistance(*bestN[indexToInsert], fMinDistnaceBetweenSameMoleculeSets))
-				{
-					bestN[ii]->deleteEnergyFiles();
-					delete bestN[ii];
-					for (iii = ii; iii < (int)bestN.size()-1; ++iii) {
-						bestN[iii] = bestN[iii+1];
-				
-						if ((iii+1) <= iNumEnergyFilesToSave)
-							bestN[iii]->moveOrCopyGaussianFiles(sLogFilesDirectory, energyFilePrefix, checkPointFilePrefix, iii+1, true);
-					}
-					bestN.pop_back();
-					if (ii >= (int)bestN.size())
-						break;
-				}
-			
-			// Make sure that bestN isn't bigger than n
-			// This could happen if bestN == n and then we added one to the list
-			if ((int)bestN.size() > n)
-			{
-				if ((int)bestN.size() <= iNumEnergyFilesToSave)
-					bestN[bestN.size()-1]->deleteEnergyFiles();
-				delete bestN[bestN.size()-1];
-				bestN.pop_back();
-			}
-		}
-	}
-}
-
-bool Input::compileIndependentRunData(bool printOutput)
-{
-	string outputFileDirectory;
-	string outputFileWithoutPath;
-	string::size_type pos;
-	int i, j;
-	struct stat fileStatistics;
-	ofstream fout;
-	ifstream fin;
-	char outputFileName[500];
-	char resumeFileName[500];
-	string resumeFileNameString;
-	char fileLine[5000];
-	int last_iteration;
-	string seedFiles;
-	Input input;
-
-	vector<MoleculeSet*> moleculeSets;
-	vector<MoleculeSet*> moleculeSetsTemp;
-	vector<MoleculeSet*> bestNMoleculeSets;
-	vector<MoleculeSet*> bestNMoleculeSetsTemp;
-	vector<MoleculeSet*> bestIndividualMoleculeSets; // The best solution found for each individual (used in particle swarm optimization)
-	vector<MoleculeSet*> emptyMoleculeSets; // This is only created here so we have something to pass in for
-	                                        // bestIndividualMoleculeSets which is used in PSO, not simulated annealing.
-
-	outputFileDirectory = m_sInputFileName;
-	pos = outputFileDirectory.find(".inp");
-	if (pos != string::npos) // If we found it
-		outputFileDirectory.replace(pos, 4, "Runs");
-	else
-		outputFileDirectory = outputFileDirectory + "Runs";
-	if (stat(outputFileDirectory.c_str(), &fileStatistics) != 0) // Errors occurred in getting stats, the directory doesn't exist
-		return false;
-		
-	outputFileWithoutPath = fileWithoutPath(m_sOutputFileName);
-	pos = outputFileWithoutPath.find(".out");
-	if (pos != string::npos) // If we found it
-		outputFileWithoutPath.replace(pos, 4, "");
-
-	int iterationTemp;
-	int transStatesFoundTemp;
-	FLOAT bestEnergyTemp;
-	char tempString[100];
-	FLOAT temperatureTemp;
-	int numPertTemp;
-	FLOAT coordinatePertTemp;
-	FLOAT anglePertTemp;
-	FLOAT acceptedPerterbationsTemp;
-	
-	vector<int> iteration[m_iTotalPopulationSize];
-	vector<FLOAT> bestEnergies[m_iTotalPopulationSize];
-	vector<int> transStatesFound[m_iTotalPopulationSize];
-	vector<FLOAT> temperatures[m_iTotalPopulationSize];
-	vector<int> numPert[m_iTotalPopulationSize];
-	vector<FLOAT> coordinatePert[m_iTotalPopulationSize];
-	vector<FLOAT> anglePert[m_iTotalPopulationSize];
-	vector<FLOAT> acceptedPerterbations[m_iTotalPopulationSize];
-	
-	// Read the individual output files
-	last_iteration = 1073741824; // a big number
-	for (i = 0; i < m_iTotalPopulationSize; ++i) {
-		snprintf(outputFileName, sizeof(outputFileName), "%s/%s_%d.out", outputFileDirectory.c_str(), outputFileWithoutPath.c_str(), (i+1));
-		if (printOutput)
-			cout << "Reading: " << outputFileName << endl;
-		fin.open(outputFileName, ifstream::in);
-		if (!fin.is_open())
-		{
-			cout << "Unable to read the output file: " << outputFileName << endl;
-			return false;
-		}
-//		bestEnergies.push_back(vector<FLOAT>);
-		while (fin.getline(fileLine, sizeof(fileLine)))
-		{
-			if (strncmp(fileLine, "Using seeded population from", 28) == 0) {
-				seedFiles = (fileLine+29);
-				seedFiles.replace(seedFiles.length()-3,3,""); // remove the "..."
-			}
-			if (sscanf(fileLine, "Assigning frozen status to the coordinates of seeded atoms for %d iterations...", &m_iFreezeUntilIteration) == 1) {
-			}
-
-			if (m_bTransitionStateSearch) {
-				if (sscanf(fileLine, "It: %d Number of Transition States Found: %d Best Energy: %s",
-				           &iterationTemp, &transStatesFoundTemp, tempString) == 3) {
-					iteration[i].push_back(iterationTemp);
-					bestEnergies[i].push_back(bestEnergyTemp);
-					transStatesFound[i].push_back(transStatesFoundTemp);
-					if (transStatesFoundTemp > 0)
-						bestEnergies[i].push_back(atof(tempString));
-					else
-						bestEnergies[i].push_back(0);
-				}
-			} else {
-				if (sscanf(fileLine, "It: %d Best Energy: %lf Temp: %lf Num Pert: %d Coord, Angle Pert: %lf, %lf Accepted Pert: %lf%%",
-				           &iterationTemp, &bestEnergyTemp, &temperatureTemp, &numPertTemp, &coordinatePertTemp, &anglePertTemp, &acceptedPerterbationsTemp) == 7) {
-					iteration[i].push_back(iterationTemp);
-					bestEnergies[i].push_back(bestEnergyTemp);
-					temperatures[i].push_back(temperatureTemp);
-					numPert[i].push_back(numPertTemp);
-					coordinatePert[i].push_back(coordinatePertTemp);
-					anglePert[i].push_back(anglePertTemp);
-					acceptedPerterbations[i].push_back(acceptedPerterbationsTemp);
-				}
-			}
-		}
-		fin.close();
-		if (last_iteration > (int)bestEnergies[i].size())
-			last_iteration = bestEnergies[i].size();
-	}
-	
-	if (printOutput)
-		cout << "Writing: " << m_sOutputFileName << endl;
-	fout.open(m_sOutputFileName.c_str(), ofstream::out); // Erase the existing file, if there is one
-	if (!fout.is_open())
-	{
-		cout << "Unable to open the output file: " << m_sOutputFileName << endl;
-		return false;
-	}
-	printToFile(fout);
-	fout << endl << endl;
-	fout << "Output from program:" << endl;
-	
-	if (seedFiles.length() > 0) {
-		fout << "Using seeded population from " << seedFiles << "..." << endl;
-		if (m_iFreezeUntilIteration > 0) {
-			fout << "Assigning frozen status to the coordinates of seeded atoms for " << m_iFreezeUntilIteration << " iterations..." << endl;
-		}
-	} else {
-		fout << "Initializing the population..." << endl;
-	}
-	if (m_bPerformBasinHopping && (m_fQuenchingFactor == 1.0)) {
-		fout << "Performing Basin Hopping..." << endl;
-	} else if (m_bTransitionStateSearch) {
-		fout << "Searching for Transition States..." << endl;
-	} else {
-		fout << "Simulating Annealing..." << endl;
-	}
-	bool foundFreezIteration = false;
-	for (i = 0; i < last_iteration; ++i) {
-		iterationTemp = 0;
-		for (j = 0; j < m_iTotalPopulationSize; ++j)
-			iterationTemp += iteration[j][i];
-		iterationTemp /= m_iTotalPopulationSize;
-		fout << "It: " << iterationTemp;
-
-		if (m_bTransitionStateSearch) {
-			transStatesFoundTemp = 0;
-			for (j = 0; j < m_iTotalPopulationSize; ++j)
-				transStatesFoundTemp += transStatesFound[j][i];
-			fout << " Number of Transition States Found: " << transStatesFoundTemp;
-		}
-		fout << setiosflags(ios::fixed) << setprecision(8);
-		if (!m_bTransitionStateSearch || (transStatesFoundTemp > 0)) {
-			bestEnergyTemp = 0;
-			for (j = 0; j < m_iTotalPopulationSize; ++j)
-				if (bestEnergyTemp > bestEnergies[j][i])
-					bestEnergyTemp = bestEnergies[j][i];
-			fout << " Best Energy: " << bestEnergyTemp;
-		} else
-			fout << " Best Energy: -";
-		if (!m_bTransitionStateSearch) {
-			temperatureTemp = 0;
-			for (j = 0; j < m_iTotalPopulationSize; ++j)
-				temperatureTemp += temperatures[j][i];
-			temperatureTemp /= m_iTotalPopulationSize;
-			fout << setiosflags(ios::fixed) << setprecision(1)
-				<< " Temp: " << temperatureTemp;
-
-			numPertTemp = 0;
-			for (j = 0; j < m_iTotalPopulationSize; ++j)
-				numPertTemp += numPert[j][i];
-			numPertTemp /= m_iTotalPopulationSize;
-			fout << " Num Pert: " << numPertTemp;
-			
-			coordinatePertTemp = 0;
-			for (j = 0; j < m_iTotalPopulationSize; ++j)
-				coordinatePertTemp += coordinatePert[j][i];
-			coordinatePertTemp /= m_iTotalPopulationSize;
-			anglePertTemp = 0;
-			for (j = 0; j < m_iTotalPopulationSize; ++j)
-				anglePertTemp += anglePert[j][i];
-			anglePertTemp /= m_iTotalPopulationSize;
-			
-			fout << setiosflags(ios::fixed) << setprecision(4)
-				<< " Coord, Angle Pert: " << coordinatePertTemp << ", "
-				<< anglePertTemp;
-			
-			acceptedPerterbationsTemp = 0;
-			for (j = 0; j < m_iTotalPopulationSize; ++j)
-				acceptedPerterbationsTemp += acceptedPerterbations[j][i];
-			acceptedPerterbationsTemp /= m_iTotalPopulationSize;
-			fout << setiosflags(ios::fixed) << setprecision(1)
-				<< " Accepted Pert: " << acceptedPerterbationsTemp << "%";
-		}
-		fout << endl;
-		if ((m_iFreezeUntilIteration > 0) && (iterationTemp >= m_iFreezeUntilIteration) && !foundFreezIteration) {
-			foundFreezIteration = true;
-			fout << "Removing frozen status from the coordinates of seeded atoms..." << endl;
-		}
-	}
-	fout.close();
-
-	if (m_sSaveLogFilesInDirectory.length() > 0) {
-		char commandLine[500];
-		if (stat(m_sSaveLogFilesInDirectory.c_str(), &fileStatistics) == 0) { // If no errors occurred in getting stats, the file exists
-			if (printOutput)
-				cout << "Deleting directory: " << m_sSaveLogFilesInDirectory << endl;
-			snprintf(commandLine, sizeof(commandLine), "rm -rf %s", m_sSaveLogFilesInDirectory.c_str());
-			if (system(commandLine) != 0)
-				return false;
-		}
-		snprintf(commandLine, sizeof(commandLine), "mkdir %s", m_sSaveLogFilesInDirectory.c_str());
-		if (printOutput)
-			cout << "Creating directory: " << m_sSaveLogFilesInDirectory << endl;
-		if (system(commandLine) != 0)
-			return false;
-	}
-
-	// Open the resume files
-	string checkPointFilePrefix;
-	if (input.m_iEnergyFunction == GAUSSIAN)
-		checkPointFilePrefix = Energy::getGaussianCheckpointFile(m_sEnergyFileHeader.c_str());
-	bool success = true;
-	for (i = 0; i < m_iTotalPopulationSize; ++i) {
-		snprintf(resumeFileName, sizeof(resumeFileName), "%s/%s_%d.res", outputFileDirectory.c_str(), outputFileWithoutPath.c_str(), (i+1));
-		resumeFileNameString = resumeFileName;
-		if (printOutput)
-			cout << "Reading: " << resumeFileName << endl;
-		if (!input.open(resumeFileNameString, false, false, moleculeSetsTemp, bestNMoleculeSetsTemp, bestIndividualMoleculeSets)) {
-			success = false;
-			break;
-		}
-		moleculeSets.push_back(moleculeSetsTemp[0]);
-		moleculeSetsTemp.pop_back();
-		saveBestN(bestNMoleculeSetsTemp, bestNMoleculeSets, m_iNumberOfBestStructuresToSave,
-				m_fMinDistnaceBetweenSameMoleculeSets, m_iNumberOfLogFilesToSave, m_sSaveLogFilesInDirectory.c_str(), checkPointFilePrefix.c_str());
-		for (j = 0; j < (int)moleculeSetsTemp.size(); ++j)
-			delete moleculeSetsTemp[j];
-		moleculeSetsTemp.clear();
-		for (j = 0; j < (int)bestNMoleculeSetsTemp.size(); ++j)
-			delete bestNMoleculeSetsTemp[j];
-		bestNMoleculeSetsTemp.clear();
-		for (j = 0; j < (int)bestIndividualMoleculeSets.size(); ++j)
-			delete bestIndividualMoleculeSets[j];
-		bestIndividualMoleculeSets.clear();
-	}
-	for (j = 0; j < (int)moleculeSetsTemp.size(); ++j)
-		delete moleculeSetsTemp[j];
-	moleculeSetsTemp.clear();
-	for (i = 0; i < (int)bestNMoleculeSetsTemp.size(); ++i)
-		delete bestNMoleculeSetsTemp[i];
-	bestNMoleculeSetsTemp.clear();
-	for (i = 0; i < (int)bestIndividualMoleculeSets.size(); ++i)
-		delete bestIndividualMoleculeSets[i];
-	bestIndividualMoleculeSets.clear();
-	if (!success)
-		return false;
-	
-	// Set the temperature to be negative, as a flag so we know this resume file can't be resumed (it's only there so we can create an optimization file from the resume file).	
-	m_fDesiredAcceptedTransitions = -m_fDesiredAcceptedTransitions;	
-	m_fStartingTemperature = -m_fStartingTemperature;	
-	if (printOutput)
-		cout << "Writing: " << m_sResumeFileName << " (contains the list of best structures, but is not resumable)" << endl;
-	writeResumeFile(m_sResumeFileName, moleculeSets, bestNMoleculeSets, emptyMoleculeSets, 0, true);
-	m_fStartingTemperature = -m_fStartingTemperature;	
-	m_fDesiredAcceptedTransitions = -m_fDesiredAcceptedTransitions;	
-	
-	for (i = 0; i < (int)moleculeSets.size(); ++i)
-		delete moleculeSets[i];
-	moleculeSets.clear();
-	for (i = 0; i < (int)bestNMoleculeSets.size(); ++i)
-		delete bestNMoleculeSets[i];
-	bestNMoleculeSets.clear();
-	
 	return true;
 }
 

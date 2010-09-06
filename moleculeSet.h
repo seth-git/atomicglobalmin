@@ -3,8 +3,8 @@
 //    belong in a group.
 // Author: Seth Call
 // Note: This is free software and may be modified and/or redistributed under
-//    the terms of the GNU General Public License (Version 3).
-//    Copyright 2007 Seth Call.
+//    the terms of the GNU General Public License (Version 1.2 or any later
+//    version).  Copyright 2007 Seth Call.
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifndef __MOLECULESET_H__
@@ -15,8 +15,6 @@
 #include <fstream>
 #include <string>
 #include <cmath>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include "typedef.h"
 #include "molecule.h"
 
@@ -32,7 +30,6 @@ class MoleculeSet
 private:
 	int m_iStructureId; // an id number for this object
 	string m_sEnergyFile;
-	string m_sCheckPointFile;
 	int m_iNumberOfMolecules;
 	Molecule* m_prgMolecules;  // array of molecules
 	int m_iNumberOfAtoms;
@@ -58,15 +55,12 @@ public:
 	int getId() { return m_iStructureId; }
 	void setEnergyFile(const char *energyFile) { m_sEnergyFile = energyFile; }
 	const char* getEnergyFile() { return m_sEnergyFile.c_str(); }
-	void setCheckPointFile(const char *checkpointFile) { m_sCheckPointFile = checkpointFile; }
-	const char* getCheckPointFile() { return m_sCheckPointFile.c_str(); }
 	void copy(const MoleculeSet &moleculeSet);
 	int getNumberOfMolecules();
 	int getNumberOfMoleculesWithMultipleAtoms();
 	void setNumberOfMolecules(int iNumberOfMolecules);
 	Molecule* getMolecules();
 	int getNumberOfAtoms();
-
 	
 	// This function initializes m_iNumberOfAtoms and m_prgAtoms
 	void initAtomIndexes();
@@ -170,8 +164,7 @@ public:
 	
 	FLOAT getDistanceFromPoint(Point3D &point);
 	
-	void writeToGausianComFile(ofstream &fout);
-	void writeToGausianLogFile(FILE* fout);
+	void writeToGausianFile(ofstream &fout);
 	
 	void print(ofstream &fout);
 	void printToResumeFile(ofstream &fout, bool printVelocityInfo);
@@ -294,15 +287,6 @@ public:
 	
 	void measureSearchSpace(int &withConstraints, int &withoutConstraints);
 	
-	
-	bool performBondRotations(FLOAT angleInRad, vector<MoleculeSet*> &moleculeSets);
-
-	bool moveOrCopyGaussianFiles(const char* newDirectory, const char* newLogFilePrefix, const char* newCheckPointFilePrefix, int newNumber, bool moveOrCopy);
-
-	bool deleteEnergyFiles(void);
-
-	static bool fileExists(const char* fileName);
-	
 private:
 	void cleanUp();
 
@@ -335,13 +319,13 @@ private:
 	//             vectorAlongLine - a vector along the line
 	//             point - a point not on the line
 	// Returns: the point on the line that is closest to point
-	Point3D closestPointFromALineToAPoint(Point3D pointOnLine, Point3D vectorAlongLine, Point3D point);
+	Point3D MoleculeSet::closestPointFromALineToAPoint(Point3D pointOnLine, Point3D vectorAlongLine, Point3D point);
 
 	/////////////////////////////////////////////////////////////////////
 	// Purpose: This function computes the distance between 2 points.
 	// Parameters: point1 and point2 - the two points
 	// Returns: the distance
-	FLOAT distanceBetweenPoints(Point3D point1, Point3D point2);
+	FLOAT MoleculeSet::distanceBetweenPoints(Point3D point1, Point3D point2);
 
 	Point3D getVectorInDirection(FLOAT angleX, FLOAT angleY, FLOAT length);
 	

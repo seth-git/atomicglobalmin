@@ -2,8 +2,8 @@
 // Purpose: This file manages a set of molecules.
 // Author: Seth Call
 // Note: This is free software and may be modified and/or redistributed under
-//    the terms of the GNU General Public License (Version 3).
-//    Copyright 2007 Seth Call.
+//    the terms of the GNU General Public License (Version 1.2 or any later
+//    version).  Copyright 2007 Seth Call.
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "moleculeSet.h"
@@ -71,7 +71,6 @@ void MoleculeSet::copy(const MoleculeSet &moleculeSet)
 {
 	m_iStructureId = moleculeSet.m_iStructureId;
 	m_sEnergyFile = moleculeSet.m_sEnergyFile;
-	m_sCheckPointFile = moleculeSet.m_sCheckPointFile;
 	setNumberOfMolecules(moleculeSet.m_iNumberOfMolecules);
 	for (int i = 0; i < moleculeSet.m_iNumberOfMolecules; ++i)
 		m_prgMolecules[i].copy(moleculeSet.m_prgMolecules[i]);
@@ -101,8 +100,8 @@ void MoleculeSet::setNumberOfMolecules(int iNumberOfMolecules)
 {
 	if (iNumberOfMolecules <= 0)
 	{
-		cout << "You cannot have a number of molecules less than or equal to zero..." << endl;
-		iNumberOfMolecules = 1;
+		cout << "You cannot have a number of molecules less than or equal to zero.  Exiting..." << endl;
+		exit(0);
 	}
 	cleanUp();
 	m_iNumberOfMolecules = iNumberOfMolecules;
@@ -172,7 +171,7 @@ bool MoleculeSet::initPositionsAndAngles(Point3D &boxDimensions, int numTries)
 					m_prgMolecules[i].setCenterAndAngles(Molecule::randomFloat(0,boxDimensions.x),
 						Molecule::randomFloat(0,boxDimensions.y),Molecule::randomFloat(0,boxDimensions.z),
 						Molecule::randomFloat(0,PIE_X_2),Molecule::randomFloat(-PIE_OVER_2,PIE_OVER_2),
-					        Molecule::randomFloat(0,PIE_X_2));
+					    Molecule::randomFloat(0,PIE_X_2));
 				m_prgMolecules[i].initRotationMatrix();
 				m_prgMolecules[i].localToGlobal();
 				m_prgMolecules[i].initDistanceMatrix(m_iNumberOfAtoms, m_atoms, m_atomDistances, atomsInitialized);
@@ -258,8 +257,8 @@ bool MoleculeSet::initPositionsAndAnglesWithMaxDist(Point3D &boxDimensions, FLOA
 						// Place the molecule anywhere
 						m_prgMolecules[iCurrentMolecule].setCenterAndAngles(Molecule::randomFloat(0,boxDimensions.x),
 							Molecule::randomFloat(0,boxDimensions.y),Molecule::randomFloat(0,boxDimensions.z),
-							Molecule::randomFloat(0,PIE_X_2),Molecule::randomFloat(-PIE_OVER_2,PIE_OVER_2),
-						        Molecule::randomFloat(0,PIE_X_2));
+							Molecule::randomFloat(0,PIE_X_2),
+						    Molecule::randomFloat(-PIE_OVER_2,PIE_OVER_2), Molecule::randomFloat(0,PIE_X_2));
 						m_prgMolecules[iCurrentMolecule].initRotationMatrix();
 						m_prgMolecules[iCurrentMolecule].localToGlobal();
 					} else {
@@ -693,8 +692,8 @@ void MoleculeSet::placeMoleculeObservingMaxDist(Molecule &moleculeToPlace, Molec
 		}
 		if (isnan(e))
 		{
-			cout << "e = nan in the function MoleculeSet::placeMoleculeObservingMaxDist!" << endl;
-			return;
+			cout << "e = nan!" << endl;
+			exit(0);
 		}
 		
 		while (true) {
@@ -704,8 +703,8 @@ void MoleculeSet::placeMoleculeObservingMaxDist(Molecule &moleculeToPlace, Molec
 			center = otherMolecule.getPositionRelativeToMoleculeAlongVector(vector);
 			if (isnan(center.x))
 			{
-				cout << "center.x = nan in the function MoleculeSet::placeMoleculeObservingMaxDist!" << endl;
-				return;
+				cout << "center.x = nan!" << endl;
+				exit(0);
 			}
 			moleculeToPlace.setCenter(center);
 			moleculeToPlace.initRotationMatrix();
@@ -1243,6 +1242,8 @@ bool MoleculeSet::performTransformationsNonFrag(Point3D &boxDimensions, FLOAT de
 				}
 					
 				if (thingToPurturb <= 1) { // swap two molecules
+					cout << "Are you sure you want to swap..." << endl;
+					exit(0);
 					Point3D temp;
 					// Randomly Pick another molecule within maxDist of iMoleculeToPerturb
 					do {
@@ -1436,6 +1437,7 @@ void MoleculeSet::enforceMinDistConstraints(Point3D &boxDimensions)
 				
 				cout << "Molecule " << j << ":" << endl;
 				m_prgMolecules[j].printToScreen();
+//				exit(0);
 			}
 			
 			if ((!tryToEnforceBoxConstraints(boxDimensions,i)) && (tries < maxTries)) {
@@ -1461,7 +1463,10 @@ void MoleculeSet::enforceMinDistConstraints(Point3D &boxDimensions)
 void MoleculeSet::print(ofstream &fout)
 {
 	for (int i = 0; i < m_iNumberOfMolecules; ++i)
+	{
 		m_prgMolecules[i].printToFile(fout);
+		fout << endl;
+	}
 }
 
 void MoleculeSet::printToResumeFile(ofstream &fout, bool printVelocityInfo)
@@ -1508,19 +1513,17 @@ bool MoleculeSet::readFromResumeFile(ifstream &infile, char* fileLine, int MAX_L
 void MoleculeSet::printToScreen()
 {
 	for (int i = 0; i < m_iNumberOfMolecules; ++i)
+	{
 		m_prgMolecules[i].printToScreen();
+		cout << endl;
+	}
 }
 
-void MoleculeSet::writeToGausianComFile(ofstream &fout)
+void MoleculeSet::writeToGausianFile(ofstream &fout)
 {
-	for (int i=0; i < m_iNumberOfMolecules; i++)
-		m_prgMolecules[i].writeToGausianComFile(fout);
-}
-
-void MoleculeSet::writeToGausianLogFile(FILE* fout)
-{
-	for (int i=0; i < m_iNumberOfMolecules; i++)
-		m_prgMolecules[i].writeToGausianLogFile(fout);
+	int i;
+	for (i=0; i < m_iNumberOfMolecules; i++)
+		m_prgMolecules[i].writeToGausianFile(fout);
 }
 
 FLOAT MoleculeSet::getDistanceFromPoint(Point3D &point)
@@ -2376,117 +2379,3 @@ void MoleculeSet::measureSearchSpace(int &withConstraints, int &withoutConstrain
 	}
 }
 
-bool MoleculeSet::performBondRotations(FLOAT angleInRad, vector<MoleculeSet*> &moleculeSets)
-{
-	MoleculeSet *mySet;
-	int combos = 0;
-	int combosSatisfyingConstraints = 0;
-	
-	if (m_iNumberOfMolecules != 1) {
-		cout << "There must be only one molecule/unit in the input file." << endl;
-		return false;
-	}
-	
-	if (!m_prgMolecules[0].findBonds())
-		return false;
-	if (!m_prgMolecules[0].checkConnectivity())
-		return false;
-	if (m_prgMolecules[0].hasRings()) {
-		cout << "This program can not perform bond rotations on molecules with rings." << endl;
-		return false;
-	}
-	m_prgMolecules[0].setBondRotationalAngle(angleInRad);
-	if (m_prgMolecules[0].getNumberOfRotatableBonds() < 1) {
-		cout << "This molecule does not appear to contain rotatable bonds." << endl;
-		m_prgMolecules[0].printBondInfo();
-		cout << "Check the bond length criteria in the file: bondLengths.txt" << endl;
-		return false;
-	}
-	m_prgMolecules[0].initRotationMatrix();
-	initAtomIndexes();
-	do {
-		++combos;
-		m_prgMolecules[0].localToGlobal();
-		initAtomDistances();
-		sortAtomRanks();
-		if (checkMinDistConstraints()) {
-			++combosSatisfyingConstraints;
-			mySet = new MoleculeSet();
-			mySet->copy(*this);
-			moleculeSets.push_back(mySet);
-		}
-	} while (m_prgMolecules[0].incrumentBondPositions());
-	cout << "Possible combinations: " << combos << endl;
-	cout << "Combinations satisfying minimum distance constraints: " << combosSatisfyingConstraints << endl; 
-	for (int i = 0; i < (signed int)moleculeSets.size(); ++i)
-		moleculeSets[i]->m_prgMolecules[0].globalToLocal();
-	return true;
-}
-
-bool MoleculeSet::moveOrCopyGaussianFiles(const char* newDirectory, const char* newLogFilePrefix, const char* newCheckPointFilePrefix, int newNumber, bool moveOrCopy)
-{
-	char fileName[500];
-	char commandLine[500];
-	bool success = true;
-	
-	if ((m_sEnergyFile.length() > 0) && fileExists(m_sEnergyFile.c_str()) && (newLogFilePrefix != NULL) && (newLogFilePrefix[0] != '\0')) {
-		snprintf(fileName, sizeof(fileName), "%s/%s%d.log", newDirectory, newLogFilePrefix, newNumber);
-		if (moveOrCopy)
-			snprintf(commandLine, sizeof(commandLine), "mv %s %s", m_sEnergyFile.c_str(), fileName);
-		else
-			snprintf(commandLine, sizeof(commandLine), "cp %s %s", m_sEnergyFile.c_str(), fileName);
-		if (system(commandLine) == -1) {
-			success = false;
-			m_sEnergyFile = "";
-		} else {
-			m_sEnergyFile = fileName;
-		}
-	} else {
-		m_sEnergyFile = "";
-	}
-	
-	if ((m_sCheckPointFile.length() > 0) && fileExists(m_sCheckPointFile.c_str()) && (newCheckPointFilePrefix != NULL) && (newCheckPointFilePrefix[0] != '\0')) {
-		snprintf(fileName, sizeof(fileName), "%s/%s%d.chk", newDirectory, newCheckPointFilePrefix, newNumber);
-		if (moveOrCopy)
-			snprintf(commandLine, sizeof(commandLine), "mv %s %s", m_sCheckPointFile.c_str(), fileName);
-		else
-			snprintf(commandLine, sizeof(commandLine), "cp %s %s", m_sCheckPointFile.c_str(), fileName);
-		if (system(commandLine) == -1) {
-			success = false;
-			m_sCheckPointFile = "";
-		} else {
-			m_sCheckPointFile = fileName;
-		}
-	} else {
-		m_sCheckPointFile = "";
-	}
-	return success;
-}
-
-bool MoleculeSet::deleteEnergyFiles(void)
-{
-	char commandLine[500];
-	bool success = true;
-	
-	if ((m_sEnergyFile.length() > 0) && fileExists(m_sEnergyFile.c_str())) {
-		snprintf(commandLine, sizeof(commandLine), "rm %s", m_sEnergyFile.c_str());
-		if (system(commandLine) == -1)
-			success = false;
-	}
-	m_sEnergyFile = "";
-	
-	if ((m_sCheckPointFile.length() > 0) && fileExists(m_sCheckPointFile.c_str())) {
-		snprintf(commandLine, sizeof(commandLine), "rm %s", m_sCheckPointFile.c_str());
-		if (system(commandLine) == -1)
-			success = false;
-	}
-	m_sCheckPointFile = "";
-	
-	return success;
-}
-
-bool MoleculeSet::fileExists(const char* fileName)
-{
-	struct stat fileStatistics;
-	return stat(fileName, &fileStatistics) == 0; // If no errors occurred in getting stats, the file exists
-}
