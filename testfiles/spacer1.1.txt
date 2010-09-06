@@ -1,0 +1,74 @@
+ ---------------------------------------------------------------------
+                    Distance matrix (angstroms):
+                    1          2          3          4          5
+     1  C    0.000000
+     2  H    1.091287   0.000000
+     3  H    1.091989   1.774077   0.000000
+     4  H    1.093700   1.773700   1.772979   0.000000
+     5  C    1.539890   2.157879   2.180840   2.189499   0.000000
+     6  C    2.549314   3.488147   2.813508   2.801682   1.551378
+     7  H    2.817763   3.805498   3.187346   2.628338   2.200569
+     8  H    3.495420   4.318404   3.782506   3.821810   2.187748
+     9  C    2.503310   2.742967   3.458039   2.752135   1.514416
+    10  H    2.785575   3.106896   3.795809   2.588044   2.206746
+    11  C    3.583757   3.538118   4.498942   3.980291   2.520680
+    12  H    3.902272   3.773981   4.658131   4.537414   2.766935
+    13  H    4.447620   4.332441   5.434791   4.673073   3.505490
+    14  O    2.921866   3.926942   2.604219   3.262824   2.470043
+    15  O    3.977446   4.863182   3.582105   4.493871   3.272928
+    16  O    2.437659   2.680690   2.720604   3.384719   1.413674
+    17  H    2.549751   2.843980   2.421324   3.575345   1.975418
+                    6          7          8          9         10
+     6  C    0.000000
+     7  H    1.092029   0.000000
+     8  H    1.088597   1.804092   0.000000
+     9  C    2.449303   2.693422   2.736066   0.000000
+    10  H    2.768852   2.561163   3.178025   1.087846   0.000000
+    11  C    3.489804   3.881406   3.447823   1.329004   2.099083
+    12  H    3.797660   4.434363   3.631451   2.102118   3.068335
+    13  H    4.356244   4.569172   4.260902   2.103469   2.434937
+    14  O    1.458030   2.033677   2.066141   3.752851   4.097530
+    15  O    2.316534   3.086099   2.332452   4.523784   5.047777
+    16  O    2.423906   3.375083   2.631518   2.379855   3.360981
+    17  H    2.720750   3.708191   3.040612   3.237213   4.129248
+                   11         12         13         14         15
+    11  C    0.000000
+    12  H    1.082924   0.000000
+    13  H    1.084114   1.858315   0.000000
+    14  O    4.773561   4.902394   5.718457   0.000000
+    15  O    5.301404   5.202652   6.279206   1.319755   0.000000
+    16  O    2.736002   2.396076   3.819745   2.942810   3.222805
+    17  H    3.700638   3.322066   4.783296   2.724505   2.865855
+                   16         17
+    16  O    0.000000
+    17  H    0.974076   0.000000
+ Symmetry turned off by external request.
+ Stoichiometry    C5H9O3(2)
+ Framework group  C1[X(C5H9O3)]
+ Deg. of freedom    45
+ Full point group                 C1
+ Rotational constants (GHZ):      3.5594534      1.2941741      1.2126463
+ Standard basis: 3-21G (6D, 7F)
+ Integral buffers will be    131072 words long.
+ Raffenetti 2 integral format.
+ Two-electron integral symmetry is turned off.
+    90 basis functions,   147 primitive gaussians,    90 cartesian basis functions
+    32 alpha electrons       31 beta electrons
+       nuclear repulsion energy       392.2086251545 Hartrees.
+ NAtoms=   17 NActive=   17 NUniq=   17 SFac= 7.50D-01 NAtFMM=   80 NAOKFM=F Big=F
+ One-electron integrals computed using PRISM.
+ NBasis=    90 RedAO= T  NBF=    90
+ NBsUse=    90 1.00D-06 NBFU=    90
+ Harris functional with IExCor=  402 diagonalized for initial guess.
+ ExpMin= 1.83D-01 ExpMax= 3.22D+02 ExpMxC= 3.22D+02 IAcc=1 IRadAn=         1 AccDes= 1.00D-06
+ HarFok:  IExCor= 402 AccDes= 1.00D-06 IRadAn=         1 IDoV=1
+ ScaDFX=  1.000000  1.000000  1.000000  1.000000
+ <S**2> of initial guess= 0.7500
+ Requested convergence on RMS density matrix=1.00D-06 within 300 cycles.
+ Requested convergence on MAX density matrix=1.00D-04.
+ Requested convergence on             energy=1.00D-04.
+ No special actions if energy rises.
+ Keep R1 and R2 integrals in memory in canonical form, NReq=    18745265.
+ Integral accuracy reduced to 1.0D-05 until final iterations.
+ Initial convergence to 1.0D-05 achieved.  Increase integral accuracy.
+ SCF Done:  E(UB+HF-LYP) =  
