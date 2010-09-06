@@ -1,0 +1,53 @@
+Monte Carlo Simulated Annealing Input File Version 1.0
+
+Energy function to use (Gaussian or Lennard Jones): Lennard Jones
+Path to energy program: 
+Path to energy files: 
+Search cube length, width, and height: 5.5
+Number of linear structures: 0
+Initialize linear structures in a box with the above cube length and a height and width of: 1.2
+Number of planar structures: 0
+Number of fragmented 3D structures: 0
+Number of partially non-fragmented 3D structures: 0
+Number of completely non-fragmented 3D structures: 1
+General minimum atom distance (used if no value specified below): 0.7
+Specific minimum atom distances (angstroms):
+2 2 1.0
+Maximum inter-atomic distance (angstroms): 2
+
+Simulated Annealing Parameters:
+Search only for non-fragmented structures: yes
+Perform basin hopping search: no
+Starting temperature: 10000.0
+Scaling factor (substituent for Boltzmann constant): 400.0
+Minimum number of iterations before decreasing the temperature (N): 100
+Decrease the temperature when the percentage of accepted transitions for the past N iterations is below: 100
+Quenching factor: 0.99999
+Don't stop while the temperature is above this value: 200.000000
+Stop if the accepted transitions is below this percentage for each of five consecutive iterations: 0.05
+Maximum number of allowed iterations: 500000
+Starting coordinate perturbation (angstroms): 0.3
+Minimum coordinate perturbation (angstroms): 0.05
+Starting angle perturbation (deg): 30
+Minimum angle perturbation (deg): 3
+
+Save this many of the best "different" structures: 10
+Consider 2 structures "different" if their RMS distance is greater or equal to (angstroms): 1
+Output file name: outputLJ7_Sim.txt
+Resume file name (optional): resumeLJ7_Sim.txt
+Write resume file after every set of this number of iterations (optional): 1000
+Print summary information after each set of this many iterations: 1000
+Cluster node names file (put LOCAL for local nodes): nodes.txt
+Job queue template file (used instead of the node names file, optional):
+Number of jobs submitted to the job queue at a time: 
+Every other iteration, use the wave function from the previous iteration: no
+Charge: 0
+Multiplicity: 1
+Energy file header:
+
+Number of unit types: 1
+
+Number of units of this type: 7
+Format of this unit type: Cartesian
+2 0.0 0.0 0.0
+

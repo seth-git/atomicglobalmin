@@ -3,8 +3,8 @@
 //    belong in a group.
 // Author: Seth Call
 // Note: This is free software and may be modified and/or redistributed under
-//    the terms of the GNU General Public License (Version 3).
-//    Copyright 2007 Seth Call.
+//    the terms of the GNU General Public License (Version 1.2 or any later
+//    version).  Copyright 2007 Seth Call.
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifndef __MOLECULESET_H__
@@ -15,8 +15,6 @@
 #include <fstream>
 #include <string>
 #include <cmath>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include "typedef.h"
 #include "molecule.h"
 
@@ -31,8 +29,6 @@ class MoleculeSet
 {
 private:
 	int m_iStructureId; // an id number for this object
-	string m_sEnergyFile;
-	string m_sCheckPointFile;
 	int m_iNumberOfMolecules;
 	Molecule* m_prgMolecules;  // array of molecules
 	int m_iNumberOfAtoms;
@@ -47,7 +43,7 @@ private:
 				                // Values from this array are indexes to m_prgAtoms
 	FLOAT m_fEnergy;
 	int m_iRun;
-	bool m_bIsTransitionState;
+	bool m_bTransitionAccepted;
 	
 public:
 	MoleculeSet();
@@ -56,24 +52,17 @@ public:
 	~MoleculeSet();
 	void setId(int id) { m_iStructureId = id; }
 	int getId() { return m_iStructureId; }
-	void setEnergyFile(const char *energyFile) { m_sEnergyFile = energyFile; }
-	const char* getEnergyFile() { return m_sEnergyFile.c_str(); }
-	void setCheckPointFile(const char *checkpointFile) { m_sCheckPointFile = checkpointFile; }
-	const char* getCheckPointFile() { return m_sCheckPointFile.c_str(); }
 	void copy(const MoleculeSet &moleculeSet);
 	int getNumberOfMolecules();
-	int getNumberOfMoleculesWithMultipleAtoms();
 	void setNumberOfMolecules(int iNumberOfMolecules);
 	Molecule* getMolecules();
 	int getNumberOfAtoms();
-
 	
 	// This function initializes m_iNumberOfAtoms and m_prgAtoms
 	void initAtomIndexes();
-	void initAtomIndexes(int iChangedMolecule);
 	FLOAT getEnergy() { return m_fEnergy; }
 	void setEnergy(FLOAT energy)  { m_fEnergy = energy; }
-	void initVelocities(FLOAT coordinateVelocity, FLOAT maxAngleVelocityInRad);
+	void initVelocities(FLOAT maxCoordVelocity, FLOAT maxAngleVelocityInRad);
 	bool initPositionsAndAngles(Point3D &boxDimensions, int numTries);
 	
 	/////////////////////////////////////////////////////////////////////
@@ -85,6 +74,7 @@ public:
 	// Returns: true if the function succeeded
 	bool initPositionsAndAnglesWithMaxDist(Point3D &boxDimensions, FLOAT maxAtomDist, int numTries);
 	
+	
 	/////////////////////////////////////////////////////////////////////
 	// Purpose: This function initializes positions and angles of molecules
 	//    and ensures that each atom and molecule is not further than maxAtomDist.
@@ -94,34 +84,11 @@ public:
 	// Returns: true if the function succeeded
 	bool initNonFragmentedSructure(Point3D &boxDimensions, FLOAT maxAtomDist, int numTries);
 	
-	/////////////////////////////////////////////////////////////////////
-	// Purpose: This function initializes the current moleculeSet from another
-	//    molecule set (the seed).  If there are more of a particular type of molecule that
-	//    need to be created in the curent moleculeSet, this function creates
-	//    these molecules and assigns them random positions producing a new
-	//    completely nonfragmented moleculeSet.
-	//    and ensures that each atom and molecule is not further than maxAtomDist.
-	// Parameters: seedMoleculeSet - the seed
-	//             iNumStructureTypes - the number of different types of molecules
-	//             iNumStructuresOfEachTypeOriginal - the number of each type of molecule in the seed
-	//             iNumStructuresOfEachTypeNew - the number of each type of molecule in the new molecuelSet
-	//             cartesianPointsOriginal - the coordinates for atoms in each molecule
-	//             atomicNumbersOriginal - the atomic numbers for atoms in each molecule
-	//             boxDimensions - the maximum x, y, and z values of coordinates
-	//             maxAtomDist - the maximum distance between any two atoms
-	//             numTries - maximum number of tries before the function quits
-	// Returns: true if the function succeeded, false otherwise
-	bool initFromSeed(MoleculeSet &seedMoleculeSet, int iNumStructureTypes,
-                          int* iNumStructuresOfEachTypeOriginal, int* iNumStructuresOfEachTypeNew, vector<Point3D> *cartesianPoints,
-                          vector<int> *atomicNumbers, Point3D &boxDimensions, FLOAT maxAtomDist, int numTries);
+	bool performTransformation(Point3D &boxDimensions, FLOAT deltaForCoordinates, FLOAT deltaForAnglesInRad);
 	
-	void unFreezeAll(FLOAT coordinateVelocity, FLOAT maxAngleVelocityInRad);
+	bool performMultipleTransformations(Point3D &boxDimensions, FLOAT deltaForCoordinates, FLOAT deltaForAnglesInRad);
 	
-	int getNumberOfMoleculesFrozen();
-	
-	bool performTransformations(Point3D &boxDimensions, FLOAT deltaForCoordinates, FLOAT deltaForAnglesInRad, int numTransformations);
-	
-	bool performTransformationsNonFrag(Point3D &boxDimensions, FLOAT deltaForCoordinates, FLOAT deltaForAnglesInRad, FLOAT maxDist, int iNumTransitions);
+	bool performTransformationNonFrag(Point3D &boxDimensions, FLOAT deltaForCoordinates, FLOAT deltaForAnglesInRad, FLOAT maxDist);
 	
 	/////////////////////////////////////////////////////////////////////
 	// Purpose: This function performs particle swarm optimization on
@@ -170,8 +137,7 @@ public:
 	
 	FLOAT getDistanceFromPoint(Point3D &point);
 	
-	void writeToGausianComFile(ofstream &fout);
-	void writeToGausianLogFile(FILE* fout);
+	void writeToGausianFile(ofstream &fout);
 	
 	void print(ofstream &fout);
 	void printToResumeFile(ofstream &fout, bool printVelocityInfo);
@@ -195,8 +161,9 @@ public:
 	void setRunning() { m_iRun = IS_RUNNING; }
 	void setNeedsRun() { m_iRun = NEEDS_RUN; }
 	void setFinished() { m_iRun = IS_FINISHED; }
-	bool getIsTransitionState() { return m_bIsTransitionState; }
-	void setIsTransitionState(bool trans)  { m_bIsTransitionState = trans; }
+	
+	void setTransitionAccepted(bool bTransitionAccepted) { m_bTransitionAccepted = bTransitionAccepted; }
+	bool getTransitionAccepted()  { return m_bTransitionAccepted; }
 	
 	void printRankInfo();
 	
@@ -286,23 +253,6 @@ public:
 	// Returns: true if the function succeeded
 	bool offSetCoordinatesAndAnglesSlightly(Point3D &boxDimensions);
 	
-	/////////////////////////////////////////////////////////////////////
-	// Purpose: This function places the moleculeSet in the center of the box.
-	// Parameters: boxDimensions - the maximum x, y, and z values any atom can have
-	// Returns: nothing
-	void centerInBox(Point3D &boxDimensions);
-	
-	void measureSearchSpace(int &withConstraints, int &withoutConstraints);
-	
-	
-	bool performBondRotations(FLOAT angleInRad, vector<MoleculeSet*> &moleculeSets);
-
-	bool moveOrCopyGaussianFiles(const char* newDirectory, const char* newLogFilePrefix, const char* newCheckPointFilePrefix, int newNumber, bool moveOrCopy);
-
-	bool deleteEnergyFiles(void);
-
-	static bool fileExists(const char* fileName);
-	
 private:
 	void cleanUp();
 
@@ -335,13 +285,13 @@ private:
 	//             vectorAlongLine - a vector along the line
 	//             point - a point not on the line
 	// Returns: the point on the line that is closest to point
-	Point3D closestPointFromALineToAPoint(Point3D pointOnLine, Point3D vectorAlongLine, Point3D point);
+	Point3D MoleculeSet::closestPointFromALineToAPoint(Point3D pointOnLine, Point3D vectorAlongLine, Point3D point);
 
 	/////////////////////////////////////////////////////////////////////
 	// Purpose: This function computes the distance between 2 points.
 	// Parameters: point1 and point2 - the two points
 	// Returns: the distance
-	FLOAT distanceBetweenPoints(Point3D point1, Point3D point2);
+	FLOAT MoleculeSet::distanceBetweenPoints(Point3D point1, Point3D point2);
 
 	Point3D getVectorInDirection(FLOAT angleX, FLOAT angleY, FLOAT length);
 	

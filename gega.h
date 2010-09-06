@@ -1,9 +1,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Purpose: This file contains code managing an atom.
-// Author: Seth Call
+// Primary Author: Seth Call
 // Note: This is free software and may be modified and/or redistributed under
-//    the terms of the GNU General Public License (Version 3).
-//    Copyright 2007 Seth Call.
+//    the terms of the GNU General Public License (Version 1.2 or any later
+//    version).  Copyright 2007 Seth Call.
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifndef __GEGA_H__
@@ -41,7 +41,7 @@ public:
 	// Note: This function does check to see if there are identical structures in bestN and moleculeSets
 	//       before updateing bestN.  Structures in bestN have to be different by fMinDistnaceBetweenSameMoleculeSets
 	static void saveBestN(vector<MoleculeSet*> &moleculeSets, vector<MoleculeSet*> &bestN, int n,
-	                      FLOAT fMinDistnaceBetweenSameMoleculeSets, int iNumEnergyFilesToSave, string &sLogFilesDirectory);
+	                      FLOAT fMinDistnaceBetweenSameMoleculeSets);
 
 private:
 };

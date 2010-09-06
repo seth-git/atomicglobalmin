@@ -2,469 +2,84 @@
 // Purpose: This is a class that computes the energy value for a molecule set.
 // Author: Seth Call
 // Note: This is free software and may be modified and/or redistributed under
-//    the terms of the GNU General Public License (Version 3).
-//    Copyright 2007 Seth Call.
+//    the terms of the GNU General Public License (Version 1.2 or any later
+//    version).  Copyright 2007 Seth Call.
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "energy.h"
 
-int Energy::s_energyFunction = -1;
-string Energy::s_header = "";
-string Energy::s_footer = "";
-string Energy::s_checkPointFileName = "";
-bool Energy::s_bGetStandardOrientation = true;
-bool Energy::s_bSemiEmpirical = false;
-string Energy::s_pathToEnergyFiles = "";
-int Energy::s_iCharge = 0;
-int Energy::s_iMultiplicity = 0;
-string Energy::s_energyProgramWithPath = "";
-string Energy::s_scratchDirectory = "";
-string Energy::s_fullScratchDirectory = "";
-string Energy::s_scratchCommand = "";
-
-bool Energy::init(const Input &input, int rank)
+Energy::Energy(const Input *pInput, int energyObjectId, const char *nodeName, string energyFunction)
 {
-	bool success = true;
-	s_energyFunction = input.m_iEnergyFunction;
-
-	if (input.m_sPathToScratch.length() > 0) {
-		s_scratchDirectory = input.m_sPathToScratch + "/" + Input::fileWithoutPath(input.m_sInputFileName.c_str());
-		s_fullScratchDirectory = s_scratchDirectory.c_str() + ToString(rank);
-	} else {
-		s_scratchDirectory = "";
-		s_fullScratchDirectory = "";
+	const char *header;
+	int fileNameLength;
+	char fileName[500];
+	char numberString[25];
+	string::size_type pos;
+	
+	m_pInput = pInput;
+	m_fEnergy = 0;
+	m_bConverged = false;
+	m_iEnergyObjectId = energyObjectId;
+	sprintf(numberString,"%d",m_iEnergyObjectId);
+	m_sEnergyObjectId = numberString;
+	
+	// Set some constants
+	if (energyFunction.compare("Gaussian") == 0)
+		m_iEnergyFunctionToUse = GAUSSIAN;
+	else if (energyFunction.compare("Lennard Jones") == 0)
+		m_iEnergyFunctionToUse = LENNARD_JONES;
+	else {
+		cout << "Unrecognized energy function: " << energyFunction << endl;
+		cout << "Please enter a name from the list and remember that names are case sensitive." << endl;
+		exit(0);
 	}
-
-	s_energyProgramWithPath = input.m_sPathToEnergyProgram;
-	s_pathToEnergyFiles = input.m_sPathToEnergyFiles;
-
-	switch (s_energyFunction) {
-	case GAUSSIAN:
-		s_header = input.m_sEnergyFileHeader;
-		s_footer = input.m_sEnergyFileFooter;
-		s_iCharge = input.m_iCharge;
-		s_iMultiplicity = input.m_iMultiplicity;
-
-		if (s_fullScratchDirectory.length() > 0) {
-			s_scratchCommand = "export GAUSS_SCRDIR=" + s_fullScratchDirectory + " && ";
-//			s_scratchCommand = "env SCRDIR=" + s_fullScratchDirectory + " ";
-		}
-		
-		string lowerHeader, lowerFooter;
-		string::size_type pos;
-		
-		lowerHeader = input.m_sEnergyFileHeader;
-		lower(lowerHeader);
-		pos = lowerHeader.find("nosymm");
-		s_bGetStandardOrientation = (pos == string::npos); // true if we didn't find it
-		s_bSemiEmpirical = ((lowerHeader.find("#p") != string::npos) || (lowerHeader.find("# p") != string::npos));
+	
+	if (m_iEnergyFunctionToUse == GAUSSIAN) {
+		m_sGeneralEnergyFileHeader = m_pInput->m_sEnergyFileHeader;
 		
 		//////////// Get the name of the checkpoint file  //////////////////
-		try {
-			s_checkPointFileName = getGaussianCheckpointFile(input.m_sEnergyFileHeader.c_str());
-			if ((s_checkPointFileName.length() == 0) && input.m_bTransitionStateSearch) {
+		m_sGeneralCheckPointFileName = "";
+		pos = m_sGeneralEnergyFileHeader.find("% chk");
+		if (pos == string::npos) {
+			if (pInput->m_bUsePrevWaveFunction) {
 				cout << "Unable to locate checkpoint file name.  Quitting..." << endl;
-				throw "Unable to locate checkpoint file name.  Quitting...";
+				exit(0);
 			}
+		} else {
+			header = m_sGeneralEnergyFileHeader.c_str();
+			header = &header[pos+5];
+			while ((*header != '\0') && !isFileCharacter(*header))
+				++header;
+			if ((*header == '\0') && pInput->m_bUsePrevWaveFunction) {
+				cout << "Unable to locate checkpoint file name where it should be.  Quitting..." << endl;
+				exit(0);
+			}
+			fileNameLength = 1;
+			while (isFileCharacter(header[fileNameLength]))
+				++fileNameLength;
 			
-			if ((s_checkPointFileName.length() > 0) && (s_footer.length() > 0)) {
-				pos = s_footer.find(s_checkPointFileName);
-				if (pos == string::npos) { // If we didn't find it
-					cout << "The checkpoint file that is specified in the header is not in the footer.  Quitting..." << endl;
-					throw "The checkpoint file that is specified in the header is not in the footer.  Quitting...";
-				}
-			}
-		} catch (const char* message) {
-			success = false;
-			if (PRINT_CATCH_MESSAGES)
-				cerr << "Caught message: " << message << endl;
+			strncpy(fileName,header,fileNameLength);
+			fileName[fileNameLength] = '\0';
+			m_sGeneralCheckPointFileName = fileName;
 		}
 		//////////// End get the name of the checkpoint file  //////////////////
-		break;
-	}
-	return success;
-}
-
-string Energy::getGaussianCheckpointFile(const char* gaussianHeader)
-{
-	string lowerHeader = gaussianHeader;
-	string checkPointFileName = "";
-	lower(lowerHeader);
-
-	string::size_type pos;
-	const char *header;
-	char fileName[500];
-	int fileNameLength;
-	
-	//////////// Get the name of the checkpoint file  //////////////////
-	checkPointFileName = "";
-	pos = lowerHeader.find("% chk");
-	if (pos == string::npos) // if we didn't find it
-		pos = lowerHeader.find("%chk");
-	if (pos != string::npos) { // if we found it
-		// find the beginning of the name
-		header = gaussianHeader;
-		header = &header[pos];
-		while (*header != '=')
-			++header;
-		while ((*header != '\0') && !isFileCharacter(*header))
-			++header;
-		if (*header == '\0')
-			return "";
-		fileNameLength = 1;
-		while (isFileCharacter(header[fileNameLength]))
-			++fileNameLength;
 		
-		strncpy(fileName,header,fileNameLength);
-		fileName[fileNameLength] = '\0';
-		checkPointFileName = fileName;
-	}
-	return checkPointFileName;
-}
-
-void Energy::createMPIInitMessage(char* mpiInitMessage, int maxSize)
-{
-	switch (s_energyFunction) {
-	case LENNARD_JONES:
-		// not implemented with mpi
-		break;
-	case GAUSSIAN:
-		snprintf(mpiInitMessage, maxSize, "%d|%s|%s|%s|%s", s_energyFunction, s_energyProgramWithPath.c_str(), s_pathToEnergyFiles.c_str(),
-		         s_scratchDirectory.c_str(), s_checkPointFileName.c_str());
-		break;
-	}
-}
-
-bool Energy::createScratchDir(void)
-{
-	char commandLine[500];
-	
-	if (s_energyFunction == LENNARD_JONES)
-		return true;
-	
-	try {
-		if (!deleteScratchDir())
-			throw "";
-		
-		if (s_fullScratchDirectory.length() > 0)
-			if (!MoleculeSet::fileExists(s_fullScratchDirectory.c_str())) {
-				snprintf(commandLine, sizeof(commandLine), "mkdir %s", s_fullScratchDirectory.c_str());
-				if (system(commandLine) == -1)
-					throw "";
-			}
-			if (chdir(s_fullScratchDirectory.c_str()) == -1)
-				throw "";
+		if (!pInput->m_bUsePrevWaveFunction && (m_sGeneralCheckPointFileName.length() > 0)) {
+			// Rename the checkpoint file if there is one
+			pos = m_sGeneralEnergyFileHeader.find(m_sGeneralCheckPointFileName);
+			m_sGeneralEnergyFileHeader.replace(pos,m_sGeneralCheckPointFileName.length(),
+					m_pInput->m_sPathToEnergyFiles+"/"+m_sGeneralCheckPointFileName+m_sEnergyObjectId);
 		}
-	catch (const char *message) {
-		if (PRINT_CATCH_MESSAGES)
-			cerr << "Caught message: " << message << endl;
-		return false;
+		m_sRun = "abinitio";
 	}
-
-	return true;
+	m_nodeName = nodeName;
+	m_iTimesCalculatedEnergy = 0;
+	m_iTimesConverged = 0;
 }
 
-bool Energy::deleteScratchDir(void)
+Energy::~Energy ()
 {
-	char commandLine[500];
 	
-	if (s_energyFunction == LENNARD_JONES)
-		return true;
-
-	if ((s_fullScratchDirectory.length() > 0) && MoleculeSet::fileExists(s_fullScratchDirectory.c_str())) {
-		snprintf(commandLine, sizeof(commandLine), "rm -rf %s", s_fullScratchDirectory.c_str());
-//		cout << "Executing command '" << commandLine << "'" << endl;
-		return system(commandLine) != -1;
-	}
-	return true;
-}
-
-bool Energy::init(const char* mpiInitMessage, int rank)
-{
-	bool success = true;
-	const char* mpiMessagePtr;
-	int messageLength;
-	char* message;
-	vector<char*> messages;
-	
-	mpiMessagePtr = mpiInitMessage;
-	while (true) {
-		messageLength = strcspn(mpiMessagePtr, "|\0");
-		message = new char[messageLength+1];
-		memcpy(message, mpiMessagePtr, messageLength);
-		message[messageLength] = '\0';
-		messages.push_back(message);
-		if (mpiMessagePtr[messageLength] == '\0')
-			break;
-		mpiMessagePtr += messageLength+1;
-	}
-	
-	if (messages.size() <= 1)
-		return false;
-	s_energyFunction = atoi(messages[0]);
-	switch (s_energyFunction) {
-	case LENNARD_JONES:
-		// not implemented with mpi
-		break;
-	case GAUSSIAN:
-		if (messages.size() != 5)
-			return false;
-		s_energyProgramWithPath = messages[1];
-		s_pathToEnergyFiles = messages[2];
-		s_scratchDirectory = messages[3];
-		s_checkPointFileName = messages[4];
-		if (s_scratchDirectory.length() > 0) {
-			s_fullScratchDirectory = s_scratchDirectory.c_str() + ToString(rank);
-			s_scratchCommand = "export GAUSS_SCRDIR=" + s_fullScratchDirectory + " && ";
-//			s_scratchCommand = "env SCRDIR=" + s_fullScratchDirectory + " ";
-		} else {
-			s_fullScratchDirectory = "";
-		}
-		if (s_fullScratchDirectory.length() > 0) {
-		}
-
-		break;
-	}
-	for (int i = 0; i < (int)messages.size(); ++i)
-		delete[] messages[i];
-	messages.clear();
-	return success;
-}
-
-string Energy::getInputFileName(int populationMemberNumber)
-{
-	char fileName[500];
-	snprintf(fileName, sizeof(fileName), "%s/%s%d.com", s_pathToEnergyFiles.c_str(), ENERGY_TEMP_FILE, populationMemberNumber);
-	return fileName;
-}
-
-string Energy::getScratchInputFileName(int populationMemberNumber)
-{
-	char fileName[500];
-	snprintf(fileName, sizeof(fileName), "%s%d.com", ENERGY_TEMP_FILE, populationMemberNumber);
-//	snprintf(fileName, sizeof(fileName), "%s/%s%d.com", s_fullScratchDirectory.c_str(), ENERGY_TEMP_FILE, populationMemberNumber);
-	return fileName;
-}
-
-string Energy::getOutputFileName(int populationMemberNumber)
-{
-	char fileName[500];
-	snprintf(fileName, sizeof(fileName), "%s/%s%d.log", s_pathToEnergyFiles.c_str(), ENERGY_TEMP_FILE, populationMemberNumber);
-	return fileName;
-}
-
-string Energy::getScratchOutputFileName(int populationMemberNumber)
-{
-	char fileName[500];
-	snprintf(fileName, sizeof(fileName), "%s%d.log", ENERGY_TEMP_FILE, populationMemberNumber);
-//	snprintf(fileName, sizeof(fileName), "%s/%s%d.log", s_fullScratchDirectory.c_str(), ENERGY_TEMP_FILE, populationMemberNumber);
-	return fileName;
-}
-
-string Energy::getCheckPointFileName(int populationMemberNumber)
-{
-	return s_pathToEnergyFiles+"/"+s_checkPointFileName+ToString(populationMemberNumber) + ".chk";
-}
-
-string Energy::getScratchCheckPointFileName(int populationMemberNumber)
-{
-	return s_checkPointFileName+ToString(populationMemberNumber) + ".chk";
-//	return s_fullScratchDirectory+"/"+s_checkPointFileName+ToString(populationMemberNumber) + ".chk";
-}
-
-void Energy::createInputFiles(vector<MoleculeSet*> &population)
-{
-	for (int i = 0; i < (signed int)population.size(); ++i)
-		createInputFile(*population[i], i+1);
-}
-
-void Energy::createInputFile(MoleculeSet &moleculeSet, int populationMemberNumber)
-{
-	char commandLine[500];
-	string fileName;
-	
-	// Create the input files
-	switch (s_energyFunction) {
-	case GAUSSIAN:
-		Energy::createGaussianInputFile(getInputFileName(populationMemberNumber).c_str(), populationMemberNumber, moleculeSet, false);
-			
-		// Delete the old log file if it exists
-		fileName = getOutputFileName(populationMemberNumber);
-		if (MoleculeSet::fileExists(fileName.c_str())) {
-			snprintf(commandLine, sizeof(commandLine), "rm %s", fileName.c_str());
-			system(commandLine);
-		}
-		moleculeSet.setEnergyFile(fileName.c_str());
-		
-		// Delete the old checkpoint file if there is one
-		if (s_checkPointFileName.length() > 0) {
-			fileName = getCheckPointFileName(populationMemberNumber);
-			if (MoleculeSet::fileExists(fileName.c_str())) {
-				snprintf(commandLine, sizeof(commandLine), "rm %s", fileName.c_str());
-				system(commandLine);
-			}
-			moleculeSet.setCheckPointFile(fileName.c_str());
-		}
-		break;
-	}
-}
-
-void Energy::createGaussianInputFile(const char* inputFileName, int populationMemberNumber, MoleculeSet &moleculeSet, bool writeEnergyValueInHeader)
-{
-	string header = s_header;
-	string footer = s_footer;
-	string::size_type pos;
-
-	string fullCheckPointFileName = s_checkPointFileName+ToString(populationMemberNumber);
-	
-	// Rename the checkpoint file if there is one
-	if (s_checkPointFileName.length() > 0) {
-		pos = header.find(s_checkPointFileName);
-		header.replace(pos,s_checkPointFileName.length(), fullCheckPointFileName);
-		if (footer.length() > 0) {
-			pos = footer.find(s_checkPointFileName);
-			if (pos != string::npos) // If we found it
-				footer.replace(pos,s_checkPointFileName.length(), fullCheckPointFileName);
-		}
-	}
-	
-	ofstream fout(inputFileName, ios::out);
-	fout << header << endl;
-	if (writeEnergyValueInHeader)
-		fout << "This is a computer generated structure with energy: " << Atom::printFloat(moleculeSet.getEnergy()) << endl << endl;
-	else
-		fout << "This is a computer generated structure." << endl << endl;
-	fout << s_iCharge << " " << s_iMultiplicity << endl;
-
-	moleculeSet.writeToGausianComFile(fout);
-
-	fout << endl;
-
-	if (footer.length() > 0) {
-		fout << footer << endl
-		     << "Title" << endl << endl
-		     << s_iCharge << " " << s_iMultiplicity << endl;
-	}
-	fout.close();
-}
-
-/************************************************************************
- * Function looking for the SCF-energy and extracting it from the log-file
- * *********************************************************************/
-int Energy::readGaussianLogFile(const char* logFile, FLOAT &energy, MoleculeSet* pMoleculeSet)
-{
-	ifstream fin(logFile);
-	char line[300];
-	string stringLine;
-	bool foundEnergy = false;
-	bool foundCoordinates = false;
-	string nextLine;
-	string pieceLine;
-	int dummy;
-	Point3D *cartesianPoints = NULL;
-	int *atomicNumbers = NULL;
-	int i;
-	int startingIndex, endIndex;
-	bool normalTermination = false;
-	int returnValue = 0;
-	
-	if (pMoleculeSet != NULL) {
-		cartesianPoints = new Point3D[(unsigned int)pMoleculeSet->getNumberOfAtoms()];
-		atomicNumbers = new int[(unsigned int)pMoleculeSet->getNumberOfAtoms()];
-	}
-
-	energy = 0;
-	if(!fin)
-		return 0;
-	else
-		returnValue |= OPENED_FILE;
-	while(fin.getline(line, 300))
-	{
-		stringLine=line;
-		if (s_bSemiEmpirical)
-			startingIndex=stringLine.find("Energy=   ");
-		else
-			startingIndex=stringLine.find("SCF Done:");
-		
-		if (startingIndex>=0) // If we found it
-		{
-			startingIndex=stringLine.find("=");
-			startingIndex=stringLine.find("-",startingIndex); //energy should be negative.
-			if (startingIndex < 0) { // Sometimes the energy isn't negative with semi-emperical methods
-				energy = 0;
-				foundEnergy=true;
-				continue;
-			}
-			endIndex=stringLine.find(" ",startingIndex);
-			
-			pieceLine=stringLine.substr(startingIndex, endIndex-startingIndex);
-			energy=atof(pieceLine.c_str());
-			if (pMoleculeSet != NULL)
-				pMoleculeSet->setEnergy(energy);
-			foundEnergy=true;
-		}
-		if (pMoleculeSet != NULL) {
-			startingIndex=stringLine.find(" 1 imaginary frequencies (negative Signs) ");
-			if (startingIndex>=0) // if we found it
-				pMoleculeSet->setIsTransitionState(true);
-
-			if (s_bGetStandardOrientation)
-				startingIndex=stringLine.find("Standard orientation");
-			else
-				startingIndex=stringLine.find("Input orientation");
-			
-			if (startingIndex>=0)
-			{
-				foundCoordinates = true;
-				fin.getline(line, 300); //get ----
-				fin.getline(line, 300); //get first line of text
-				fin.getline(line, 300); //get second line of text
-				fin.getline(line, 300); //get ----
-				
-				for (i = 0; i < pMoleculeSet->getNumberOfAtoms(); ++i)
-				{
-					fin >> dummy;//center number
-					fin >> atomicNumbers[i];
-					fin >> dummy;//atomic type
-					fin >> cartesianPoints[i].x;
-					fin >> cartesianPoints[i].y;
-					fin >> cartesianPoints[i].z;
-				}
-			}
-		}
-		startingIndex=stringLine.find("Normal termination");
-		if (startingIndex>=0) // if we found it
-			normalTermination = true;
-	}
-	fin.close();
-	if (pMoleculeSet != NULL) {
-		if (foundCoordinates)
-			pMoleculeSet->assignReadCoordinates(cartesianPoints, atomicNumbers);
-		delete[] cartesianPoints;
-		delete[] atomicNumbers;
-	}
-	
-	if (foundEnergy)
-		returnValue |= READ_ENERGY;
-	if (foundCoordinates || (pMoleculeSet == NULL))
-		returnValue |= OBTAINED_GEOMETRY;
-	if (normalTermination)
-		returnValue |= NORMAL_TERMINATION;
-
-	return returnValue;
-}
-
-
-void Energy::lower(string &s)
-{
-	const char *schars = s.c_str();
-	char *c = new char[s.length()+1];
-	for (int i = 0; i < (signed int)s.length(); ++i)
-		c[i] = tolower(schars[i]);
-	c[s.length()] = '\0';
-	s = c;
-	
-	delete[] c;
 }
 
 bool Energy::isFileCharacter(char character)
@@ -475,39 +90,451 @@ bool Energy::isFileCharacter(char character)
 		    (character == '.') || (character == ',') || (character == '_'));
 }
 
-bool Energy::doEnergyCalculation(int populationMemberNumber)
+/************************************
+ * Function generating the com-file 
+ * for single-point energy calculation
+ ***********************************/
+void Energy::writeOne(const string &fileToMake, int config, const string &sEnergyFileHeader,
+              int charge, int multiplicity, MoleculeSet &moleculeSet)
+{
+	ofstream fout(fileToMake.c_str(), ios::out);
+	fout << sEnergyFileHeader << endl
+	     << "This is a computer generated structure." << endl << endl
+	     << charge << " " << multiplicity << endl;
+	
+	moleculeSet.writeToGausianFile(fout);
+	
+	fout << endl;
+	fout.close();
+}
+
+		
+/***********************************************************
+ * a nice little function to change an integer into a string
+ * author   : Alex Birch. date     : May 27, 2003 
+ * ********************************************************/
+string Energy::int2string(long long number)
+{
+	string temp;
+	string rv;
+	if (number < 0) {
+		rv = "-";
+		number = -number;
+	}
+	else if (!number)
+		return "0";
+	for (; number; number /= 10)
+		temp += char(number % 10 + '0');
+	for (int i = temp.size() - 1; i >= 0; i--)
+		rv += temp[i];
+	return rv;
+}
+
+/******************************************************
+ * Another function extracting energy from the log-file 
+ * (for s.p.) for semiempyrical runs only
+ *****************************************************/
+bool Energy::getEsp(const string &logFile, FLOAT &answer)
+{
+	ifstream fin(logFile.c_str());
+	char line[300];
+	string stringLine;
+	bool found=false;
+	string pieceLine;
+	string nextLine;
+	const char *result;
+	answer = 0;
+	if(!fin){
+		cerr<<"could not open file  "<<logFile<<" exiting "<<endl;
+		exit(1);
+	}
+	while((fin.getline(line, 300))&&(found == false))
+	{
+		stringLine=line;
+		int startingIndex=stringLine.find("Energy=   ");
+		if((startingIndex>=0)&&(startingIndex<(signed int)stringLine.size()))
+		{
+			fin.getline(line, 300);
+			nextLine=line;
+			stringLine=stringLine+nextLine;
+			int numChar=28;
+			pieceLine=stringLine.substr(startingIndex, numChar);
+			const int endIndex=pieceLine.rfind(" ");//finish taking the figure when space is found.
+			const int beginingIndex=startingIndex + 10;//energy is always negative.
+			numChar=endIndex-beginingIndex;//number if chrs to take then.
+			pieceLine=pieceLine.substr(beginingIndex, numChar);
+			result=pieceLine.c_str();
+			answer=atof(result);
+			found=true;
+		}
+
+		startingIndex=stringLine.find("Normal termination");
+		if (startingIndex>=0) // If we found it
+			return found;
+	}
+	fin.close();
+	return false;
+}
+
+/************************************************************************
+ * Function looking for the B3LYP-energy and extracting it from the log-file
+ * *********************************************************************/
+bool Energy::extractE(const string &logFile, FLOAT &answer)
+{
+	ifstream fin(logFile.c_str());
+	char line[300];
+	string stringLine;
+	bool found=false;
+	string nextLine;
+	string pieceLine;
+	answer = 0;
+	if(!fin){
+	         cerr<<"could not open file  "<<logFile<<" exiting "<<endl;
+	         exit(1);
+	         }
+	if( m_sRun == "abinitio" )
+	{
+		while(fin.getline(line, 300))
+		{
+			stringLine=line;
+			
+			int startingIndex=stringLine.find("LYP) =  ");//looking for the place E(RB+HF+LYP) in log-file
+								      //we believe here that the B3LYP method is in use	
+								      //otherwise - need modification.
+			if (startingIndex>=0) // If we found it
+			{
+				fin.getline(line, 300);
+			        nextLine=line;
+		        	stringLine=stringLine+nextLine;
+
+				int numChar=28;
+				pieceLine=stringLine.substr(startingIndex, numChar);
+				const int endIndex=pieceLine.rfind(" ");//finish taking the figure when space is found.
+				const int beginingIndex=pieceLine.find("-");//energy is always negative.
+				numChar=endIndex-beginingIndex;//number if chrs to take then.
+				pieceLine=pieceLine.substr(beginingIndex, numChar);
+				answer=atof(pieceLine.c_str());
+				found=true;
+			}
+		}
+	}
+	fin.close();
+
+	return found;
+}
+
+// Function getting Standard Orientation from a Gaussian log-file
+void Energy::getStandardOrientation(const string &logFile, MoleculeSet &moleculeSet)
+{
+	ifstream fin(logFile.c_str());
+	char line[300];
+	int i;
+	int dummy;
+	Point3D *cartesianPoints = new Point3D[(unsigned int)moleculeSet.getNumberOfAtoms()];
+	int *atomicNumbers = new int[(unsigned int)moleculeSet.getNumberOfAtoms()];
+	
+	while(fin.getline(line, 300))
+	{
+		string stringLine=line;
+		int startingIndex=stringLine.find("Standard orientation");
+
+		if (startingIndex>=0)
+		{
+			fin.getline(line, 300); //get ----
+			fin.getline(line, 300); //get first line of text
+			fin.getline(line, 300); //get second line of text
+			fin.getline(line, 300); //get ----
+			
+			for (i = 0; i < moleculeSet.getNumberOfAtoms(); ++i)
+			{
+				fin >> dummy;//center number
+				fin >> atomicNumbers[i];
+				fin >> dummy;//atomic type
+				fin >> cartesianPoints[i].x;
+				fin >> cartesianPoints[i].y;
+				fin >> cartesianPoints[i].z;
+			}
+		}
+	}
+	fin.close();
+	moleculeSet.assignReadCoordinates(cartesianPoints,atomicNumbers);
+	delete[] cartesianPoints;
+	delete[] atomicNumbers;
+}
+
+void Energy::backupWaveFunctionFile(MoleculeSet &moleculeSet)
+{
+	char commandString[500];
+	string checkPointFileName;
+	string completeCheckpointFileName, backupCheckpointFileName;
+	struct stat fileStatistics;
+	char numberString[25];
+
+	sprintf(numberString,"%d",moleculeSet.getId());
+	checkPointFileName = m_sGeneralCheckPointFileName+numberString;
+	completeCheckpointFileName = m_pInput->m_sPathToEnergyFiles + "/" + checkPointFileName + ".chk";
+	backupCheckpointFileName = m_pInput->m_sPathToEnergyFiles + "/" + checkPointFileName + ".bak";
+	if (stat(completeCheckpointFileName.c_str(), &fileStatistics) == 0) { // If the file exists
+		sprintf(commandString,"cp %s %s", completeCheckpointFileName.c_str(), backupCheckpointFileName.c_str());
+		if (system(commandString))
+			cout << "Error backing up the wave function file: " << checkPointFileName << ".chk" << endl;
+	}
+}
+
+void Energy::restoreWaveFunctionFile(MoleculeSet &moleculeSet)
+{
+	char commandString[500];
+	string checkPointFileName;
+	string completeCheckpointFileName, backupCheckpointFileName;
+	struct stat fileStatistics;
+	char numberString[25];
+	
+	sprintf(numberString,"%d",moleculeSet.getId());
+	checkPointFileName = m_sGeneralCheckPointFileName+numberString;
+	completeCheckpointFileName = m_pInput->m_sPathToEnergyFiles + "/" + checkPointFileName + ".chk";
+	backupCheckpointFileName = m_pInput->m_sPathToEnergyFiles + "/" + checkPointFileName + ".bak";
+	if (stat(backupCheckpointFileName.c_str(), &fileStatistics) == 0) { // If the file exists
+		sprintf(commandString,"mv %s %s", backupCheckpointFileName.c_str(), completeCheckpointFileName.c_str());
+		if (system(commandString))
+			cout << "Error restoring the backup wave function file: " << checkPointFileName << ".bak" << endl;
+	}
+}
+
+void Energy::deleteEnergyFiles(MoleculeSet *moleculeSet)
 {
 	char commandLine[500];
-	try {
-		switch (s_energyFunction) {
-		case GAUSSIAN:
-			snprintf(commandLine, sizeof(commandLine), "cp %s %s", getInputFileName(populationMemberNumber).c_str(),
-			                                                getScratchInputFileName(populationMemberNumber).c_str());
-			if (system(commandLine) == -1)
-				throw "";
-			snprintf(commandLine, sizeof(commandLine), "%s%s < %s > %s", s_scratchCommand.c_str(), s_energyProgramWithPath.c_str(),
-			         getScratchInputFileName(populationMemberNumber).c_str(), getScratchOutputFileName(populationMemberNumber).c_str());
-			if (system(commandLine) == -1)
-				throw "";
-			snprintf(commandLine, sizeof(commandLine), "cp %s %s", getScratchOutputFileName(populationMemberNumber).c_str(),
-			                                                              getOutputFileName(populationMemberNumber).c_str());
-			if (system(commandLine) == -1)
-				throw "";
-			if (s_checkPointFileName.length() > 0) {
-				snprintf(commandLine, sizeof(commandLine), "cp %s %s", getScratchCheckPointFileName(populationMemberNumber).c_str(),
-				                                                              getCheckPointFileName(populationMemberNumber).c_str());
-				if (system(commandLine) == -1)
-					throw "";
+	struct stat fileStatistics;
+	string fileName, logFileName;
+	char moleculeSetId[25];
+	
+	if (m_iEnergyFunctionToUse == GAUSSIAN) {
+		if (m_pInput->m_bUsePrevWaveFunction) {
+			if (moleculeSet == NULL) {
+				cout << "moleculeSet == null in Energy.deleteEnergyFiles.  This should not happen." << endl;
+				return;
 			}
-			snprintf(commandLine, sizeof(commandLine), "rm %s/*", s_fullScratchDirectory.c_str());
-			if (system(commandLine) == -1)
-				throw "";
-			break;
+			sprintf(moleculeSetId, "%d", moleculeSet->getId());
+			string tempString = moleculeSetId;
+			fileName = ENERGY_TEMP_FILE + tempString;
+		} else
+			fileName = ENERGY_TEMP_FILE + m_sEnergyObjectId;
+		
+		// Delete the old com file if it exists
+		logFileName = m_pInput->m_sPathToEnergyFiles + "/" + fileName + ".com";
+		if (stat(logFileName.c_str(), &fileStatistics) == 0) { // If no errors occurred in getting stats, the file exists
+			snprintf(commandLine, 500, "rm %s", logFileName.c_str());
+			system(commandLine);
 		}
-	} catch (const char* message) {
-		if (PRINT_CATCH_MESSAGES)
-			cerr << "Caught message: " << message << endl;
+		
+		// Delete the old log file if it exists
+		logFileName = m_pInput->m_sPathToEnergyFiles + "/" + fileName + ".log";
+		if (stat(logFileName.c_str(), &fileStatistics) == 0) { // If no errors occurred in getting stats, the file exists
+			snprintf(commandLine, 500, "rm %s", logFileName.c_str());
+			system(commandLine);
+		}
+		
+		// Delete the checkpoint file if we're using previous wave functions
+		if (m_pInput->m_bUsePrevWaveFunction) {
+			string completeCheckpointFileName;
+			completeCheckpointFileName = m_pInput->m_sPathToEnergyFiles+"/"+m_sGeneralCheckPointFileName+moleculeSetId+".chk";
+			if (stat(completeCheckpointFileName.c_str(), &fileStatistics) == 0) { // If the file exists
+				snprintf(commandLine, 500, "rm %s", completeCheckpointFileName.c_str());
+				system(commandLine);
+			}
+			
+			// Delete the backup checkpoint file
+			completeCheckpointFileName = m_pInput->m_sPathToEnergyFiles+"/"+m_sGeneralCheckPointFileName+moleculeSetId+".bak";
+			if (stat(completeCheckpointFileName.c_str(), &fileStatistics) == 0) { // If the file exists
+				snprintf(commandLine, 500, "rm %s", completeCheckpointFileName.c_str());
+				system(commandLine);
+			}
+		}
 	}
-	return true;
+}
+
+void Energy::calculateEnergy(MoleculeSet &moleculeSet, bool usePreviousWaveFunctionThisTime, bool performLocalOptimization, bool readOptimizedCoordinates)
+{
+	string checkPointFileName;
+	++m_iTimesCalculatedEnergy;
+	m_fEnergy = 0;
+	m_bConverged = false;
+	string energyFileHeader = m_sGeneralEnergyFileHeader;
+	string fileName;
+	string jobQueueFileName;
+	string jobQueueFileContents;
+	char commandLine[500];
+	
+	if (m_iEnergyFunctionToUse == LENNARD_JONES)
+	{
+		if (performLocalOptimization) {
+			if (readOptimizedCoordinates) {
+				moleculeSet.performLennardJonesOptimization(LENNARD_JONES_EPSILON,LENNARD_JONES_SIGMA);
+				m_fEnergy = moleculeSet.computeLennardJonesEnergy(LENNARD_JONES_EPSILON,LENNARD_JONES_SIGMA);
+			} else {
+				MoleculeSet copy;
+				copy.copy(moleculeSet);
+				copy.performLennardJonesOptimization(LENNARD_JONES_EPSILON,LENNARD_JONES_SIGMA);
+				m_fEnergy = copy.computeLennardJonesEnergy(LENNARD_JONES_EPSILON,LENNARD_JONES_SIGMA);
+			}
+		} else {
+			m_fEnergy = moleculeSet.computeLennardJonesEnergy(LENNARD_JONES_EPSILON,LENNARD_JONES_SIGMA);
+		}
+		
+		m_bConverged = true;
+		++m_iTimesConverged;
+		return;
+	} else if (m_iEnergyFunctionToUse == GAUSSIAN) {
+		char moleculeSetId[25];
+		sprintf(moleculeSetId,"%d",moleculeSet.getId());
+		
+		if (m_pInput->m_bUsePrevWaveFunction) {
+			string::size_type pos;
+			struct stat fileStatistics;
+			string completeCheckpointFileName;
+			
+			// Rename the checkpoint file
+			checkPointFileName = m_sGeneralCheckPointFileName+moleculeSetId;
+			pos = energyFileHeader.find(m_sGeneralCheckPointFileName);
+			energyFileHeader.replace(pos,m_sGeneralCheckPointFileName.length(),
+					m_pInput->m_sPathToEnergyFiles+"/"+checkPointFileName);
+			
+			// Make sure guess(read) is in the file if it needs to be there
+			completeCheckpointFileName = m_pInput->m_sPathToEnergyFiles + "/" + checkPointFileName + ".chk";
+			if ((stat(completeCheckpointFileName.c_str(), &fileStatistics) == 0) // If a previous checkpoint file exists
+			    && (usePreviousWaveFunctionThisTime)) { // And if we're using the previous wave function this time
+				pos = energyFileHeader.find("guess");
+				if (pos == string::npos) {
+					energyFileHeader.insert(energyFileHeader.length()-1, " guess(read)");
+				} else {
+					// Replace the existing guess with read
+					const char *filePtr = energyFileHeader.c_str();
+					int guessLength;
+					
+					pos += 5;
+					filePtr = &filePtr[pos];
+					while ((*filePtr != '\0') && !isFileCharacter(*filePtr)) {
+						++filePtr;
+						++pos;
+					}
+					if (*filePtr == '\0') {
+						cout << "Problem putting guess(read) in the energy file header..." << endl;
+						exit(0);
+					}
+					guessLength = 1;
+					while (isFileCharacter(filePtr[guessLength]))
+						++guessLength;
+					energyFileHeader.replace(pos,guessLength,"read");
+				}
+			}
+			
+			
+			string tempString = moleculeSetId;
+			fileName = ENERGY_TEMP_FILE + tempString;
+		} else
+			fileName = ENERGY_TEMP_FILE + m_sEnergyObjectId;
+		
+		// Create the .com file
+		string  inputFileName = m_pInput->m_sPathToEnergyFiles + "/" + fileName + ".com";
+		writeOne(inputFileName, m_iEnergyObjectId, energyFileHeader, m_pInput->m_iCharge, m_pInput->m_iMultiplicity, moleculeSet);
+		
+		// Delete the old log file if it exists
+		struct stat fileStatistics;
+		string logFileName = m_pInput->m_sPathToEnergyFiles + "/" + fileName + ".log";
+		if (stat(logFileName.c_str(), &fileStatistics) == 0) { // If no errors occurred in getting stats, the file exists
+			snprintf(commandLine, 500, "rm %s", logFileName.c_str());
+			system(commandLine);
+		}
+		
+		if ((m_pInput->m_sJobQueueTemplate.length() > 0)) {
+			string::size_type pos;
+			jobQueueFileName = m_pInput->m_sPathToEnergyFiles + "/" + fileName;
+			jobQueueFileContents = m_pInput->m_sJobQueueTemplateFileContents;
+			pos = jobQueueFileContents.find("$ENERGY_PROGRAM_GOES_HERE");
+			jobQueueFileContents.replace(pos,25,m_pInput->m_sPathToEnergyProgram);
+			pos = jobQueueFileContents.find("$INPUT_FILE_NAME_GOES_HERE");
+			jobQueueFileContents.replace(pos,26,inputFileName);
+			
+			// Create the job queue file
+			ofstream jobQueueFile(jobQueueFileName.c_str(), ios::out);
+			if (!jobQueueFile.is_open()) {
+				cout << "Unable to write to the file: " << jobQueueFileName << endl;
+				return;
+        		}
+        		jobQueueFile << jobQueueFileContents;
+			jobQueueFile.close();
+			
+			// Run the job
+			string temporaryFile = jobQueueFileName+".out";
+			chdir(m_pInput->m_sPathToEnergyFiles.c_str());
+			snprintf(commandLine, 500, "qsub %s > %s", jobQueueFileName.c_str(), temporaryFile.c_str());
+			int command = system(commandLine);
+			m_bConverged = (command == 0);
+			if (!m_bConverged) {
+				cout << "Unable to submit job to queue: " << jobQueueFileName << endl;
+				return;
+			}
+			
+			// Find the job number
+			ifstream jobNumberFile(temporaryFile.c_str());
+			int MAX_LINE_LENGTH = 500;
+			char fileLine[MAX_LINE_LENGTH];
+			if (!jobNumberFile) {
+				cout << "Error opening the file: " << temporaryFile << endl;
+				m_bConverged = false;
+				return;
+			}
+			if (!jobNumberFile.getline(fileLine, MAX_LINE_LENGTH)) {
+				cout << "Error reading the file: " << temporaryFile << endl;
+				m_bConverged = false;
+				return;
+			}
+			int jobNumber = atoi(fileLine);
+			jobNumberFile.close();
+			
+			// Check to see if the job is done
+			snprintf(commandLine, 500, "qstat > %s", temporaryFile.c_str());
+			bool jobDone = false;
+			int tempSuccess;
+			while (!jobDone) {
+				sleep(20); // sleep for some number of seconds
+				tempSuccess = (system(commandLine) == 0);
+				if (!tempSuccess) {
+					cout << "Unable to execute qstat for job " << jobNumber << endl;
+					continue;
+				}
+				jobDone = true;
+				ifstream tempFile(temporaryFile.c_str());
+				while (tempFile.getline(fileLine, MAX_LINE_LENGTH)) {
+					if (jobNumber == atoi(fileLine)) {
+						jobDone = false;
+						break;
+					}
+				}
+				tempFile.close();
+			}
+		} else {
+			// -o 'NumberOfPasswordPrompts 0'         --> this is code for entering a password (not used)
+			if (strcmp(m_nodeName, "LOCAL") == 0)
+				snprintf(commandLine, 500, "%s %s/%s", m_pInput->m_sPathToEnergyProgram.c_str(),
+				        m_pInput->m_sPathToEnergyFiles.c_str(), fileName.c_str());
+			else
+				snprintf(commandLine, 500, "%s cd %s \\&\\& %s %s", m_nodeName,
+			            m_pInput->m_sPathToEnergyFiles.c_str(), m_pInput->m_sPathToEnergyProgram.c_str(), fileName.c_str());
+			system(commandLine);
+			// Note, if performing local optimization, system(commandLine) may not return 1 if the structure
+			// does not converge which is why we don't check to see what system(commandLine) returned
+			m_bConverged = true;
+		}
+		if (m_bConverged) {
+			if (m_sRun == "abinitio")
+				m_bConverged = extractE(logFileName, m_fEnergy);
+			else if (m_sRun == "semi" )
+				m_bConverged = getEsp(logFileName, m_fEnergy);
+			if (readOptimizedCoordinates)
+				getStandardOrientation(logFileName, moleculeSet);
+		}
+		if(m_bConverged)
+			++m_iTimesConverged;
+	}
 }
 

@@ -2,8 +2,8 @@
 // Purpose: This file manages an atom.
 // Author: Seth Call
 // Note: This is free software and may be modified and/or redistributed under
-//    the terms of the GNU General Public License (Version 3).
-//    Copyright 2007 Seth Call.
+//    the terms of the GNU General Public License (Version 1.2 or any later
+//    version).  Copyright 2007 Seth Call.
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "gega.h"
@@ -109,7 +109,7 @@ void Gega::generationReplacement(vector<MoleculeSet*> &population, vector<Molecu
 		numParentStructuresToSave = population.size();
 	numChildStructuresToSave = population.size() - numParentStructuresToSave;
 	
-	Input::sortMoleculeSets(offSpring,0,offSpring.size()-1);
+	sortMoleculeSets(offSpring,0,offSpring.size()-1);
 	for (i = 0; i < numChildStructuresToSave; ++i)
 		newPopulation.push_back(offSpring[i]);
 	
@@ -118,7 +118,7 @@ void Gega::generationReplacement(vector<MoleculeSet*> &population, vector<Molecu
 		delete offSpring[i];
 	offSpring.clear();
 	
-	Input::sortMoleculeSets(population,0,population.size()-1);
+	sortMoleculeSets(population,0,population.size()-1);
 	for (i = 0; i < numParentStructuresToSave; ++i)
 		newPopulation.push_back(population[i]);
 	
@@ -128,4 +128,126 @@ void Gega::generationReplacement(vector<MoleculeSet*> &population, vector<Molecu
 	population.clear();
 }
 
+void Gega::sortMoleculeSets(vector<MoleculeSet*> &moleculeSets, int lo, int hi)
+{
+	int left, right;
+	FLOAT median;
+	MoleculeSet* temp;
+	
+	if( hi > lo ) // if at least 2 elements, then
+	{
+		left=lo; right=hi;
+		median= moleculeSets[(lo+hi)/2]->getEnergy();  // just an estimate!
+		
+		while(right >= left) // partition moleculeSets[lo..hi]
+		// moleculeSets[lo..left-1] <= median and moleculeSets[right+1..hi] >= median
+		{
+			while(moleculeSets[left]->getEnergy() < median)
+				left++;
+			
+			while(moleculeSets[right]->getEnergy() > median)
+				right--;
+			
+			if(left > right)
+				break;
+			//swap
+			temp=moleculeSets[left];
+			moleculeSets[left]=moleculeSets[right];
+			moleculeSets[right]=temp;
+			left++;
+			right--;
+		}
+		sortMoleculeSets(moleculeSets, lo, right);
+		sortMoleculeSets(moleculeSets, left,  hi);
+	}
+}
 
+void Gega::saveBestN(vector<MoleculeSet*> &moleculeSets, vector<MoleculeSet*> &bestN, int n,
+                     FLOAT fMinDistnaceBetweenSameMoleculeSets)
+{
+	int i, ii, iii, indexToInsert;
+	MoleculeSet* temp;
+	int numToTryToInsert;
+	int numToTryToInsertMinus1;
+	
+	if ((signed int)moleculeSets.size() <= n)
+		numToTryToInsert = (signed int)moleculeSets.size();
+	else
+	{
+		numToTryToInsert = n;
+		sortMoleculeSets(moleculeSets,0,numToTryToInsert-1);
+	}
+	numToTryToInsertMinus1 = numToTryToInsert - 1;
+	
+	// Iterate through our moleculeSets maintaining the list
+	// of numToTryToInsert best sorted at the begginning.
+	for (i = numToTryToInsert; i < (signed int)moleculeSets.size(); ++i)
+		if (moleculeSets[i]->getEnergy() < moleculeSets[numToTryToInsertMinus1]->getEnergy())
+		{
+			indexToInsert = numToTryToInsertMinus1;
+			while ((indexToInsert > 0) &&
+			       (moleculeSets[i]->getEnergy() < moleculeSets[indexToInsert-1]->getEnergy()))
+					--indexToInsert;
+
+			// Insert moleculeSet i at indexToInsert and move moleculeSet numToTryToInsertMinus1 to position i.
+			temp = moleculeSets[numToTryToInsertMinus1];
+			for (ii = numToTryToInsertMinus1; ii > indexToInsert; --ii)
+				moleculeSets[ii] = moleculeSets[ii-1];
+			moleculeSets[indexToInsert] = moleculeSets[i];
+			moleculeSets[i] = temp;
+		}
+	
+	// Update bestN
+	for (i = 0; i < numToTryToInsert; ++i)
+	{
+		// Find if/where to insert moleculeSets[i] in bestN
+		indexToInsert = (signed int)bestN.size();
+		while ((indexToInsert >= 1) && (moleculeSets[i]->getEnergy() < bestN[indexToInsert-1]->getEnergy()))
+			--indexToInsert;
+		if ((indexToInsert < (signed int)bestN.size()) || ((signed int)bestN.size() < n))
+		{
+			// Make sure there aren't any stuctures with lower energy that are "the same" as moleculeSets[i]
+			for (ii = indexToInsert-1; ii >= 0; --ii)
+				if (bestN[ii]->withinDistance(*moleculeSets[i],fMinDistnaceBetweenSameMoleculeSets))
+				{
+					indexToInsert = -1;
+					break;
+				}
+			if (indexToInsert == -1)
+				continue; // don't insert 
+			
+			// Insert
+			// First shift the MoleculeSets at indexToInsert to the right
+			bestN.push_back(NULL);
+			for (ii = ((signed int) bestN.size())-1 ; ii > indexToInsert; --ii)
+				bestN[ii] = bestN[ii-1];
+
+			// Insert a copy of moleculeSets[i]
+			temp = new MoleculeSet();
+			temp->copy(*moleculeSets[i]);
+			bestN[indexToInsert] = temp;
+			
+			// Remove any structures higher in energy than moleculeSets[i] that are the same as moleculeSets[i]
+			for (ii = indexToInsert+1; ii < (signed int)bestN.size(); ++ii)
+				while (bestN[ii]->withinDistance(*bestN[indexToInsert],
+				                       fMinDistnaceBetweenSameMoleculeSets))
+				{
+					delete bestN[ii];
+					for (iii = ii; iii < (signed int)bestN.size()-1; ++iii)
+						bestN[iii] = bestN[iii+1];
+					bestN.pop_back();
+					if (ii >= (signed int)bestN.size())
+						break;
+				}
+			
+			// Make sure that bestN isn't bigger than n
+			// This could happen if bestN == n and then we added one to the list which had better energy than
+			// one in the original bestN
+			if ((signed int)bestN.size() > n)
+			{
+				delete bestN[(signed int)bestN.size()-1];
+				bestN.pop_back();
+			}
+		}
+	}
+}

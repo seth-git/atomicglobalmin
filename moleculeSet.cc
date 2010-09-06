@@ -2,8 +2,8 @@
 // Purpose: This file manages a set of molecules.
 // Author: Seth Call
 // Note: This is free software and may be modified and/or redistributed under
-//    the terms of the GNU General Public License (Version 3).
-//    Copyright 2007 Seth Call.
+//    the terms of the GNU General Public License (Version 1.2 or any later
+//    version).  Copyright 2007 Seth Call.
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "moleculeSet.h"
@@ -36,7 +36,7 @@ void MoleculeSet::init(int id)
 	
 	m_fEnergy = 0;
 	m_iRun = IS_FINISHED;
-	m_bIsTransitionState = false;
+	m_bTransitionAccepted = false;
 }
 
 MoleculeSet::~MoleculeSet()
@@ -65,13 +65,12 @@ void MoleculeSet::cleanUp()
 
 	m_fEnergy = 0;
 	m_iRun = IS_FINISHED;
+	m_bTransitionAccepted = false;
 }
 
 void MoleculeSet::copy(const MoleculeSet &moleculeSet)
 {
 	m_iStructureId = moleculeSet.m_iStructureId;
-	m_sEnergyFile = moleculeSet.m_sEnergyFile;
-	m_sCheckPointFile = moleculeSet.m_sCheckPointFile;
 	setNumberOfMolecules(moleculeSet.m_iNumberOfMolecules);
 	for (int i = 0; i < moleculeSet.m_iNumberOfMolecules; ++i)
 		m_prgMolecules[i].copy(moleculeSet.m_prgMolecules[i]);
@@ -80,7 +79,7 @@ void MoleculeSet::copy(const MoleculeSet &moleculeSet)
 	sortAtomRanks();
 	m_fEnergy = moleculeSet.m_fEnergy;
 	m_iRun = moleculeSet.m_iRun;
-	m_bIsTransitionState = moleculeSet.m_bIsTransitionState;
+	m_bTransitionAccepted = moleculeSet.m_bTransitionAccepted;
 }
 
 int MoleculeSet::getNumberOfMolecules()
@@ -88,21 +87,12 @@ int MoleculeSet::getNumberOfMolecules()
 	return m_iNumberOfMolecules;
 }
 
-int MoleculeSet::getNumberOfMoleculesWithMultipleAtoms()
-{
-	int total = 0;
-	for (int i = 0; i < m_iNumberOfMolecules; ++i)
-		if (m_prgMolecules[i].getNumberOfAtoms() > 1)
-			++total;
-	return total;
-}
-
 void MoleculeSet::setNumberOfMolecules(int iNumberOfMolecules)
 {
 	if (iNumberOfMolecules <= 0)
 	{
-		cout << "You cannot have a number of molecules less than or equal to zero..." << endl;
-		iNumberOfMolecules = 1;
+		cout << "You cannot have a number of molecules less than or equal to zero.  Exiting..." << endl;
+		exit(0);
 	}
 	cleanUp();
 	m_iNumberOfMolecules = iNumberOfMolecules;
@@ -119,31 +109,10 @@ int MoleculeSet::getNumberOfAtoms()
 	return m_iNumberOfAtoms;
 }
 
-void MoleculeSet::initVelocities(FLOAT coordinateVelocity, FLOAT maxAngleVelocityInRad)
+void MoleculeSet::initVelocities(FLOAT maxCoordVelocity, FLOAT maxAngleVelocityInRad)
 {
-	FLOAT angleX;
-	FLOAT angleY;
-	Point3D coordinateVelocityVector;
-	Point3D angleVelocityVector;
-	
-	if (coordinateVelocity == 0)
-		coordinateVelocity = 0.2;
-	
-	if (maxAngleVelocityInRad == 0)
-		maxAngleVelocityInRad = 20/360*PIE_X_2;
-
 	for (int i = 0; i < m_iNumberOfMolecules; ++i)
-		if (!m_prgMolecules[i].getFrozen())
-		{
-			angleX = Molecule::randomFloat(-PIE_OVER_2,PIE_OVER_2);
-			angleY = Molecule::randomFloat(0,PIE_X_2);
-			coordinateVelocityVector = getVectorInDirection(angleX, angleY, coordinateVelocity);
-			angleVelocityVector.x = Molecule::randomFloat(-maxAngleVelocityInRad,maxAngleVelocityInRad);
-			angleVelocityVector.y = Molecule::randomFloat(-maxAngleVelocityInRad,maxAngleVelocityInRad);
-			angleVelocityVector.z = Molecule::randomFloat(-maxAngleVelocityInRad,maxAngleVelocityInRad);
-			
-			m_prgMolecules[i].setVelocities(coordinateVelocityVector, angleVelocityVector);
-		}
+		m_prgMolecules[i].initVelocities(maxCoordVelocity, maxAngleVelocityInRad);
 }
 
 bool MoleculeSet::initPositionsAndAngles(Point3D &boxDimensions, int numTries)
@@ -172,7 +141,7 @@ bool MoleculeSet::initPositionsAndAngles(Point3D &boxDimensions, int numTries)
 					m_prgMolecules[i].setCenterAndAngles(Molecule::randomFloat(0,boxDimensions.x),
 						Molecule::randomFloat(0,boxDimensions.y),Molecule::randomFloat(0,boxDimensions.z),
 						Molecule::randomFloat(0,PIE_X_2),Molecule::randomFloat(-PIE_OVER_2,PIE_OVER_2),
-					        Molecule::randomFloat(0,PIE_X_2));
+					    Molecule::randomFloat(0,PIE_X_2));
 				m_prgMolecules[i].initRotationMatrix();
 				m_prgMolecules[i].localToGlobal();
 				m_prgMolecules[i].initDistanceMatrix(m_iNumberOfAtoms, m_atoms, m_atomDistances, atomsInitialized);
@@ -258,8 +227,8 @@ bool MoleculeSet::initPositionsAndAnglesWithMaxDist(Point3D &boxDimensions, FLOA
 						// Place the molecule anywhere
 						m_prgMolecules[iCurrentMolecule].setCenterAndAngles(Molecule::randomFloat(0,boxDimensions.x),
 							Molecule::randomFloat(0,boxDimensions.y),Molecule::randomFloat(0,boxDimensions.z),
-							Molecule::randomFloat(0,PIE_X_2),Molecule::randomFloat(-PIE_OVER_2,PIE_OVER_2),
-						        Molecule::randomFloat(0,PIE_X_2));
+							Molecule::randomFloat(0,PIE_X_2),
+						    Molecule::randomFloat(-PIE_OVER_2,PIE_OVER_2), Molecule::randomFloat(0,PIE_X_2));
 						m_prgMolecules[iCurrentMolecule].initRotationMatrix();
 						m_prgMolecules[iCurrentMolecule].localToGlobal();
 					} else {
@@ -419,216 +388,6 @@ bool MoleculeSet::initNonFragmentedSructure(Point3D &boxDimensions, FLOAT maxAto
 	return true;
 }
 
-bool MoleculeSet::initFromSeed(MoleculeSet &seedMoleculeSet, int iNumStructureTypes,
-                               int* iNumStructuresOfEachTypeOriginal, int* iNumStructuresOfEachTypeNew, vector<Point3D> *cartesianPoints,
-                               vector<int> *atomicNumbers, Point3D &boxDimensions, FLOAT maxAtomDist, int numTries)
-{
-	int iInitMoleculeSetTries, iInitMoleculeTries;
-	bool failedToInitialzeMolecule = false;
-	int i, j, k;
-	int mCount1, mCount2, aCount1;
-	FLOAT angleX, angleY;
-	Point3D unitVector, moleculeCenter;
-	bool* moleculesInitializedSaved;
-	bool* atomsInitializedSaved;
-	bool* moleculesInitialized;
-	bool* atomsInitialized;
-	int iNumMoleculesInitialized, iNumMoleculesInitializedSaved;
-	int iCurrentMolecule, iAlreadyInitializedMolecule;
-	MoleculeSet tempCopy;
-	
-	if (!seedMoleculeSet.tryToEnforceBoxConstraints(boxDimensions)) {
-		cout << "A seeded structure was found that doesn't fit in the box.  Exiting..." << endl << endl;
-		return false;
-	}
-	
-	// Copy the molecules from the seedMoleculeSet to this molecule set
-	mCount1 = 0;
-	for (i = 0; i < iNumStructureTypes; ++i)
-		mCount1 += iNumStructuresOfEachTypeNew[i];
-	setNumberOfMolecules(mCount1);
-	
-	// Count the number of total atoms
-        m_iNumberOfAtoms = 0;
-	for (i = 0; i < iNumStructureTypes; ++i)
-		m_iNumberOfAtoms += iNumStructuresOfEachTypeNew[i] * cartesianPoints[i].size();
-
-	moleculesInitialized = new bool[m_iNumberOfMolecules];
-	atomsInitialized = new bool[m_iNumberOfAtoms];
-	moleculesInitializedSaved = new bool[m_iNumberOfMolecules];
-	atomsInitializedSaved = new bool[m_iNumberOfAtoms];
-
-	iNumMoleculesInitializedSaved = 0;
-	mCount1 = 0;
-	mCount2 = 0;
-	aCount1 = 0;
-	for (i = 0; i < iNumStructureTypes; ++i) {
-		for (j = 0; j < iNumStructuresOfEachTypeOriginal[i]; j++) {
-			m_prgMolecules[mCount1].copy(seedMoleculeSet.m_prgMolecules[mCount2]);
-			moleculesInitializedSaved[mCount1] = true;
-			m_prgMolecules[mCount1].setFrozen(true);
-			++iNumMoleculesInitializedSaved;
-			++mCount1;
-			++mCount2;
-			for (k = 0; k < (signed int)cartesianPoints[i].size(); ++k) {
-				atomsInitializedSaved[aCount1] = true;
-				++aCount1;
-			}
-		}
-		for (j = iNumStructuresOfEachTypeOriginal[i]; j < iNumStructuresOfEachTypeNew[i]; ++j) {
-			m_prgMolecules[mCount1].makeFromCartesian(cartesianPoints[i], atomicNumbers[i]);
-			m_prgMolecules[mCount1].initRotationMatrix();
-			m_prgMolecules[mCount1].localToGlobal();
-			moleculesInitializedSaved[mCount1] = false;
-			++mCount1;
-			for (k = 0; k < (signed int)cartesianPoints[i].size(); ++k) {
-				atomsInitializedSaved[aCount1] = false;
-				++aCount1;
-			}
-		}
-	}
-	initAtomIndexes();
-	initAtomDistances();
-	
-	// Assign random locations and angles to the molecules that weren't coppied from seedMoleculeSet and
-	// observe minimum and maximum distance constraints
-	moleculeCenter.w = 1;
-	
-	iInitMoleculeSetTries = 0;
-	do {
-		++iInitMoleculeSetTries;
-		for (i = 0; i < m_iNumberOfMolecules; ++i)
-			moleculesInitialized[i] = moleculesInitializedSaved[i];
-		for (i = 0; i < m_iNumberOfAtoms; ++i)
-			atomsInitialized[i] = atomsInitializedSaved[i];
-		
-		for (iNumMoleculesInitialized = iNumMoleculesInitializedSaved;
-		     iNumMoleculesInitialized < m_iNumberOfMolecules; ++iNumMoleculesInitialized)
-		{
-			// Select a random molecule that hasn't been initialized
-			iCurrentMolecule = Molecule::randomInt(0,m_iNumberOfMolecules-iNumMoleculesInitialized-1);
-			for (i = 0; i <= iCurrentMolecule; ++i)
-				if (moleculesInitialized[i])
-					++iCurrentMolecule;
-			
-			iInitMoleculeTries = 0;
-			do {
-				++iInitMoleculeTries;
-				
-				if (m_prgMolecules[iCurrentMolecule].getNumberOfAtoms() > 1) {
-					m_prgMolecules[iCurrentMolecule].setAngleX(Molecule::randomFloat(0,PIE_X_2));
-					m_prgMolecules[iCurrentMolecule].setAngleY(Molecule::randomFloat(-PIE_OVER_2,PIE_OVER_2));
-					m_prgMolecules[iCurrentMolecule].setAngleZ(Molecule::randomFloat(0,PIE_X_2));
-				}
-				if (iNumMoleculesInitialized == 0) {
-					moleculeCenter.x = boxDimensions.x / 2;
-					moleculeCenter.y = boxDimensions.y / 2;
-					moleculeCenter.z = boxDimensions.z / 2;
-					m_prgMolecules[iCurrentMolecule].setCenter(moleculeCenter);
-					m_prgMolecules[iCurrentMolecule].initRotationMatrix();
-					m_prgMolecules[iCurrentMolecule].localToGlobal();
-				} else {
-					angleX = Molecule::randomFloat(-PIE_OVER_2,PIE_OVER_2);
-					angleY = Molecule::randomFloat(0,PIE_X_2);
-					unitVector = getVectorInDirection(angleX, angleY, 1);
-					
-					// Select a random molecule that has already been initialized
-					iAlreadyInitializedMolecule = Molecule::randomInt(0,iNumMoleculesInitialized-1);
-					for (i = 0; i <= iAlreadyInitializedMolecule; ++i)
-						if (!moleculesInitialized[i])
-							++iAlreadyInitializedMolecule;
-					
-					placeMoleculeObservingMaxDist(m_prgMolecules[iCurrentMolecule],
-					                      m_prgMolecules[iAlreadyInitializedMolecule], unitVector, maxAtomDist);
-				}
-				moleculeCenter = m_prgMolecules[iCurrentMolecule].getCenter();
-//				cout << "Trying molecule " << (iNumMoleculesInitialized+1) << "(" << iCurrentMolecule
-//				     << ") at (" << moleculeCenter.x << ","
-//				     << moleculeCenter.y << "," << moleculeCenter.z << ")" << endl;
-				m_prgMolecules[iCurrentMolecule].initDistanceMatrix(m_iNumberOfAtoms, m_atoms, m_atomDistances, atomsInitialized);
-//				cout << "checkMinDistConstraints = " << checkMinDistConstraints(iCurrentMolecule, moleculesInitialized) << endl;
-//				cout << "checkBoxConstraints = " << checkBoxConstraints(boxDimensions,iCurrentMolecule) << endl;
-				
-				
-				failedToInitialzeMolecule = (!checkMinDistConstraints(iCurrentMolecule, moleculesInitialized)
-                                                             || isFragmented(maxAtomDist)
-				                             || !checkBoxConstraints(boxDimensions,iCurrentMolecule));
-//				cout << "failedToInitialzeMolecule = " << failedToInitialzeMolecule << endl;
-				if (!failedToInitialzeMolecule) {
-					m_prgMolecules[iCurrentMolecule].markAtomsAsInitialized(atomsInitialized);
-					moleculesInitialized[iCurrentMolecule] = true;
-				}
-			} while ((iInitMoleculeTries < 50) && failedToInitialzeMolecule);
-			if (failedToInitialzeMolecule) {
-				cout << "Failed to initialize seeded moleculeSet in non-fragmented structure" << endl;
-				break;
-			}
-		}
-		if (!failedToInitialzeMolecule) {
-			centerInBox(boxDimensions);
-			if (getNumberOfMoleculesFrozen() < m_iNumberOfMolecules)
-				for (i = 1; i <= 20; ++i) {
-					tempCopy.copy(*this);
-					if (!tempCopy.performTransformationsNonFrag(boxDimensions, 0.3, 0.785, maxAtomDist, 1)) {
-						failedToInitialzeMolecule = true;
-						break;
-					}
-				}
-		}
-	} while ((iInitMoleculeSetTries < numTries) && failedToInitialzeMolecule);
-	
-	delete[] moleculesInitialized;
-	delete[] atomsInitialized;
-	delete[] moleculesInitializedSaved;
-	delete[] atomsInitializedSaved;
-	
-	if (failedToInitialzeMolecule)
-		return false;
-	initAtomDistancesToCenterOfMass();
-	sortAtomRanks();
-	
-	return true;
-}
-
-void MoleculeSet::unFreezeAll(FLOAT coordinateVelocity, FLOAT maxAngleVelocityInRad)
-{
-	FLOAT angleX;
-	FLOAT angleY;
-	Point3D coordinateVelocityVector;
-	Point3D angleVelocityVector;
-	
-	if (coordinateVelocity == 0)
-		coordinateVelocity = 0.2;
-	
-	if (maxAngleVelocityInRad == 0)
-		maxAngleVelocityInRad = 20/360*PIE_X_2;
-	
-	for (int i = 0; i < m_iNumberOfMolecules; ++i)
-		if (m_prgMolecules[i].getFrozen())
-		{
-		 	m_prgMolecules[i].setFrozen(false);
-			if ((coordinateVelocity > 0) && (maxAngleVelocityInRad > 0)) {
-				angleX = Molecule::randomFloat(-PIE_OVER_2,PIE_OVER_2);
-				angleY = Molecule::randomFloat(0,PIE_X_2);
-				coordinateVelocityVector = getVectorInDirection(angleX, angleY, coordinateVelocity);
-				angleVelocityVector.x = Molecule::randomFloat(-maxAngleVelocityInRad,maxAngleVelocityInRad);
-				angleVelocityVector.y = Molecule::randomFloat(-maxAngleVelocityInRad,maxAngleVelocityInRad);
-				angleVelocityVector.z = Molecule::randomFloat(-maxAngleVelocityInRad,maxAngleVelocityInRad);
-				
-				m_prgMolecules[i].setVelocities(coordinateVelocityVector, angleVelocityVector);
-			}
-		}
-}
-
-int MoleculeSet::getNumberOfMoleculesFrozen()
-{
-	int answer = 0;
-	for (int i = 0; i < m_iNumberOfMolecules; ++i)
-                if (m_prgMolecules[i].getFrozen())
-			++answer;
-	return answer;
-}
-
 void MoleculeSet::placeMoleculeObservingMaxDist(Molecule &moleculeToPlace, Molecule &otherMolecule,
                                                 Point3D unitVector, FLOAT maxDist)
 {
@@ -693,8 +452,8 @@ void MoleculeSet::placeMoleculeObservingMaxDist(Molecule &moleculeToPlace, Molec
 		}
 		if (isnan(e))
 		{
-			cout << "e = nan in the function MoleculeSet::placeMoleculeObservingMaxDist!" << endl;
-			return;
+			cout << "e = nan!" << endl;
+			exit(0);
 		}
 		
 		while (true) {
@@ -704,8 +463,8 @@ void MoleculeSet::placeMoleculeObservingMaxDist(Molecule &moleculeToPlace, Molec
 			center = otherMolecule.getPositionRelativeToMoleculeAlongVector(vector);
 			if (isnan(center.x))
 			{
-				cout << "center.x = nan in the function MoleculeSet::placeMoleculeObservingMaxDist!" << endl;
-				return;
+				cout << "center.x = nan!" << endl;
+				exit(0);
 			}
 			moleculeToPlace.setCenter(center);
 			moleculeToPlace.initRotationMatrix();
@@ -949,35 +708,6 @@ bool MoleculeSet::checkBoxConstraints(Point3D &boxDimensions, int iMolecule)
 	return true;
 }
 
-void MoleculeSet::centerInBox(Point3D &boxDimensions)
-{
-	Point3D minCoordinates, maxCoordinates;
-	Point3D coordinateSpans; // maxs - mins
-	Point3D shiftCoordinates;
-	const FLOAT SOME_BIG_NUMBER = 1000000;
-	int i;
-	minCoordinates.x = SOME_BIG_NUMBER;
-	minCoordinates.y = SOME_BIG_NUMBER;
-	minCoordinates.z = SOME_BIG_NUMBER;
-	maxCoordinates.x = -SOME_BIG_NUMBER;
-	maxCoordinates.y = -SOME_BIG_NUMBER;
-	maxCoordinates.z = -SOME_BIG_NUMBER;
-	
-	for (i = 0; i < m_iNumberOfMolecules; ++i)
-		m_prgMolecules[i].getMinimumAndMaximumCoordinates(minCoordinates, maxCoordinates);
-    
-	coordinateSpans.x = maxCoordinates.x - minCoordinates.x;
-	coordinateSpans.y = maxCoordinates.y - minCoordinates.y;
-	coordinateSpans.z = maxCoordinates.z - minCoordinates.z;
-	
-	// Set the molecules in the center of the box
-	shiftCoordinates.x = (boxDimensions.x * 0.5) - ((coordinateSpans.x * 0.5) + minCoordinates.x);
-	shiftCoordinates.y = (boxDimensions.y * 0.5) - ((coordinateSpans.y * 0.5) + minCoordinates.y);
-	shiftCoordinates.z = (boxDimensions.z * 0.5) - ((coordinateSpans.z * 0.5) + minCoordinates.z);
-	for (i = 0; i < m_iNumberOfMolecules; ++i)
-		m_prgMolecules[i].moveMolecule(shiftCoordinates);
-}
-
 Point3D MoleculeSet::getVectorInDirection(FLOAT angleX, FLOAT angleY, FLOAT length)
 {
 	FLOAT matrixX[MATRIX_SIZE][MATRIX_SIZE];
@@ -1100,251 +830,324 @@ bool MoleculeSet::offSetCoordinatesAndAnglesSlightly(Point3D &boxDimensions)
 	return success;
 }
 
-bool MoleculeSet::performTransformations(Point3D &boxDimensions, FLOAT deltaForCoordinates, FLOAT deltaForAnglesInRad, int numTransformations)
+bool MoleculeSet::performTransformation(Point3D &boxDimensions, FLOAT deltaForCoordinates, FLOAT deltaForAnglesInRad)
 {
-	int i;
+	int count = 0;
 	int moleculeToPurturb;
 	int thingToPurturb;
-	int moleculeSetTry;
-	int moleculeTry;
-	const int numMoleculeSetTries = 20;
-	const int numMoleculeTries = 60;
-	bool* moleculesTransformed;
-	bool success;
+	const int numTries = 60;
 	
-	moleculesTransformed = new bool[m_iNumberOfMolecules];
+	while(count <= numTries)
+	{
+		++count;
+		moleculeToPurturb = Molecule::randomInt(0,m_iNumberOfMolecules-1);
+		if (m_prgMolecules[moleculeToPurturb].getNumberOfAtoms() == 1)
+			thingToPurturb = Molecule::randomInt(1,3);
+		else
+			thingToPurturb = Molecule::randomInt(1,6);
+		if (thingToPurturb <= 3) // move the molecule
+		{
+			Point3D shiftCoordinates;
+			FLOAT angleX = Molecule::randomFloat(-PIE_OVER_2,PIE_OVER_2);
+			FLOAT angleY = Molecule::randomFloat(0,PIE_X_2);
+			shiftCoordinates = getVectorInDirection(angleX,angleY, deltaForCoordinates);
+			m_prgMolecules[moleculeToPurturb].moveMolecule(shiftCoordinates);
+			initAtomDistances();
+			if (checkMinDistConstraints(moleculeToPurturb) && tryToEnforceBoxConstraints(boxDimensions, moleculeToPurturb))
+				break; // we found a valid perturbation, so quit
+			else
+			{
+				shiftCoordinates.x = -shiftCoordinates.x;
+				shiftCoordinates.y = -shiftCoordinates.y;
+				shiftCoordinates.z = -shiftCoordinates.z;
+				m_prgMolecules[moleculeToPurturb].moveMolecule(shiftCoordinates);
+				initAtomDistances();
+//				cout << "Move failed, reverting... " << endl;
+			}
+		}
+		else // rotate the molecule
+		{
+			Point3D rotateAngles;
+			rotateAngles.x = 0;
+			rotateAngles.y = 0;
+			rotateAngles.z = 0;
+			switch (thingToPurturb)
+			{
+				case 4:
+					rotateAngles.x = ((FLOAT)Molecule::randomInt(0,1)-0.5) * 2 * deltaForAnglesInRad;
+//					cout << "Moving angle X on molecule " << (moleculeToPurturb+1) << "." << endl;
+					break;
+				case 5:
+					rotateAngles.y = ((FLOAT)Molecule::randomInt(0,1)-0.5) * 2 * deltaForAnglesInRad;
+//					cout << "Moving angle Y on molecule " << (moleculeToPurturb+1) << "." << endl;
+					break;
+				case 6:
+					rotateAngles.z = ((FLOAT)Molecule::randomInt(0,1)-0.5) * 2 * deltaForAnglesInRad;
+//					cout << "Moving angle Z on molecule " << (moleculeToPurturb+1) << "." << endl;
+					break;
+			}
+			m_prgMolecules[moleculeToPurturb].rotateMolecule(rotateAngles);
+			initAtomDistances();
+			if (checkMinDistConstraints(moleculeToPurturb) && tryToEnforceBoxConstraints(boxDimensions, moleculeToPurturb))
+				break; // we found a valid perturbation, so quit
+			else
+			{
+				rotateAngles.x = -rotateAngles.x;
+				rotateAngles.y = -rotateAngles.y;
+				rotateAngles.z = -rotateAngles.z;
+				m_prgMolecules[moleculeToPurturb].rotateMolecule(rotateAngles);
+				initAtomDistances();
+//				cout << "Move angle failed, reverting... " << endl;
+			}
+		}
+	}
+	sortAtomRanks();
+	if (count > numTries)
+		return false;
+	return true;
+}
 
-	success = false;
-	for (moleculeSetTry = 1; (moleculeSetTry <= numMoleculeSetTries) && !success; ++moleculeSetTry) {
-//		cout << "Try " << moleculeSetTry << " on molecule set " << m_iStructureId << endl;
-		for (i = 0; i < m_iNumberOfMolecules; ++i)
-			moleculesTransformed[i] = false;
-		
-		success = true;
-		for (i = 1; (i <= numTransformations) && success; ++i) {
-//			cout << "Transformation #" << i << endl;
-			success = false;
-			for (moleculeTry = 1; (moleculeTry <= numMoleculeTries) && !success; ++moleculeTry) {
-//				cout << "moleculeTry " << moleculeTry << endl;
-				do {
-					moleculeToPurturb = Molecule::randomInt(0,m_iNumberOfMolecules-1);
-				} while (m_prgMolecules[moleculeToPurturb].getFrozen() || moleculesTransformed[moleculeToPurturb]);
-				
+bool MoleculeSet::performMultipleTransformations(Point3D &boxDimensions, FLOAT deltaForCoordinates, FLOAT deltaForAnglesInRad)
+{
+	int numDifferentTransformationsToMake;
+	const int numTimesToMakeEachTransformation = 1;
+	int numTransformationsMade;
+	int numTimesTransformed;
+	int moleculeSetTry;
+	const int numMoleculeSetTries = 20;
+	int transformationTry;
+	const int transformationTries = 60;
+	int moleculeToPurturb;
+	int thingToPurturb;
+	bool success = false;
+	int i;
+	bool* moleculesMoved;
+	bool* moleculesRotated;
+	MoleculeSet backupSet;
+	
+	numDifferentTransformationsToMake = m_iNumberOfMolecules / 5;
+	if (numDifferentTransformationsToMake == 0)
+		numDifferentTransformationsToMake = 1;
+	
+	if (numDifferentTransformationsToMake > (m_iNumberOfMolecules*2)) {
+		cout << "The requested number of different transformations is impossible.";
+		return false;
+	}
+
+	moleculesMoved = new bool[m_iNumberOfMolecules];
+	moleculesRotated = new bool[m_iNumberOfMolecules];
+	backupSet.copy(*this);
+	
+	moleculeSetTry = 0;
+	do {
+		++moleculeSetTry;
+		for (i = 0; i < m_iNumberOfMolecules; ++i) {
+			moleculesMoved[i] = false;
+			moleculesRotated[i] = false;
+		}
+		for (numTransformationsMade = 0; numTransformationsMade < numDifferentTransformationsToMake; ++numTransformationsMade) {
+			do {
+				moleculeToPurturb = Molecule::randomInt(0,m_iNumberOfMolecules-1);
 				if (m_prgMolecules[moleculeToPurturb].getNumberOfAtoms() == 1)
 					thingToPurturb = Molecule::randomInt(1,3);
 				else
 					thingToPurturb = Molecule::randomInt(1,6);
-				if (thingToPurturb <= 3) // move the molecule
-				{
-					Point3D shiftCoordinates;
-					FLOAT angleX = Molecule::randomFloat(-PIE_OVER_2,PIE_OVER_2);
-					FLOAT angleY = Molecule::randomFloat(0,PIE_X_2);
-					shiftCoordinates = getVectorInDirection(angleX,angleY, deltaForCoordinates);
-					m_prgMolecules[moleculeToPurturb].moveMolecule(shiftCoordinates);
-					initAtomDistances();
-					if (checkMinDistConstraints(moleculeToPurturb) && tryToEnforceBoxConstraints(boxDimensions, moleculeToPurturb)) {
-						success = true;
-						moleculesTransformed[moleculeToPurturb] = true;
-					} else {
-						success = false;
-						shiftCoordinates.x = -shiftCoordinates.x;
-						shiftCoordinates.y = -shiftCoordinates.y;
-						shiftCoordinates.z = -shiftCoordinates.z;
+				for (i = 0; i <= moleculeToPurturb; ++i)
+					if ((moleculesMoved[i] && (thingToPurturb <= 3)) ||
+					    (moleculesRotated[i] && (thingToPurturb >= 4)))
+						++moleculeToPurturb;
+			} while (moleculeToPurturb >= m_iNumberOfMolecules);
+			
+			success = true;
+			for (numTimesTransformed = 0; (numTimesTransformed < numTimesToMakeEachTransformation) && success; ++numTimesTransformed) {
+				transformationTry = 0;
+				do {
+					++transformationTry;
+					if (thingToPurturb <= 3) { // move the molecule
+						Point3D shiftCoordinates;
+						FLOAT angleX = Molecule::randomFloat(-PIE_OVER_2,PIE_OVER_2);
+						FLOAT angleY = Molecule::randomFloat(0,PIE_X_2);
+						shiftCoordinates = getVectorInDirection(angleX,angleY, deltaForCoordinates);
 						m_prgMolecules[moleculeToPurturb].moveMolecule(shiftCoordinates);
 						initAtomDistances();
-	//					cout << "Move failed, reverting... " << endl;
+						if (checkMinDistConstraints(moleculeToPurturb) && tryToEnforceBoxConstraints(boxDimensions, moleculeToPurturb))
+							success = true;
+						else {
+							success = false;
+							shiftCoordinates.x = -shiftCoordinates.x;
+							shiftCoordinates.y = -shiftCoordinates.y;
+							shiftCoordinates.z = -shiftCoordinates.z;
+							m_prgMolecules[moleculeToPurturb].moveMolecule(shiftCoordinates);
+							initAtomDistances();
+//							cout << "Move failed, reverting... " << endl;
+						}
 					}
-				}
-				else // rotate the molecule
-				{
-					Point3D rotateAngles;
-					rotateAngles.x = 0;
-					rotateAngles.y = 0;
-					rotateAngles.z = 0;
-					switch (thingToPurturb)
+					else // rotate the molecule
 					{
-						case 4:
-							rotateAngles.x = ((FLOAT)Molecule::randomInt(0,1)-0.5) * 2 * deltaForAnglesInRad;
-//							cout << "Moving angle X on molecule " << (moleculeToPurturb+1) << "." << endl;
-							break;
-						case 5:
-							rotateAngles.y = ((FLOAT)Molecule::randomInt(0,1)-0.5) * 2 * deltaForAnglesInRad;
-//							cout << "Moving angle Y on molecule " << (moleculeToPurturb+1) << "." << endl;
-							break;
-						case 6:
-							rotateAngles.z = ((FLOAT)Molecule::randomInt(0,1)-0.5) * 2 * deltaForAnglesInRad;
-//							cout << "Moving angle Z on molecule " << (moleculeToPurturb+1) << "." << endl;
-							break;
-					}
-					m_prgMolecules[moleculeToPurturb].rotateMolecule(rotateAngles);
-					initAtomDistances();
-					if (checkMinDistConstraints(moleculeToPurturb) && tryToEnforceBoxConstraints(boxDimensions, moleculeToPurturb)) {
-						success = true;
-						moleculesTransformed[moleculeToPurturb] = true;
-					} else {
-						success = false;
-						rotateAngles.x = -rotateAngles.x;
-						rotateAngles.y = -rotateAngles.y;
-						rotateAngles.z = -rotateAngles.z;
+						Point3D rotateAngles;
+						rotateAngles.x = 0;
+						rotateAngles.y = 0;
+						rotateAngles.z = 0;
+						switch (thingToPurturb)
+						{
+							case 4:
+								rotateAngles.x = ((FLOAT)Molecule::randomInt(0,1)-0.5) * 2 * deltaForAnglesInRad;
+//								cout << "Moving angle X on molecule " << (moleculeToPurturb+1) << "." << endl;
+								break;
+							case 5:
+								rotateAngles.y = ((FLOAT)Molecule::randomInt(0,1)-0.5) * 2 * deltaForAnglesInRad;
+//								cout << "Moving angle Y on molecule " << (moleculeToPurturb+1) << "." << endl;
+								break;
+							case 6:
+								rotateAngles.z = ((FLOAT)Molecule::randomInt(0,1)-0.5) * 2 * deltaForAnglesInRad;
+//								cout << "Moving angle Z on molecule " << (moleculeToPurturb+1) << "." << endl;
+								break;
+						}
 						m_prgMolecules[moleculeToPurturb].rotateMolecule(rotateAngles);
 						initAtomDistances();
-//						cout << "Move angle failed, reverting... " << endl;
+						if (checkMinDistConstraints(moleculeToPurturb) && tryToEnforceBoxConstraints(boxDimensions, moleculeToPurturb))
+							success = true;
+						else {
+							success = false;
+							rotateAngles.x = -rotateAngles.x;
+							rotateAngles.y = -rotateAngles.y;
+							rotateAngles.z = -rotateAngles.z;
+							m_prgMolecules[moleculeToPurturb].rotateMolecule(rotateAngles);
+							initAtomDistances();
+//							cout << "Move angle failed, reverting... " << endl;
+						}
 					}
-				}
-//				cout << "success = " << success << endl;
+				} while ((transformationTry < transformationTries) && !success);
 			}
-//			cout << "success = " << success << endl;
+			if (!success) {
+				copy(backupSet);
+				break;
+			}
 		}
-//		cout << "success = " << success << endl;
-	}
+	} while ((moleculeSetTry < numMoleculeSetTries) && !success);
+	delete[] moleculesMoved;
+	delete[] moleculesRotated;
 	sortAtomRanks();
-	delete[] moleculesTransformed;
 	if (!success)
-		cout << "Failed to transform moleculeSet..." << endl;
-	return success;
+		return false;
+	return true;
 }
 
-bool MoleculeSet::performTransformationsNonFrag(Point3D &boxDimensions, FLOAT deltaForCoordinates,
-                                                FLOAT deltaForAnglesInRad, FLOAT maxDist, int numTransformations)
+bool MoleculeSet::performTransformationNonFrag(Point3D &boxDimensions, FLOAT deltaForCoordinates,
+                                               FLOAT deltaForAnglesInRad, FLOAT maxDist)
 {
-	int i;
-	int moleculeTry, moleculeSetTry;
-	const int numMoleculeSetTries = 20;
-	const int numMoleculeTries = 60;
+	int count = 0;
 	int thingToPurturb;
 	int iMoleculeToPerturb, iOtherMolecule;
+	const int numTries = 60;
 	Molecule moleculeBackupCopy;
 	const FLOAT propabilityOfSwapping = -1;
-	bool* moleculesTransformed;
-	bool success;
 	
-	moleculesTransformed = new bool[m_iNumberOfMolecules];
-	
-	success = false;
-	for (moleculeSetTry = 1; (moleculeSetTry <= numMoleculeSetTries) && !success; ++moleculeSetTry) {
-		for (i = 0; i < m_iNumberOfMolecules; ++i)
-			moleculesTransformed[i] = false;
+	while(count <= numTries)
+	{
+		++count;
+		iMoleculeToPerturb = Molecule::randomInt(0, m_iNumberOfMolecules-1);
+
+		if (Molecule::randomFloat(0,1) <= propabilityOfSwapping) {
+			thingToPurturb = 1; // Swap two molecules
+		} else {
+			if (m_prgMolecules[iMoleculeToPerturb].getNumberOfAtoms() == 1)
+				thingToPurturb = Molecule::randomInt(2,4);
+			else
+				thingToPurturb = Molecule::randomInt(2,7);
+		}
 		
-		success = true;
-		for (i = 1; (i <= numTransformations) && success; ++i) {
-			success = false;
-			for (moleculeTry = 1; moleculeTry <= numMoleculeTries; ++moleculeTry) {
-				do {
-					iMoleculeToPerturb = Molecule::randomInt(0, m_iNumberOfMolecules-1);
-				} while (m_prgMolecules[iMoleculeToPerturb].getFrozen() || moleculesTransformed[iMoleculeToPerturb]);
-		
-				if (Molecule::randomFloat(0,1) <= propabilityOfSwapping) {
-					thingToPurturb = 1; // Swap two molecules
-				} else {
-					if (m_prgMolecules[iMoleculeToPerturb].getNumberOfAtoms() == 1)
-						thingToPurturb = Molecule::randomInt(2,4);
-					else
-						thingToPurturb = Molecule::randomInt(2,7);
-				}
-					
-				if (thingToPurturb <= 1) { // swap two molecules
-					Point3D temp;
-					// Randomly Pick another molecule within maxDist of iMoleculeToPerturb
-					do {
-						iOtherMolecule = Molecule::randomInt(0, m_iNumberOfMolecules-1);
-					} while ((iOtherMolecule == iMoleculeToPerturb) ||
-					        !(m_prgMolecules[iMoleculeToPerturb].checkMaxDistances(m_prgMolecules[iOtherMolecule],
-					                                                               m_atomDistances, maxDist)));
-					
-					// Swap the molecule centers
-					temp = m_prgMolecules[iMoleculeToPerturb].getCenter();
-					m_prgMolecules[iMoleculeToPerturb].setCenter(m_prgMolecules[iOtherMolecule].getCenter());
-					m_prgMolecules[iOtherMolecule].setCenter(temp);
-					
-					m_prgMolecules[iMoleculeToPerturb].initRotationMatrix();
-					m_prgMolecules[iMoleculeToPerturb].localToGlobal();
-					m_prgMolecules[iOtherMolecule].initRotationMatrix();
-					m_prgMolecules[iOtherMolecule].localToGlobal();
-					initAtomDistances();
-					
-					if (checkMinDistConstraints(iMoleculeToPerturb) && checkMinDistConstraints(iOtherMolecule) &&
-					    !isFragmented(maxDist))
-						if (tryToEnforceBoxConstraints(boxDimensions)) { // this can't be reverted, so it's last
-							moleculesTransformed[iMoleculeToPerturb] = true;
-							success = true;
-							break; // Success!!
-						}
-					
-					// Swap back the molecule centers
-					temp = m_prgMolecules[iMoleculeToPerturb].getCenter();
-					m_prgMolecules[iMoleculeToPerturb].setCenter(m_prgMolecules[iOtherMolecule].getCenter());
-					m_prgMolecules[iOtherMolecule].setCenter(temp);
-					
-					m_prgMolecules[iMoleculeToPerturb].initRotationMatrix();
-					m_prgMolecules[iMoleculeToPerturb].localToGlobal();
-					m_prgMolecules[iOtherMolecule].initRotationMatrix();
-					m_prgMolecules[iOtherMolecule].localToGlobal();
-					initAtomDistances();
-				} else if (thingToPurturb <= 4) { // move the molecule
-					Point3D shiftCoordinates;
-					FLOAT angleX = Molecule::randomFloat(-PIE_OVER_2,PIE_OVER_2);
-					FLOAT angleY = Molecule::randomFloat(0,PIE_X_2);
-					shiftCoordinates = getVectorInDirection(angleX,angleY, deltaForCoordinates);
-					moleculeBackupCopy.copy(m_prgMolecules[iMoleculeToPerturb]);
-					m_prgMolecules[iMoleculeToPerturb].moveMolecule(shiftCoordinates);
-					m_prgMolecules[iMoleculeToPerturb].initDistanceMatrix(m_iNumberOfAtoms, m_atoms, m_atomDistances);
-					
-					if (checkMinDistConstraints(iMoleculeToPerturb) && !isFragmented(maxDist))
-						if (tryToEnforceBoxConstraints(boxDimensions, iMoleculeToPerturb)) { // this can't be reverted, so it's last
-							moleculesTransformed[iMoleculeToPerturb] = true;
-							success = true;
-							break; // Success!!
-						}
-					
-					// Revert the change and try again
-					m_prgMolecules[iMoleculeToPerturb].copy(moleculeBackupCopy);
-					initAtomIndexes(iMoleculeToPerturb);
-					m_prgMolecules[iMoleculeToPerturb].initDistanceMatrix(m_iNumberOfAtoms, m_atoms, m_atomDistances);
-				}
-				else // rotate the molecule
-				{
-					Point3D rotateAngles;
-					rotateAngles.x = 0;
-					rotateAngles.y = 0;
-					rotateAngles.z = 0;
-					switch (thingToPurturb)
-					{
-						case 5:
-							rotateAngles.x = ((FLOAT)Molecule::randomInt(0,1)-0.5) * 2 * deltaForAnglesInRad;
-							break;
-						case 6:
-							rotateAngles.y = ((FLOAT)Molecule::randomInt(0,1)-0.5) * 2 * deltaForAnglesInRad;
-							break;
-						case 7:
-							rotateAngles.z = ((FLOAT)Molecule::randomInt(0,1)-0.5) * 2 * deltaForAnglesInRad;
-							break;
-					}
-					moleculeBackupCopy.copy(m_prgMolecules[iMoleculeToPerturb]);
-					m_prgMolecules[iMoleculeToPerturb].rotateMolecule(rotateAngles);
-					m_prgMolecules[iMoleculeToPerturb].initDistanceMatrix(m_iNumberOfAtoms, m_atoms, m_atomDistances);
-					
-					if (checkMinDistConstraints(iMoleculeToPerturb) && !isFragmented(maxDist))
-						if (tryToEnforceBoxConstraints(boxDimensions, iMoleculeToPerturb)) { // this can't be reverted, so it's last
-							moleculesTransformed[iMoleculeToPerturb] = true;
-							success = true;
-							break; // Success!!
-						}
-					
-					// Revert the change and try again
-					m_prgMolecules[iMoleculeToPerturb].copy(moleculeBackupCopy);
-					initAtomIndexes(iMoleculeToPerturb);
-					m_prgMolecules[iMoleculeToPerturb].initDistanceMatrix(m_iNumberOfAtoms, m_atoms, m_atomDistances);
-				}
+		if (thingToPurturb <= 1) { // swap two molecules
+			Point3D temp;
+			// Randomly Pick another molecule within maxDist of iMoleculeToPerturb
+			do {
+				iOtherMolecule = Molecule::randomInt(0, m_iNumberOfMolecules-1);
+			} while ((iOtherMolecule == iMoleculeToPerturb) ||
+			        !(m_prgMolecules[iMoleculeToPerturb].checkMaxDistances(m_prgMolecules[iOtherMolecule],
+			                                                               m_atomDistances, maxDist)));
+			
+			// Swap the molecule centers
+			temp = m_prgMolecules[iMoleculeToPerturb].getCenter();
+			m_prgMolecules[iMoleculeToPerturb].setCenter(m_prgMolecules[iOtherMolecule].getCenter());
+			m_prgMolecules[iOtherMolecule].setCenter(temp);
+			
+			m_prgMolecules[iMoleculeToPerturb].initRotationMatrix();
+			m_prgMolecules[iMoleculeToPerturb].localToGlobal();
+			m_prgMolecules[iOtherMolecule].initRotationMatrix();
+			m_prgMolecules[iOtherMolecule].localToGlobal();
+			initAtomDistances();
+			
+			if (checkMinDistConstraints(iMoleculeToPerturb) && checkMinDistConstraints(iOtherMolecule) &&
+			    !isFragmented(maxDist))
+				if (tryToEnforceBoxConstraints(boxDimensions)) // this can't be reverted, so it's last
+					break; // Success!!
+			
+			// Swap back the molecule centers
+			temp = m_prgMolecules[iMoleculeToPerturb].getCenter();
+			m_prgMolecules[iMoleculeToPerturb].setCenter(m_prgMolecules[iOtherMolecule].getCenter());
+			m_prgMolecules[iOtherMolecule].setCenter(temp);
+			
+			m_prgMolecules[iMoleculeToPerturb].initRotationMatrix();
+			m_prgMolecules[iMoleculeToPerturb].localToGlobal();
+			m_prgMolecules[iOtherMolecule].initRotationMatrix();
+			m_prgMolecules[iOtherMolecule].localToGlobal();
+			initAtomDistances();
+		} else if (thingToPurturb <= 4) { // move the molecule
+			Point3D shiftCoordinates;
+			FLOAT angleX = Molecule::randomFloat(-PIE_OVER_2,PIE_OVER_2);
+			FLOAT angleY = Molecule::randomFloat(0,PIE_X_2);
+			shiftCoordinates = getVectorInDirection(angleX,angleY, deltaForCoordinates);
+			moleculeBackupCopy.copy(m_prgMolecules[iMoleculeToPerturb]);
+			m_prgMolecules[iMoleculeToPerturb].moveMolecule(shiftCoordinates);
+			m_prgMolecules[iMoleculeToPerturb].initDistanceMatrix(m_iNumberOfAtoms, m_atoms, m_atomDistances);
+			
+			if (checkMinDistConstraints(iMoleculeToPerturb) && !isFragmented(maxDist))
+				if (tryToEnforceBoxConstraints(boxDimensions, iMoleculeToPerturb)) // this can't be reverted, so it's last
+					break; // Success!!
+			
+			// Revert the change and try again
+			m_prgMolecules[iMoleculeToPerturb].copy(moleculeBackupCopy);
+			m_prgMolecules[iMoleculeToPerturb].initDistanceMatrix(m_iNumberOfAtoms, m_atoms, m_atomDistances);
+		}
+		else // rotate the molecule
+		{
+			Point3D rotateAngles;
+			rotateAngles.x = 0;
+			rotateAngles.y = 0;
+			rotateAngles.z = 0;
+			switch (thingToPurturb)
+			{
+				case 5:
+					rotateAngles.x = ((FLOAT)Molecule::randomInt(0,1)-0.5) * 2 * deltaForAnglesInRad;
+					break;
+				case 6:
+					rotateAngles.y = ((FLOAT)Molecule::randomInt(0,1)-0.5) * 2 * deltaForAnglesInRad;
+					break;
+				case 7:
+					rotateAngles.z = ((FLOAT)Molecule::randomInt(0,1)-0.5) * 2 * deltaForAnglesInRad;
+					break;
 			}
+			moleculeBackupCopy.copy(m_prgMolecules[iMoleculeToPerturb]);
+			m_prgMolecules[iMoleculeToPerturb].rotateMolecule(rotateAngles);
+			m_prgMolecules[iMoleculeToPerturb].initDistanceMatrix(m_iNumberOfAtoms, m_atoms, m_atomDistances);
+			
+			if (checkMinDistConstraints(iMoleculeToPerturb) && !isFragmented(maxDist))
+				if (tryToEnforceBoxConstraints(boxDimensions, iMoleculeToPerturb)) // this can't be reverted, so it's last
+					break; // Success!!
+			
+			// Revert the change and try again
+			m_prgMolecules[iMoleculeToPerturb].copy(moleculeBackupCopy);
+			m_prgMolecules[iMoleculeToPerturb].initDistanceMatrix(m_iNumberOfAtoms, m_atoms, m_atomDistances);
 		}
 	}
 	
 	initAtomDistancesToCenterOfMass();
 	sortAtomRanks();
-	delete[] moleculesTransformed;
-	if (!success)
-		cout << "Failed to transform non-fragmented moleculeSet" << m_iStructureId << "..." << endl;
-	return success;
+	if (count > numTries) {
+		cout << "Failed to transform non-fragmented moleculeSet after " << numTries << " tries." << endl;
+		return false;
+	}
+	return true;
 }
 
 void MoleculeSet::performPSO(MoleculeSet &populationBestSet, MoleculeSet &individualBestSet, FLOAT coordInertia,
@@ -1354,12 +1157,11 @@ void MoleculeSet::performPSO(MoleculeSet &populationBestSet, MoleculeSet &indivi
 	                         bool enforceMinDistances, FLOAT fAttractionRepulsion)
 {
 	for (int i = 0; i < m_iNumberOfMolecules; ++i)
-		if (!m_prgMolecules[i].getFrozen())
-			m_prgMolecules[i].performPSO(populationBestSet.m_prgMolecules[i], individualBestSet.m_prgMolecules[i], coordInertia,
-			        	             coordIndividualMinimumAttraction, coordPopulationMinimumAttraction, coordMaxVelocity,
-			                             angleInertia, angleIndividualMinimumAttraction, anglePopulationMinimumAttraction,
-			                             angleMaxVelocity, boxDimensions, fAttractionRepulsion);
-		
+		m_prgMolecules[i].performPSO(populationBestSet.m_prgMolecules[i], individualBestSet.m_prgMolecules[i], coordInertia,
+		                          coordIndividualMinimumAttraction, coordPopulationMinimumAttraction, coordMaxVelocity,
+		                          angleInertia, angleIndividualMinimumAttraction, anglePopulationMinimumAttraction,
+		                          angleMaxVelocity, boxDimensions, fAttractionRepulsion);
+	
 	initAtomDistances();
 	
 	if (enforceMinDistances)
@@ -1436,11 +1238,11 @@ void MoleculeSet::enforceMinDistConstraints(Point3D &boxDimensions)
 				
 				cout << "Molecule " << j << ":" << endl;
 				m_prgMolecules[j].printToScreen();
+//				exit(0);
 			}
 			
 			if ((!tryToEnforceBoxConstraints(boxDimensions,i)) && (tries < maxTries)) {
 				m_prgMolecules[i].copy(moleculeBackupCopy);
-				initAtomIndexes(i);
 				m_prgMolecules[i].initDistanceMatrix(m_iNumberOfAtoms, m_atoms, m_atomDistances);
 			}
 			
@@ -1461,7 +1263,10 @@ void MoleculeSet::enforceMinDistConstraints(Point3D &boxDimensions)
 void MoleculeSet::print(ofstream &fout)
 {
 	for (int i = 0; i < m_iNumberOfMolecules; ++i)
+	{
 		m_prgMolecules[i].printToFile(fout);
+		fout << endl;
+	}
 }
 
 void MoleculeSet::printToResumeFile(ofstream &fout, bool printVelocityInfo)
@@ -1508,19 +1313,17 @@ bool MoleculeSet::readFromResumeFile(ifstream &infile, char* fileLine, int MAX_L
 void MoleculeSet::printToScreen()
 {
 	for (int i = 0; i < m_iNumberOfMolecules; ++i)
+	{
 		m_prgMolecules[i].printToScreen();
+		cout << endl;
+	}
 }
 
-void MoleculeSet::writeToGausianComFile(ofstream &fout)
+void MoleculeSet::writeToGausianFile(ofstream &fout)
 {
-	for (int i=0; i < m_iNumberOfMolecules; i++)
-		m_prgMolecules[i].writeToGausianComFile(fout);
-}
-
-void MoleculeSet::writeToGausianLogFile(FILE* fout)
-{
-	for (int i=0; i < m_iNumberOfMolecules; i++)
-		m_prgMolecules[i].writeToGausianLogFile(fout);
+	int i;
+	for (i=0; i < m_iNumberOfMolecules; i++)
+		m_prgMolecules[i].writeToGausianFile(fout);
 }
 
 FLOAT MoleculeSet::getDistanceFromPoint(Point3D &point)
@@ -1557,18 +1360,6 @@ void MoleculeSet::initAtomIndexes()
 	if (iAtom != m_iNumberOfAtoms) {
 		cout << "We really have a problem" << endl;
 	}
-}
-
-void MoleculeSet::initAtomIndexes(int iChangedMolecule)
-{
-	int iMolecule, iAtom;
-	iAtom = 0;
-	for (iMolecule = 0; iMolecule < m_iNumberOfMolecules; ++iMolecule)
-		if (iChangedMolecule == iMolecule) {
-			m_prgMolecules[iMolecule].initAtomIndexes(m_atoms, iAtom);
-			break;
-		} else
-			iAtom += m_prgMolecules[iMolecule].getNumberOfAtoms();
 }
 
 void MoleculeSet::initAtomDistances()
@@ -2171,7 +1962,6 @@ FLOAT MoleculeSet::computeLennardJonesEnergy(FLOAT epsilon, FLOAT sigma)
 			energy += (myPower(sigmaOverDist,12) - myPower(sigmaOverDist,6));
 		}
 	energy *= 4 * epsilon;
-	m_fEnergy = energy;
 	return energy;
 }
 
@@ -2261,7 +2051,7 @@ void MoleculeSet::performLennardJonesOptimization(FLOAT epsilon, FLOAT sigma)
 		                    g[iAtom].y * g[iAtom].y +
 		                    g[iAtom].z * g[iAtom].z;
 	}
-	// Old values: 200, 0.i00001
+	// Old values: 200, 0.00001
 	for (int i = 1; i <= 20; ++i) {
 		alpha = minimizeLennardJonesAlpha(epsilon, sigma, s, 0, 0.0001);
 //		cout << setiosflags(ios::fixed) << setprecision(8) << "alpha = " << alpha << endl;
@@ -2357,136 +2147,4 @@ void MoleculeSet::assignReadCoordinates(const Point3D cartesianPoints[], const i
 	sortAtomRanks();
 }
 
-void MoleculeSet::measureSearchSpace(int &withConstraints, int &withoutConstraints)
-{
-	int atomicNumber = m_atoms[0]->m_iAtomicNumber;
-	int i;
-	withConstraints = 0;
-	withoutConstraints = 0;
-	for (i = 0; i < m_iNumberOfMolecules; ++i)
-		if (m_prgMolecules[i].getNumberOfAtoms() > 1) {
-			cout << "The function measureSearchSpace only works with one atom per unit/molecule." << endl;
-			return;
-		}
-	for (i = 0; i < m_iNumberOfAtoms; ++i) {
-		if (m_atoms[i]->m_iAtomicNumber != atomicNumber) {
-			cout << "The function measureSearchSpace only works when all atoms are identical" << endl;
-			return;
-		}
-	}
-}
 
-bool MoleculeSet::performBondRotations(FLOAT angleInRad, vector<MoleculeSet*> &moleculeSets)
-{
-	MoleculeSet *mySet;
-	int combos = 0;
-	int combosSatisfyingConstraints = 0;
-	
-	if (m_iNumberOfMolecules != 1) {
-		cout << "There must be only one molecule/unit in the input file." << endl;
-		return false;
-	}
-	
-	if (!m_prgMolecules[0].findBonds())
-		return false;
-	if (!m_prgMolecules[0].checkConnectivity())
-		return false;
-	if (m_prgMolecules[0].hasRings()) {
-		cout << "This program can not perform bond rotations on molecules with rings." << endl;
-		return false;
-	}
-	m_prgMolecules[0].setBondRotationalAngle(angleInRad);
-	if (m_prgMolecules[0].getNumberOfRotatableBonds() < 1) {
-		cout << "This molecule does not appear to contain rotatable bonds." << endl;
-		m_prgMolecules[0].printBondInfo();
-		cout << "Check the bond length criteria in the file: bondLengths.txt" << endl;
-		return false;
-	}
-	m_prgMolecules[0].initRotationMatrix();
-	initAtomIndexes();
-	do {
-		++combos;
-		m_prgMolecules[0].localToGlobal();
-		initAtomDistances();
-		sortAtomRanks();
-		if (checkMinDistConstraints()) {
-			++combosSatisfyingConstraints;
-			mySet = new MoleculeSet();
-			mySet->copy(*this);
-			moleculeSets.push_back(mySet);
-		}
-	} while (m_prgMolecules[0].incrumentBondPositions());
-	cout << "Possible combinations: " << combos << endl;
-	cout << "Combinations satisfying minimum distance constraints: " << combosSatisfyingConstraints << endl; 
-	for (int i = 0; i < (signed int)moleculeSets.size(); ++i)
-		moleculeSets[i]->m_prgMolecules[0].globalToLocal();
-	return true;
-}
-
-bool MoleculeSet::moveOrCopyGaussianFiles(const char* newDirectory, const char* newLogFilePrefix, const char* newCheckPointFilePrefix, int newNumber, bool moveOrCopy)
-{
-	char fileName[500];
-	char commandLine[500];
-	bool success = true;
-	
-	if ((m_sEnergyFile.length() > 0) && fileExists(m_sEnergyFile.c_str()) && (newLogFilePrefix != NULL) && (newLogFilePrefix[0] != '\0')) {
-		snprintf(fileName, sizeof(fileName), "%s/%s%d.log", newDirectory, newLogFilePrefix, newNumber);
-		if (moveOrCopy)
-			snprintf(commandLine, sizeof(commandLine), "mv %s %s", m_sEnergyFile.c_str(), fileName);
-		else
-			snprintf(commandLine, sizeof(commandLine), "cp %s %s", m_sEnergyFile.c_str(), fileName);
-		if (system(commandLine) == -1) {
-			success = false;
-			m_sEnergyFile = "";
-		} else {
-			m_sEnergyFile = fileName;
-		}
-	} else {
-		m_sEnergyFile = "";
-	}
-	
-	if ((m_sCheckPointFile.length() > 0) && fileExists(m_sCheckPointFile.c_str()) && (newCheckPointFilePrefix != NULL) && (newCheckPointFilePrefix[0] != '\0')) {
-		snprintf(fileName, sizeof(fileName), "%s/%s%d.chk", newDirectory, newCheckPointFilePrefix, newNumber);
-		if (moveOrCopy)
-			snprintf(commandLine, sizeof(commandLine), "mv %s %s", m_sCheckPointFile.c_str(), fileName);
-		else
-			snprintf(commandLine, sizeof(commandLine), "cp %s %s", m_sCheckPointFile.c_str(), fileName);
-		if (system(commandLine) == -1) {
-			success = false;
-			m_sCheckPointFile = "";
-		} else {
-			m_sCheckPointFile = fileName;
-		}
-	} else {
-		m_sCheckPointFile = "";
-	}
-	return success;
-}
-
-bool MoleculeSet::deleteEnergyFiles(void)
-{
-	char commandLine[500];
-	bool success = true;
-	
-	if ((m_sEnergyFile.length() > 0) && fileExists(m_sEnergyFile.c_str())) {
-		snprintf(commandLine, sizeof(commandLine), "rm %s", m_sEnergyFile.c_str());
-		if (system(commandLine) == -1)
-			success = false;
-	}
-	m_sEnergyFile = "";
-	
-	if ((m_sCheckPointFile.length() > 0) && fileExists(m_sCheckPointFile.c_str())) {
-		snprintf(commandLine, sizeof(commandLine), "rm %s", m_sCheckPointFile.c_str());
-		if (system(commandLine) == -1)
-			success = false;
-	}
-	m_sCheckPointFile = "";
-	
-	return success;
-}
-
-bool MoleculeSet::fileExists(const char* fileName)
-{
-	struct stat fileStatistics;
-	return stat(fileName, &fileStatistics) == 0; // If no errors occurred in getting stats, the file exists
-}
