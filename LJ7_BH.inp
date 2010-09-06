@@ -1,4 +1,4 @@
-Monte Carlo Simulated Annealing Input File Version 1.2.1
+Monte Carlo Simulated Annealing Input File Version 1.1.0
 
 Energy function to use (Gaussian or Lennard Jones): Lennard Jones
 Path to energy program:
@@ -26,7 +26,7 @@ Minimum number of iterations before decreasing the temperature (N): 200
 Decrease the temperature when the percentage of accepted transitions for the past N iterations is below: 100
 Quenching factor(use 1 for basin hopping): 1.0
 Don't stop while the temperature is above this value: 400.0
-Stop if the percentage of accepted transitions for the past N iterations is below: 50.0
+Stop if the percentage of accepted transitions for the past N iterations is below: 1.0
 Maximum number of allowed iterations: 50000
 Starting number of perturbations per iteration: 7
 Starting coordinate perturbation (angstroms): 0.03

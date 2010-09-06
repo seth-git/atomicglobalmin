@@ -12,13 +12,11 @@ echo HOSTNAME=`/bin/hostname`
 
 # Create the nodes.txt file
 # The next line writes one node per line and allows duplicate nodes
-# Use this if you want one Gaussian job per processor.
 cp $PBS_NODEFILE  /path/to/gaussian/input/and/log/files/nodes.txt
 
-# The next line writes one node per line and does NOT allow duplicate nodes.
-# Use this if you want one Gaussian job per node with each job runing in parallel on multiple processors.
-# cat $PBS_NODEFILE | uniq > /path/to/gaussian/input/and/log/files/nodes.txt
+# The next line writes one node per line and does NOT allow duplicate nodes
+#cat $PBS_NODEFILE | uniq > /path/to/gaussian/input/and/log/files/nodes.txt
 
 cd /path/to/pso/program
-mpiexec ./pso /path/to/input/output/and/resume/files/LJ7_PSO.inp
+./pso /path/to/input/output/and/resume/files/LJ7_PSO.inp
 

@@ -1,0 +1,8 @@
+#!/bin/bash
+#PBS -l nodes=1:ppn=1,walltime=24:00:00
+#PBS -l mem=1GB
+#PBS -N job_name
+export JOBNAME=job_name
+
+$ENERGY_PROGRAM_GOES_HERE < $INPUT_FILE_NAME_GOES_HERE > $OUTPUT_FILE_NAME_GOES_HERE
+

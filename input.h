@@ -3,17 +3,14 @@
 //    belong in a group.
 // Author: Seth Call
 // Note: This is free software and may be modified and/or redistributed under
-//    the terms of the GNU General Public License (Version 3).
-//    Copyright 2007 Seth Call.
+//    the terms of the GNU General Public License (Version 1.2 or any later
+//    version).  Copyright 2007 Seth Call.
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifndef __INPUT_H__
 #define __INPUT_H__
 
 #include "typedef.h"
-#include "molecule.h"
-#include "moleculeSet.h"
-#include <stdio.h>
 #include <cstdio>
 #include <string>
 #include <ctime>
@@ -24,42 +21,29 @@
 #include <iomanip>
 #include <cmath>
 #include <vector>
-#include <cctype> // for tolower
-#include <algorithm>
-
 using std::ofstream;
 using std::ifstream;
 using std::ostream;
 using namespace std;
 using std::setw;
 using std::time;
-using std::ostringstream;
 
-#define GAUSSIAN        1
-#define LENNARD_JONES   2
+#include "molecule.h"
+#include "moleculeSet.h"
 
 #define SIMULATED_ANNEALING 1
 #define PARTICLE_SWARM_OPTIMIZATION 2
 #define GENETIC_ALGORITHM 3
-#define VERSION "1.2.1"
+#define VERSION "1.1.0"
+
+#define GAUSSIAN        1
+#define LENNARD_JONES   2
 
 #define ACCEPTANCE_RATIO_NUM_ITERATIONS 100
 #define NUM_ITERATIONS_TO_SET_SCALING_FACTOR 200
 #define SET_SCALING_FACTOR_EVERY 20
 
 #define HARTREE_TO_JOULES       2622950
-
-#define PRINT_CATCH_MESSAGES	false
-
-template < class T >
-string ToString(const T &arg)
-{
-	ostringstream	out;
-
-	out << arg;
-
-	return(out.str());
-}
 
 // This class reads user input from a file in a specific format
 // and can also copy input parameters to a new file.
@@ -132,6 +116,7 @@ public:
 	string m_sOutputFileName;
 	string m_sResumeFileName;
 	int m_iResumeFileNumIterations;
+	string m_sAtomicMassFileName;
 	int m_iCharge;
 	int m_iMultiplicity;
 	int m_iMaxIterations;
@@ -173,9 +158,6 @@ public:
 	int m_iStructuresToOptimizeAtATime;
 
 	bool m_bTestMode;
-	FILE* m_testFile;
-	
-	static string s_program_directory; // the directory where the pso application is
 
 private:
 	// This is a list of string parameters that have the text descriptons of the above variables
@@ -291,20 +273,8 @@ public:
 	bool open(string &fileName, bool setMinDistances, bool bReadNodesFile, vector<MoleculeSet*> &moleculeSets,
 	          vector<MoleculeSet*> &bestNMoleculeSets, vector<MoleculeSet*> &bestIndividualMoleculeSets);
 	bool seedCompatible(Input &otherInput);
-	static void checkDirectoryOrFileName(string &directoryName);
-	static void trim(string& str);
-	bool printBondInfo();
-	bool printTestFileHeader(int iterationNumber, MoleculeSet &startingGeometry);
-	bool printTestFileGeometry(int iterationNumber, MoleculeSet &geometry);
-	bool printTestFileFooter();
-
-	static string fileWithoutPath(const string &s);
-	bool setupForIndependentRun(vector<string> &inputFiles, vector<MoleculeSet*> &seededMoleculeSets, bool &bSetupPreviouslyDone);
-	static void sortMoleculeSets(vector<MoleculeSet*> &moleculeSets, int lo, int hi);
-	static void saveBestN(vector<MoleculeSet*> &moleculeSets, vector<MoleculeSet*> &bestN, int n,
-                     FLOAT fMinDistnaceBetweenSameMoleculeSets, int iNumEnergyFilesToSave, const char* sLogFilesDirectory, const char* checkPointFilePrefix);
-
-	bool compileIndependentRunData(bool printOutput);
+	void static checkDirectoryOrFileName(string &directoryName);
+	void static trim(string& str);
 	
 private:
 	bool getStringParam(const char *fileLine, string parameterNameString, string &stringParam);
@@ -315,9 +285,9 @@ private:
 	const char *printYesNoParam(bool yesNoParam);
 	bool containsFileExtension(const char *fileName, const char *extension);
 	bool containsOnlyNumbers(const char *string);
-	static char *trueFalseToYesNoStr(int aBool);
+	char *trueFalseToYesNoStr(int aBool);
 	bool readNodesFile();
-	bool copyFileLines(const char* fromFileName, FILE* toFile);
+	bool readTemplateFile();
 };
 
 #endif
