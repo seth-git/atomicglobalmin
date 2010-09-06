@@ -1,0 +1,55 @@
+Monte Carlo Simulated Annealing Input File Version 1.1.0
+
+Energy function to use (Gaussian or Lennard Jones): Lennard Jones
+Path to energy program:
+Path to energy files:
+Path to scratch directory (optional):
+Search cube length, width, and height: 5.5
+Number of linear structures: 0
+Initialize linear structures in a box with the above cube length and a height and width of: 1.2
+Number of planar structures: 0
+Number of fragmented 3D structures: 0
+Number of partially non-fragmented 3D structures: 0
+Number of completely non-fragmented 3D structures: 32
+General minimum atom distance (used if no value specified below): 0.7
+Specific minimum atom distances (angstroms):
+2 2 1.0
+Maximum inter-atomic distance (angstroms): 1.5
+
+Simulated Annealing Parameters:
+Search only for non-fragmented structures: yes
+Use energy value from local optimization(basin hopping): no
+Search for transition states (random search with every perturbation accepted): no
+Starting temperature or desired starting percentage of accepted transitions(use %): 70%
+Boltzmann constant: 3.1669e-6 
+Minimum number of iterations before decreasing the temperature (N): 200
+Decrease the temperature when the percentage of accepted transitions for the past N iterations is below: 100
+Quenching factor(use 1 for basin hopping): 0.999
+Don't stop while the temperature is above this value: 400.0
+Stop if the percentage of accepted transitions for the past N iterations is below: 1.0
+Maximum number of allowed iterations: 100000
+Starting number of perturbations per iteration: 1
+Starting coordinate perturbation (angstroms): 0.5
+Minimum coordinate perturbation (angstroms): 0.01
+Starting angle perturbation (deg): 20
+Minimum angle perturbation (deg): 2
+
+Save this many of the best "different" structures: 1
+Consider 2 structures "different" if their RMS distance is greater or equal to (angstroms): 1
+Save this many .log/energy output files from the list of best structures: 0
+Output file name: LJ7_Sim.out
+Resume file name (optional): LJ7_Sim.res
+Write resume file after every set of this number of iterations (optional): 10
+Print summary information after each set of this many iterations: 10
+Charge: 0
+Multiplicity: 1
+Energy file header:
+
+Energy file footer (optional):
+
+Number of unit types: 1
+
+Number of units of this type: 7
+Format of this unit type: Cartesian
+2 0.0 0.0 0.0
+

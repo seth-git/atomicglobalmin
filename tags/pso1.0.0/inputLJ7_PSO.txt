@@ -1,0 +1,61 @@
+Particle Swarm Optimization Input File Version 1.0
+
+Energy function to use (Gaussian or Lennard Jones): Lennard Jones
+Path to energy program: 
+Path to energy files: 
+Search cube length, width, and height: 5.5
+Number of linear structures: 0
+Initialize linear structures in a box with the above cube length and a height and width of: 1.2
+Number of planar structures: 0
+Number of fragmented 3D structures: 10
+Number of partially non-fragmented 3D structures: 10
+Number of completely non-fragmented 3D structures: 180
+General minimum atom distance (used if no value specified below): 0.7
+Specific minimum atom distances (angstroms):
+2 2 1.0
+Maximum inter-atomic distance (angstroms): 2.0
+
+Particle Swarm Optimization Parameters:
+Start coordinate inertia (w): 0.95
+End coordinate inertia (optional): 0.8
+Reach end coordinate and angle inertias at iteration (optional): 10000
+Coordinate individual minimum attraction (c2): 0.1
+Coordinate population minimum attraction (c1): 0.1
+Maximum Coordinate Velocity (Vmax, optional): 0.2
+Start angle inertia (w): 0.95
+End angle inertia (optional): 0.8
+Angle individual minimum attraction (c2, deg): 10
+Angle population minimum attraction (c1, deg): 1
+Maximum Angle Velocity (Vmax, optional): 10
+Starting visibility RMS distance (optional): 0.01
+Increase the visibility RMS distance by this amount each iteration (optional): 0.004
+Initialize structures in pairs where each is a near copy of the other (gives non-zero initial visibility): no
+Switch to the repulsion phase when (1) diversity is below (optional): 0.05
+And when (2) progress hasn't been made for this number of iterations (optional): 40
+Switch to the attraction phase when diversity is above (optional): 0.2
+When switching to the attraction phase, replace this number of individual best solutions with population best solutions: 200
+Don't update individual best solutions within this RMS distance of the best seen by the population: 0.005
+Maximum number of allowed iterations: 800
+Enforce minimum distance constraints on a copy of each structure rather than on the original: no
+Use local optimization (energy value only): no
+
+Save this many of the best "different" structures: 200
+Consider 2 structures "different" if their RMS distance is greater or equal to (angstroms): 1.0
+Output file name: outputLJ7_PSO.txt
+Resume file name (optional): resumeLJ7_PSO.txt
+Write resume file after every set of this number of iterations: 10
+Print summary information after each set of this many iterations: 10
+Cluster node names file (put LOCAL for local nodes): nodes.txt
+Job queue template file (used instead of the node names file, optional): 
+Number of jobs submitted to the job queue at a time: 
+Every other iteration, use the wave function from the previous iteration: no
+Charge: 0
+Multiplicity: 1
+Energy file header:
+
+Number of unit types: 1
+
+Number of units of this type: 7
+Format of this unit type: Cartesian
+2 0.0 0.0 0.0
+

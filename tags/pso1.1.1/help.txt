@@ -1,0 +1,23 @@
+Usage: pso [OPTION]... INPUT_FILE
+This program performs searches for minima as specified in the INPUT_FILE.
+
+  -t                           This writes the list of best structures to a
+                               temporary file in a readable format. Specify a
+                               resume or optimization file followed by the name
+                               of the temporary file.
+  -c                           This creates Gaussian .com files from the list of
+                               best structures. Specify a resume or optimization
+                               file, followed by a directory where .com files
+                               will be written, followed by a prefix for the
+                               .com files.
+  -o                           This creates an optimization file from a resume
+                               file.  It is used to optimize structures in the
+                               list of best structures to their nearest minima.
+                               Specify a resume file, followed by the number of
+                               structures to optimize at a time, followed by
+                               the optimization file to be created.
+  -s                           This specifies that the starting population will
+                               be seeded with structures from previous runs.
+                               Specify an input file, followed by the number of
+                               iterations to perform freezing, followed by one
+                               or more resume or optimization files.

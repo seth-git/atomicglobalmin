@@ -1,0 +1,118 @@
+At No	Symbol	Name	Atomic Wt	Notes	See: http://www.chem.qmul.ac.uk/iupac/AtWt/
+1	H	Hydrogen	1.007947	1, 2, 3
+2	He	Helium	4.0026022	1, 2
+3	Li	Lithium	6.9412	1, 2, 3, 4
+4	Be	Beryllium	9.0121823
+5	B	Boron	10.8117	1, 2, 3
+6	C	Carbon	12.01078	1, 2
+7	N	Nitrogen	14.00672	1, 2
+8	O	Oxygen	15.99943	1, 2
+9	F	Fluorine	18.99840325
+10	Ne	Neon	20.17976	1, 3
+11	Na	Sodium	22.989769282
+12	Mg	Magnesium	24.30506
+13	Al	Aluminium	26.98153868
+14	Si	Silicon	28.08553	2
+15	P	Phosphorus	30.9737622
+16	S	Sulfur	32.0655	1, 2
+17	Cl	Chlorine	35.4532	3
+18	Ar	Argon	39.9481	1, 2
+19	K	Potassium	39.09831	1
+20	Ca	Calcium	40.0784	1
+21	Sc	Scandium	44.9559126
+22	Ti	Titanium	47.8671
+23	V	Vanadium	50.94151
+24	Cr	Chromium	51.99616
+25	Mn	Manganese	54.9380455
+26	Fe	Iron	55.8452
+27	Co	Cobalt	58.9331955
+28	Ni	Nickel	58.69344
+29	Cu	Copper	63.5463	2
+30	Zn	Zinc	65.382	
+31	Ga	Gallium	69.7231
+32	Ge	Germanium	72.641
+33	As	Arsenic	74.921602
+34	Se	Selenium	78.963
+35	Br	Bromine	79.9041
+36	Kr	Krypton	83.7982	1, 3
+37	Rb	Rubidium	85.46783	1
+38	Sr	Strontium	87.621	1, 2
+39	Y	Yttrium	88.905852
+40	Zr	Zirconium	91.2242	1
+41	Nb	Niobium	92.906382
+42	Mo	Molybdenum	95.962	1
+43	Tc	Technetium	98	5
+44	Ru	Ruthenium	101.072	1
+45	Rh	Rhodium	102.905502
+46	Pd	Palladium	106.421	1
+47	Ag	Silver	107.86822	1
+48	Cd	Cadmium	112.4118	1
+49	In	Indium	114.8183
+50	Sn	Tin	118.7107	1
+51	Sb	Antimony	121.7601	1
+52	Te	Tellurium	127.603	1
+53	I	Iodine	126.904473
+54	Xe	Xenon	131.2936	1, 3
+55	Cs	Caesium	132.90545192
+56	Ba	Barium	137.3277
+57	La	Lanthanum	138.905477	1
+58	Ce	Cerium	140.1161	1
+59	Pr	Praseodymium	140.907652
+60	Nd	Neodymium	144.2423	1
+61	Pm	Promethium	145	5
+62	Sm	Samarium	150.362	1
+63	Eu	Europium	151.9641	1
+64	Gd	Gadolinium	157.253	1
+65	Tb	Terbium	158.925352
+66	Dy	Dysprosium	162.5001	1
+67	Ho	Holmium	164.930322
+68	Er	Erbium	167.2593	1
+69	Tm	Thulium	168.934212
+70	Yb	Ytterbium	173.0545	1
+71	Lu	Lutetium	174.96681	1
+72	Hf	Hafnium	178.492
+73	Ta	Tantalum	180.947882
+74	W	Tungsten	183.841
+75	Re	Rhenium	186.2071
+76	Os	Osmium	190.233	1
+77	Ir	Iridium	192.2173
+78	Pt	Platinum	195.0849
+79	Au	Gold	196.9665694
+80	Hg	Mercury	200.592
+81	Tl	Thallium	204.38332
+82	Pb	Lead	207.21	1, 2
+83	Bi	Bismuth	208.980401
+84	Po	Polonium	209	5
+85	At	Astatine	210	5
+86	Rn	Radon	222	5
+87	Fr	Francium	223	5
+88	Ra	Radium	226	5
+89	Ac	Actinium	227	5
+90	Th	Thorium	232.038062	1, 5
+91	Pa	Protactinium	231.035882	5
+92	U	Uranium	238.028913	1, 3, 5
+93	Np	Neptunium	237	5
+94	Pu	Plutonium	244	5
+95	Am	Americium	243	5
+96	Cm	Curium	247	5
+97	Bk	Berkelium	247	5
+98	Cf	Californium	251	5
+99	Es	Einsteinium	252	5
+100	Fm	Fermium	257	5
+101	Md	Mendelevium	258	5
+102	No	Nobelium	259	5
+103	Lr	Lawrencium	262	5
+104	Rf	Rutherfordium	267	5
+105	Db	Dubnium	268	5
+106	Sg	Seaborgium	271	5
+107	Bh	Bohrium	272	5
+108	Hs	Hassium	270	5
+109	Mt	Meitnerium	276	5
+110	Ds	Darmstadtium	281	5
+111	Rg	Roentgenium 	280	5
+112	Uub	Ununbium	285	5, 6
+113	Uut	Ununtrium 	284	5, 6
+114	Uuq	Ununquadium	289	5, 6
+115	Uup	Ununpentium	288	5, 6
+116	Uuh	Ununhexium	293	5, 6
+118	Uuo	Ununoctium	294	5, 6

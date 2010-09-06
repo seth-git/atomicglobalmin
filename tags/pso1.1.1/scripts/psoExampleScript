@@ -1,0 +1,26 @@
+#!/bin/bash
+#PBS -l nodes=1:ppn=1,walltime=24:00:00
+#PBS -l mem=1GB
+#PBS -N job_name
+export JOBNAME=job_name
+
+echo PBS_O_WORKDIR=$PBS_O_WORKDIR
+echo PBS_ENVIRONMENT=$PBS_ENVIRONMENT
+echo PBS_NODEFILE=$PBS_NODEFILE
+echo cat $PBS_NODEFILE
+cat $PBS_NODEFILE
+echo $PBS_NODEFILE
+echo HOSTNAME=`/bin/hostname`
+
+# Create the nodes.txt file
+# The next line writes one node per line and allows duplicate nodes
+cat $PBS_NODEFILE | sed "s/^node00/ssh node00/" > $PBS_O_WORKDIR/nodes.txt
+
+# The next line writes one node per line and does not allow duplicate nodes
+# cat $PBS_NODEFILE | uniq | sed "s/^node00/ssh node00/" > $PBS_O_WORKDIR/nodes.txt
+
+cd $PBS_O_WORKDIR
+# cp $PBS_O_WORKDIR/nodes.txt $PBS_O_WORKDIR/nodes.txt.$PBS_JOBNAME.$PBS_JOBID
+					
+/path/to/home/directory/pso/pso /path/to/home/directory/runs/inputFile.txt
+

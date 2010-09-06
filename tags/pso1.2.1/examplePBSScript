@@ -1,0 +1,24 @@
+#!/bin/bash
+#PBS -l nodes=2:ppn=2,walltime=24:00:00
+#PBS -l mem=1GB
+
+echo PBS_O_WORKDIR=$PBS_O_WORKDIR
+echo PBS_ENVIRONMENT=$PBS_ENVIRONMENT
+echo PBS_NODEFILE=$PBS_NODEFILE
+echo cat $PBS_NODEFILE
+cat $PBS_NODEFILE
+echo $PBS_NODEFILE
+echo HOSTNAME=`/bin/hostname`
+
+# Create the nodes.txt file
+# The next line writes one node per line and allows duplicate nodes
+# Use this if you want one Gaussian job per processor.
+cp $PBS_NODEFILE  /path/to/gaussian/input/and/log/files/nodes.txt
+
+# The next line writes one node per line and does NOT allow duplicate nodes.
+# Use this if you want one Gaussian job per node with each job runing in parallel on multiple processors.
+# cat $PBS_NODEFILE | uniq > /path/to/gaussian/input/and/log/files/nodes.txt
+
+cd /path/to/pso/program
+./pso /path/to/input/output/and/resume/files/LJ7_PSO.inp
+

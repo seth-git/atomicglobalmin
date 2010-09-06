@@ -1,0 +1,63 @@
+﻿Usage: pso [OPTION]... INPUT_FILE
+This program performs searches for minima as specified in the INPUT_FILE.
+
+  -t                           This writes the list of best structures to a
+                               temporary file in a readable format. Specify a
+                               resume or optimization file followed by the name
+                               of the temporary file.
+  -c                           This creates Gaussian .com files from the list of
+                               best structures. Specify a resume or optimization
+                               file, followed by a directory where .com files
+                               will be written, followed by a prefix for the
+                               .com files.
+  -p                           This creates Gaussian .com files from the current
+                               population of structures. Specify a resume or
+                               optimization file, followed by a directory where
+                               .com files will be written, followed by a prefix
+                               for the .com files.
+  -o                           This creates an optimization file from a resume
+                               file.  It is used to optimize structures in the
+                               list of best structures to their nearest minima.
+                               Specify a resume file, followed by the
+                               optimization file to be created, followed by the
+                               number of structures to transfer, followed by
+                               the number of structures to optimize at a time.
+  -a                           This moves additional structures from the
+                               list of best structures in a resume file to
+                               an existing optimization file. Specify an
+                               optimization file, followed by the number of
+                               additional structures to transfer from the
+                               resume file.
+  -or                          This creates an optimization file from an input
+                               file.  It creates a population containing random
+                               structures of the same number and type as
+                               indicated in the input file. Specify an input
+                               file, followed by an optimization file to be
+                               created, followed by the number of structures
+                               to optimize at a time.
+  -s                           This specifies that the starting population will
+                               be seeded with structures from previous runs.
+                               Specify an input file, followed by the number of
+                               iterations to perform freezing, followed by one
+                               or more resume or optimization files.
+  -b                           This option displays bonding information for an
+                               input file.  Specify the name of an input file.
+  -m                           This option performs a monomer search by
+                               generating all possible combinations of bond
+                               rotations that can be performed.  Specify an
+                               input file, followed by the number of degrees to
+                               rotate bond angles, followed by an optimization
+                               file to be created, followed by the number of
+                               structures to optimize at a time.
+  -test                        Using this option during a simulated annealing,
+                               particle swarm, or genetic algorithm run causes
+                               a file called test.log to be created inside the
+                               testfiles directory.  This log file contains
+                               geometries of one member of the population
+                               during the entire course of the run, and is
+                               meant to be viewed in Molden.  Since Molden can
+                               only read 2000 geometries from a log file, this
+                               program will produce additional log files if more
+                               than 2000 geometries are generated during a run.
+                               Make sure when using this option that enough hard
+                               drive space is available.  Specify an input file.
