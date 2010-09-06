@@ -1,4 +1,4 @@
-Particle Swarm Optimization (PSO) Global Optimization Software Read Me
+﻿Particle Swarm Optimization (PSO) Global Optimization Software Read Me
 
 This is free software and may be modified and/or redistributed under the terms of the GNU General Public License.  Copyright 2007 Seth Call.
 
@@ -43,19 +43,61 @@ The software can run on one Linux computer or a cluster of Linux computers and w
 
 A. Compiling the software
 
-This software was written in C++ and may only be compiled using the GNU g++ compiler on a Linux operating system.  The program uses the Message Passing Interface (MPI) library to run on multiple Linux computers.  To compile the program at the command line, navigate to the pso directory using the cd command, and type "make".  This creates two executables, pso and helper.  The pso executable is an mpi application, while helper is not.  The helper application contains additional utilities.  A list of the options available with the pso and helper executables can be obtained by typing "./pso" or "./helper" respectively.
+This program does not have a graphical user interface but is not difficult to compile.  Some background information is available at these links:
+
+	Download putty to access Linux: http://www.chiark.greenend.org.uk/~sgtatham/putty/
+	Download WinSCP to transfer files: http://www.winscp.com/
+	Learning Unix/Linux: http://librenix.com/?inode=4052
+	Vim Editor: http://www.oregonwebradio.net/backup_fedora/tutorials/vim_li/quickstart.html
+	Download Ubuntu: http://www.ubuntu.com/GetUbuntu/download
+
+To compiling the program do the following:
+
+1. Download the program file: pso1.3.1.tar.gz
+2. Install g++ and MPI compilers
+3. Compile the program
+
+Step 1: You can download pso1.3.1.tar.gz file from the same place you downloaded this readme file.  If you want to run the program on a remote Linux cluster, first download the program onto your local computer and then transfer the program to the Linux cluster.  If you use Windows, you can transfer the program file to the Linux cluster using the WinSCP program (see above link).  If you are using Ubuntu or a Mac, open a terminal.  To open a terminal on Ubuntu, click on 'Applications', 'Accessories', 'Terminal'.  Then, use these commands to transfer the program to the Linux cluster:
+
+	cd /directory/where/you/put/pso1.3.1.tar.gz
+	scp  pso1.3.1.tar.gz your_user_name@your.linux.cluster:pso1.3.1.tar.gz
+
+Step 2: If using a University Linux cluster, the g++ and MPI compilers should already be installed, so you can likely skip this step. If using a local Linux box, g++ should already be installed, but you will have to install the MPI compiler.  On Ubuntu Linux, you may install this by clicking on 'System' and 'Administration', then 'Synaptic Package Manager' and searching for mpi.  I installed the libmpich1.0gf and libmpich1.0-dev packages.
+
+Step 3: If you are running the program on a remote Linux cluster, you will need to log into the cluster with ssh.  To do this on Windows, use the putty program (see the above link).  To log in at the command line on Ubuntu or a Mac, type the following at the command line:
+
+	ssh your_user_name@your.linux.cluster
+
+Once logged in, navigate to the directory where you placed the program.  Change directories by typing: 'cd some_directory'.  To get out of the current directory type: 'cd ..'   .  To list files and directories in the current directory, type 'ls' or 'ls -al' (the later is a long list format).  When you have navigated to your program directory, type the following to decompress the program:
+
+	gunzip pso1.3.1.tar.gz
+	tar -xf pso1.3.1.tar
+
+Then, navigate into the directory:
+
+	cd pso1.3.1
+
+Then compile the program by typing:
+
+	make
+
+You may see warning messages.  If so, this is OK.  If you see error messages, this is NOT OK, and it likely means you do not have the right compilers installed (see step 2).
+
+When you have successfully compiled the program, two executables will be created: pso and helper.  The pso executable is an MPI application, while helper is not.  The helper application contains additional utilities.  A list of the options available with the pso and helper executables can be obtained by typing "./pso" or "./helper" respectively.
 
 B. Input, output, resume, and optimization files
 
-Each of the four algorithms, particle swarm optimization (PSO), basin hopping, simulated annealing, and the genetic algorithm has a different input file (file extension .inp).  These were designed to be as self explanatory as possible.  Simulated annealing and basin hopping have a common input file, since they are similar algorithms.  Each time the program is run, it creates an output file (file extension .out), which contains the input parameters as well as summary information on the progress of the run.  The program also creates a resume file (file extension .res), which contains all information necessary for restarting a run that was stopped before it was completed.  An optimization file (file extension .opt) can be created from a resume file in order to optimize the list of best structures after the run has completed.
+Each of the four algorithms, particle swarm optimization (PSO), basin hopping, simulated annealing, and the genetic algorithm has a different input file (file extension .inp).  These were designed to be as self explanatory as possible.  Simulated annealing and basin hopping have a common input file, since they are similar algorithms.  Each time the program is run, it creates an output file (file extension .out), which contains the input parameters as well as summary information on the progress of the run.  The program also creates a resume file (file extension .res), which contains all information necessary for restarting a run that was stopped before it was completed.  An optimization file (file extension .opt) can be created from a resume file in order to perform a local geometry optimization on the list of best structures after the run has completed.
 
 C. Running and restarting the program
 
-Four example input files are LJ7_PSO.inp, LJ7_Sim.inp, LJ7_BH.inp, and LJ7_GA.inp, for PSO, simulated annealing, and the genetic algorithm respectively.  To run the PSO input file type the following:
+Four example input files are LJ7_PSO.inp, LJ7_Sim.inp, LJ7_BH.inp, and LJ7_GA.inp, for PSO, simulated annealing, and the genetic algorithm respectively.  To run the PSO input file, type the following:
 
       ./pso LJ7_PSO.inp
 
-Other input files are run similarly.  The global minimum for LJ7 has energy -16.505384.  To prematurely terminate a PSO or other type of run, press Ctrl-C. To restart the PSO run after it has been stopped, type "./pso LJ7_PSO.res". Restart other types of algorithms similarly.
+Other input files are run similarly.  The LJ7_PSO.inp input file searches for the gobal minimum of 7 noble gas atoms (He, Ne, Ar, etc.) using the Lennard Jones potential.  The global minimum for LJ7 has energy -16.505384.  To prematurely terminate a PSO or other type of run, press Ctrl-C. To restart the PSO run after it has been stopped, type "./pso LJ7_PSO.res". Restart other types of algorithms similarly.
+
+This type of search performs translation and rotation of rigid molecules in search of a global minimum.  It does not perform a bond rotational search.  This type of search must be performed separately as described in section E (although modifications to the program could combine a bond rotational search with a translational and rotational search).
 
 To create a geometry optimization file from the LJ7_PSO.res resume file, type:
 
@@ -63,7 +105,7 @@ To create a geometry optimization file from the LJ7_PSO.res resume file, type:
 
 This creates an optimization file called LJ7_PSO.opt and transfers 100 structures to it from LJ7_PSO.res.  To run the optimization file type "./pso LJ7_PSO.opt". After each set of 10 structures have been optimized, the program will update the LJ7_PSO.opt file until all structures have been optimized.
 
-Note that if you open an optimization file, it will say simulated annealing, particle swarm, or genetic algorithm at the top.  This is because optimization files were originally designed to be used to perform a geometry optimization on the list of best structures after a simulated annealing, particle swarm, or genetic algorithm run.  Now, they are more generally used to perform calculations on any list of chemical structures.  For example, this program uses optimization files to perform bond rotational searches.  Even though geometry optimization may or may not be used, the file type is still called an 'optimization' file.
+Note that if you open an optimization file, it will say simulated annealing, particle swarm, or genetic algorithm at the top.  This is because optimization files were originally designed to perform a geometry optimization on the list of best structures after a simulated annealing, particle swarm, or genetic algorithm run.  Now, they are more generally used to perform calculations on any list of chemical structures.  For example, this program uses optimization files to perform bond rotational searches.  Even though geometry optimization may or may not be used, the file type is still called an 'optimization' file.
 
 D. Obtaining results from output, resume, and optimization files
 
