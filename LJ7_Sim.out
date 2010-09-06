@@ -1,0 +1,130 @@
+Monte Carlo Simulated Annealing Input File Version 1.2.1
+
+Energy function to use (Gaussian or Lennard Jones): Lennard Jones
+Path to energy program: 
+Path to energy files: 
+Path to scratch directory (optional): 
+Search cube length, width, and height: 5.5
+Number of linear structures: 0
+Initialize linear structures in a box with the above cube length and a height and width of: 1.2
+Number of planar structures: 0
+Number of fragmented 3D structures: 0
+Number of partially non-fragmented 3D structures: 0
+Number of completely non-fragmented 3D structures: 32
+General minimum atom distance (used if no value specified below): 0.7
+Specific minimum atom distances (angstroms): 
+2 2 1.0
+Maximum inter-atomic distance (angstroms): 1.5
+
+Simulated Annealing Parameters:
+Search only for non-fragmented structures: yes
+Use energy value from local optimization(basin hopping): no
+Search for transition states (random search with every perturbation accepted): no
+Starting temperature or desired starting percentage of accepted transitions(use %): 90.0%
+Boltzmann constant: 0.0000031669
+Minimum number of iterations before decreasing the temperature (N): 200
+Decrease the temperature when the percentage of accepted transitions for the past N iterations is below: 100.0
+Quenching factor(use 1 for basin hopping): 0.9995
+Don't stop while the temperature is above this value: 400.0
+Stop if the percentage of accepted transitions for the past N iterations is below: 10.0
+Maximum number of allowed iterations: 20000
+Starting number of perturbations per iteration: 1
+Starting coordinate perturbation (angstroms): 0.3
+Minimum coordinate perturbation (angstroms): 0.01
+Starting angle perturbation (deg): 20.0
+Minimum angle perturbation (deg): 2.0
+
+Save this many of the best "different" structures: 1
+Consider 2 structures "different" if their RMS distance is greater or equal to (angstroms): 0.1
+Save this many .log/energy output files from the list of best structures: 0
+Output file name: LJ7_Sim.out
+Resume file name (optional): LJ7_Sim.res
+Write resume file after every set of this number of iterations (optional): 10
+Print summary information after each set of this many iterations: 10
+Charge: 0
+Multiplicity: 1
+Energy file header:
+
+Energy file footer (optional):
+
+Number of unit types: 1
+
+Number of units of this type: 7
+Format of this unit type: Cartesian
+2 0.0 0.0 0.0
+
+
+Output from program:
+Initializing the population...
+Simulating Annealing...
+Setting the temperature to 904187.407856502337381...
+It: 10 Best Energy: -10.74171750 Temp: 904187.4 Num Pert: 1 Coord, Angle Pert: 0.3000, 20.0000 Accepted Pert: 92.5%
+It: 20 Best Energy: -10.74171750 Temp: 680333.1 Num Pert: 1 Coord, Angle Pert: 0.3000, 20.0000 Accepted Pert: 90.3%
+It: 30 Best Energy: -10.74171750 Temp: 680333.1 Num Pert: 1 Coord, Angle Pert: 0.3000, 20.0000 Accepted Pert: 89.8%
+It: 40 Best Energy: -10.74171750 Temp: 621556.9 Num Pert: 1 Coord, Angle Pert: 0.3000, 20.0000 Accepted Pert: 89.7%
+It: 50 Best Energy: -10.74171750 Temp: 621556.9 Num Pert: 1 Coord, Angle Pert: 0.3000, 20.0000 Accepted Pert: 89.8%
+It: 60 Best Energy: -10.74171750 Temp: 611772.4 Num Pert: 1 Coord, Angle Pert: 0.3000, 20.0000 Accepted Pert: 89.9%
+It: 70 Best Energy: -10.74171750 Temp: 611772.4 Num Pert: 1 Coord, Angle Pert: 0.3000, 20.0000 Accepted Pert: 90.1%
+It: 80 Best Energy: -10.74171750 Temp: 615565.1 Num Pert: 1 Coord, Angle Pert: 0.3000, 20.0000 Accepted Pert: 90.3%
+It: 90 Best Energy: -10.74171750 Temp: 615565.1 Num Pert: 1 Coord, Angle Pert: 0.3000, 20.0000 Accepted Pert: 90.3%
+It: 100 Best Energy: -10.74171750 Temp: 544104.3 Num Pert: 1 Coord, Angle Pert: 0.3000, 20.0000 Accepted Pert: 90.3%
+It: 110 Best Energy: -10.74171750 Temp: 544104.3 Num Pert: 1 Coord, Angle Pert: 0.3000, 20.0000 Accepted Pert: 89.9%
+It: 120 Best Energy: -10.74171750 Temp: 648920.8 Num Pert: 1 Coord, Angle Pert: 0.3000, 20.0000 Accepted Pert: 90.0%
+It: 130 Best Energy: -10.74171750 Temp: 648920.8 Num Pert: 1 Coord, Angle Pert: 0.3000, 20.0000 Accepted Pert: 89.9%
+It: 140 Best Energy: -10.74171750 Temp: 593011.6 Num Pert: 1 Coord, Angle Pert: 0.3000, 20.0000 Accepted Pert: 90.0%
+It: 150 Best Energy: -10.74171750 Temp: 593011.6 Num Pert: 1 Coord, Angle Pert: 0.3000, 20.0000 Accepted Pert: 90.0%
+It: 160 Best Energy: -10.74171750 Temp: 577507.5 Num Pert: 1 Coord, Angle Pert: 0.3000, 20.0000 Accepted Pert: 90.0%
+It: 170 Best Energy: -10.74171750 Temp: 577507.5 Num Pert: 1 Coord, Angle Pert: 0.3000, 20.0000 Accepted Pert: 90.0%
+It: 180 Best Energy: -10.74171750 Temp: 584990.7 Num Pert: 1 Coord, Angle Pert: 0.3000, 20.0000 Accepted Pert: 89.9%
+It: 190 Best Energy: -10.74171750 Temp: 584990.7 Num Pert: 1 Coord, Angle Pert: 0.3000, 20.0000 Accepted Pert: 90.0%
+Setting the temperature to 524992.083900922210887...
+It: 200 Best Energy: -10.74171750 Temp: 524992.1 Num Pert: 1 Coord, Angle Pert: 0.3000, 20.0000 Accepted Pert: 90.3%
+Decreasing Temperature...
+It: 210 Best Energy: -10.74171750 Temp: 522373.0 Num Pert: 1 Coord, Angle Pert: 0.2993, 19.9500 Accepted Pert: 90.0%
+It: 220 Best Energy: -10.74171750 Temp: 519767.0 Num Pert: 1 Coord, Angle Pert: 0.2985, 19.9002 Accepted Pert: 90.2%
+It: 230 Best Energy: -10.74171750 Temp: 517174.0 Num Pert: 1 Coord, Angle Pert: 0.2978, 19.8505 Accepted Pert: 90.3%
+It: 240 Best Energy: -10.74171750 Temp: 514594.0 Num Pert: 1 Coord, Angle Pert: 0.2970, 19.8009 Accepted Pert: 90.4%
+It: 250 Best Energy: -10.74171750 Temp: 512026.8 Num Pert: 1 Coord, Angle Pert: 0.2963, 19.7515 Accepted Pert: 90.3%
+It: 260 Best Energy: -10.74171750 Temp: 509472.4 Num Pert: 1 Coord, Angle Pert: 0.2955, 19.7022 Accepted Pert: 90.3%
+It: 270 Best Energy: -10.74171750 Temp: 506930.8 Num Pert: 1 Coord, Angle Pert: 0.2948, 19.6530 Accepted Pert: 90.1%
+It: 280 Best Energy: -10.74171750 Temp: 504401.8 Num Pert: 1 Coord, Angle Pert: 0.2941, 19.6039 Accepted Pert: 89.8%
+It: 290 Best Energy: -10.74171750 Temp: 501885.5 Num Pert: 1 Coord, Angle Pert: 0.2933, 19.5549 Accepted Pert: 89.7%
+It: 300 Best Energy: -10.74171750 Temp: 499381.7 Num Pert: 1 Coord, Angle Pert: 0.2926, 19.5061 Accepted Pert: 89.5%
+It: 310 Best Energy: -10.74171750 Temp: 496890.4 Num Pert: 1 Coord, Angle Pert: 0.2919, 19.4574 Accepted Pert: 89.6%
+It: 320 Best Energy: -10.74171750 Temp: 494411.5 Num Pert: 1 Coord, Angle Pert: 0.2911, 19.4088 Accepted Pert: 89.4%
+It: 330 Best Energy: -10.74171750 Temp: 491945.0 Num Pert: 1 Coord, Angle Pert: 0.2904, 19.3603 Accepted Pert: 89.3%
+It: 340 Best Energy: -10.74171750 Temp: 489490.8 Num Pert: 1 Coord, Angle Pert: 0.2897, 19.3119 Accepted Pert: 89.2%
+It: 350 Best Energy: -10.74171750 Temp: 487048.9 Num Pert: 1 Coord, Angle Pert: 0.2890, 19.2637 Accepted Pert: 89.2%
+It: 360 Best Energy: -10.74171750 Temp: 484619.1 Num Pert: 1 Coord, Angle Pert: 0.2882, 19.2156 Accepted Pert: 89.1%
+It: 370 Best Energy: -10.74171750 Temp: 482201.4 Num Pert: 1 Coord, Angle Pert: 0.2875, 19.1676 Accepted Pert: 88.9%
+It: 380 Best Energy: -10.74171750 Temp: 479795.8 Num Pert: 1 Coord, Angle Pert: 0.2868, 19.1197 Accepted Pert: 89.1%
+It: 390 Best Energy: -10.74171750 Temp: 477402.2 Num Pert: 1 Coord, Angle Pert: 0.2861, 19.0720 Accepted Pert: 88.9%
+It: 400 Best Energy: -10.74171750 Temp: 475020.6 Num Pert: 1 Coord, Angle Pert: 0.2854, 19.0244 Accepted Pert: 88.7%
+It: 410 Best Energy: -10.74171750 Temp: 472650.8 Num Pert: 1 Coord, Angle Pert: 0.2847, 18.9768 Accepted Pert: 88.7%
+It: 420 Best Energy: -10.74171750 Temp: 470292.9 Num Pert: 1 Coord, Angle Pert: 0.2839, 18.9294 Accepted Pert: 88.3%
+It: 430 Best Energy: -10.74171750 Temp: 467946.7 Num Pert: 1 Coord, Angle Pert: 0.2832, 18.8822 Accepted Pert: 88.2%
+It: 440 Best Energy: -10.74171750 Temp: 465612.2 Num Pert: 1 Coord, Angle Pert: 0.2825, 18.8350 Accepted Pert: 88.0%
+It: 450 Best Energy: -10.74171750 Temp: 463289.4 Num Pert: 1 Coord, Angle Pert: 0.2818, 18.7880 Accepted Pert: 88.0%
+It: 460 Best Energy: -10.74171750 Temp: 460978.2 Num Pert: 1 Coord, Angle Pert: 0.2811, 18.7410 Accepted Pert: 88.0%
+It: 470 Best Energy: -10.74171750 Temp: 458678.5 Num Pert: 1 Coord, Angle Pert: 0.2804, 18.6942 Accepted Pert: 88.1%
+It: 480 Best Energy: -10.74171750 Temp: 456390.2 Num Pert: 1 Coord, Angle Pert: 0.2797, 18.6475 Accepted Pert: 88.2%
+It: 490 Best Energy: -10.74171750 Temp: 454113.4 Num Pert: 1 Coord, Angle Pert: 0.2790, 18.6010 Accepted Pert: 88.1%
+It: 500 Best Energy: -10.74171750 Temp: 451847.9 Num Pert: 1 Coord, Angle Pert: 0.2783, 18.5545 Accepted Pert: 88.2%
+It: 510 Best Energy: -10.74171750 Temp: 449593.8 Num Pert: 1 Coord, Angle Pert: 0.2776, 18.5082 Accepted Pert: 88.3%
+It: 520 Best Energy: -10.74171750 Temp: 447350.8 Num Pert: 1 Coord, Angle Pert: 0.2769, 18.4620 Accepted Pert: 88.3%
+It: 530 Best Energy: -10.74171750 Temp: 445119.1 Num Pert: 1 Coord, Angle Pert: 0.2762, 18.4158 Accepted Pert: 88.3%
+It: 540 Best Energy: -10.74171750 Temp: 442898.5 Num Pert: 1 Coord, Angle Pert: 0.2755, 18.3699 Accepted Pert: 88.3%
+It: 550 Best Energy: -10.74171750 Temp: 440689.0 Num Pert: 1 Coord, Angle Pert: 0.2749, 18.3240 Accepted Pert: 88.3%
+It: 560 Best Energy: -10.74171750 Temp: 438490.5 Num Pert: 1 Coord, Angle Pert: 0.2742, 18.2782 Accepted Pert: 88.3%
+It: 570 Best Energy: -10.74171750 Temp: 436303.0 Num Pert: 1 Coord, Angle Pert: 0.2735, 18.2326 Accepted Pert: 88.4%
+It: 580 Best Energy: -10.74171750 Temp: 434126.4 Num Pert: 1 Coord, Angle Pert: 0.2728, 18.1870 Accepted Pert: 88.2%
+It: 590 Best Energy: -10.74171750 Temp: 431960.6 Num Pert: 1 Coord, Angle Pert: 0.2721, 18.1416 Accepted Pert: 88.1%
+It: 600 Best Energy: -10.74171750 Temp: 429805.7 Num Pert: 1 Coord, Angle Pert: 0.2714, 18.0963 Accepted Pert: 87.9%
+It: 610 Best Energy: -10.74171750 Temp: 427661.5 Num Pert: 1 Coord, Angle Pert: 0.2708, 18.0511 Accepted Pert: 87.7%
+It: 620 Best Energy: -10.74171750 Temp: 425528.0 Num Pert: 1 Coord, Angle Pert: 0.2701, 18.0060 Accepted Pert: 88.0%
+It: 630 Best Energy: -10.74171750 Temp: 423405.1 Num Pert: 1 Coord, Angle Pert: 0.2694, 17.9610 Accepted Pert: 87.8%
+It: 640 Best Energy: -10.87623648 Temp: 421292.8 Num Pert: 1 Coord, Angle Pert: 0.2687, 17.9162 Accepted Pert: 87.8%
+It: 650 Best Energy: -10.87623648 Temp: 419191.1 Num Pert: 1 Coord, Angle Pert: 0.2681, 17.8714 Accepted Pert: 87.8%
+It: 660 Best Energy: -10.87623648 Temp: 417099.9 Num Pert: 1 Coord, Angle Pert: 0.2674, 17.8268 Accepted Pert: 87.5%
+It: 670 Best Energy: -10.87623648 Temp: 415019.0 Num Pert: 1 Coord, Angle Pert: 0.2667, 17.7823 Accepted Pert: 87.3%
+It: 680 Best Energy: -10.87623648 Temp: 412948.6 Num Pert: 1 Coord, Angle Pert: 0.2661, 17.7379 Accepted Pert: 87.2%

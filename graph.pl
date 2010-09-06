@@ -1,12 +1,8 @@
 #!/usr/bin/perl
-# Purpose: This file opens a pso output file (.out) and extracts the iteration number
+# This file opens a pso output file (.out) and extracts the iteration number
 # and energy value from each line, and saves these in graph.csv, which can be
 # opened in excel.  To run the program type:
 # ./graph.pl someOutputFile.out
-# Author: Seth Call
-# Note: This is free software and may be modified and/or redistributed under
-#    the terms of the GNU General Public License (Version 3).
-#    Copyright 2007 Seth Call.
 
 use strict;
 

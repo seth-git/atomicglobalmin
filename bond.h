@@ -2,8 +2,8 @@
 // Purpose: This file contains code managing an atom.
 // Author: Seth Call
 // Note: This is free software and may be modified and/or redistributed under
-//    the terms of the GNU General Public License (Version 3).
-//    Copyright 2007 Seth Call.
+//    the terms of the GNU General Public License (Version 1.2 or any later
+//    version).  Copyright 2007 Seth Call.
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifndef __BOND_H__
@@ -45,7 +45,7 @@ public:
 	Bond(int iAtom1, int iAtom2, bool bSingle, bool bDouble, bool bTriple, bool bOnRing, bool bRotatable);
 	~Bond();
 	void copy(Bond &bond);
-	static bool readBondDistanceFile(string fileName);
+	static void readBondDistanceFile(string fileName);
 };
 
 #endif

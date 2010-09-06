@@ -2,8 +2,8 @@
 // Purpose: This file contains code managing an atom.
 // Author: Seth Call
 // Note: This is free software and may be modified and/or redistributed under
-//    the terms of the GNU General Public License (Version 3).
-//    Copyright 2007 Seth Call.
+//    the terms of the GNU General Public License (Version 1.2 or any later
+//    version).  Copyright 2007 Seth Call.
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifndef __ATOM_H__
@@ -13,15 +13,13 @@
 #include <iomanip>
 #include <fstream>
 #include <string>
-#include <cstring>
-#include <stdlib.h>
 #include <cmath>
 #include <vector>
 #include "typedef.h"
 
 using namespace std;
 
-const int MAX_ATOMIC_NUMBERS = 200;
+const int MAX_ATOMIC_NUMBERS = 118;
 
 class Atom
 {
@@ -33,7 +31,6 @@ public:
 	vector<int> m_bondedAtoms; // index to other atoms as contained in the molecule object
 	static string s_rgAtomcSymbols[MAX_ATOMIC_NUMBERS+1];
 	static FLOAT s_rgAtomicMasses[MAX_ATOMIC_NUMBERS+1];
-	static int s_iMaxAtomicNumber;
 
 private:
 	// Note: if your not familiar with static, it means these variables belong to the class and not any particular object
@@ -44,7 +41,7 @@ private:
 public:
 	Atom();
 	~Atom();
-	static bool initAtomicMasses(void);
+	static void initAtomicMasses(string fileName);
 	void copy(Atom &atom);
 	FLOAT getMass();
 	static const char *printFloat(FLOAT number);

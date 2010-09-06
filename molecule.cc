@@ -2,8 +2,8 @@
 // Purpose: This file manages a molecule.
 // Author: Seth Call
 // Note: This is free software and may be modified and/or redistributed under
-//    the terms of the GNU General Public License (Version 3).
-//    Copyright 2007 Seth Call.
+//    the terms of the GNU General Public License (Version 1.2 or any later
+//    version).  Copyright 2007 Seth Call.
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "molecule.h"
@@ -128,7 +128,7 @@ void Molecule::setBondRotationalAngle(FLOAT rotationAngleInRad)
 	}
 }
 
-bool Molecule::findBonds()
+void Molecule::findBonds()
 {
 	int i, j, k;
 	FLOAT diffX, diffY, diffZ, dist;
@@ -150,7 +150,7 @@ bool Molecule::findBonds()
 				cout << "Please add bond information for atoms of atomic number " << m_atoms[i].m_iAtomicNumber
                                      << " and " << m_atoms[j].m_iAtomicNumber << " to the file: bondLengths.txt" << endl;
 				cout << "The format is: atomic symbol,atomic symbol,bond type (s for single, d for double, t for triple),minimum distance-maximum distance in angstroms." << endl;
-				return false;
+				exit(0);
 			}
 			diffX = m_atoms[i].m_globalPoint.x - m_atoms[j].m_globalPoint.x;
 			diffY = m_atoms[i].m_globalPoint.y - m_atoms[j].m_globalPoint.y;
@@ -211,10 +211,9 @@ bool Molecule::findBonds()
 			m_bonds[i]->m_bRotatable = true;
 			m_rotatableBonds.push_back(i);
 		}
-	return true;
 }
 
-bool Molecule::checkConnectivity()
+void Molecule::checkConnectivity()
 {
 	if (!isCompletelyConnected(NULL, NULL)) {
 		printBondInfo();
@@ -223,9 +222,8 @@ bool Molecule::checkConnectivity()
 		cout << "Either this molecule is really more than one molecule, or bonds have not been identified correctly." << endl;
 		cout << "If bonds have not been identified correctly, update the bond length criteria in the file: bondLengths.txt." << endl;
 		cout << "The format is: atomic symbol,atomic symbol,bond type (s for single, d for double, t for triple),minimum distance-maximum distance in angstroms." << endl;
-		return false;
+		exit(0);
 	}
-	return true;
 }
 
 bool Molecule::isCompletelyConnected(vector<int> *path, vector<int> *atomsVisited)
@@ -412,8 +410,8 @@ bool Molecule::incrumentBondPositions()
 {
 	int i;
 	if ((m_fBondRotationAngle <= 0) || (m_rotatableBonds.size() <= 0)) {
-		cout << "Unable to incrument bond positions.  More info needed..." << endl << endl;
-		return false;
+		cout << "Unable to incrument bond positions.  More info needed..." << endl;
+		exit(0);
 	}
 	i = 0;
 	while (true) {
@@ -428,7 +426,7 @@ bool Molecule::incrumentBondPositions()
 	}
 }
 
-bool Molecule::performBondRotation(int rotatableBondIndex)
+void Molecule::performBondRotation(int rotatableBondIndex)
 {
 	Point3D atom1, atom2;
 	Point3D bondVector;
@@ -443,10 +441,10 @@ bool Molecule::performBondRotation(int rotatableBondIndex)
 	FLOAT rotMatrix[MATRIX_SIZE][MATRIX_SIZE];
 	
 	if (m_fBondRotationAngle <= 0)
-		return false;
+		return;
 	if ((rotatableBondIndex < 0) || (rotatableBondIndex >= (signed int)m_rotatableBonds.size())) {
 		cout << "Bond index(" << rotatableBondIndex << ") out of the range(0," << (m_rotatableBonds.size()-1) << ")" << endl;
-		return false;
+		exit(0);
 	}
 	
 	atom1 = m_atoms[m_bonds[m_rotatableBonds[rotatableBondIndex]]->m_iAtom1].m_globalPoint;
@@ -547,16 +545,16 @@ bool Molecule::performBondRotation(int rotatableBondIndex)
 	matrixMultiplyMatrix(angle1Matrix,temp2,temp1);
 	matrixMultiplyMatrix(transMatrix,temp1,rotMatrix);
 	int count = 0;
-	return rotateBondedAtoms(m_bonds[m_rotatableBonds[rotatableBondIndex]]->m_iAtom2,
-	                         m_bonds[m_rotatableBonds[rotatableBondIndex]]->m_iAtom1,
-	                         rotMatrix, count);
+	rotateBondedAtoms(m_bonds[m_rotatableBonds[rotatableBondIndex]]->m_iAtom2,
+	                  m_bonds[m_rotatableBonds[rotatableBondIndex]]->m_iAtom1,
+	                  rotMatrix, count);
 }
 
-bool Molecule::rotateBondedAtoms(int iAtom1, int iAtom2, FLOAT rotMatrix[MATRIX_SIZE][MATRIX_SIZE], int &count)
+void Molecule::rotateBondedAtoms(int iAtom1, int iAtom2, FLOAT rotMatrix[MATRIX_SIZE][MATRIX_SIZE], int &count)
 {
-	if (count > 10000) {
+	if (count > 1000) {
 		cout << "Bond loop detected.  This program does not yet handle loops.  Please check bond distances in the file: bondLengths.txt" << endl;
-		return false;
+		exit(0);
 	}
 	for(int i = 0; i < (signed int)m_atoms[iAtom2].m_bondedAtoms.size(); ++i)
 		if (m_atoms[iAtom2].m_bondedAtoms[i] != iAtom1) {
@@ -565,12 +563,11 @@ bool Molecule::rotateBondedAtoms(int iAtom1, int iAtom2, FLOAT rotMatrix[MATRIX_
 			    isnan(m_atoms[m_atoms[iAtom2].m_bondedAtoms[i]].m_globalPoint.y) ||
 			    isnan(m_atoms[m_atoms[iAtom2].m_bondedAtoms[i]].m_globalPoint.z)) {
 				cout << "Found nan!!" << endl;
-				return false;
+				exit(0);
 			}
 			++count;
 			rotateBondedAtoms(iAtom2,m_atoms[iAtom2].m_bondedAtoms[i],rotMatrix, count);
 		}
-	return true;
 }
 
 void Molecule::setCenterAndAngles (FLOAT x, FLOAT y, FLOAT z, FLOAT angleX, FLOAT angleY, FLOAT angleZ)
@@ -725,17 +722,15 @@ void Molecule::initRotationMatrix()
 	m_matrixLocalToGlobal[MATRIX_SIZE-1][2] = m_centerOfMass.z;
 }
 
-bool Molecule::localToGlobal()
+void Molecule::localToGlobal()
 {
 	int i;
 	for (i = 0; i < m_iNumberOfAtoms; ++i)
 		m_atoms[i].m_globalPoint = m_atoms[i].m_localPoint;
 	for (i = 0; i < (signed int)m_rotatableBonds.size(); ++i)
-		if (!performBondRotation(i))
-			return false;
+		performBondRotation(i);
 	for (i = 0; i < m_iNumberOfAtoms; ++i)
 		matrixMultiplyPoint(m_atoms[i].m_globalPoint,m_matrixLocalToGlobal);
-	return true;
 }
 
 void Molecule::globalToLocal()
@@ -1425,9 +1420,9 @@ FLOAT Molecule::randomFloat(FLOAT lo, FLOAT hi)
 	return (((FLOAT)random() / (FLOAT)RAND_MAX) * (FLOAT)(hi-lo)) + (FLOAT)lo;
 }
 
-void Molecule::initRandoms(int mpiRank)
+void Molecule::initRandoms()
 {
-	srandom(time(NULL)*(mpiRank+1));
+	srandom(time(NULL));
 //	srandom(1);
 }
 

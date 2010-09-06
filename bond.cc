@@ -2,8 +2,8 @@
 // Purpose: This file manages a bond.
 // Author: Seth Call
 // Note: This is free software and may be modified and/or redistributed under
-//    the terms of the GNU General Public License (Version 3).
-//    Copyright 2007 Seth Call.
+//    the terms of the GNU General Public License (Version 1.2 or any later
+//    version).  Copyright 2007 Seth Call.
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "bond.h"
@@ -49,7 +49,7 @@ FLOAT Bond::doubleMaxDist[MAX_ATOMIC_NUMBERS+1][MAX_ATOMIC_NUMBERS+1];
 FLOAT Bond::tripleMinDist[MAX_ATOMIC_NUMBERS+1][MAX_ATOMIC_NUMBERS+1];
 FLOAT Bond::tripleMaxDist[MAX_ATOMIC_NUMBERS+1][MAX_ATOMIC_NUMBERS+1];
 
-bool Bond::readBondDistanceFile(string fileName)
+void Bond::readBondDistanceFile(string fileName)
 {
 	const int MAX_LINE_LENGTH = 500;
 	char fileLine[MAX_LINE_LENGTH];
@@ -64,7 +64,7 @@ bool Bond::readBondDistanceFile(string fileName)
 	if (!infile)
 	{
 		cout << "Can't open the input file:" << fileName << endl;
-		return false;
+		exit(0);
 	}
 	for (atomicNumber1 = 0; atomicNumber1 < MAX_ATOMIC_NUMBERS; ++atomicNumber1) {
 		for (atomicNumber2 = 0; atomicNumber2 < MAX_ATOMIC_NUMBERS; ++atomicNumber2) {
@@ -86,7 +86,7 @@ bool Bond::readBondDistanceFile(string fileName)
 			break;
 		if (sscanf(fileLine,"%s\t%s\t%c\t%lf-%lf", atomicSymbol1, atomicSymbol2, &bondType, &minDist, &maxDist) != 5) {
 			cout << "Incorrect number of arguments read from line " << lineNumber << " in file: " << fileName << endl;
-			return false;
+			exit(0);
 		}
 		atomicNumber1 = atoi(atomicSymbol1);
 		if (atomicNumber1 < 1) {
@@ -97,12 +97,12 @@ bool Bond::readBondDistanceFile(string fileName)
 				}
 			if (atomicNumber1 < 1) {
 				cout << "Unidentified element symbol (" << atomicSymbol1 << ") in file: " << fileName << endl;
-				return false;
+				exit(0);
 			}
 		} else if (atomicNumber1 > MAX_ATOMIC_NUMBERS) {
 			cout << "In the file " << fileName << ", there is no information available the element with atomic number " << atomicNumber1 << "." << endl;
 			cout << "Please update the periodic table file." << endl;
-			return false;
+			exit(0);
 		}
 		atomicNumber2 = atoi(atomicSymbol2);
 		if (atomicNumber2 < 1) {
@@ -113,12 +113,12 @@ bool Bond::readBondDistanceFile(string fileName)
 				}
 			if (atomicNumber2 < 1) {
 				cout << "Unidentified element symbol (" << atomicSymbol2 << ") in file: " << fileName << endl;
-				return false;
+				exit(0);
 			}
 		} else if (atomicNumber2 > MAX_ATOMIC_NUMBERS) {
 			cout << "In the file " << fileName << ", there is no information available the element with atomic number " << atomicNumber2 << "." << endl;
 			cout << "Please update the periodic table file." << endl;
-			return false;
+			exit(0);
 		}
 		if (minDist > maxDist) {
 			FLOAT temp = minDist;
@@ -142,10 +142,9 @@ bool Bond::readBondDistanceFile(string fileName)
 			tripleMaxDist[atomicNumber2][atomicNumber1] = maxDist;
 		} else {
 			cout << "Unknown bond type(" << bondType << ") on line " << lineNumber << " in file: " << fileName << endl;
-			return false;
+			exit(0);
 		}
 	}
 	infile.close();
-	return true;
 }
 

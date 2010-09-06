@@ -1,9 +1,4 @@
 #!/usr/bin/perl
-# Purpose: This program updates the bondLenths.txt file.
-# Author: Seth Call
-# Note: This is free software and may be modified and/or redistributed under
-#    the terms of the GNU General Public License (Version 3).
-#    Copyright 2007 Seth Call.
 
 use strict;
 

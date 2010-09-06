@@ -36,7 +36,7 @@ Switch to the attraction phase when diversity is above (optional): 0.2
 Don't update individual best solutions within this RMS distance of the best seen by the population: 0.01
 Maximum number of allowed iterations: 700
 Enforce minimum distance constraints on a copy of each structure rather than on the original: yes
-Use energy value from local optimization: no
+Use energy value from local optimization: yes
 
 Save this many of the best "different" structures: 512
 Consider 2 structures "different" if their RMS distance is greater or equal to (angstroms): 0.3

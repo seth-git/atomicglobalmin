@@ -3,8 +3,8 @@
 //    belong in a group.  Atoms in this group are moved and rotated as a unit.
 // Author: Seth Call
 // Note: This is free software and may be modified and/or redistributed under
-//    the terms of the GNU General Public License (Version 3).
-//    Copyright 2007 Seth Call.
+//    the terms of the GNU General Public License (Version 1.2 or any later
+//    version).  Copyright 2007 Seth Call.
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifndef __MOLECULE_H__
@@ -124,8 +124,8 @@ public:
 	/////////////////////////////////////////////////////////////////////
 	// Purpose: This function locates bonds between atoms.
 	// Parameters: none
-	// Returns: true if there were no errors
-	bool findBonds();
+	// Returns: true if the molecule is completey connected
+	void findBonds();
 
 	/////////////////////////////////////////////////////////////////////
 	// Purpose: This function sets a bond rotational angle that is used
@@ -163,8 +163,8 @@ public:
 	// Purpose: This function recalulates the positions of individual
 	//    atoms after the molecule has been rotated or moved.
 	// Parameters: none
-	// Returns: true if there were no errors
-	bool localToGlobal();
+	// Returns: nothing
+	void localToGlobal();
 	
 	/////////////////////////////////////////////////////////////////////
 	// Purpose: This function calculates local coordinates from global coordinates.
@@ -220,7 +220,7 @@ public:
 	//       I made these functions static, so I don't have to have a copy of these functions inside main, moleculeSet, and molecule.
 	static int randomInt(int lo, int hi);
 	static FLOAT randomFloat(FLOAT lo, FLOAT hi);
-	static void initRandoms(int mpiRank);
+	static void initRandoms();
 
 	/////////////////////////////////////////////////////////////////////
 	// Purpose: This function determines if this and another molecule has
@@ -233,10 +233,8 @@ public:
 	// Purpose: This recursive function performs a traversal of the bonds in a
 	//    molecule to determine if the bonds represent a completely connected graph.
 	// Parameters: none
-	// Returns: true if the molecule is connected, false otherwise
-	bool checkConnectivity();
-
-	bool hasRings() { return m_ringSet.m_rings.size() > 0; }
+	// Returns: nothing
+	void checkConnectivity();
 	
 private:
 	
@@ -244,7 +242,7 @@ private:
 	void cleanUp();
 	void adjustToCenterOfMass();
 	const char *printYesNoParam(bool yesNoParam);
-	bool rotateBondedAtoms(int iAtom1, int iAtom2, FLOAT rotMatrix[MATRIX_SIZE][MATRIX_SIZE], int &count);
+	void rotateBondedAtoms(int iAtom1, int iAtom2, FLOAT rotMatrix[MATRIX_SIZE][MATRIX_SIZE], int &count);
 	
 	/////////////////////////////////////////////////////////////////////
 	// Purpose: This function detects methyl groups that do not need
@@ -259,8 +257,8 @@ private:
 	/////////////////////////////////////////////////////////////////////
 	// Purpose: This function performs a bond rotation on this molecule
 	// Parameters: rotatableBondIndex - a number between 0 and m_rotatableBonds.size() - 1
-	// Returns: true if there were no errors
-	bool performBondRotation(int rotatableBondIndex);
+	// Returns: nothing
+	void performBondRotation(int rotatableBondIndex);
 	
 	/////////////////////////////////////////////////////////////////////
 	// Purpose: This recursive function performs a traversal of the bonds in a

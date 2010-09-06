@@ -17,7 +17,7 @@ Specific minimum atom distances (angstroms):
 Maximum inter-atomic distance (angstroms): 1.5
 
 Genetic Algorithm Parameters:
-Use energy value from local optimization: no
+Use energy value from local optimization: yes
 
 Save this many of the best "different" structures: 1
 Consider 2 structures "different" if their RMS distance is greater or equal to (angstroms): 1.0

@@ -20,5 +20,5 @@ cp $PBS_NODEFILE  /path/to/gaussian/input/and/log/files/nodes.txt
 # cat $PBS_NODEFILE | uniq > /path/to/gaussian/input/and/log/files/nodes.txt
 
 cd /path/to/pso/program
-mpiexec ./pso /path/to/input/output/and/resume/files/LJ7_PSO.inp
+./pso /path/to/input/output/and/resume/files/LJ7_PSO.inp
 

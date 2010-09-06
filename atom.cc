@@ -2,8 +2,8 @@
 // Purpose: This file manages an atom.
 // Author: Seth Call
 // Note: This is free software and may be modified and/or redistributed under
-//    the terms of the GNU General Public License (Version 3).
-//    Copyright 2007 Seth Call.
+//    the terms of the GNU General Public License (Version 1.2 or any later
+//    version).  Copyright 2007 Seth Call.
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "atom.h"
@@ -57,97 +57,59 @@ const char *Atom::printFloat(FLOAT number)
 
 string Atom::s_rgAtomcSymbols[MAX_ATOMIC_NUMBERS+1]; // You need this to make sure the program compiles.
 FLOAT Atom::s_rgAtomicMasses[MAX_ATOMIC_NUMBERS+1]; // You need this to make sure the program compiles.
-int Atom::s_iMaxAtomicNumber = 0;
 
-bool Atom::initAtomicMasses(void)
+void Atom::initAtomicMasses(string fileName)
 {
 	const int MAX_LINE_LENGTH = 500;
 	char fileLine[MAX_LINE_LENGTH];
 	char* myString;
-	char tempString[100];
 	int atomicNumber;
-	int massNumber;
-	FLOAT mass, abundance, highestAbundance;
-	string fileName = "periodic_table.txt";
 	
 	ifstream infile(fileName.c_str());
 	if (!infile)
 	{
-		cout << "Can't open the file:" << fileName << endl;
-		return false;
+		cout << "Can't open the input file:" << fileName << endl;
+		exit(0);
 	}
 	
-	// Read one blank line
+	// Read one blank lines
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
-	{
-		cout << "Can't read the file:" << fileName << endl;
-		return false;
-	}
+		exit(0);
 	while(true)
 	{
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 			break;
 		if (strlen(fileLine) == 0)
 			break;
-		if (fileLine[0] != '\t') {
-			myString = strtok(fileLine, "\t");
-			if (myString == NULL)
-				break;
-			atomicNumber = atoi(myString);
-			if (atomicNumber > s_iMaxAtomicNumber)
-				s_iMaxAtomicNumber = atomicNumber;
-			highestAbundance = -1;
-			if (atomicNumber > MAX_ATOMIC_NUMBERS)
-			{
-				cout << "Haven't allocated enough memeory for atomic numbers above " << MAX_ATOMIC_NUMBERS << "." << endl;
-				cout << "Please change the value for MAX_ATOMIC_NUMBERS in atom.h." << endl;
-				return false;
-			}
-			if (atomicNumber < 1)
-			{
-				cout << "Atomic numbers below 1 are not allowed." << endl;
-				return false;
-			}
-			myString = strtok(NULL, "\t"); // get the element name
-			if (myString == NULL) {
-				cout << "Missing element name in " << fileName << endl;
-				return false;
-			}
-			myString = strtok(NULL, "\t"); // get the element symbol
-		} else {
-			myString = strtok(fileLine, "\t"); // get the element symbol
+		myString = strtok(fileLine, "\t");
+		if (myString == NULL)
+			break;
+		atomicNumber = atoi(myString);
+		if (atomicNumber > MAX_ATOMIC_NUMBERS)
+		{
+			cout << "Haven't allocated enough memeory for atomic numbers above " << MAX_ATOMIC_NUMBERS << "." << endl;
+			cout << "Please change the value for MAX_ATOMIC_NUMBERS in atom.h." << endl;
+			exit(0);
 		}
-
-		if (myString == NULL) {
-			cout << "Missing element symbol in " << fileName << endl;
-			return false;
+		if (atomicNumber < 1)
+		{
+			cout << "Atomic numbers below 1 are not allowed." << endl;
+			exit(0);
 		}
-		if (sscanf(myString, "%d%s", &massNumber, tempString) != 2) {
-			cout << "Unable to read element symbol in " << fileName << endl;
-			return false;
-		}
-		s_rgAtomcSymbols[atomicNumber] = tempString;
-		myString = strtok(NULL, "\t"); // mass
-		if (myString == NULL) {
-			cout << "Unable to read element mass in " << fileName << endl;
-			return false;
-		}
-		mass = atof(myString);
-		myString = strtok(NULL, "\t"); // abundance
-		if (myString == NULL) {
-			cout << "Unable to read element abundance in " << fileName << endl;
-			return false;
-		}
-		abundance = atof(myString);
-		if (abundance > highestAbundance) {
-			highestAbundance = abundance;
-			s_rgAtomicMasses[atomicNumber] = mass;
-		}
-//		cout << "atomicNumber,massNumber,atomicSymbol,abundance,atomicMass = " << atomicNumber << "," << massNumber << ","
-//		     << s_rgAtomcSymbols[atomicNumber] << "," << abundance << "," << s_rgAtomicMasses[atomicNumber] << endl;
+		myString = strtok(NULL, "\t");
+		if (myString == NULL)
+			break;
+		s_rgAtomcSymbols[atomicNumber] = myString;
+		myString = strtok(NULL, "\t"); // skip the name of the element
+		if (myString == NULL)
+			break;
+		myString = strtok(NULL, "\t");
+		if (myString == NULL)
+			break;
+		s_rgAtomicMasses[atomicNumber] = atof(myString);
+//		cout << "atomicNumber,atomicSymbol,atomicMass = " << atomicNumber << "," << s_rgAtomcSymbols[atomicNumber] << "," << s_rgAtomicMasses[atomicNumber] << endl;
 	}
 	infile.close();
-	return true;
 }
 
 FLOAT Atom::getMass()
@@ -229,8 +191,8 @@ void Atom::initMinAtomicDistances(FLOAT fDefaultMinAtomicDistance)
 
 void Atom::setMinAtomicDistance(int atomicNumber1, int atomicNumber2, FLOAT distance)
 {
-	if ((atomicNumber1 < 1) || (atomicNumber1 > s_iMaxAtomicNumber) ||
-	    (atomicNumber2 < 1) || (atomicNumber2 > s_iMaxAtomicNumber) || (distance <= 0))
+	if ((atomicNumber1 < 1) || (atomicNumber1 > MAX_ATOMIC_NUMBERS) ||
+	    (atomicNumber2 < 1) || (atomicNumber2 > MAX_ATOMIC_NUMBERS) || (distance <= 0))
 		return;
 	s_rgMinAtomicDistances[atomicNumber1][atomicNumber2] = distance;
 	s_rgMinAtomicDistances[atomicNumber2][atomicNumber1] = distance;
@@ -238,10 +200,10 @@ void Atom::setMinAtomicDistance(int atomicNumber1, int atomicNumber2, FLOAT dist
 
 FLOAT Atom::getMinAtomicDistance(int atomicNumber1, int atomicNumber2)
 {
-	if ((atomicNumber1 < 1) || (atomicNumber1 > s_iMaxAtomicNumber) ||
-	    (atomicNumber2 < 1) || (atomicNumber2 > s_iMaxAtomicNumber)) {
+	if ((atomicNumber1 < 1) || (atomicNumber1 > MAX_ATOMIC_NUMBERS) ||
+	    (atomicNumber2 < 1) || (atomicNumber2 > MAX_ATOMIC_NUMBERS)) {
 		cout << "Invalid atomic number in getMinAtomicDistance" << endl;
-		return -1;
+		exit(0);
 	} else if (s_rgMinAtomicDistances[atomicNumber1][atomicNumber2] >= 0)
 		return s_rgMinAtomicDistances[atomicNumber1][atomicNumber2];
 	else
@@ -251,8 +213,8 @@ FLOAT Atom::getMinAtomicDistance(int atomicNumber1, int atomicNumber2)
 void Atom::outputMinDistances(ofstream &outFile)
 {
 	int i, j;
-	for (i = 1; i <= s_iMaxAtomicNumber; ++i)
-		for (j = i; j <= s_iMaxAtomicNumber; ++j)
+	for (i = 1; i <= MAX_ATOMIC_NUMBERS; ++i)
+		for (j = i; j <= MAX_ATOMIC_NUMBERS; ++j)
 			if (s_rgMinAtomicDistances[i][j] != -1)
 				outFile << i << " " << j << " " << printFloat(s_rgMinAtomicDistances[i][j]) << endl;
 }

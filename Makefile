@@ -2,47 +2,44 @@
 CXXFLAGS=-g -Wall
 CFLAGS=-g
 
-pso: helper main.cc main.h myMpi.cc myMpi.h energy.o input.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o typedef.h
-	mpiCC $(CXXFLAGS) -o pso main.cc myMpi.cc energy.o input.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o
+pso:  mpi main.o input.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o energy.o gega.o typedef.h
+	g++ $(CXXFLAGS) -o pso main.o input.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o energy.o gega.o
 
-helper: helper.o energy.o input.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o typedef.h
-	g++ $(CXXFLAGS) -o helper helper.o energy.o input.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o
+mpi:  mpi.cc energy.o atom.o bond.o ring.o ringSet.o molecule.o moleculeSet.o
+	mpiCC $(CXXFLAGS) -o mpi mpi.cc energy.o atom.o bond.o ring.o ringSet.o molecule.o moleculeSet.o
 
-
-input.o:  input.cc input.h typedef.h molecule.o moleculeSet.o
+main.o:  main.cc main.h input.h atom.h molecule.h moleculeSet.h energy.h
+#	g++ -c main.cc
+#
+input.o:  input.cc input.h typedef.h
 #	g++ -c input.cc
 #
-init.o: init.cc init.h input.o
-#	g++ -c init.cc
-#
-argumentParser.o: argumentParser.cc argumentParser.h
-#	g++ -c argumentParser.cc
-#
-bond.o:  bond.cc bond.h typedef.h atom.o
+bond.o:  bond.cc bond.h atom.cc atom.h typedef.h
 #       g++ -c bond.cc
 #
 atom.o:  atom.cc atom.h typedef.h
 #	g++ -c atom.cc
 #
-ring.o:  ring.cc ring.h typedef.h atom.o
+ring.o:  ring.cc ring.h typedef.h
 #	g++ -c ring.cc
 #
-ringSet.o:  ringSet.cc ringSet.h ring.o
+ringSet.o:  ringSet.cc ringSet.h typedef.h
 #	g++ -c ring.cc
 #
-molecule.o:  molecule.cc molecule.h bond.o ringSet.o atom.o
+molecule.o:  molecule.cc molecule.h typedef.h
 #	g++ -c molecule.cc
 #
-moleculeSet.o:  moleculeSet.cc moleculeSet.h molecule.o bond.o ringSet.o atom.o
+moleculeSet.o:  moleculeSet.cc moleculeSet.h typedef.h
 #	g++ -c moleculeSet.cc
-energy.o: energy.cc energy.h moleculeSet.o input.o
+
+energy.o: energy.cc energy.h moleculeSet.h
 #       g++ -o energy.cc
 
-gega.o: gega.cc gega.h moleculeSet.o input.o
+gega.o: gega.cc gega.h energy.cc energy.h
 #       g++ -o gega.cc
 
 clean:  
-	rm pso helper *.o
+	rm pso mpi atom.o bond.o ring.o ringSet.o energy.o  gega.o  input.o  main.o  molecule.o  moleculeSet.o mpi.o
 
 # END OF MAKE FILE
 
