@@ -1,4 +1,4 @@
-Particle Swarm Optimization (PSO) Global Optimization Software Read Me
+﻿Atomic Global Minimum Locater Software Read Me
 
 This is free software and may be modified and/or redistributed under the terms of the GNU General Public License.  Copyright 2007 Seth Call.
 
@@ -15,16 +15,16 @@ I. Introduction
     E. Performing bond rotations using a deterministic, non-random search
 
 II. Input file formats and optimization of random algorithm parameters
-    A. The input file, parameters common to all algorithms
-    B. Particle swarm input parameters
-    C. Simulated annealing and basin hopping input parameters
-    D. Run output formats
+    A. Input parameters common to all algorithms
+    B. Run output formats
         1. Particle swarm output
         2. Simulated annealing and basin hopping output
         3. Genetic algorithm output
+    C. Particle swarm optimization input parameters
+    D. Simulated annealing and basin hopping input parameters
 
-III. Running the program with Gaussian on a cluster of Linux computers
-    A. Submitting the pso program to the PBS Scheduler
+III. Running the program on a cluster of computers
+    A. Submitting the program to the PBS Scheduler
     B. MPI options
     C. Setting the Gaussian Scratch Directory
 
@@ -43,19 +43,63 @@ The software can run on one Linux computer or a cluster of Linux computers and w
 
 A. Compiling the software
 
-This software was written in C++ and may only be compiled using the GNU g++ compiler on a Linux operating system.  The program uses the Message Passing Interface (MPI) library to run on multiple Linux computers.  To compile the program at the command line, navigate to the pso directory using the cd command, and type "make".  This creates two executables, pso and helper.  The pso executable is an mpi application, while helper is not.  The helper application contains additional utilities.  A list of the options available with the pso and helper executables can be obtained by typing "./pso" or "./helper" respectively.
+This program does not have a graphical user interface but is not difficult to compile.  Some background information is available at these links:
+
+	Download putty to access Linux: http://www.chiark.greenend.org.uk/~sgtatham/putty/
+	Download WinSCP to transfer files: http://www.winscp.com/
+	Learning Unix/Linux: http://librenix.com/?inode=4052
+	Vim Editor: http://www.oregonwebradio.net/backup_fedora/tutorials/vim_li/quickstart.html
+	Download Ubuntu: http://www.ubuntu.com/GetUbuntu/download
+
+To compiling the program do the following:
+
+1. Download the program file: pso1.3.1.tar.gz
+2. Install g++ and MPI compilers
+3. Compile the program
+
+Step 1: You can download pso1.3.1.tar.gz file from the same place you downloaded this readme file.  If you want to run the program on a remote Linux cluster, first download the program onto your local computer and then transfer the program to the Linux cluster.  If you use Windows, you can transfer the program file to the Linux cluster using the WinSCP program (see above link).  If you are using Ubuntu or a Mac, open a terminal.  To open a terminal on Ubuntu, click on 'Applications', 'Accessories', 'Terminal'.  Then, use these commands to transfer the program to the Linux cluster:
+
+	cd /directory/where/you/put/pso1.3.1.tar.gz
+	scp  pso1.3.1.tar.gz your_user_name@your.linux.cluster:pso1.3.1.tar.gz
+
+Step 2: If using a University Linux cluster, the g++ and MPI compilers should already be installed, so you can likely skip this step. If using a local Linux box, g++ should already be installed, but you will have to install the MPI compiler.  On Ubuntu Linux, you may install this by clicking on 'System' and 'Administration', then 'Synaptic Package Manager' and searching for mpi.  I installed the libmpich1.0gf and libmpich1.0-dev packages.
+
+Step 3: If you are running the program on a remote Linux cluster, you will need to log into the cluster with ssh.  To do this on Windows, use the putty program (see the above link).  To log in at the command line on Ubuntu or a Mac, type the following at the command line:
+
+	ssh your_user_name@your.linux.cluster
+
+Once logged in, navigate to the directory where you placed the program.  Change directories by typing: 'cd some_directory'.  To get out of the current directory type: 'cd ..'   .  To list files and directories in the current directory, type 'ls' or 'ls -al' (the later is a long list format).  When you have navigated to your program directory, type the following to decompress the program:
+
+	gunzip pso1.3.1.tar.gz
+	tar -xf pso1.3.1.tar
+
+Then, navigate into the directory:
+
+	cd pso1.3.1
+
+Then compile the program by typing:
+
+	make
+
+You may see warning messages.  If so, this is OK.  If you see error messages, this is NOT OK, and it likely means you do not have the right compilers installed (see step 2).
+
+When you have successfully compiled the program, two executables will be created: pso and helper.  The pso executable is an MPI application, while helper is not.  The helper application contains additional utilities.  A list of the options available with the pso and helper executables can be obtained by typing "./pso" or "./helper" respectively.
+
 
 B. Input, output, resume, and optimization files
 
-Each of the four algorithms, particle swarm optimization (PSO), basin hopping, simulated annealing, and the genetic algorithm has a different input file (file extension .inp).  These were designed to be as self explanatory as possible.  Simulated annealing and basin hopping have a common input file, since they are similar algorithms.  Each time the program is run, it creates an output file (file extension .out), which contains the input parameters as well as summary information on the progress of the run.  The program also creates a resume file (file extension .res), which contains all information necessary for restarting a run that was stopped before it was completed.  An optimization file (file extension .opt) can be created from a resume file in order to optimize the list of best structures after the run has completed.
+Each of the four algorithms, particle swarm optimization (PSO), basin hopping, simulated annealing, and the genetic algorithm has a different input file (file extension .inp).  These were designed to be as self explanatory as possible. Simulated annealing and basin hopping have a common input file, since they are similar algorithms.  Each time the program is run, it creates an output file (file extension .out), which contains the input parameters as well as summary information on the progress of the run.  The program also creates a resume file (file extension .res), which contains all information necessary for restarting a run that was stopped before it was completed.  An optimization file (file extension .opt) can be created from a resume file in order to perform a local geometry optimization on the list of best structures after the run has completed.
+
 
 C. Running and restarting the program
 
-Four example input files are LJ7_PSO.inp, LJ7_Sim.inp, LJ7_BH.inp, and LJ7_GA.inp, for PSO, simulated annealing, and the genetic algorithm respectively.  To run the PSO input file type the following:
+Four example input files are LJ7_PSO.inp, LJ7_Sim.inp, LJ7_BH.inp, and LJ7_GA.inp, for PSO, simulated annealing, and the genetic algorithm respectively.  To run the PSO input file, type the following:
 
       ./pso LJ7_PSO.inp
 
-Other input files are run similarly.  The global minimum for LJ7 has energy -16.505384.  To prematurely terminate a PSO or other type of run, press Ctrl-C. To restart the PSO run after it has been stopped, type "./pso LJ7_PSO.res". Restart other types of algorithms similarly.
+Other input files are run similarly.  The LJ7_PSO.inp input file searches for the gobal minimum of 7 noble gas atoms (He, Ne, Ar, etc.) using the Lennard Jones potential.  The global minimum for LJ7 has energy -16.505384.  To prematurely terminate a PSO or other type of run, press Ctrl-C. To restart the PSO run after it has been stopped, type "./pso LJ7_PSO.res". Restart other types of algorithms similarly.
+
+This type of search performs translation and rotation of rigid molecules in search of a global minimum.  It does not perform a bond rotational search.  This type of search must be performed separately as described in section E (although modifications to the program could combine a bond rotational search with a translational and rotational search).
 
 To create a geometry optimization file from the LJ7_PSO.res resume file, type:
 
@@ -63,11 +107,13 @@ To create a geometry optimization file from the LJ7_PSO.res resume file, type:
 
 This creates an optimization file called LJ7_PSO.opt and transfers 100 structures to it from LJ7_PSO.res.  To run the optimization file type "./pso LJ7_PSO.opt". After each set of 10 structures have been optimized, the program will update the LJ7_PSO.opt file until all structures have been optimized.
 
-Note that if you open an optimization file, it will say simulated annealing, particle swarm, or genetic algorithm at the top.  This is because optimization files were originally designed to be used to perform a geometry optimization on the list of best structures after a simulated annealing, particle swarm, or genetic algorithm run.  Now, they are more generally used to perform calculations on any list of chemical structures.  For example, this program uses optimization files to perform bond rotational searches.  Even though geometry optimization may or may not be used, the file type is still called an 'optimization' file.
+Note that if you open an optimization file, it will say simulated annealing, particle swarm, or genetic algorithm at the top. This is because optimization files were originally designed to perform a geometry optimization on the list of best structures after a simulated annealing, particle swarm, or genetic algorithm run.  Now, they are more generally used to perform calculations on any list of chemical structures.  For example, this program uses optimization files to perform bond rotational searches.  Even though geometry optimization may or may not be used, the file type is still called an 'optimization' file.
+
 
 D. Obtaining results from output, resume, and optimization files
 
-After normal termination of a run, the program writes the best structure found to the output file.  To open the output file, type "vim LJ7_PSO.out".  When you are done, type ":q" and then the enter key.  To obtain preliminary results from the resume file, open the resume file using the vim command.  The top portion of the resume file contains parameters.  Following these are chemical structures in the current population.  Following these are the list of best structures found during the entire run.  To search for this list, type "/Best" and then the enter key. When you are done viewing the list, type ":q" and then the enter key.  The program can also export the structures from the resume or optimization file to a temporary file in a readable format.  Note: the coordinates of units/molecules should never be read directly from a resume or optimization file as these require translation and rotation.  To perform translation and rotation of the list of best structures into a readable format, type "./helper -t LJ7_PSO.res temp.txt".  This also works for optimization files.  Note that when using Gaussian, this program also saves the log files.
+After normal termination of a run, the program writes the best structure found to the output file.  To open the output file, type "vim LJ7_PSO.out".  When you are done, type ":q" and then the enter key.  To obtain preliminary results from the resume file, open the resume file using the vim command.  The top portion of the resume file contains parameters. Following these are chemical structures in the current population.  Following these are the list of best structures found during the entire run.  To search for this list, type "/Best" and then the enter key. When you are done viewing the list, type ":q" and then the enter key.  The program can also export the structures from the resume or optimization file to a temporary file in a readable format.  Note: the coordinates of units/molecules should never be read directly from a resume or optimization file as these require translation and rotation.  To perform translation and rotation of the list of best structures into a readable format, type "./helper -t LJ7_PSO.res temp.txt".  This also works for optimization files.  Note that when using Gaussian, this program also saves the log files.
+
 
 E. Performing bond rotations using a deterministic, non-random search
 
@@ -89,11 +135,12 @@ Note that the bondLengths.txt file was automatically generated from from average
 
 Since performing a bond rotational search is non-random, there are no difficult parameters to set.  When performing a simulated annealing, particle swarm, or genetic algorithm search, these random algorithms have parameters you will need to set.  More specific information on setting these parameters as well as the general format of input files is given in the next section.
 
+
 II. Input file formats and optimization of random algorithm parameters
 
-This section discusses the parameters in the input file and techniques for setting them.  Knowing how to set parameters optimally can influence the performance of each algorithm.
+This section discusses the parameters in the input file and techniques for setting them.  Knowing how to set parameters optimally can influence the performance of each algorithm.  While setting these parameters takes practice, examples are provided.  Also, some of the more important parameters can be set for you automatically by the program.
 
-A. Parameters common to all algorithms
+A. Input parameters common to all algorithms
 
 Parameters common to all algorithms appear at the top and bottom of each input file.  An example of the parameters at the top of an input file for (H2O)OH- are as follows:
 
@@ -119,7 +166,7 @@ Parameters common to all algorithms appear at the top and bottom of each input f
 
 The header on line 1 specifies the type of algorithm (particle swarm optimization, simulated annealing, etc.).  It contains the phrase "Input File" for input files and "Resume File" for resume files and "Optimization File" for optimization files.  The header also contains a version number.  If you attempt to run an input file that belongs to an older version of the program, you may have to change or insert lines in the input file before it will run.  The program will specify when lines are missing or need to be changed.  The path to the energy program is on line 4.  The path to the energy files on line 5 is the directory where the ".log", ".com", ".dat", and ".chk" files are to be stored.  If using a cluster of Linux computers, this should be a directory accessible to all nodes.  The scratch directory (line 6) is where all Gaussian scratch files are written.  If running on a cluster, this can be on a local hard drive.  Log and checkpoint files are copied from here back to the energy files directory (line 5).
 
-When specifying the number of each structure type to initialize (lines 8-13), keep in mind that atoms are placed in groups each of which is moved and rotated as a "unit".  Each "unit" contains one or more atoms.  Line 9 indicates that linear structures are initialized so that all atoms are in a 3D box that is 1.2 x 1.2 x 7.0.  Planar structures are initialized so that centers of mass of each "unit" are on the same plane.  The fragmented, partially non-fragmented, and completely non-fragmented structures are described informally here.  For a more precise discussion, see the literature.  Fragmented structures contain "units" in random locations within the search cube. Partially non-fragmented structures are created such that every atom is within the maximum distance of at least one other atom.  These are called "partially" non-fragmented because two units may be isolated from the rest of the units (further than the maximum distance).  With completely non-fragmented structures, no two units can be isolated from other units.  For example, if you started at some unit and could only travel to other units within the maximum distance of that unit, you could travel to any unit.
+When specifying the number of each structure type to initialize (lines 8-13), keep in mind that atoms are placed in groups each of which is moved and rotated as a "unit" or molecule.  Each "unit" contains one or more atoms.  Line 9 indicates that linear structures are initialized so that all atoms are in a 3D box that is 1.2 x 1.2 x 7.0.  Planar structures are initialized so that centers of mass of each "unit" are on the same plane.  The fragmented, partially non-fragmented, and completely non-fragmented structures are described informally here.  For a more precise discussion, see the literature.  Fragmented structures contain "units" in random locations within the search cube. Partially non-fragmented structures are created such that every atom is within the maximum distance of at least one other atom.  These are called "partially" non-fragmented because two units may be isolated from the rest of the units (further than the maximum distance).  With completely non-fragmented structures, no two units can be isolated from other units.  For example, if you started at some unit and could only travel to other units within the maximum distance of that unit, you could travel to any unit.
 
 The program allows one maximum distance between atoms (in this case 3 angstroms), and multiple minimum distances between different types of atoms.  In this case the minimum distance is 0.9 between two hydrogens, 0.8 between hydrogen and oxygen, and 1.2 between two oxygen atoms.
 
@@ -160,6 +207,7 @@ An example of the parameters at the end of the input file are given below:
 Line 43 specifies the size of the list of best structures that are saved during the course of the entire run.  This list is updated after every iteration.  Line 44 specifies that each structure in the list of best structures is different from every other structure in the list by a certain RMS distance (see article above).  Line 45 is the number of Gaussian .log files to save for the list of best structures.  These .log files are saved in a folder called bestSavedStructures located inside the directory where energy files are stored (specified on line 5 of the input file).  Lines 46-55 should be self explanatory.  Note that the program will automatically rename the checkpoint file for each structure in the population of candidate structures, so that there aren't naming conflicts.  The energy file footer (lines 56-60) is placed at the end of the Gaussian input file.  In this case, the footer specifies that a frequency calculation be performed.  Note that the energy file header and footer are not used when energies are calculated using the Lennard Jones potential.
 
 Lines 62-73 are an example of how to specify groups of atoms, molecules, or "units".  The above consists of three water molecules and one hydroxide ion. Lines 66-68 specifies the coordinates of water with two hydrogen atoms and one oxygen atom.  Lines 72-73 specify coordinates for hydroxide.  If you are dealing with single atoms that are moved separately form other components in the system, one atom can be specified for each "unit".  The "format of this unit type" can only be "Cartesian ".  At some point in the future, I may allow other types of input such as "Z-matrix."
+
 
 B. Run output formats
 
@@ -203,7 +251,8 @@ As the program runs, it prints summary information to the screen.  As you modify
 
 When monitoring the course of an algorithm, check to see how often the best energy value changes and by how much.  For simulated annealing, the percentage of accepted transitions should start high (about 90%).  If this starts too high (i.e. 95%), however, it may take a very long time to come down.  For particle swarm optimization, the visibility should start low (i.e. 0%) and increase slowly to (100 %).  For particle swarm optimization and the genetic algorithm, the diversity indicates how different members of the population are from one another.  Populations must be sufficiently diverse in order to produce meaningful progress.  See the paper at the beginning of this document for the formulas used to calculate visibility and diversity.
 
-C. Particle swarm parameters
+
+C. Particle swarm optimization input parameters
 
 An example list of the parameters for the particle swarm optimization algorithm are given below.
 
@@ -229,7 +278,7 @@ An example list of the parameters for the particle swarm optimization algorithm 
 40  Enforce minimum distance constraints on a copy of each structure rather than on the original: yes
 41  Use energy value from local optimization: yes
 
-If you are new to particle swarm, you can start with the parameters above, and adjust them as needed.  Because ab initio calculations can take a long time, it is best to use the Lennard Jones potential to test the parameters you have chosen.  Though this energy function behaves very differently, doing this will help you optimize parameters not strongly related to the energy function (i.e. visibility parameters).  After the parameters seem to work well with the Lennard Jones potential, try them with Gaussian and check for differences in how the algorithm performs.  While this may seem silly, it can save you from having to change parameters in the middle of Gaussian runs that take several weeks or months.
+If you are new to particle swarm, you can start with the parameters above and adjust them as needed.  Because ab initio calculations can take a long time, it is best to use the Lennard Jones potential to test the parameters you have chosen.  Though this energy function behaves very differently, doing this will help you optimize parameters not strongly related to the energy function (i.e. visibility parameters).  After the parameters seem to work well with the Lennard Jones potential, try them with Gaussian and check for differences in how the algorithm performs.  While this may seem silly, it can save you from having to change parameters in the middle of Gaussian runs that take several weeks or months.
 
 The w, c1, c2, and Vmax parameters (lines 22-32) are typical to particle swarm optimization, and a description of these is available in the literature on the Internet or in the above paper.  The parameters that most likely need to be changed are c1, c2, and Vmax (lines 25-27 and 30-32).  These affect how refined the search is.  Lowering these will favor local rather than global searches.
 
@@ -249,9 +298,10 @@ The parameter on line 39 is a maximum number of iterations allowed.  This is the
 
 The parameter on line 40 deals with an automatic function that the program has for enforcing minimum distance constraints (see article above).  It could be said that enforcing the minimum distance constraints modifies the way the algorithm works.  Line 40 specifies that the program should make a copy of each structure before enforcing the minimum distance constraints and calculating the energy, so the progress of the algorithm is not modified.
 
-This algorithm can also be used with local optimization (see line 41).  When local optimization is used, the energy of a structure is assigned to be the energy obtained through local optimization, but the positions of atoms and the progress of the PSO algorithm are not affected when this optimization is turned on.
+This algorithm can also be used with local optimization (see line 41).  When local optimization is used, the energy of a structure is assigned to be the energy obtained through local optimization, but the positions of atoms and the progress of the PSO algorithm are not affected when this optimization is turned on.  When using this option, a good approach is to limit the number of optimization steps rather that performing a full geometry optimization.  If a full geometry optimization is desired, this may be performed on the list of best structures after the run completes.
 
-D. Simulated annealing and basin hopping parameters
+
+D. Simulated annealing and basin hopping input parameters
 
 An example list of the simulated annealing parameters are given below.
 
@@ -273,7 +323,7 @@ An example list of the simulated annealing parameters are given below.
 36  Starting angle perturbation (deg): 25
 37  Minimum angle perturbation (deg): 3
 
-This simulated annealing algorithm has the ability to perform non-fragmented searches, or in other words it can enforce minimum and maximum distance constraints through the course of the entire run.  This enables faster, more efficient searches.  To enable this feature, place yes on line 22.  Putting Yes for line 23, and setting the Quenching factor to 1 turns on Basin Hopping.  Basin hopping is very similar to simulated annealing except the temperature (line 25), number of perturbations to perform at a time (line 33), and perturbation amounts (34-37) do not change.  Also, when performing basin hopping, the energy value is obtained by making a copy of the original structure, performing optimization to the nearest local minimum, and assigning that energy value to the original structure.  By tradition, simulated annealing and basin hopping use only one structure and do not use a population of candidate structures, though this application will allow populations of solutions.  A population of solutions with these two algorithms is essentially a set of independent runs.  Using a population of solutions with these algorithms greatly increases the probability of finding the correct minimum and is highly recommended.
+This simulated annealing algorithm has the ability to perform non-fragmented searches, or in other words it can enforce minimum and maximum distance constraints through the course of the entire run.  This enables faster, more relevant searches.  To enable this feature, place yes on line 22.  Putting Yes for line 23, and setting the Quenching factor to 1 turns on Basin Hopping.  Basin hopping is very similar to simulated annealing except the temperature (line 25), number of perturbations to perform at a time (line 33), and perturbation amounts (34-37) do not change.  Also, when performing basin hopping, the energy value is obtained by making a copy of the original structure, performing optimization to the nearest local minimum, and assigning that energy value to the original structure.  By tradition, simulated annealing and basin hopping use only one structure and do not use a population of candidate structures, though this application will allow populations of solutions.  A population of solutions with these two algorithms is essentially a set of independent runs.  Using a population of solutions with these algorithms greatly increases the probability of finding the correct minimum and is highly recommended.
 
 At each step, simulated annealing makes a number of random perturbations.  Each perturbation can move the center-of-mass for a group of atoms, a molecule, or a "unit" along a random vector the length of which is specified on lines 34 and 35.  Alternatively a perturbation can rotate one of three angles in a molecule or unit by a random amount (see lines 36 and 37).  Once a perturbation has been made, the energy is recalculated.  If the energy value is better, the perturbation is accepted. If it is worse, the perturbation is accepted with a certain probability defined as:
 
@@ -301,24 +351,26 @@ It is often best to use the Lennard Jones potential for testing the parameters u
 
 III. Running the program on a cluster of computers
 
-A. Submitting the pso program to the PBS Scheduler
 
-This section describes how to run the program on a cluster of Linux computers with Gaussian.  Some familiarity with Gaussian and Linux is assumed.  It should also be noted that other quantum chemistry programs could be incorporated into the software by someone with C++ experience.
+A. Submitting the program to the PBS Scheduler
+
+This section describes how to run the program on a cluster of Linux computers with Gaussian.  Some familiarity with Gaussian and Linux is assumed.  It should also be noted that other quantum chemistry programs could be incorporated into the software by someone with a little C++ experience.
 
 To use a cluster of computers, create a script file for submitting the main program to the PBS (Portable Batch System) scheduler. An example script file for doing this called "examplePBSScript" is in the "pso" directory.  Make a copy of this script and modify it as follows.
 
     1. Line 2 in the script file specifies the number of nodes you want to use and the number of processors per node (ppn) you want.  Make sure your population size is divisible by this number.  This application was designed to perform one Gaussian calculation on each processor.  The wall time is a maximum time limit you want to allow your job to run for.  Set this appropriately. The example file specifies 24 hours.
     2. Line 3 is where you set the memory limit per node that you want.  Also set the memory limit in the Gaussian header in the pso input file.
     3. Line 16 specifies that the list of nodes allocated by the PBS scheduler be copped to a file called "nodes.txt" in the energy files directory (line 5 of the pso input file).
-    3. Change lines 22 and 23 (the last two lines).  These lines call the pso program.  It is usually best to put the input, output, and resume files in a separate directory other than in the main pso directory.  NOTE: WHEN RESTARTING THE PROGRAM, DON'T FORGET TO CHANGE THE INPUT FILE NAME TO THE RESUME FILE NAME IN THE PBS SCRIPT FILE.
+    4. Change lines 22 and 23 (the last two lines).  These lines call the pso program.  It is best to put the input, output, and resume files in a separate directory other than in the main pso directory.  NOTE: WHEN RESTARTING THE PROGRAM, DON'T FORGET TO CHANGE THE INPUT FILE NAME TO THE RESUME FILE NAME IN THE PBS SCRIPT FILE.
 
 Also be sure to modify the pso input file appropriately.  Set the path to the energy program (line 4) to be the path to your Gaussian program.  Next on line 5, specify a directory where energy files (.com, .log, etc.) will be written.  You will need to create this directory, and it will need to be unique for every input file you intend to run simultaneously with the program.  Specify a scratch directory on line 6.  The pso program will create sub-directories in this directory where Gaussian scratch files will be written.  These sub directories have the name of the pso input or resume file.  The scratch directory can be on the hard drive of each local node or on a shared drive.  The pso program will delete scratch files it creates if you use the -walltime option (see section IV, D).
 
-Make sure the names of your output and resume files are set appropriately in the input file.  Using full path names is the best practice.  Also, modify the Gaussian header and optional footer appropriately.  The header will be placed at the start of every Gaussian input file.
+Make sure the names of your output and resume files are set appropriately in the input file.  Use full path names.  Also, modify the Gaussian header and optional footer appropriately.  The header will be placed at the start of every Gaussian input file.
 
-Once you have created your script file and your input file and checked them twice, type the command qsub followed by the name of your script file.  To look at jobs in the queue, type the command qstat.  To delete a job from the queue type, qdel job_number.
+Once you have created your script file and your input file and checked them twice, type the command qsub followed by the name of your script file.  To look at jobs in the queue, type the command qstat.  To look at only the jobs you have submitted, type 'qstat | grep your_user_name'.  To delete a job from the queue type: 'qdel job_number'.
 
 Note: Though this application was generally designed to run one Gaussian calculation per processor, it does have some built in functionality to run single Gaussian calculations on multiple processors.  Though I have not done this in a few years, you may talk to your system administrator and get help doing this if desired.  The pso application reads the "nodes.txt" file and used to start one energy calculation for each node/line in the file.  Using mpirun instead of mpiexec can be helpful in this case.  If you specify multiple processors per node and if you want one Gaussian job to use all of the processors on a node, you may need to place this line in your Gaussian header (pso input file): "% nprocshared=number_of_processors_you_want".
+
 
 B. MPI Options
 
@@ -334,11 +386,14 @@ Also when using the -i option, the program has a method for periodically merging
 
 When using the -i option and you must resume an unfinished run, do not change the input file to a resume file.  Since each population member has its own resume file, the program is smart enough to find each of these resume files and restart the run.  While the ./helper -u method does create a master resume file, this is only used to store the list of best structures and/or create an optimization file.
 
+
 C. Setting the Gaussian Scratch Directory
 
 The Gaussian scratch directory must be set by the pso program if you specified a scratch directory on line 6 of your input file.  The way this scratch directory is set can vary from system to system.  The pso program uses "export GAUSS_SCRDIR=your_scratch_directory".  If you need to modify this command, it's listed in the energy.cc file in the two init functions.
 
+
 IV. Other useful tips
+
 
 A. More about Optimization Files
 
@@ -358,6 +413,7 @@ After optimizing a certain number of structures from the resume file, if you dec
 
 This indicates you want to add 30 additional structures from the resume file.
 
+
 B. Creating Gaussian .com files from a resume or optimization file
 
 In a resume or optimization file, there is a population of solutions as well as a list of best structures seen so far during the run.  The pso program can create .com files form either of these two lists.  This is useful if you wish to perform frequency calculations on the list of best structures, or if you wish to view the chemical structures with Molden, GaussView, or another viewer.  An example of how to create .com files from the list of best structures is as follows:
@@ -365,6 +421,7 @@ In a resume or optimization file, there is a population of solutions as well as 
       ./helper -c LJ7_PSO.opt /directory/in/which/to/put/com/files best
 
 This would place the list of best structures in the specified directory with the name best1.com, best2.com, best3.com, etc. Energy values are written in the title line of each .com file.  Similarly, .com files can be created from the current population using the -p option.
+
 
 C. Seeding the starting population with structures from previous runs
 
@@ -378,6 +435,7 @@ If the seed files contain fewer of one type of unit or molecule, new molecules w
 
 Note: when using multiple options, specify the -s option last, as it will assume that every following argument is a seed file.
 
+
 D. Setting a wall time to ensure cleaning of scratch files
 
 During a typical run, the program must be restarted several times.  When a program is terminated by the scheduler before the run is finished, this leaves files in the scratch directory. This is a problem if you want the scratch directory to be on the node's local hard drive rather than on a network drive.  Using the local hard drives frees up network bandwidth, so it would be nice if the program would watch the clock, clean up the scratch files, and die gracefully, rather than being killed by the PBS scheduler. The program can do this as follows:
@@ -386,7 +444,8 @@ During a typical run, the program must be restarted several times.  When a progr
 
 This tells the program to terminate before the specified duration of time has elapsed (hours, minutes, and seconds).  The format of the wall time is the same as the PBS scheduler, so you can simply copy and paste it.  Note: if you kill the PBS job using the qdel command, the scratch files will NOT be deleted, so don't do this.  If you need to stop a run before the wall time is up, use the cd command to navigate to the energy files directory (line 5 in the input file), and type 'touch stop'.  This will create a blank file called stop.  At the end of the run's next iteration, it will check for the existence of this file.  If it's there, it will stop and clean up the scratch files correctly.
 
-F. Transition state searches
+
+E. Transition state searches
 
 This program can also perform searches for transition states.  The method used is essentially a random search, but with allowed constraints on the maximum and minimum distances between molecules.  There are 2 methods for performing a transition state search.  The first way is to use a simulated annealing input file, and the second way is to place random structures in a simulated annealing optimization file using the -or option (./helper -or).  With both of these methods, make sure to put 'yes' for the option: 'Search for transition states (random search with every perturbation accepted)'.  When this option is turned on, the program looks for " 1 imaginary frequencies (negative Signs) " in the Gaussian .log file and will only save .log files with this phrase.  To summarize, using a simulated annealing input file causes the program to treat the search as a simulated annealing search, except that every perturbation is accepted, so the search is essentially random.  When using the optimization file, every structure is randomly initialized, so new random structures are not perturbations of previous random structures.  This is the essential difference between the two methods.
 
