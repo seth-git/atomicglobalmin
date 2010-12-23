@@ -1,18 +1,17 @@
-﻿Atomic Global Minimum Locater Software Read Me
+﻿Atomic Global Minimum Locater Software
 
-This is free software and may be modified and/or redistributed under the terms of the GNU General Public License.  Copyright 2007 Seth Call.
-
-For a more detailed description of the program, see:
-Call, S. T.; Boldyrev, A. I., Zubarev, D. Y. Global Minimum Structure Searches via Particle
-Swarm Optimization.  J. Comput. Chem.  2007, 28, 1177-1186.
+by Seth Call
 
 Table of Contents
+
 I. Introduction
     A. Compiling the software
     B. Input, output, resume, and optimization files
     C. Running and restarting the program
     D. Obtaining results from output, resume, and optimization files
     E. Performing bond rotations using a deterministic, non-random search
+    F. Adding Additional Quantum Chemistry Packages
+    G. References
 
 II. Input file formats and optimization of random algorithm parameters
     A. Input parameters common to all algorithms
@@ -30,20 +29,21 @@ III. Running the program on a cluster of computers
 
 IV. Other useful tips
     A. More about Optimization Files
-    B. Creating Gaussian .com files from a resume or optimization file
+    B. Creating Gaussian input files from a resume or optimization file
     C. Seeding the starting population with structures from previous runs
     D. Setting a wall time to ensure cleaning of scratch files
     E. Transition State Searches
-
 I. Introduction
 
-This software searches for chemical structures that are global minima the potential energy surface.  This program can perform two different types of searches.  First, it searches for the global minimum of a set of molecules that each have fixed geometry using translation and rotation of molecules with respect to one another.  The program has four different random algorithms for this type of search: particle swarm optimization, enhanced simulated annealing, basin hoping, and a privative genetic algorithm. The second type of search is a bond rotational search for a single molecule.  This is a deterministic, non-random search using a user-specified bond rotational angle.
+This software searches for chemical structures that are global minima the potential energy surface.  It uses highly accurate ab initio methods and reduces the cost of these by using distributed computations on a Linux cluster.  The software allows energy calculations to be performed using an external Gaussian program as well as an internal Lennard Jones potential used for testing purposes.  The program has also been configured to make adding additional quantum chemistry packages as simple as possible.
 
-The software can run on one Linux computer or a cluster of Linux computers and will not run on Windows.  The use of multiple computers allows energy calculations for a group of candidate solutions to be performed at the same time.  The software can perform quantum energy calculations only using Gaussian, though other quantum packages could be easily incorporated (by modifying energy.cc).  The program can also calculate energies using the Lennard Jones potential for testing purposes. 
+This program can perform two different types of searches.  First, it searches for the global minimum of a set of molecules that each have fixed geometry using translation and rotation of molecules with respect to one another.  The program has four different random algorithms for this type of search: particle swarm optimization, enhanced simulated annealing, basin hoping, and a privative genetic algorithm. The second type of search is a bond rotational search for a single molecule.  This is a deterministic, non-random search using a user-specified bond rotational angle.
+
+Finding accurate global minima even for small molecules can be challenging.  This software is an automated tool making it easier to find such minima using the more accurate quantum methods.
 
 A. Compiling the software
 
-This program does not have a graphical user interface but is not difficult to compile.  Some background information is available at these links:
+While this program does not have a graphical user interface, it has a command line interface this is simple to use with a little training.  Links providing training and useful software are below:
 
 	Download putty to access Linux: http://www.chiark.greenend.org.uk/~sgtatham/putty/
 	Download WinSCP to transfer files: http://www.winscp.com/
@@ -51,16 +51,16 @@ This program does not have a graphical user interface but is not difficult to co
 	Vim Editor: http://www.oregonwebradio.net/backup_fedora/tutorials/vim_li/quickstart.html
 	Download Ubuntu: http://www.ubuntu.com/GetUbuntu/download
 
-To compiling the program do the following:
+To compiling this C++ program on a Linux computer (Windows is not supported) do the following:
 
-1. Download the program file: pso1.3.1.tar.gz
+1. Download the program file: pso1.3.2.tar.gz
 2. Install g++ and MPI compilers
 3. Compile the program
 
-Step 1: You can download pso1.3.1.tar.gz file from the same place you downloaded this readme file.  If you want to run the program on a remote Linux cluster, first download the program onto your local computer and then transfer the program to the Linux cluster.  If you use Windows, you can transfer the program file to the Linux cluster using the WinSCP program (see above link).  If you are using Ubuntu or a Mac, open a terminal.  To open a terminal on Ubuntu, click on 'Applications', 'Accessories', 'Terminal'.  Then, use these commands to transfer the program to the Linux cluster:
+Step 1: You can download pso1.3.2.tar.gz file from the same place you downloaded this readme file.  If you want to run the program on a remote Linux cluster, first download the program onto your local computer and then transfer the program to the Linux cluster.  If you use Windows, you can transfer the program file to the Linux cluster using the WinSCP program (see above link).  If you are using Ubuntu or a Mac, open a terminal.  To open a terminal on Ubuntu, click on 'Applications', 'Accessories', 'Terminal'.  Then, use these commands to transfer the program to the Linux cluster:
 
-	cd /directory/where/you/put/pso1.3.1.tar.gz
-	scp  pso1.3.1.tar.gz your_user_name@your.linux.cluster:pso1.3.1.tar.gz
+	cd /directory/where/you/put/pso1.3.2.tar.gz
+	scp  pso1.3.2.tar.gz your_user_name@your.linux.cluster:pso1.3.2.tar.gz
 
 Step 2: If using a University Linux cluster, the g++ and MPI compilers should already be installed, so you can likely skip this step. If using a local Linux box, g++ should already be installed, but you will have to install the MPI compiler.  On Ubuntu Linux, you may install this by clicking on 'System' and 'Administration', then 'Synaptic Package Manager' and searching for mpi.  I installed the libmpich1.0gf and libmpich1.0-dev packages.
 
@@ -70,12 +70,12 @@ Step 3: If you are running the program on a remote Linux cluster, you will need 
 
 Once logged in, navigate to the directory where you placed the program.  Change directories by typing: 'cd some_directory'.  To get out of the current directory type: 'cd ..'   .  To list files and directories in the current directory, type 'ls' or 'ls -al' (the later is a long list format).  When you have navigated to your program directory, type the following to decompress the program:
 
-	gunzip pso1.3.1.tar.gz
-	tar -xf pso1.3.1.tar
+	gunzip pso1.3.2.tar.gz
+	tar -xf pso1.3.2.tar
 
 Then, navigate into the directory:
 
-	cd pso1.3.1
+	cd pso1.3.2
 
 Then compile the program by typing:
 
@@ -85,11 +85,9 @@ You may see warning messages.  If so, this is OK.  If you see error messages, th
 
 When you have successfully compiled the program, two executables will be created: pso and helper.  The pso executable is an MPI application, while helper is not.  The helper application contains additional utilities.  A list of the options available with the pso and helper executables can be obtained by typing "./pso" or "./helper" respectively.
 
-
 B. Input, output, resume, and optimization files
 
 Each of the four algorithms, particle swarm optimization (PSO), basin hopping, simulated annealing, and the genetic algorithm has a different input file (file extension .inp).  These were designed to be as self explanatory as possible. Simulated annealing and basin hopping have a common input file, since they are similar algorithms.  Each time the program is run, it creates an output file (file extension .out), which contains the input parameters as well as summary information on the progress of the run.  The program also creates a resume file (file extension .res), which contains all information necessary for restarting a run that was stopped before it was completed.  An optimization file (file extension .opt) can be created from a resume file in order to perform a local geometry optimization on the list of best structures after the run has completed.
-
 
 C. Running and restarting the program
 
@@ -108,7 +106,6 @@ To create a geometry optimization file from the LJ7_PSO.res resume file, type:
 This creates an optimization file called LJ7_PSO.opt and transfers 100 structures to it from LJ7_PSO.res.  To run the optimization file type "./pso LJ7_PSO.opt". After each set of 10 structures have been optimized, the program will update the LJ7_PSO.opt file until all structures have been optimized.
 
 Note that if you open an optimization file, it will say simulated annealing, particle swarm, or genetic algorithm at the top. This is because optimization files were originally designed to perform a geometry optimization on the list of best structures after a simulated annealing, particle swarm, or genetic algorithm run.  Now, they are more generally used to perform calculations on any list of chemical structures.  For example, this program uses optimization files to perform bond rotational searches.  Even though geometry optimization may or may not be used, the file type is still called an 'optimization' file.
-
 
 D. Obtaining results from output, resume, and optimization files
 
@@ -133,9 +130,25 @@ Before doing a bond rotational search be sure to check that bonds are in the app
 
 Note that the bondLengths.txt file was automatically generated from from average bond lengths stored in the files averageSingleBondLengthsInAngstroms.txt and averageMultipleBondLengthsInAngstroms.txt using the Perl script updateBondLengths.pl.  These average bond lengths were taken from the Handbook of Chemistry and Physics.  The updateBondLengths.pl program allows bonds to be 15% larger or smaller than average bond lengths when generating bondLengths.txt.
 
-Since performing a bond rotational search is non-random, there are no difficult parameters to set.  When performing a simulated annealing, particle swarm, or genetic algorithm search, these random algorithms have parameters you will need to set.  More specific information on setting these parameters as well as the general format of input files is given in the next section.
+Since performing a bond rotational search is non-random, there are no difficult parameters to set. When performing a simulated annealing, particle swarm, or genetic algorithm search, these random algorithms have parameters you will need to set.  More specific information on setting these parameters as well as the general format of input files is given in the next section.
+F. Adding Additional Quantum Chemistry Packages
 
+	This software was designed to be used with the Gaussian.  While other quantum chemistry packages have not yet been implemented, the software has been configured to make adding these as simple as possible.  To add a quantum chemistry package, do the following:
 
+1. Add a one-line define statement to energyProgram.h as follows:
+   #define NAME_OF_YOUR_ENERGY_PROGRAM             UNIQUE_INTEGER
+2. Add the program name, input and output file extensions, and other basic information to energyProgram.cc.
+3. Write methods for creating input files and reading output files in energy.cc.
+
+G. References
+
+A few publications where the software has been used are below:
+
+[1] Clark, J.; Call, S. T.; Austin, D.; Hansen, J. Computational Study of Isopren Hydroxyalkyl Peroxy Radical-Water complexes (C5H8(OH)O2-H2O). J. Phys. Chem. A, 2010, 114 (23), 6534–6541.
+
+[2] Averkiev, B. B.; Call, S.; Boldyrev, A. I.; Wang, L. M.; Huang, W.; Wang, L. S. Photoelectron spectroscopy and ab initio study of the structure and bonding of Al7N- and Al7N. J. Phys. Chem. A. 2008, 112(9), 1873-1879.
+
+[3] Call, S. T.; Boldyrev, A. I., Zubarev, D. Y. Global Minimum Structure Searches via Particle Swarm Optimization. J. Comput. Chem. 2007, 28, 1177-1186.
 II. Input file formats and optimization of random algorithm parameters
 
 This section discusses the parameters in the input file and techniques for setting them.  Knowing how to set parameters optimally can influence the performance of each algorithm.  While setting these parameters takes practice, examples are provided.  Also, some of the more important parameters can be set for you automatically by the program.
@@ -144,70 +157,68 @@ A. Input parameters common to all algorithms
 
 Parameters common to all algorithms appear at the top and bottom of each input file.  An example of the parameters at the top of an input file for (H2O)OH- are as follows:
 
-1   Particle Swarm Optimization Input File Version 1.2.1
+1   Particle Swarm Optimization Input File Version 1.3.2
 2   
-3   Energy function to use (Gaussian or Lennard Jones): Gaussian
-4   Path to energy program: /path/to/g03/
-5   Path to energy files: /path/to/gaussian/input/and/log/files/
-6   Path to scratch directory (optional): /my/scratch/directory/
-7   Search cube length, width, and height: 7.0
-8   Number of linear structures: 0
-9   Initialize linear structures in a box with the above cube length and a height and width of: 1.2
-10  Number of planar structures: 0
-11  Number of fragmented 3D structures: 0
-12  Number of partially non-fragmented 3D structures: 0
-13  Number of completely non-fragmented 3D structures: 64
-14  General minimum atom distance (used if no value specified below): 0.7
-15  Specific minimum atom distances (angstroms):
-16  1 1 0.9
-17  1 8 0.8
-18  8 8 1.2
-19  Maximum inter-atomic distance (angstroms): 3.0
+3   Energy function to use: Gaussian
+4   Path to energy files: /path/to/gaussian/input/and/log/files/
+5   Path to scratch directory (optional): /my/scratch/directory/
+6   Search cube length, width, and height: 7.0
+7   Number of linear structures: 0
+8   Initialize linear structures in a box with the above cube length and a height and width of: 1.2
+9  Number of planar structures: 0
+10  Number of fragmented 3D structures: 0
+11  Number of partially non-fragmented 3D structures: 0
+12  Number of completely non-fragmented 3D structures: 64
+13  General minimum atom distance (used if no value specified below): 0.7
+14  Specific minimum atom distances (angstroms):
+15  1 1 0.9
+16  1 8 0.8
+17  8 8 1.2
+18  Maximum inter-atomic distance (angstroms): 3.0
 
-The header on line 1 specifies the type of algorithm (particle swarm optimization, simulated annealing, etc.).  It contains the phrase "Input File" for input files and "Resume File" for resume files and "Optimization File" for optimization files.  The header also contains a version number.  If you attempt to run an input file that belongs to an older version of the program, you may have to change or insert lines in the input file before it will run.  The program will specify when lines are missing or need to be changed.  The path to the energy program is on line 4.  The path to the energy files on line 5 is the directory where the ".log", ".com", ".dat", and ".chk" files are to be stored.  If using a cluster of Linux computers, this should be a directory accessible to all nodes.  The scratch directory (line 6) is where all Gaussian scratch files are written.  If running on a cluster, this can be on a local hard drive.  Log and checkpoint files are copied from here back to the energy files directory (line 5).
+The header on line 1 specifies the type of algorithm (particle swarm optimization, simulated annealing, etc.).  It contains the phrase "Input File" for input files and "Resume File" for resume files and "Optimization File" for optimization files.  The header also contains a version number.  If you attempt to run an input file that belongs to an older version of the program, you may have to change or insert lines in the input file before it will run.  The program will specify when lines are missing or need to be changed.  The path to the energy files on line 4 is the directory where the Gaussian input and output files are stored.  If using a cluster of Linux computers, this should be a directory accessible to all nodes.  The scratch directory (line 5) is where all Gaussian scratch files are written.  If running on a cluster, this can be on a local hard drive.  Log and checkpoint files are copied from here back to the energy files directory (line 4).
 
-When specifying the number of each structure type to initialize (lines 8-13), keep in mind that atoms are placed in groups each of which is moved and rotated as a "unit" or molecule.  Each "unit" contains one or more atoms.  Line 9 indicates that linear structures are initialized so that all atoms are in a 3D box that is 1.2 x 1.2 x 7.0.  Planar structures are initialized so that centers of mass of each "unit" are on the same plane.  The fragmented, partially non-fragmented, and completely non-fragmented structures are described informally here.  For a more precise discussion, see the literature.  Fragmented structures contain "units" in random locations within the search cube. Partially non-fragmented structures are created such that every atom is within the maximum distance of at least one other atom.  These are called "partially" non-fragmented because two units may be isolated from the rest of the units (further than the maximum distance).  With completely non-fragmented structures, no two units can be isolated from other units.  For example, if you started at some unit and could only travel to other units within the maximum distance of that unit, you could travel to any unit.
+When specifying the number of each structure type to initialize (lines 7-12), keep in mind that atoms are placed in groups each of which is moved and rotated as a "unit" or molecule.  Each "unit" contains one or more atoms.  Line 8 indicates that linear structures are initialized so that all atoms are in a 3D box that is 1.2 x 1.2 x 7.0.  Planar structures are initialized so that centers of mass of each "unit" are on the same plane.  The fragmented, partially non-fragmented, and completely non-fragmented structures are described informally here.  For a more precise discussion, see the literature.  Fragmented structures contain "units" in random locations within the search cube. Partially non-fragmented structures are created such that every atom is within the maximum distance of at least one other atom.  These are called "partially" non-fragmented because two units may be isolated from the rest of the units (further than the maximum distance).  With completely non-fragmented structures, no two units can be isolated from other units.  For example, if you started at some unit and could only travel to other units within the maximum distance of that unit, you could travel to any unit.
 
 The program allows one maximum distance between atoms (in this case 3 angstroms), and multiple minimum distances between different types of atoms.  In this case the minimum distance is 0.9 between two hydrogens, 0.8 between hydrogen and oxygen, and 1.2 between two oxygen atoms.
 
 An example of the parameters at the end of the input file are given below:
 
-43  Save this many of the best "different" structures: 1000
-44  Consider 2 structures "different" if their RMS distance is greater or equal to (angstroms): 0.7
-45  Save this many .log/energy output files from the list of best structures: 50
-46  Output file name: /path/to/pso/files/OH3H2O_PSO.out
-47  Resume file name (optional): /path/to/pso/files/OH3H2O_PSO.res
-48  Write resume file after every set of this number of iterations (optional): 1
-49  Print summary information after each set of this many iterations: 1
-50  Charge: -1
-51  Multiplicity: 1
-52  Energy file header:
-53  % chk=mychk
-54  # B3LYP/6-311++G** opt=(calcfc) scfcon=6 scfcyc=300 optcyc=20 scf=direct
-55  
-56  Energy file footer (optional):
-57  --link1--
-58  % chk=mychk
-59  # B3LYP/6-311++G** freq=noraman scfcon=6 scfcyc=300 optcyc=100
-60  geom=check guess=read
-61  
-62  Number of unit types: 2
-63  
-64  Number of units of this type: 3
-65  Format of this unit type: Cartesian
-66  1 0.757540797781 0.0 0.587079636589
-67  1 -0.757540797781 0.0 0.587079636589
-68  8 0.0 0.0 0.0
-69  
-70  Number of units of this type: 1
-71  Format of this unit type: Cartesian
-72  1 0.0 0.0 1.064890
-73  8 0.0 0.0 0.0
+42  Save this many of the best "different" structures: 1000
+43  Consider 2 structures "different" if their RMS distance is greater or equal to (angstroms): 0.7
+44  Save this many .log/energy output files from the list of best structures: 50
+45  Output file name: /path/to/pso/files/OH3H2O_PSO.out
+46  Resume file name (optional): /path/to/pso/files/OH3H2O_PSO.res
+47  Write resume file after every set of this number of iterations (optional): 1
+48  Print summary information after each set of this many iterations: 1
+49  Charge: -1
+50  Multiplicity: 1
+51  Energy file header:
+52  % chk=mychk
+53  # B3LYP/6-311++G** opt=(calcfc) scfcon=6 scfcyc=300 optcyc=20 scf=direct
+54  
+55  Energy file footer (optional):
+56  --link1--
+57  % chk=mychk
+58  # B3LYP/6-311++G** freq=noraman scfcon=6 scfcyc=300 optcyc=100
+59  geom=check guess=read
+60  
+61  Number of unit types: 2
+62  
+63  Number of units of this type: 3
+64  Format of this unit type: Cartesian
+65  1 0.757540797781 0.0 0.587079636589
+66  1 -0.757540797781 0.0 0.587079636589
+67  8 0.0 0.0 0.0
+68  
+69  Number of units of this type: 1
+70  Format of this unit type: Cartesian
+71  1 0.0 0.0 1.064890
+72  8 0.0 0.0 0.0
 
-Line 43 specifies the size of the list of best structures that are saved during the course of the entire run.  This list is updated after every iteration.  Line 44 specifies that each structure in the list of best structures is different from every other structure in the list by a certain RMS distance (see article above).  Line 45 is the number of Gaussian .log files to save for the list of best structures.  These .log files are saved in a folder called bestSavedStructures located inside the directory where energy files are stored (specified on line 5 of the input file).  Lines 46-55 should be self explanatory.  Note that the program will automatically rename the checkpoint file for each structure in the population of candidate structures, so that there aren't naming conflicts.  The energy file footer (lines 56-60) is placed at the end of the Gaussian input file.  In this case, the footer specifies that a frequency calculation be performed.  Note that the energy file header and footer are not used when energies are calculated using the Lennard Jones potential.
+Line 42 specifies the size of the list of best structures that are saved during the course of the entire run.  This list is updated after every iteration.  Line 43 specifies that each structure in the list of best structures is different from every other structure in the list by a certain RMS distance (see article above).  Line 44 is the number of Gaussian output files to save for the list of best structures.  These output files are saved in a folder called bestSavedStructures located inside the directory where energy files are stored (specified on line 4 of the input file).  Lines 45-54 should be self explanatory.  Note that the program will automatically rename the checkpoint file for each structure in the population of candidate structures, so that there aren't naming conflicts.  The energy file footer (lines 55-59) is placed at the end of the Gaussian input file.  In this case, the footer specifies that a frequency calculation be performed.  Note that the energy file header and footer are not used when energies are calculated using the Lennard Jones potential.
 
-Lines 62-73 are an example of how to specify groups of atoms, molecules, or "units".  The above consists of three water molecules and one hydroxide ion. Lines 66-68 specifies the coordinates of water with two hydrogen atoms and one oxygen atom.  Lines 72-73 specify coordinates for hydroxide.  If you are dealing with single atoms that are moved separately form other components in the system, one atom can be specified for each "unit".  The "format of this unit type" can only be "Cartesian ".  At some point in the future, I may allow other types of input such as "Z-matrix."
-
+Lines 61-72 are an example of how to specify groups of atoms, molecules, or "units".  The above consists of three water molecules and one hydroxide ion. Lines 65-67 specifies the coordinates of water with two hydrogen atoms and one oxygen atom.  Lines 71-72 specify coordinates for hydroxide.  If you are dealing with single atoms that are moved separately form other components in the system, one atom can be specified for each "unit".  The "format of this unit type" can only be "Cartesian ".  At some point in the future, I may allow other types of input such as "Z-matrix."
 
 B. Run output formats
 
@@ -216,15 +227,16 @@ As the program runs, it prints summary information to the screen.  As you modify
      1. Particle swarm output
 
      The summary output from the PSO program looks like this:
-     It: 110 Best Energy: -12.105384 Coord Vel Max,Avg: 0.200, 0.057 Angle Vel Max,Avg: 0.000, 0.000 Div: 0.070 Vis: 72.9%
+       It: 110 Best Energy: -12.105384 Coord Vel Max,Avg: 0.200, 0.057 Angle Vel Max,Avg: 0.000, 0.000 Div: 0.070 Vis: 72.9%
 
      The meaning of each value is as follows:
-     It: iteration number
-     Best Energy: the energy value of the lowest energy structure
-     Coord Vel Max,Avg: The coordinate velocity (the maximum and average respectively) for each atom or group of atoms
-     Angle Vel Max,Avg: The angle velocity (the maximum and average respectively) for each group of atom (will be zero if there are no groups containing more than one atom)
-     Div: The diversity in the population (typically between 0 and 0.5)
-     Vis: The percentage visibility (the average percentage of candidate structures that can been seen by other structures, see paper)
+       It: iteration number
+       Best Energy: the energy value of the lowest energy structure
+       Coord Vel Max,Avg: Coordinate velocity (the maximum and average respectively) for each atom or group of atoms
+       Angle Vel Max,Avg: Angle velocity (the maximum and average respectively) for each group of atom (will be zero if
+           there are no groups containing more than one atom)
+       Div: The diversity in the population (typically between 0 and 0.5)
+       Vis: The percentage visibility (average percentage of other solutions that is visible to each solution, see paper 3)
      
      2. Simulated annealing and basin hopping output
      
@@ -232,117 +244,116 @@ As the program runs, it prints summary information to the screen.  As you modify
      It: 30 Best Energy: -9.62310778 Temp: 777346.9 Num Pert: 4 Coord, Angle Pert: 0.3000, 20.0000 Accepted Pert: 87.1%
      
      The meaning of each value is as follows:
-     It: iteration number
-     Best Energy: the energy value of the lowest energy structure
-     Temp: The current temperature
-     Num Pert: The number of perturbations performed at one time
-     Coord, Angle Pert: The amount by which coordinates and angles change respectively (coordinates are moved in a random direction by the specified amount)
-     Accepted Pert: The percentage of accepted perturbations over the previous n iterations (see input file)
+       It: iteration number
+       Best Energy: the energy value of the lowest energy structure
+       Temp: The current temperature
+       Num Pert: The number of perturbations performed at one time
+       Coord, Angle Pert: The amount by which coordinates and angles change respectively (coordinates are moved
+              in a random direction by the specified amount)
+       Accepted Pert: The percentage of accepted perturbations over the previous n iterations (see input file)
      
      3. Genetic algorithm output
 
      The summary output for the genetic algorithm looks like this:
-     It: 60 Best Energy: -10.10563270 Diversity: 0.05333658
+       It: 60 Best Energy: -10.10563270 Diversity: 0.05333658
 
      The meaning of each value is as follows:
-     It: iteration number
-     Best Energy: the energy value of the lowest energy structure
-     Diversity: The diversity in the population (typically between 0 and 0.5)
+       It: iteration number
+       Best Energy: the energy value of the lowest energy structure
+       Diversity: The diversity in the population (typically between 0 and 0.5)
 
 When monitoring the course of an algorithm, check to see how often the best energy value changes and by how much.  For simulated annealing, the percentage of accepted transitions should start high (about 90%).  If this starts too high (i.e. 95%), however, it may take a very long time to come down.  For particle swarm optimization, the visibility should start low (i.e. 0%) and increase slowly to (100 %).  For particle swarm optimization and the genetic algorithm, the diversity indicates how different members of the population are from one another.  Populations must be sufficiently diverse in order to produce meaningful progress.  See the paper at the beginning of this document for the formulas used to calculate visibility and diversity.
-
 
 C. Particle swarm optimization input parameters
 
 An example list of the parameters for the particle swarm optimization algorithm are given below.
 
-21  Particle Swarm Optimization Parameters:
-22  Start coordinate inertia (w): 0.95
-23  End coordinate inertia (optional): 0.8
-24  Reach end coordinate and angle inertias at iteration (optional): 10000
-25  Coordinate individual minimum attraction (c2): 0.15
-26  Coordinate population minimum attraction (c1): 0.15
-27  Maximum Coordinate Velocity (Vmax, optional): 0.3
-28  Start angle inertia (w): 0.95
-29  End angle inertia (optional): 0.8
-30  Angle individual minimum attraction (c2, deg): 15
-31  Angle population minimum attraction (c1, deg): 15
-32  Maximum Angle Velocity (Vmax, optional): 30
-33  Starting RMS visibility distance (use 'auto' for automatic): auto
-34  Increase the RMS visibility distance by this amount each iteration: 0.003
-35  Switch to the repulsion phase when (1) diversity is below (optional): 0.15
-36  And when (2) progress hasn't been made for this number of iterations (optional): 200
-37  Switch to the attraction phase when diversity is above (optional): 0.2
-38  Don't update individual best solutions within this RMS distance of the best seen by the population: 0.01
-39  Maximum number of allowed iterations: 10000
-40  Enforce minimum distance constraints on a copy of each structure rather than on the original: yes
-41  Use energy value from local optimization: yes
+20  Particle Swarm Optimization Parameters:
+21  Start coordinate inertia (w): 0.95
+22  End coordinate inertia (optional): 0.8
+23  Reach end coordinate and angle inertias at iteration (optional): 10000
+24  Coordinate individual minimum attraction (c2): 0.15
+25  Coordinate population minimum attraction (c1): 0.15
+26  Maximum Coordinate Velocity (Vmax, optional): 0.3
+27  Start angle inertia (w): 0.95
+28  End angle inertia (optional): 0.8
+29  Angle individual minimum attraction (c2, deg): 15
+30  Angle population minimum attraction (c1, deg): 15
+31  Maximum Angle Velocity (Vmax, optional): 30
+32  Starting RMS visibility distance (use 'auto' for automatic): auto
+33  Increase the RMS visibility distance by this amount each iteration: 0.003
+34  Switch to the repulsion phase when (1) diversity is below (optional): 0.15
+35  And when (2) progress hasn't been made for this number of iterations (optional): 200
+36  Switch to the attraction phase when diversity is above (optional): 0.2
+37  Don't update individual best solutions within this RMS distance of the best seen by the population: 0.01
+38  Maximum number of allowed iterations: 10000
+39  Enforce minimum distance constraints on a copy of each structure rather than on the original: yes
+40  Use energy value from local optimization: yes
 
 If you are new to particle swarm, you can start with the parameters above and adjust them as needed.  Because ab initio calculations can take a long time, it is best to use the Lennard Jones potential to test the parameters you have chosen.  Though this energy function behaves very differently, doing this will help you optimize parameters not strongly related to the energy function (i.e. visibility parameters).  After the parameters seem to work well with the Lennard Jones potential, try them with Gaussian and check for differences in how the algorithm performs.  While this may seem silly, it can save you from having to change parameters in the middle of Gaussian runs that take several weeks or months.
 
-The w, c1, c2, and Vmax parameters (lines 22-32) are typical to particle swarm optimization, and a description of these is available in the literature on the Internet or in the above paper.  The parameters that most likely need to be changed are c1, c2, and Vmax (lines 25-27 and 30-32).  These affect how refined the search is.  Lowering these will favor local rather than global searches.
+The w, c1, c2, and Vmax parameters (lines 21-31) are typical to particle swarm optimization, and a description of these is available in the literature on the Internet or in paper 3 above.  The parameters that most likely need to be changed are c1, c2, and Vmax (lines 24-26 and 29-31).  These affect how refined the search is.  Lowering these will favor local rather than global searches.
 
-Parameters on lines 33-37 control the progress of the algorithm in the long term and are important.  These should be set so that at the beginning of a run each candidate structure can see and is influenced only by structures that are closely related.  In other words, the percentage visibility should start low, i.e. 0-1%, and increase slowly to 100%.  The percentage visibility can be observed as "Vis" in the summary output seen while the program runs.
+Parameters on lines 32-36 control the progress of the algorithm in the long term and are important.  These should be set so that at the beginning of a run each candidate structure can see and is influenced only by structures that are closely related.  In other words, the percentage visibility should start low, i.e. 0-1%, and increase slowly to 100%.  The percentage visibility can be observed as "Vis" in the summary output seen while the program runs.
 
-The program also has an automatic method of assigning the starting RMS visibility distance (line 33).  If this option is turned on, the starting RMS visibility distance will be set to 80% of the smallest RMS distance between any two chemical structures in the population.  The time when this distance is set can vary, and before it is set, the RMS visibility distance (and percentage visibility) is zero.  The distance is set when one of three conditions is met:
-      1. The best observed energy value hasn't changed for 70 iterations, and the average coordinate velocity (see summary output) is less than half of the maximum coordinate velocity (Vmax, line 27).
+The program also has an automatic method of assigning the starting RMS visibility distance (line 32).  If this option is turned on, the starting RMS visibility distance will be set to 80% of the smallest RMS distance between any two chemical structures in the population.  The time when this distance is set can vary, and before it is set, the RMS visibility distance (and percentage visibility) is zero.  The distance is set when one of three conditions is met:
+      1. The best observed energy value hasn't changed for 70 iterations, and the average coordinate velocity (see summary output) is less than half of the maximum coordinate velocity (Vmax, line 26).
       2. Iteration 200 has been reached.
       3. The average velocity of coordinates is below 0.005.
 Since the starting visibility distance can be hard to set, it is hoped that this automatic option will simplify setting the parameters.
 
-Once the visibility distance reaches 100%, the diversity in the population will likely be low.  The degree of diversity in the population can be observed as "Div" in the summary output seen while the program runs.  When this gets low (see parameters on lines 35 and 36), the algorithm will temporarily switch to the repulsion phase.  When it switches back (see line 37), it will again start with a low visibility which will increase slowly to 100%.  Also, the memory of each individual solution is erased by replacing it with a structure from the list of best structures (see line 43).  For this reason, it is best to set line 43 to be equal to or larger than the total population size.  It is also a good idea to set the distance between structures in the list of best structures (line 44) to be slightly larger than the starting visibility distance (line 33).  Note that while entering the repulsion phase can reintroduce diversity, it is best if the algorithm can find a minimum without entering this phase (i.e. it should only be used as a backup).
+Once the visibility distance reaches 100%, the diversity in the population will likely be low.  The degree of diversity in the population can be observed as "Div" in the summary output seen while the program runs.  When this gets low (see parameters on lines 34 and 35), the algorithm will temporarily switch to the repulsion phase.  When it switches back (see line 36), it will again start with a low visibility which will increase slowly to 100%.  Also, the memory of each individual solution is erased by replacing it with a structure from the list of best structures (see line 42).  For this reason, it is best to set line 42 to be equal to or larger than the total population size.  It is also a good idea to set the distance between structures in the list of best structures (line 43) to be slightly larger than the starting visibility distance (line 32).  Note that while entering the repulsion phase can reintroduce diversity, it is best if the algorithm can find a minimum without entering this phase (i.e. it should only be used as a backup).
 
-The parameter on line 38 was designed to prevent the best structure seen by each individual from becoming too close to the best structure seen by the population.  I usually don't change it.
+The parameter on line 37 was designed to prevent the best structure seen by each individual from becoming too close to the best structure seen by the population.  I usually don't change it.
 
-The parameter on line 39 is a maximum number of iterations allowed.  This is the only way the program is terminated automatically, though the program can be terminated manually at any time by pressing Control-C (or qdel if running on a Linux cluster).
+The parameter on line 38 is a maximum number of iterations allowed.  This is the only way the program is terminated automatically, though the program can be terminated manually at any time by pressing Control-C (or qdel if running on a Linux cluster).
 
-The parameter on line 40 deals with an automatic function that the program has for enforcing minimum distance constraints (see article above).  It could be said that enforcing the minimum distance constraints modifies the way the algorithm works.  Line 40 specifies that the program should make a copy of each structure before enforcing the minimum distance constraints and calculating the energy, so the progress of the algorithm is not modified.
+The parameter on line 39 deals with an automatic function that the program has for enforcing minimum distance constraints (see paper 3 above).  It could be said that enforcing the minimum distance constraints modifies the way the algorithm works.  Line 39 specifies that the program should make a copy of each structure before enforcing the minimum distance constraints and calculating the energy, so the progress of the algorithm is not modified.
 
-This algorithm can also be used with local optimization (see line 41).  When local optimization is used, the energy of a structure is assigned to be the energy obtained through local optimization, but the positions of atoms and the progress of the PSO algorithm are not affected when this optimization is turned on.  When using this option, a good approach is to limit the number of optimization steps rather that performing a full geometry optimization.  If a full geometry optimization is desired, this may be performed on the list of best structures after the run completes.
-
+This algorithm can also be used with local optimization (see line 40).  When local optimization is used, the energy of a structure is assigned to be the energy obtained through local optimization, but the positions of atoms and the progress of the PSO algorithm are not affected when this optimization is turned on.  When using this option, a good approach is to limit the number of optimization steps rather that performing a full geometry optimization.  If a full geometry optimization is desired, this may be performed on the list of best structures after the run completes.
 
 D. Simulated annealing and basin hopping input parameters
 
 An example list of the simulated annealing parameters are given below.
 
-21  Simulated Annealing Parameters:
-22  Search only for non-fragmented structures: yes
-23  Use energy value from local optimization(basin hopping): no
-24  Search for transition states (random search with every perturbation accepted): no
-25  Starting temperature or desired starting percentage of accepted transitions(use %): 85%
-26  Boltzmann constant: 3.1669e-6
-27  Minimum number of iterations before decreasing the temperature (N): 200
-28  Decrease the temperature when the percentage of accepted transitions for the past N iterations is below: 100
-29  Quenching factor(use 1 for basin hopping): 0.9995
-30  Don't stop while the temperature is above this value: 400.0
-31  Stop if the percentage of accepted transitions for the past N iterations is below: 1.0
-32  Maximum number of allowed iterations: 100000
-33  Starting number of perturbations per iteration: 3
-34  Starting coordinate perturbation (angstroms): 0.25
-35  Minimum coordinate perturbation (angstroms): 0.05
-36  Starting angle perturbation (deg): 25
-37  Minimum angle perturbation (deg): 3
+20  Simulated Annealing Parameters:
+21  Search only for non-fragmented structures: yes
+22  Use energy value from local optimization(basin hopping): no
+23  Search for transition states (random search with every perturbation accepted): no
+24  Starting temperature or desired starting percentage of accepted transitions(use %): 85%
+25  Boltzmann constant: 3.1669e-6
+26  Minimum number of iterations before decreasing the temperature (N): 200
+27  Decrease the temperature when the percentage of accepted transitions for the past N iterations is below: 100
+28  Quenching factor(use 1 for basin hopping): 0.9995
+29  Don't stop while the temperature is above this value: 400.0
+30  Stop if the percentage of accepted transitions for the past N iterations is below: 1.0
+31  Maximum number of allowed iterations: 100000
+32  Starting number of perturbations per iteration: 3
+33  Starting coordinate perturbation (angstroms): 0.25
+34  Minimum coordinate perturbation (angstroms): 0.05
+35  Starting angle perturbation (deg): 25
+36  Minimum angle perturbation (deg): 3
 
-This simulated annealing algorithm has the ability to perform non-fragmented searches, or in other words it can enforce minimum and maximum distance constraints through the course of the entire run.  This enables faster, more relevant searches.  To enable this feature, place yes on line 22.  Putting Yes for line 23, and setting the Quenching factor to 1 turns on Basin Hopping.  Basin hopping is very similar to simulated annealing except the temperature (line 25), number of perturbations to perform at a time (line 33), and perturbation amounts (34-37) do not change.  Also, when performing basin hopping, the energy value is obtained by making a copy of the original structure, performing optimization to the nearest local minimum, and assigning that energy value to the original structure.  By tradition, simulated annealing and basin hopping use only one structure and do not use a population of candidate structures, though this application will allow populations of solutions.  A population of solutions with these two algorithms is essentially a set of independent runs.  Using a population of solutions with these algorithms greatly increases the probability of finding the correct minimum and is highly recommended.
+This simulated annealing algorithm has the ability to perform non-fragmented searches, or in other words it can enforce minimum and maximum distance constraints through the course of the entire run.  This enables faster, more relevant searches.  To enable this feature, place yes on line 21.  Putting Yes for line 22, and setting the Quenching factor to 1 turns on Basin Hopping.  Basin hopping is very similar to simulated annealing except the temperature (line 24), number of perturbations to perform at a time (line 32), and perturbation amounts (33-36) do not change.  Also, when performing basin hopping, the energy value is obtained by making a copy of the original structure, performing optimization to the nearest local minimum, and assigning that energy value to the original structure.  By tradition, simulated annealing and basin hopping use only one structure and do not use a population of candidate structures, though this application will allow populations of solutions.  A population of solutions with these two algorithms is essentially a set of independent runs.  Using a population of solutions with these algorithms greatly increases the probability of finding the correct minimum and is highly recommended.
 
-At each step, simulated annealing makes a number of random perturbations.  Each perturbation can move the center-of-mass for a group of atoms, a molecule, or a "unit" along a random vector the length of which is specified on lines 34 and 35.  Alternatively a perturbation can rotate one of three angles in a molecule or unit by a random amount (see lines 36 and 37).  Once a perturbation has been made, the energy is recalculated.  If the energy value is better, the perturbation is accepted. If it is worse, the perturbation is accepted with a certain probability defined as:
+At each step, simulated annealing makes a number of random perturbations.  Each perturbation can move the center-of-mass for a group of atoms, a molecule, or a "unit" along a random vector the length of which is specified on lines 33 and 34.  Alternatively a perturbation can rotate one of three angles in a molecule or unit by a random amount (see lines 35 and 36).  Once a perturbation has been made, the energy is recalculated.  If the energy value is better, the perturbation is accepted. If it is worse, the perturbation is accepted with a certain probability defined as:
 
-     p = e^(-change in energy / k * T)
+     p = e^(-ΔE/(k * T))
 
-where k is the Boltzmann constant in units of Hartrees per Kelvin (line 26) and T is the temperature in units of Kelvin (line 25).  At the start of a run, the temperature and the probability of accepting a bad perturbation are very high. The temperature T, the number of perturbations P, the coordinate perturbation amount C, and the angle perturbation amount A decrease as follows:
+where ΔE is the change in energy, k is the Boltzmann constant in units of Hartrees per Kelvin (line 25), and T is the temperature in units of Kelvin (line 24).  At the start of a run, the temperature and the probability of accepting a bad perturbation are very high. The temperature T, the number of perturbations P, the coordinate perturbation amount C, and the angle perturbation amount A decrease as follows:
 
-     T = T * quenching factor (line 24)
+     T = T * quenching factor (line 23)
      P = P * SquareRoot(quenching factor)
      C = C * SquareRoot(quenching factor)
      A = A * SquareRoot(quenching factor)
 
 At the end, the temperature and the probability of accepting bad perturbations are very low. Essentially, the algorithm is a slow transition between a random search and a downhill search.
 
-Since the starting temperature (line 25) is sometimes time consuming to set optimally, this program now has an automatic method for setting this.  Instead, of specifying a starting temperature, you may specify a starting percentage of accepted transitions (see summary output displayed while the program is running).  Typical values range from 70-90%, and 85% works for many applications.  Note that if the percentage of accepted transitions is higher than 90%, it may take a long time for it to come down.
+Since the starting temperature (line 24) is sometimes time consuming to set optimally, this program now has an automatic method for setting this.  Instead, of specifying a starting temperature, you may specify a starting percentage of accepted transitions (see summary output displayed while the program is running).  Typical values range from 70-90%, and 85% works for many applications.  Note that if the percentage of accepted transitions is higher than 90%, it may take a long time for it to come down.
 
-The quenching factor (line 29) controls the length of the run and is also important.  Set this so that the run will last long enough to produce good results but short enough to be reasonable.  Keep in mind the relationship: starting temperature * (quenching factor ^ number of iterations) = final temperature.  Typical values are between 0.999 and 0.99999.  I typically use 0.9995.
+The quenching factor (line 28) controls the length of the run and is also important.  Set this so that the run will last long enough to produce good results but short enough to be reasonable.  Keep in mind the relationship: starting temperature * (quenching factor ^ number of iterations) = final temperature.  Typical values are between 0.999 and 0.99999.  I typically use 0.9995.
 
-There are two ways a run can be terminated automatically.  The first is if the run exceeds a maximum number of iterations (line 32).  The second is if the percentage of accepted transitions is below a specified value (line 31) and if the temperature has dropped below a specified minimum value (line 30).  Generally, it is best if the percentage of accepted transition and the temperature are low toward the end of a run, though you may stop a run at any time.
+There are two ways a run can be terminated automatically.  The first is if the run exceeds a maximum number of iterations (line 31).  The second is if the percentage of accepted transitions is below a specified value (line 30) and if the temperature has dropped below a specified minimum value (line 29).  Generally, it is best if the percentage of accepted transition and the temperature are low toward the end of a run, though you may stop a run at any time.
 
 Theoretically simulated annealing is guaranteed to find the global minimum if cooling proceeds slowly enough, though there is no guarantee that it can be done within a reasonable amount of time.  Because of the expensive nature of ab initio calculations, large numbers of calculations are sometimes not practical, though the theoretical guarantee is a plus.  Using a population of solutions is also very helpful in finding global minima.
 
@@ -351,26 +362,24 @@ It is often best to use the Lennard Jones potential for testing the parameters u
 
 III. Running the program on a cluster of computers
 
-
 A. Submitting the program to the PBS Scheduler
 
-This section describes how to run the program on a cluster of Linux computers with Gaussian.  Some familiarity with Gaussian and Linux is assumed.  It should also be noted that other quantum chemistry programs could be incorporated into the software by someone with a little C++ experience.
+This section describes how to run the program on a cluster of Linux computers with Gaussian.  Some familiarity with Gaussian and Linux is assumed.
 
 To use a cluster of computers, create a script file for submitting the main program to the PBS (Portable Batch System) scheduler. An example script file for doing this called "examplePBSScript" is in the "pso" directory.  Make a copy of this script and modify it as follows.
 
     1. Line 2 in the script file specifies the number of nodes you want to use and the number of processors per node (ppn) you want.  Make sure your population size is divisible by this number.  This application was designed to perform one Gaussian calculation on each processor.  The wall time is a maximum time limit you want to allow your job to run for.  Set this appropriately. The example file specifies 24 hours.
     2. Line 3 is where you set the memory limit per node that you want.  Also set the memory limit in the Gaussian header in the pso input file.
-    3. Line 16 specifies that the list of nodes allocated by the PBS scheduler be copped to a file called "nodes.txt" in the energy files directory (line 5 of the pso input file).
+    3. Line 16 specifies that the list of nodes allocated by the PBS scheduler be copped to a file called "nodes.txt" in the energy files directory (line 4 of the pso input file).
     4. Change lines 22 and 23 (the last two lines).  These lines call the pso program.  It is best to put the input, output, and resume files in a separate directory other than in the main pso directory.  NOTE: WHEN RESTARTING THE PROGRAM, DON'T FORGET TO CHANGE THE INPUT FILE NAME TO THE RESUME FILE NAME IN THE PBS SCRIPT FILE.
 
-Also be sure to modify the pso input file appropriately.  Set the path to the energy program (line 4) to be the path to your Gaussian program.  Next on line 5, specify a directory where energy files (.com, .log, etc.) will be written.  You will need to create this directory, and it will need to be unique for every input file you intend to run simultaneously with the program.  Specify a scratch directory on line 6.  The pso program will create sub-directories in this directory where Gaussian scratch files will be written.  These sub directories have the name of the pso input or resume file.  The scratch directory can be on the hard drive of each local node or on a shared drive.  The pso program will delete scratch files it creates if you use the -walltime option (see section IV, D).
+Also be sure to modify the pso input file appropriately.  On line 4, specify a directory where Gaussian energy files (.com, .log, etc.) will be written.  You will need to create this directory, and it will need to be unique for every input file you intend to run simultaneously with the program.  Specify a scratch directory on line 5.  The pso program will create sub-directories in this directory where Gaussian scratch files will be written.  These sub directories have the name of the pso input or resume file.  The scratch directory can be on the hard drive of each local node or on a shared drive.  The pso program will delete scratch files it creates if you use the -walltime option (see section IV, D).
 
 Make sure the names of your output and resume files are set appropriately in the input file.  Use full path names.  Also, modify the Gaussian header and optional footer appropriately.  The header will be placed at the start of every Gaussian input file.
 
 Once you have created your script file and your input file and checked them twice, type the command qsub followed by the name of your script file.  To look at jobs in the queue, type the command qstat.  To look at only the jobs you have submitted, type 'qstat | grep your_user_name'.  To delete a job from the queue type: 'qdel job_number'.
 
 Note: Though this application was generally designed to run one Gaussian calculation per processor, it does have some built in functionality to run single Gaussian calculations on multiple processors.  Though I have not done this in a few years, you may talk to your system administrator and get help doing this if desired.  The pso application reads the "nodes.txt" file and used to start one energy calculation for each node/line in the file.  Using mpirun instead of mpiexec can be helpful in this case.  If you specify multiple processors per node and if you want one Gaussian job to use all of the processors on a node, you may need to place this line in your Gaussian header (pso input file): "% nprocshared=number_of_processors_you_want".
-
 
 B. MPI Options
 
@@ -380,20 +389,18 @@ Since the time required for different Gaussian jobs varies, a better approach is
 
 When using a population of structures with simulated annealing, each member of the population is essentially an independent simulated annealing run, but energy calculations for the entire population must still be performed in synchronized batches.  This means that all energy
  calculations for a particular iteration must be
- completed first.  Next, the iteration number increases and the temperature decreases (both of these are the same for all runs).  Next, perturbations are made on each structure, and a new batch of energy calculations is started.  This is inefficient because of the great differences in the amount of time required for different Gaussian energy calculations.  To overcome this, the -i option can be used with simulated annealing to allow all independent runs to run separately rather than in a synchronized manner.  It does this by creating separate input, output, and resume files for each population member.  For example, if my input file were named LJ7_Sim.inp, this option would create a directory called LJ7_SimRuns and create input files in this directory named LJ7_Sim_1.inp, LJ7_Sim_2.inp, etc.  Resume and output files would also be placed here.  This option additionally creates a separate list of best structures for each run.  For example if my energy files directory (input file line 5) were called energyFiles, the -i option would create Run1, Run2, etc. directories inside this directory, each with it's own bestSavedStructures directory.
+ completed first.  Next, the iteration number increases and the temperature decreases (both of these are the same for all runs).  Next, perturbations are made on each structure, and a new batch of energy calculations is started.  This is inefficient because of the great differences in the amount of time required for different Gaussian energy calculations.  To overcome this, the -i option can be used with simulated annealing to allow all independent runs to run separately rather than in a synchronized manner.  It does this by creating separate input, output, and resume files for each population member.  For example, if my input file were named LJ7_Sim.inp, this option would create a directory called LJ7_SimRuns and create input files in this directory named LJ7_Sim_1.inp, LJ7_Sim_2.inp, etc.  Resume and output files would also be placed here.  This option additionally creates a separate list of best structures for each run.  For example if my energy files directory (input file line 4) were called energyFiles, the -i option would create Run1, Run2, etc. directories inside this directory, each with it's own bestSavedStructures directory.
 
 Also when using the -i option, the program has a method for periodically merging the separate lists of best structures into one master list.  For example, if my energy files directory were called energyFiles, the program will create a sub directory called bestSavedStructures and will copy structures from the bestSavedStructures directory in each of the Run1, Run2, etc. directories.  This method also creates a master ouput and resume file.  The method is run when ever you restart the run, and when the run completely finishes.  You may also run the method manually by typing "./helper -u YourInputFile.inp".
 
 When using the -i option and you must resume an unfinished run, do not change the input file to a resume file.  Since each population member has its own resume file, the program is smart enough to find each of these resume files and restart the run.  While the ./helper -u method does create a master resume file, this is only used to store the list of best structures and/or create an optimization file.
 
-
 C. Setting the Gaussian Scratch Directory
 
-The Gaussian scratch directory must be set by the pso program if you specified a scratch directory on line 6 of your input file.  The way this scratch directory is set can vary from system to system.  The pso program uses "export GAUSS_SCRDIR=your_scratch_directory".  If you need to modify this command, it's listed in the energy.cc file in the two init functions.
+The Gaussian scratch directory must be set by the pso program if you specified a scratch directory on line 5 of your input file.  The way this scratch directory is set can vary from system to system.  The pso program uses "export GAUSS_SCRDIR=your_scratch_directory".  If you need to modify this command, it's listed in the energy.cc file in the two init functions.
 
 
 IV. Other useful tips
-
 
 A. More about Optimization Files
 
@@ -413,15 +420,13 @@ After optimizing a certain number of structures from the resume file, if you dec
 
 This indicates you want to add 30 additional structures from the resume file.
 
+B. Creating Gaussian input files from a resume or optimization file
 
-B. Creating Gaussian .com files from a resume or optimization file
-
-In a resume or optimization file, there is a population of solutions as well as a list of best structures seen so far during the run.  The pso program can create .com files form either of these two lists.  This is useful if you wish to perform frequency calculations on the list of best structures, or if you wish to view the chemical structures with Molden, GaussView, or another viewer.  An example of how to create .com files from the list of best structures is as follows:
+In a resume or optimization file, there is a population of solutions as well as a list of best structures seen so far during the run.  The pso program can create Gaussian input (.com) files form either of these two lists.  This is useful if you wish to perform frequency calculations on the list of best structures, or if you wish to view the chemical structures with Molden, GaussView, or another viewer.  An example of how to create input files from the list of best structures is as follows:
 
       ./helper -c LJ7_PSO.opt /directory/in/which/to/put/com/files best
 
 This would place the list of best structures in the specified directory with the name best1.com, best2.com, best3.com, etc. Energy values are written in the title line of each .com file.  Similarly, .com files can be created from the current population using the -p option.
-
 
 C. Seeding the starting population with structures from previous runs
 
@@ -435,15 +440,13 @@ If the seed files contain fewer of one type of unit or molecule, new molecules w
 
 Note: when using multiple options, specify the -s option last, as it will assume that every following argument is a seed file.
 
-
 D. Setting a wall time to ensure cleaning of scratch files
 
 During a typical run, the program must be restarted several times.  When a program is terminated by the scheduler before the run is finished, this leaves files in the scratch directory. This is a problem if you want the scratch directory to be on the node's local hard drive rather than on a network drive.  Using the local hard drives frees up network bandwidth, so it would be nice if the program would watch the clock, clean up the scratch files, and die gracefully, rather than being killed by the PBS scheduler. The program can do this as follows:
 
 	./pso -walltime HH:MM:SS File.inp
 
-This tells the program to terminate before the specified duration of time has elapsed (hours, minutes, and seconds).  The format of the wall time is the same as the PBS scheduler, so you can simply copy and paste it.  Note: if you kill the PBS job using the qdel command, the scratch files will NOT be deleted, so don't do this.  If you need to stop a run before the wall time is up, use the cd command to navigate to the energy files directory (line 5 in the input file), and type 'touch stop'.  This will create a blank file called stop.  At the end of the run's next iteration, it will check for the existence of this file.  If it's there, it will stop and clean up the scratch files correctly.
-
+This tells the program to terminate before the specified duration of time has elapsed (hours, minutes, and seconds).  The format of the wall time is the same as the PBS scheduler, so you can simply copy and paste it.  Note: if you kill the PBS job using the qdel command, the scratch files will NOT be deleted, so don't do this.  If you need to stop a run before the wall time is up, use the cd command to navigate to the energy files directory (line 4 in the input file), and type 'touch stop'.  This will create a blank file called stop.  At the end of the run's next iteration, it will check for the existence of this file.  If it's there, it will stop and clean up the scratch files correctly.
 
 E. Transition state searches
 

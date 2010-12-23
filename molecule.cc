@@ -1427,8 +1427,8 @@ FLOAT Molecule::randomFloat(FLOAT lo, FLOAT hi)
 
 void Molecule::initRandoms(int mpiRank)
 {
-	srandom(time(NULL)*(mpiRank+1));
-//	srandom(1);
+//	srandom(time(NULL)*(mpiRank+1));
+	srandom(1);
 }
 
 bool Molecule::haveSameAtoms(Molecule &otherMolecule)

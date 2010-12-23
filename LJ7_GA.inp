@@ -1,7 +1,6 @@
-Genetic Algorithm Input File Version  1.2.1
+Genetic Algorithm Input File Version 1.3.2
 
-Energy function to use (Gaussian or Lennard Jones): Lennard Jones
-Path to energy program:
+Energy function to use: Lennard Jones
 Path to energy files:
 Path to scratch directory (optional):
 Search cube length, width, and height: 5.5

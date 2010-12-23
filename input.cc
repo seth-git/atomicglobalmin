@@ -18,7 +18,7 @@ string Input::s_program_directory = "";
 Input::Input (void)
 {
 	m_bTransitionStateSearch = false;
-	m_iEnergyFunction = LENNARD_JONES;
+	m_pSelectedEnergyProgram = NULL;	
 	m_sInputFileName = "";
 	m_bResumeFileRead = false;
 	m_bOptimizationFileRead = false;
@@ -172,8 +172,7 @@ Input::Input (void)
 	m_sGAInputVersionLineDisplayed = "Genetic Algorithm Input File Version ";
 	m_sGAResumeVersionLineDisplayed = "Genetic Algorithm Resume File Version";
 	m_sGAOptimizationVersionLineDisplayed = "Genetic Algorithm Optimization File Version";
-	m_sEnergyFunctionDisplayed = "Energy function to use (Gaussian or Lennard Jones)";
-	m_sPathToEnergyProgramDisplayed = "Path to energy program";
+	m_sEnergyFunctionDisplayed = "Energy function to use";
 	m_sPathToEnergyFilesDisplayed = "Path to energy files";
 	m_sPathToScratchDisplayed = "Path to scratch directory (optional)";
 	m_sOutputFileNameDisplayed = "Output file name";
@@ -608,28 +607,22 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		     << lineNumber << " in the input file." << endl;
 		return false;
 	}
-	if (temp == "Lennard Jones")
-		m_iEnergyFunction = LENNARD_JONES;
-	else if (temp == "Gaussian")
-		m_iEnergyFunction = GAUSSIAN;
-	else {
+    
+ 	m_pSelectedEnergyProgram = NULL;	
+	for (i = 0; i < (int)EnergyProgram::s_energyPrograms.size(); ++i)
+		if (temp == EnergyProgram::s_energyPrograms[i].m_sName)
+			m_pSelectedEnergyProgram = &(EnergyProgram::s_energyPrograms[i]);
+	if (m_pSelectedEnergyProgram == NULL) {
 		cout << "Energy function not recognized on line " << lineNumber << ": '" << temp << "'" << endl;
+		cout << "Valid energy functions are: ";
+		for (i = 0; i < (int)EnergyProgram::s_energyPrograms.size(); ++i) {
+			if (i >= 1)
+				cout << ", ";
+			cout << EnergyProgram::s_energyPrograms[i].m_sName;
+		}
+		
 		return false;
 	}
-	
-	++lineNumber;
-	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
-	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
-		return false;
-	}
-	if (!getStringParam(fileLine, m_sPathToEnergyProgramDisplayed, m_sPathToEnergyProgram))
-	{
-		cout << "Error reading the parameter '" << m_sPathToEnergyProgramDisplayed << "' on line "
-		     << lineNumber << " in the input file." << endl;
-		return false;
-	}
-	checkDirectoryOrFileName(m_sPathToEnergyProgram);
 
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
@@ -645,13 +638,13 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 	}
 	checkDirectoryOrFileName(m_sPathToEnergyFiles);
 	
-	if ((m_iEnergyFunction == LENNARD_JONES) || (m_sPathToEnergyFiles.length() == 0))
+	if ((m_pSelectedEnergyProgram->m_iNumOutputFileTypes == 0) || (m_sPathToEnergyFiles.length() == 0))
 		m_sSaveLogFilesInDirectory = "";
 	else
 		m_sSaveLogFilesInDirectory = m_sPathToEnergyFiles + "/bestSavedStructures";
 	
 	m_sNodesFile = m_sPathToEnergyFiles + "/nodes.txt";
-	if (bReadNodesFile && (m_iEnergyFunction != LENNARD_JONES))
+	if (bReadNodesFile && (m_pSelectedEnergyProgram->m_sPathToExecutable.length() > 0))
 		if (!readNodesFile())
 			return false;
 
@@ -1478,7 +1471,7 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		     << lineNumber << " in the input file." << endl;
 		return false;
 	}
-	if (m_iEnergyFunction == LENNARD_JONES)
+	if (m_pSelectedEnergyProgram->m_iNumOutputFileTypes == 0)
 		m_iNumberOfLogFilesToSave = 0;
 	if (m_iNumberOfLogFilesToSave > m_iNumberOfBestStructuresToSave)
 		m_iNumberOfLogFilesToSave = m_iNumberOfBestStructuresToSave;
@@ -1596,7 +1589,7 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		length = strlen(fileLine);
 		if (length == 0)
 			break;
-		if ((m_iEnergyFunction == GAUSSIAN) && (length > 80)) {
+		if ((m_pSelectedEnergyProgram->m_iProgramID == GAUSSIAN) && (length > 80)) {
 			cout << "A line in the Gaussian energy file header is longer than 80 characters, please fix this:" << endl
 			     << fileLine << endl;
 			return false;
@@ -1630,7 +1623,7 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		length = strlen(fileLine);
 		if (length == 0)
 			break;
-		if ((m_iEnergyFunction == GAUSSIAN) && (length > 80)) {
+		if ((m_pSelectedEnergyProgram->m_iProgramID == GAUSSIAN) && (length > 80)) {
 			cout << "A line in the Gaussian energy file footer is longer than 80 characters, please fix this:" << endl
 			     << fileLine << endl;
 			return false;
@@ -1638,19 +1631,19 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		m_sEnergyFileFooter.append(fileLine);
 		m_sEnergyFileFooter.append("\n");
 	}
-	if (m_bUseLocalOptimization && (m_iEnergyFunction == GAUSSIAN)) {
+	if (m_bUseLocalOptimization && (m_pSelectedEnergyProgram->m_iProgramID == GAUSSIAN)) {
 		if (m_sEnergyFileHeader.find("opt") == string::npos) {
 			cout << "You have local optimization turned on, but you haven't specified 'opt' in the energy file header.  Please do this." << endl;
 			return false;
 		}
 	}
-	if (m_bPerformBasinHopping && (m_iEnergyFunction == GAUSSIAN)) {
+	if (m_bPerformBasinHopping && (m_pSelectedEnergyProgram->m_iProgramID == GAUSSIAN)) {
 		if (m_sEnergyFileHeader.find("opt") == string::npos) {
 			cout << "When performing basin hopping with Gaussian, please specify 'opt' in the energy file header." << endl;
 			return false;
 		}
 	}
-	if ((m_iEnergyFunction == GAUSSIAN) && (m_sEnergyFileFooter.length() > 0)) {
+	if ((m_pSelectedEnergyProgram->m_iProgramID == GAUSSIAN) && (m_sEnergyFileFooter.length() > 0)) {
 		if (m_sEnergyFileFooter.find("--link1--\n") != 0) {
 			cout << "When specifying an energy file footer with Gaussian, make sure that '--link1--' is on the first line." << endl;
 			return false;
@@ -1964,11 +1957,7 @@ void Input::printToFile(ofstream &outFile)
 			outFile << m_sGAInputVersionLineDisplayed << " " << VERSION << endl << endl;
 	}
 	
-	if (m_iEnergyFunction == LENNARD_JONES)
-		outFile << m_sEnergyFunctionDisplayed << ": Lennard Jones" << endl;
-	else
-		outFile << m_sEnergyFunctionDisplayed << ": Gaussian" << endl;
-	outFile << m_sPathToEnergyProgramDisplayed << ": " << m_sPathToEnergyProgram << endl;
+	outFile << m_sEnergyFunctionDisplayed << ": " << m_pSelectedEnergyProgram->m_sName << endl;
 	outFile << m_sPathToEnergyFilesDisplayed << ": " << m_sPathToEnergyFiles << endl;
 	outFile << m_sPathToScratchDisplayed << ": " << m_sPathToScratch << endl;
 	
@@ -2213,7 +2202,6 @@ bool Input::open(string &fileName, bool setMinDistances, bool bReadNodesFile, ve
 	MoleculeSet* newMoleculeSet;
 	int numBestStructures;
 	char* myString;
-	char tempString[500];
 	unsigned long int myLong;
 
 	for (i = 0; i < (int)moleculeSets.size(); ++i)
@@ -2326,7 +2314,6 @@ bool Input::open(string &fileName, bool setMinDistances, bool bReadNodesFile, ve
 		infile.close();
 		return false;
 	}
-	string checkPointFileName = Energy::getGaussianCheckpointFile(m_sEnergyFileHeader.c_str());
 	for (i = 0; i < numBestStructures; ++i)
 	{
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
@@ -2355,16 +2342,10 @@ bool Input::open(string &fileName, bool setMinDistances, bool bReadNodesFile, ve
 			infile.close();
 			return false;
 		}
-		if (m_iEnergyFunction == GAUSSIAN) {
-			snprintf(tempString, 500, "%s/best%d.log", m_sSaveLogFilesInDirectory.c_str(), i+1);
-			newMoleculeSet->setEnergyFile(tempString);
-			
-			if (checkPointFileName.length() > 0) {
-				snprintf(tempString, 500, "%s/%s%d.chk", m_sSaveLogFilesInDirectory.c_str(), checkPointFileName.c_str(), i+1);
-				if (MoleculeSet::fileExists(tempString))
-					newMoleculeSet->setCheckPointFile(tempString);
-			}
-		}
+
+		for (int j = 0; j < (int)m_pSelectedEnergyProgram->m_iNumOutputFileTypes; ++j)
+			newMoleculeSet->setOutputEnergyFile(m_sSaveLogFilesInDirectory.c_str(), "best",
+			      i+1, m_pSelectedEnergyProgram->m_sOutputFileTypeExtensions[j].c_str(), j, true);
 		bestNMoleculeSets.push_back(newMoleculeSet);
 	}
 	
@@ -2890,7 +2871,7 @@ bool Input::setupForIndependentRun(vector<string> &inputFiles, vector<MoleculeSe
 						throw "";
 					}
 				}
-				if (m_iEnergyFunction != LENNARD_JONES) {
+				if (m_pSelectedEnergyProgram->m_sPathToExecutable.length() > 0) {
 					m_sNodesFile = m_sPathToEnergyFiles + "/nodes.txt";
 					ofstream nodesFile(m_sNodesFile.c_str(), ios::out);
 					nodesFile << m_srgNodeNames[i];
@@ -2986,7 +2967,7 @@ void Input::sortMoleculeSets(vector<MoleculeSet*> &moleculeSets, int lo, int hi)
 }
 
 void Input::saveBestN(vector<MoleculeSet*> &moleculeSets, vector<MoleculeSet*> &bestN, int n,
-                     FLOAT fMinDistnaceBetweenSameMoleculeSets, int iNumEnergyFilesToSave, const char* sLogFilesDirectory, const char* checkPointFilePrefix)
+                     FLOAT fMinDistnaceBetweenSameMoleculeSets, int iNumEnergyFilesToSave, const char* sLogFilesDirectory)
 {
 	int i, ii, iii, indexToInsert;
 	MoleculeSet* temp;
@@ -3023,7 +3004,7 @@ void Input::saveBestN(vector<MoleculeSet*> &moleculeSets, vector<MoleculeSet*> &
 				bestN[ii] = bestN[ii-1];
 				
 				if ((ii+1) <= iNumEnergyFilesToSave)
-					bestN[ii]->moveOrCopyGaussianFiles(sLogFilesDirectory, energyFilePrefix, checkPointFilePrefix, ii+1, true);
+					bestN[ii]->moveOrCopyOutputEnergyFiles(ii+1, true);
 			}
 
 			// Insert a copy of sortedMoleculeSets[i]
@@ -3032,19 +3013,19 @@ void Input::saveBestN(vector<MoleculeSet*> &moleculeSets, vector<MoleculeSet*> &
 			bestN[indexToInsert] = temp;
 				
 			if (indexToInsert < iNumEnergyFilesToSave)
-				bestN[indexToInsert]->moveOrCopyGaussianFiles(sLogFilesDirectory, energyFilePrefix, checkPointFilePrefix, indexToInsert+1, false);
+				bestN[indexToInsert]->moveOrCopyOutputEnergyFiles(sLogFilesDirectory, energyFilePrefix, indexToInsert+1, false);
 			
 			// Remove any structures higher in energy than sortedMoleculeSets[i] that are the same as sortedMoleculeSets[i]
 			for (ii = indexToInsert+1; ii < (int)bestN.size(); ++ii)
 				while (bestN[ii]->withinDistance(*bestN[indexToInsert], fMinDistnaceBetweenSameMoleculeSets))
 				{
-					bestN[ii]->deleteEnergyFiles();
+					bestN[ii]->deleteOutputEnergyFiles(true);
 					delete bestN[ii];
 					for (iii = ii; iii < (int)bestN.size()-1; ++iii) {
 						bestN[iii] = bestN[iii+1];
 				
 						if ((iii+1) <= iNumEnergyFilesToSave)
-							bestN[iii]->moveOrCopyGaussianFiles(sLogFilesDirectory, energyFilePrefix, checkPointFilePrefix, iii+1, true);
+							bestN[iii]->moveOrCopyOutputEnergyFiles(iii+1, true);
 					}
 					bestN.pop_back();
 					if (ii >= (int)bestN.size())
@@ -3056,7 +3037,7 @@ void Input::saveBestN(vector<MoleculeSet*> &moleculeSets, vector<MoleculeSet*> &
 			if ((int)bestN.size() > n)
 			{
 				if ((int)bestN.size() <= iNumEnergyFilesToSave)
-					bestN[bestN.size()-1]->deleteEnergyFiles();
+					bestN[bestN.size()-1]->deleteOutputEnergyFiles(true);
 				delete bestN[bestN.size()-1];
 				bestN.pop_back();
 			}
@@ -3282,9 +3263,6 @@ bool Input::compileIndependentRunData(bool printOutput)
 	}
 
 	// Open the resume files
-	string checkPointFilePrefix;
-	if (input.m_iEnergyFunction == GAUSSIAN)
-		checkPointFilePrefix = Energy::getGaussianCheckpointFile(m_sEnergyFileHeader.c_str());
 	bool success = true;
 	for (i = 0; i < m_iTotalPopulationSize; ++i) {
 		snprintf(resumeFileName, sizeof(resumeFileName), "%s/%s_%d.res", outputFileDirectory.c_str(), outputFileWithoutPath.c_str(), (i+1));
@@ -3298,7 +3276,7 @@ bool Input::compileIndependentRunData(bool printOutput)
 		moleculeSets.push_back(moleculeSetsTemp[0]);
 		moleculeSetsTemp.pop_back();
 		saveBestN(bestNMoleculeSetsTemp, bestNMoleculeSets, m_iNumberOfBestStructuresToSave,
-				m_fMinDistnaceBetweenSameMoleculeSets, m_iNumberOfLogFilesToSave, m_sSaveLogFilesInDirectory.c_str(), checkPointFilePrefix.c_str());
+				m_fMinDistnaceBetweenSameMoleculeSets, m_iNumberOfLogFilesToSave, m_sSaveLogFilesInDirectory.c_str());
 		for (j = 0; j < (int)moleculeSetsTemp.size(); ++j)
 			delete moleculeSetsTemp[j];
 		moleculeSetsTemp.clear();

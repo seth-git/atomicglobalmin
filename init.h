@@ -8,6 +8,7 @@
 #define __INIT_H_
 
 #include "input.h"
+#include "energyProgram.h"
 #include <unistd.h>
 #include <errno.h>
 

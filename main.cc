@@ -91,7 +91,7 @@ bool simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 				if (!Init::initializePopulation(input, moleculeSets))
 					throw "Unable to initialize the population.";
 			}
-			if (!Mpi::calculateEnergies(energyCalculationType, input, moleculeSets, optimizedMoleculeSets))
+			if (!Mpi::calculateEnergies(energyCalculationType, moleculeSets, optimizedMoleculeSets))
 				throw "Not all calculations finished.";
 			if (Mpi::s_timeToFinish)
 				throw "Time to finish, cleaning up.";
@@ -101,14 +101,14 @@ bool simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 					Input::saveBestN(optimizedMoleculeSets, bestNMoleculeSets,
 							input.m_iNumberOfBestStructuresToSave,
 							input.m_fMinDistnaceBetweenSameMoleculeSets,
-							input.m_iNumberOfLogFilesToSave, input.m_sSaveLogFilesInDirectory.c_str(), Energy::s_checkPointFileName.c_str());
+							input.m_iNumberOfLogFilesToSave, input.m_sSaveLogFilesInDirectory.c_str());
 				for (i = 0; i < (signed int)optimizedMoleculeSets.size(); ++i)
 					delete optimizedMoleculeSets[i];
 				optimizedMoleculeSets.clear();
 			} else {
 				Input::saveBestN(moleculeSets,bestNMoleculeSets,input.m_iNumberOfBestStructuresToSave,
 					input.m_fMinDistnaceBetweenSameMoleculeSets,input.m_iNumberOfLogFilesToSave,
-					input.m_sSaveLogFilesInDirectory.c_str(), Energy::s_checkPointFileName.c_str());
+					input.m_sSaveLogFilesInDirectory.c_str());
 			}
 			
 			iTotalAcceptedTransitions = 0;
@@ -153,6 +153,7 @@ bool simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 		
 		if ((input.m_fStartingTemperature < 0) || (input.m_fDesiredAcceptedTransitions < 0)) {
 			cout <<  "This resume file was created using the -i option.  It stores the list of best structures, but it can not be resumed." << endl;
+			cout << "To resume it, use the '.inp' file." << endl;
 			throw "This resume file was created using the -i option.  It stores the list of best structures, but it can not be resumed.";
 		}
 		
@@ -197,7 +198,7 @@ bool simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 				} while (!success);
 				moleculeSetsTransformed.push_back(pMoleculeSet);
 			}
-			if (!Mpi::calculateEnergies(energyCalculationType, input, moleculeSetsTransformed, optimizedMoleculeSets))
+			if (!Mpi::calculateEnergies(energyCalculationType, moleculeSetsTransformed, optimizedMoleculeSets))
 				throw "Not all calculations finished.";
 			input.m_iNumEnergyEvaluations += moleculeSets.size();
 			
@@ -281,8 +282,9 @@ bool simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 					++tempAccepted;
 					delete moleculeSets[i];
 					moleculeSets[i] = moleculeSetsTransformed[i];
-				} else
+				} else {
 					delete moleculeSetsTransformed[i];
+				}
 			}
 			moleculeSetsTransformed.clear();
 			
@@ -305,14 +307,14 @@ bool simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 					Input::saveBestN(optimizedMoleculeSets, bestNMoleculeSets,
 						input.m_iNumberOfBestStructuresToSave,
 						input.m_fMinDistnaceBetweenSameMoleculeSets,
-						input.m_iNumberOfLogFilesToSave, input.m_sSaveLogFilesInDirectory.c_str(), Energy::s_checkPointFileName.c_str());
+						input.m_iNumberOfLogFilesToSave, input.m_sSaveLogFilesInDirectory.c_str());
 				for (i = 0; i < (signed int)optimizedMoleculeSets.size(); ++i)
 					delete optimizedMoleculeSets[i];
 				optimizedMoleculeSets.clear();
 			} else {
 				Input::saveBestN(moleculeSets,bestNMoleculeSets,input.m_iNumberOfBestStructuresToSave,
 					input.m_fMinDistnaceBetweenSameMoleculeSets,input.m_iNumberOfLogFilesToSave,
-				        input.m_sSaveLogFilesInDirectory.c_str(), Energy::s_checkPointFileName.c_str());
+				        input.m_sSaveLogFilesInDirectory.c_str());
 			}
 			
 			if (input.m_iIteration % input.m_iPrintSummaryInfoEveryNIterations == 0)
@@ -420,11 +422,11 @@ bool simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 		} while (true);
 		
 		cout << "Finished after " << input.m_iIteration << " iterations at a temperature of " << input.m_fStartingTemperature << "." << endl;
-		if ((input.m_iEnergyFunction == LENNARD_JONES) && !input.m_bTransitionStateSearch) {
+		if ((input.m_pSelectedEnergyProgram->m_sPathToExecutable.length() == 0) && !input.m_bTransitionStateSearch) {
 			cout << "Optimizing best structure..." << endl;
 			fout << "Optimizing best structure..." << endl;
 			emptyMoleculeSets.push_back(bestNMoleculeSets[0]);
-			Mpi::calculateEnergies(OPTIMIZE_AND_READ, input, emptyMoleculeSets, optimizedMoleculeSets);
+			Mpi::calculateEnergies(OPTIMIZE_AND_READ, emptyMoleculeSets, optimizedMoleculeSets);
 		
 			bestNMoleculeSets[0]->copy(*optimizedMoleculeSets[0]);
 			delete optimizedMoleculeSets[0];
@@ -561,14 +563,14 @@ void particleSwarmOptimization(Input &input, vector<MoleculeSet*> &moleculeSets,
 					if (!Init::initializePopulation(input, moleculeSets))
 						throw "Unable to initialize the popultion.";
 				}
-				if (!Mpi::calculateEnergies(energyCalculationType, input, moleculeSets, optimizedMoleculeSets))
+				if (!Mpi::calculateEnergies(energyCalculationType, moleculeSets, optimizedMoleculeSets))
 					throw "Not all calculations finished.";
 				if (Mpi::s_timeToFinish)
 					throw "Time to finish, cleaning up.";
 				input.m_iNumEnergyEvaluations += (signed int)moleculeSets.size();
 				Input::saveBestN(moleculeSets,bestNMoleculeSets,input.m_iNumberOfBestStructuresToSave,
 						input.m_fMinDistnaceBetweenSameMoleculeSets,input.m_iNumberOfLogFilesToSave,
-						input.m_sSaveLogFilesInDirectory.c_str(), Energy::s_checkPointFileName.c_str());
+						input.m_sSaveLogFilesInDirectory.c_str());
 				for (i = 0; i < (signed int)moleculeSets.size(); ++i)
 					moleculeSets[i]->initVelocities(input.m_fCoordMaximumVelocity,input.m_fAngleMaximumVelocity);
 			}
@@ -690,7 +692,7 @@ void particleSwarmOptimization(Input &input, vector<MoleculeSet*> &moleculeSets,
 						moleculeSetsMinDistEnforced[i]->copy(*moleculeSets[i]);
 						moleculeSetsMinDistEnforced[i]->enforceMinDistConstraints(input.m_boxDimensions);
 					}
-					if (!Mpi::calculateEnergies(energyCalculationType, input, moleculeSetsMinDistEnforced, optimizedMoleculeSets))
+					if (!Mpi::calculateEnergies(energyCalculationType, moleculeSetsMinDistEnforced, optimizedMoleculeSets))
 						throw "Not all calculations finished.";
 					for (i = 0; i < (signed int)moleculeSets.size(); ++i) {
 						moleculeSets[i]->setEnergy(moleculeSetsMinDistEnforced[i]->getEnergy());
@@ -703,7 +705,7 @@ void particleSwarmOptimization(Input &input, vector<MoleculeSet*> &moleculeSets,
 						}
 					}
 				} else {
-					if (!Mpi::calculateEnergies(energyCalculationType, input, moleculeSets, optimizedMoleculeSets))
+					if (!Mpi::calculateEnergies(energyCalculationType, moleculeSets, optimizedMoleculeSets))
 						throw "Not all calculations finished.";
 					for (i = 0; i < (signed int)moleculeSets.size(); ++i)
 						if (moleculeSets[i]->getEnergy() < bestIndividualMoleculeSets[i]->getEnergy()) {
@@ -749,11 +751,11 @@ void particleSwarmOptimization(Input &input, vector<MoleculeSet*> &moleculeSets,
 				if (input.m_bEnforceMinDistOnCopy)
 					Input::saveBestN(moleculeSetsMinDistEnforced, bestNMoleculeSets, input.m_iNumberOfBestStructuresToSave,
 							input.m_fMinDistnaceBetweenSameMoleculeSets, input.m_iNumberOfLogFilesToSave,
-							input.m_sSaveLogFilesInDirectory.c_str(), Energy::s_checkPointFileName.c_str());
+							input.m_sSaveLogFilesInDirectory.c_str());
 				else
 					Input::saveBestN(moleculeSets, bestNMoleculeSets, input.m_iNumberOfBestStructuresToSave,
 							input.m_fMinDistnaceBetweenSameMoleculeSets, input.m_iNumberOfLogFilesToSave,
-							input.m_sSaveLogFilesInDirectory.c_str(), Energy::s_checkPointFileName.c_str());
+							input.m_sSaveLogFilesInDirectory.c_str());
 				if (abs(tempFloat - bestNMoleculeSets[0]->getEnergy()) < 0.001)
 					++input.m_iNumIterationsBestEnergyHasntChanged;
 				else
@@ -837,12 +839,12 @@ void particleSwarmOptimization(Input &input, vector<MoleculeSet*> &moleculeSets,
 		
 		cout << "Finished after " << input.m_iIteration << " iterations." << endl;
 		fout << "Finished after " << input.m_iIteration << " iterations." << endl;
-		if (input.m_iEnergyFunction == LENNARD_JONES) {
+		if (input.m_pSelectedEnergyProgram->m_sPathToExecutable.length() == 0) {
 			vector<MoleculeSet*> tempMoleculeSets;
 			cout << "Optimizing best structure..." << endl;
 			fout << "Optimizing best structure..." << endl;
 			tempMoleculeSets.push_back(bestNMoleculeSets[0]);
-			Mpi::calculateEnergies(OPTIMIZE_AND_READ, input, tempMoleculeSets, optimizedMoleculeSets);
+			Mpi::calculateEnergies(OPTIMIZE_AND_READ, tempMoleculeSets, optimizedMoleculeSets);
 		
 			bestNMoleculeSets[0]->copy(*optimizedMoleculeSets[0]);
 			delete optimizedMoleculeSets[0];
@@ -1091,14 +1093,14 @@ void gega(Input &input, vector<MoleculeSet*> &population, vector<MoleculeSet*> &
 					if (!Init::initializePopulation(input, population))
 						throw "Unable to initialize the population.";
 				}
-				if (!Mpi::calculateEnergies(energyCalculationType, input, population, optimizedMoleculeSets))
+				if (!Mpi::calculateEnergies(energyCalculationType, population, optimizedMoleculeSets))
 					throw "Not all calculations finished.";
 				if (Mpi::s_timeToFinish)
 					throw "Time to finish, cleaning up.";
 				input.m_iNumEnergyEvaluations += (signed int)population.size();
 				Input::saveBestN(population,bestNMoleculeSets,input.m_iNumberOfBestStructuresToSave,
 						input.m_fMinDistnaceBetweenSameMoleculeSets,input.m_iNumberOfLogFilesToSave,
-						input.m_sSaveLogFilesInDirectory.c_str(), Energy::s_checkPointFileName.c_str());
+						input.m_sSaveLogFilesInDirectory.c_str());
 			}
 			
 			cout << "Performing Genetic Algorithm..." << endl;
@@ -1133,13 +1135,13 @@ void gega(Input &input, vector<MoleculeSet*> &population, vector<MoleculeSet*> &
 					     input.m_iNumStructuresOfEachType, input.m_boxDimensions);
 			
 			matingPool.clear();
-			if (!Mpi::calculateEnergies(energyCalculationType, input, offSpring, optimizedMoleculeSets))
+			if (!Mpi::calculateEnergies(energyCalculationType, offSpring, optimizedMoleculeSets))
 				throw "Not all calculations finished.";
 			input.m_iNumEnergyEvaluations += (signed int)offSpring.size();
 			
 			Input::saveBestN(offSpring, bestNMoleculeSets, input.m_iNumberOfBestStructuresToSave,
 					input.m_fMinDistnaceBetweenSameMoleculeSets, input.m_iNumberOfLogFilesToSave,
-					input.m_sSaveLogFilesInDirectory.c_str(), Energy::s_checkPointFileName.c_str());
+					input.m_sSaveLogFilesInDirectory.c_str());
 			Gega::generationReplacement(*pPopulationA, offSpring, *pPopulationB);
 			
 			getPopulationDistanceMatrix(*pPopulationB, particleDistanceMatrix);
@@ -1194,12 +1196,12 @@ void gega(Input &input, vector<MoleculeSet*> &population, vector<MoleculeSet*> &
 		
 		cout << "Finished after " << input.m_iIteration << " iterations." << endl;
 		fout << "Finished after " << input.m_iIteration << " iterations." << endl;
-		if (input.m_iEnergyFunction == LENNARD_JONES) {
+		if (input.m_pSelectedEnergyProgram->m_sPathToExecutable.length() == 0) {
 			vector<MoleculeSet*> tempMoleculeSets;
 			cout << "Optimizing best structure..." << endl;
 			fout << "Optimizing best structure..." << endl;
 			tempMoleculeSets.push_back(bestNMoleculeSets[0]);
-			Mpi::calculateEnergies(OPTIMIZE_AND_READ, input, tempMoleculeSets, optimizedMoleculeSets);
+			Mpi::calculateEnergies(OPTIMIZE_AND_READ, tempMoleculeSets, optimizedMoleculeSets);
 		
 			bestNMoleculeSets[0]->copy(*optimizedMoleculeSets[0]);
 			delete optimizedMoleculeSets[0];
@@ -1300,14 +1302,14 @@ void optimizeBestStructures(Input &input, vector<MoleculeSet*> &moleculeSets, ve
 				newMoleculeSet->copy(*moleculeSets[i]);
 				population.push_back(newMoleculeSet);
 			}
-			if (!Mpi::calculateEnergies(energyCalculationType, input, population, optimizedMoleculeSets))
+			if (!Mpi::calculateEnergies(energyCalculationType, population, optimizedMoleculeSets))
 				throw "Not all calculations finished.";
 			input.m_iNumEnergyEvaluations += (signed int)population.size();
 			
 			// Update the list of optimized best structures
 			Input::saveBestN(optimizedMoleculeSets, bestNMoleculeSets, (signed int)(optimizedMoleculeSets.size() +
 					bestNMoleculeSets.size()), input.m_fMinDistnaceBetweenSameMoleculeSets,
-					input.m_iNumberOfLogFilesToSave, input.m_sSaveLogFilesInDirectory.c_str(), Energy::s_checkPointFileName.c_str());
+					input.m_iNumberOfLogFilesToSave, input.m_sSaveLogFilesInDirectory.c_str());
 			
 			// Remove the optimized structures from moleculeSets
 			for (i = 0; i < iStructuresToOptimizeAtATime; ++i)
@@ -1614,7 +1616,7 @@ int master(int rank)
 				}
 
 				Input::saveBestN(moleculeSetsSeeded, moleculeSets, input.m_iTotalPopulationSize,
-						input.m_fMinDistnaceBetweenSameMoleculeSets, 0, NULL, NULL);
+						input.m_fMinDistnaceBetweenSameMoleculeSets, 0, NULL);
 				while ((signed int)moleculeSets.size() < input.m_iTotalPopulationSize) {
 					pMoleculeSet = new MoleculeSet();
 						
@@ -1691,9 +1693,9 @@ int master(int rank)
 				throw "Error opening input file with the -i option on.";
 		}
 		string temp;
-		if (input.m_bTransitionStateSearch && (input.m_iEnergyFunction == LENNARD_JONES)) {
+		if (input.m_bTransitionStateSearch && (input.m_pSelectedEnergyProgram->m_iProgramID == LENNARD_JONES)) {
 			cout << "Transition state searches are not implemented with the Lennard Jones Potential." << endl;
-			cout << "You may perform the search, but no transition states wll be found. Do you wish to continue? ";
+			cout << "You may perform the search, but no transition states will be found. Do you wish to continue? ";
 			cin >> temp;
 			if (strncmp(temp.c_str(),"yes",3) != 0)
 				throw "";
@@ -1707,7 +1709,7 @@ int master(int rank)
 			} else
 				input.m_bTestMode = true;
 		}
-		if ((input.m_iNumberOfLogFilesToSave > 0) && (input.m_iEnergyFunction != LENNARD_JONES) &&
+		if ((input.m_iNumberOfLogFilesToSave > 0) && (input.m_pSelectedEnergyProgram->m_iNumOutputFileTypes > 0) &&
 		    ((input.m_bOptimizationFileRead && (bestNMoleculeSets.size() == 0)) ||
 		     (!input.m_bOptimizationFileRead && !input.m_bResumeFileRead) ||
 		     (stat(input.m_sSaveLogFilesInDirectory.c_str(), &fileStatistics) != 0))) {  // if the directory doesn't exist

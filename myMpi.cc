@@ -26,17 +26,25 @@ bool    Mpi::s_masterDistributingTasks = false; // one extra node sends out task
 string	Mpi::s_EndIfFileExists = "";
 MPI_Request Mpi::s_mpiRequest;
 
-bool Mpi::calculateEnergies (int energyCalculationType, const Input &input, vector<MoleculeSet*> &population, vector<MoleculeSet*> &optimizedPopulation)
+bool Mpi::calculateEnergies (int energyCalculationType, vector<MoleculeSet*> &population, vector<MoleculeSet*> &optimizedPopulation)
 {
 	int i;
 	MoleculeSet *pMoleculeSet = NULL;
 	bool success = false;
+	EnergyProgram* pEnergyProgram = Energy::getEnergyProgram();
 
 	for (i = 0; i < (signed int)optimizedPopulation.size(); ++i)
 		delete optimizedPopulation[i];
 	optimizedPopulation.clear();
 
-	if (input.m_iEnergyFunction == LENNARD_JONES) {
+	if (pEnergyProgram->m_bUsesMPI) {
+		Energy::createInputFiles(population);
+		success = master(energyCalculationType, population, optimizedPopulation);
+		
+		return success;
+	}
+
+	if (pEnergyProgram->m_iProgramID == LENNARD_JONES) {
 		switch (energyCalculationType) {
 			case OPTIMIZE_BUT_DONT_READ:
 				for (i = 0; i < (signed int)population.size(); ++i) {
@@ -71,13 +79,9 @@ bool Mpi::calculateEnergies (int energyCalculationType, const Input &input, vect
 			s_timeToFinish = true;
 		s_percentageOfSuccessfulCalculations = 1.0;
 		return true;
-	} else { // Run Gaussian
-		Energy::createInputFiles(population);
-		
-		// Do the energy calculations
-		success = master(energyCalculationType, population, optimizedPopulation);
-		
-		return success;
+	} else {
+		cout << "The energy program '" << pEnergyProgram->m_sName << "' needs to be implemented in myMpi.cc and energy.cc." << endl;
+		return false;
 	}
 	return false;
 }
@@ -318,7 +322,7 @@ bool Mpi::master(int energyCalculationType, vector<MoleculeSet*> &population, ve
 		}
 		s_percentageOfSuccessfulCalculations = (FLOAT)converged / (FLOAT)population.size();
 		if (!s_timeToFinish) {
-			if (s_percentageOfSuccessfulCalculations < MIN_SUCCESSFULL_ENERGY_CALCULATION_PERCENTAGE) {
+			if ((s_percentageOfSuccessfulCalculations < MIN_SUCCESSFULL_ENERGY_CALCULATION_PERCENTAGE) && (population.size() > 1)) {
 				error = true;
 				if (rank == 0)
 					cout << "The pecentage of successful energy calculations is " << (100.0*s_percentageOfSuccessfulCalculations) << "% which is below the limit of "
@@ -360,6 +364,7 @@ bool Mpi::readOutputFile(int energyCalculationType, vector<MoleculeSet*> &popula
 	int gaussianReturned;
 	FLOAT energy;
 	bool success = true;
+	EnergyProgram* pEnergyProgram = Energy::getEnergyProgram();
 	
 	try {
 		// Read the output file
@@ -367,16 +372,24 @@ bool Mpi::readOutputFile(int energyCalculationType, vector<MoleculeSet*> &popula
 			pMoleculeSet = new MoleculeSet();
 			pMoleculeSet->copy(*population[fileIndex]);
 		}
-		gaussianReturned = Energy::readGaussianLogFile(population[fileIndex]->getEnergyFile(), energy, pMoleculeSet);
-		if (!(gaussianReturned & OPENED_FILE)) {
-			cerr << "Could not open file  '" << population[fileIndex]->getEnergyFile() << "'.  Exiting... " <<endl;
-			converged = 0;
-			throw "";
+		switch (pEnergyProgram->m_iProgramID) {
+			case GAUSSIAN:
+				gaussianReturned = Energy::readGaussianLogFile(population[fileIndex]->getOutputEnergyFile(0), energy, pMoleculeSet);
+				if (!(gaussianReturned & OPENED_FILE)) {
+					cerr << "Could not open file  '" << population[fileIndex]->getOutputEnergyFile(0) << "'.  Exiting... " <<endl;
+					converged = 0;
+					throw "";
+				}
+				if ((gaussianReturned & READ_ENERGY) && (gaussianReturned & OBTAINED_GEOMETRY))
+					++converged;
+				else
+					cerr << "Opened this file, but could not read it: '" << population[fileIndex]->getOutputEnergyFile(0) << "'." <<endl;
+				break;
+			default:
+				
+				success = false;
+				break;
 		}
-		if ((gaussianReturned & READ_ENERGY) && (gaussianReturned & OBTAINED_GEOMETRY))
-			++converged;
-		else
-			cerr << "Opened this file, but could not read it: '" << population[fileIndex]->getEnergyFile() << "'." <<endl;
 		if (((energyCalculationType == TRANSITION_STATE_SEARCH) && pMoleculeSet->getIsTransitionState()) ||
 		    (energyCalculationType == OPTIMIZE_AND_READ)) {
 			optimizedPopulation.push_back(pMoleculeSet);

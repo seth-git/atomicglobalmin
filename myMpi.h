@@ -50,7 +50,7 @@ public:
  *                   of pointers that is already the same size as population.
  * Returns: true if all the calculations were completed
  *******************************************************************************/
-	static bool calculateEnergies (int energyCalculationType, const Input &input, vector<MoleculeSet*> &population, vector<MoleculeSet*> &optimizedPopulation);
+	static bool calculateEnergies (int energyCalculationType, vector<MoleculeSet*> &population, vector<MoleculeSet*> &optimizedPopulation);
 	static bool masterSetup(int populationSize, bool independent, bool masterDistributingTasks, int rank);
 	static bool setQuitFlag(string &endIfFileExists);
 	static bool master(int energyCalculationType, vector<MoleculeSet*> &population, vector<MoleculeSet*> &optimizedPopulation);
