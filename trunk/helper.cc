@@ -112,10 +112,10 @@ int main(int argc, char *argv[])
 	optionMessages.push_back("When using the -t option, please specify a resume or optimization file followed by an output file to which results will be written.");
 	recognizedOptions.push_back("-c");
 	argumentsPerOption.push_back(3);
-	optionMessages.push_back("When using the -c option, please specify a resume or optimization file, followed by a directory where .com files will be written, followed by a prefix for the .com files.");
+	optionMessages.push_back("When using the -c option, please specify a resume or optimization file, followed by a directory where input files will be written, followed by a file prefix.");
 	recognizedOptions.push_back("-p");
 	argumentsPerOption.push_back(3);
-	optionMessages.push_back("When using the -p option, please specify a resume or optimization file, followed by a directory where .com files will be written, followed by a prefix for the .com files.");
+	optionMessages.push_back("When using the -p option, please specify a resume or optimization file, followed by a directory where input files will be written, followed by a file prefix.");
 	recognizedOptions.push_back("-o");
 	argumentsPerOption.push_back(4);
 	optionMessages.push_back("When using the -o option, please specify a resume file, followed by the optimization file to be created, followed by the number of structures to transfer, followed by the number of structures to optimize at a time.");
@@ -149,7 +149,6 @@ int main(int argc, char *argv[])
 	string outputDirectory;
 	string comPrefix;
 	string tempOutputFileName;
-	char numberString[25];
 	string sId;
 	string emptyString;
 	ofstream fout;
@@ -342,7 +341,7 @@ int main(int argc, char *argv[])
 			
 			if (moleculeSetsToUse->size() > 100) {
 				cout << "There are " << moleculeSetsToUse->size() << " structures in this file." << endl;
-				cout << "Enter the number of structures you wish to create .com files for or type 'all': ";
+				cout << "Enter the number of structures you wish to create " << input.m_pSelectedEnergyProgram->m_sName << " input files for or type 'all': ";
 				cin >> answer;
 				if (strncmp(answer.c_str(),"all",3) == 0)
 					numFiles = moleculeSetsToUse->size();
@@ -355,12 +354,10 @@ int main(int argc, char *argv[])
 			} else
 				numFiles = moleculeSetsToUse->size();
 	
-			cout << "Creating " << numFiles << " .com files..." << endl;
+			cout << "Creating " << numFiles << " input files..." << endl;
 			for (i = 0; i < numFiles; ++i) {
-				sprintf(numberString, "%d", (i+1));
-				sId = numberString;
-				tempOutputFileName = outputDirectory + "/" + comPrefix + sId + ".com";
-				Energy::createGaussianInputFile(tempOutputFileName.c_str(), i+1, *(*moleculeSetsToUse)[i], true);
+				(*moleculeSetsToUse)[i]->setInputEnergyFile(outputDirectory.c_str(), comPrefix.c_str(), i+1, input.m_pSelectedEnergyProgram->m_sInputFileExtension.c_str());
+				Energy::createInputFile(*(*moleculeSetsToUse)[i], i+1, true);
 			}
 			cout << "Done!" << endl;
 			// Clean up

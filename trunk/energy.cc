@@ -8,7 +8,6 @@
 
 #include "energy.h"
 
-int Energy::s_energyFunction = -1;
 string Energy::s_header = "";
 string Energy::s_footer = "";
 string Energy::s_checkPointFileName = "";
@@ -17,7 +16,7 @@ bool Energy::s_bSemiEmpirical = false;
 string Energy::s_pathToEnergyFiles = "";
 int Energy::s_iCharge = 0;
 int Energy::s_iMultiplicity = 0;
-string Energy::s_energyProgramWithPath = "";
+EnergyProgram Energy::s_energyProgram;
 string Energy::s_scratchDirectory = "";
 string Energy::s_fullScratchDirectory = "";
 string Energy::s_scratchCommand = "";
@@ -25,8 +24,8 @@ string Energy::s_scratchCommand = "";
 bool Energy::init(const Input &input, int rank)
 {
 	bool success = true;
-	s_energyFunction = input.m_iEnergyFunction;
-
+	s_energyProgram = *input.m_pSelectedEnergyProgram; // copy the energy program information
+	
 	if (input.m_sPathToScratch.length() > 0) {
 		s_scratchDirectory = input.m_sPathToScratch + "/" + Input::fileWithoutPath(input.m_sInputFileName.c_str());
 		s_fullScratchDirectory = s_scratchDirectory.c_str() + ToString(rank);
@@ -35,10 +34,9 @@ bool Energy::init(const Input &input, int rank)
 		s_fullScratchDirectory = "";
 	}
 
-	s_energyProgramWithPath = input.m_sPathToEnergyProgram;
 	s_pathToEnergyFiles = input.m_sPathToEnergyFiles;
 
-	switch (s_energyFunction) {
+	switch (s_energyProgram.m_iProgramID) {
 	case GAUSSIAN:
 		s_header = input.m_sEnergyFileHeader;
 		s_footer = input.m_sEnergyFileFooter;
@@ -124,13 +122,14 @@ string Energy::getGaussianCheckpointFile(const char* gaussianHeader)
 
 void Energy::createMPIInitMessage(char* mpiInitMessage, int maxSize)
 {
-	switch (s_energyFunction) {
-	case LENNARD_JONES:
-		// not implemented with mpi
-		break;
+	switch (s_energyProgram.m_iProgramID) {
 	case GAUSSIAN:
-		snprintf(mpiInitMessage, maxSize, "%d|%s|%s|%s|%s", s_energyFunction, s_energyProgramWithPath.c_str(), s_pathToEnergyFiles.c_str(),
+		snprintf(mpiInitMessage, maxSize, "%s|%s|%s|%s", s_energyProgram.toString().c_str(), s_pathToEnergyFiles.c_str(),
 		         s_scratchDirectory.c_str(), s_checkPointFileName.c_str());
+		break;
+	default:
+		snprintf(mpiInitMessage, maxSize, "%s|%s|%s", s_energyProgram.toString().c_str(), s_pathToEnergyFiles.c_str(),
+		         s_scratchDirectory.c_str());
 		break;
 	}
 }
@@ -138,24 +137,21 @@ void Energy::createMPIInitMessage(char* mpiInitMessage, int maxSize)
 bool Energy::createScratchDir(void)
 {
 	char commandLine[500];
-	
-	if (s_energyFunction == LENNARD_JONES)
-		return true;
-	
+		
 	try {
 		if (!deleteScratchDir())
-			throw "";
+			throw "Couldn't delete scratch directory";
 		
-		if (s_fullScratchDirectory.length() > 0)
+		if (s_fullScratchDirectory.length() > 0) {
 			if (!MoleculeSet::fileExists(s_fullScratchDirectory.c_str())) {
 				snprintf(commandLine, sizeof(commandLine), "mkdir %s", s_fullScratchDirectory.c_str());
 				if (system(commandLine) == -1)
-					throw "";
+					throw "Couldn't make scratch directory";
 			}
 			if (chdir(s_fullScratchDirectory.c_str()) == -1)
-				throw "";
+				throw "Couldn't cd to scratch directory";
 		}
-	catch (const char *message) {
+	} catch (const char *message) {
 		if (PRINT_CATCH_MESSAGES)
 			cerr << "Caught message: " << message << endl;
 		return false;
@@ -167,13 +163,9 @@ bool Energy::createScratchDir(void)
 bool Energy::deleteScratchDir(void)
 {
 	char commandLine[500];
-	
-	if (s_energyFunction == LENNARD_JONES)
-		return true;
 
 	if ((s_fullScratchDirectory.length() > 0) && MoleculeSet::fileExists(s_fullScratchDirectory.c_str())) {
 		snprintf(commandLine, sizeof(commandLine), "rm -rf %s", s_fullScratchDirectory.c_str());
-//		cout << "Executing command '" << commandLine << "'" << endl;
 		return system(commandLine) != -1;
 	}
 	return true;
@@ -186,6 +178,7 @@ bool Energy::init(const char* mpiInitMessage, int rank)
 	int messageLength;
 	char* message;
 	vector<char*> messages;
+	int i;
 	
 	mpiMessagePtr = mpiInitMessage;
 	while (true) {
@@ -198,21 +191,17 @@ bool Energy::init(const char* mpiInitMessage, int rank)
 			break;
 		mpiMessagePtr += messageLength+1;
 	}
-	
-	if (messages.size() <= 1)
+	if (!s_energyProgram.set(messages))
 		return false;
-	s_energyFunction = atoi(messages[0]);
-	switch (s_energyFunction) {
-	case LENNARD_JONES:
-		// not implemented with mpi
-		break;
+	
+	switch (s_energyProgram.m_iProgramID) {
 	case GAUSSIAN:
-		if (messages.size() != 5)
+		i = s_energyProgram.getNumParameters();
+		if (i+3 != (signed int)messages.size())
 			return false;
-		s_energyProgramWithPath = messages[1];
-		s_pathToEnergyFiles = messages[2];
-		s_scratchDirectory = messages[3];
-		s_checkPointFileName = messages[4];
+		s_pathToEnergyFiles = messages[i++];
+		s_scratchDirectory = messages[i++];
+		s_checkPointFileName = messages[i++];
 		if (s_scratchDirectory.length() > 0) {
 			s_fullScratchDirectory = s_scratchDirectory.c_str() + ToString(rank);
 			s_scratchCommand = "export GAUSS_SCRDIR=" + s_fullScratchDirectory + " && ";
@@ -220,7 +209,19 @@ bool Energy::init(const char* mpiInitMessage, int rank)
 		} else {
 			s_fullScratchDirectory = "";
 		}
-		if (s_fullScratchDirectory.length() > 0) {
+
+		break;
+	default:
+		i = s_energyProgram.getNumParameters();
+		if (i+2 != (signed int)messages.size())
+			return false;
+		s_pathToEnergyFiles = messages[i++];
+		s_scratchDirectory = messages[i++];
+		if (s_scratchDirectory.length() > 0) {
+			s_fullScratchDirectory = s_scratchDirectory.c_str() + ToString(rank);
+			s_scratchCommand = "";
+		} else {
+			s_fullScratchDirectory = "";
 		}
 
 		break;
@@ -231,85 +232,33 @@ bool Energy::init(const char* mpiInitMessage, int rank)
 	return success;
 }
 
-string Energy::getInputFileName(int populationMemberNumber)
-{
-	char fileName[500];
-	snprintf(fileName, sizeof(fileName), "%s/%s%d.com", s_pathToEnergyFiles.c_str(), ENERGY_TEMP_FILE, populationMemberNumber);
-	return fileName;
-}
-
-string Energy::getScratchInputFileName(int populationMemberNumber)
-{
-	char fileName[500];
-	snprintf(fileName, sizeof(fileName), "%s%d.com", ENERGY_TEMP_FILE, populationMemberNumber);
-//	snprintf(fileName, sizeof(fileName), "%s/%s%d.com", s_fullScratchDirectory.c_str(), ENERGY_TEMP_FILE, populationMemberNumber);
-	return fileName;
-}
-
-string Energy::getOutputFileName(int populationMemberNumber)
-{
-	char fileName[500];
-	snprintf(fileName, sizeof(fileName), "%s/%s%d.log", s_pathToEnergyFiles.c_str(), ENERGY_TEMP_FILE, populationMemberNumber);
-	return fileName;
-}
-
-string Energy::getScratchOutputFileName(int populationMemberNumber)
-{
-	char fileName[500];
-	snprintf(fileName, sizeof(fileName), "%s%d.log", ENERGY_TEMP_FILE, populationMemberNumber);
-//	snprintf(fileName, sizeof(fileName), "%s/%s%d.log", s_fullScratchDirectory.c_str(), ENERGY_TEMP_FILE, populationMemberNumber);
-	return fileName;
-}
-
-string Energy::getCheckPointFileName(int populationMemberNumber)
-{
-	return s_pathToEnergyFiles+"/"+s_checkPointFileName+ToString(populationMemberNumber) + ".chk";
-}
-
-string Energy::getScratchCheckPointFileName(int populationMemberNumber)
-{
-	return s_checkPointFileName+ToString(populationMemberNumber) + ".chk";
-//	return s_fullScratchDirectory+"/"+s_checkPointFileName+ToString(populationMemberNumber) + ".chk";
-}
-
 void Energy::createInputFiles(vector<MoleculeSet*> &population)
 {
 	for (int i = 0; i < (signed int)population.size(); ++i)
-		createInputFile(*population[i], i+1);
+		createInputFile(*population[i], i+1, false);
 }
 
-void Energy::createInputFile(MoleculeSet &moleculeSet, int populationMemberNumber)
+void Energy::createInputFile(MoleculeSet &moleculeSet, int populationMemberNumber, bool writeMetaData)
 {
-	char commandLine[500];
 	string fileName;
+
+	moleculeSet.setInputEnergyFile(s_pathToEnergyFiles.c_str(), ENERGY_TEMP_FILE, populationMemberNumber, s_energyProgram.m_sInputFileExtension.c_str());
+	setOutputEnergyFiles(populationMemberNumber, moleculeSet, false); // We expect these output files
 	
 	// Create the input files
-	switch (s_energyFunction) {
+	switch (s_energyProgram.m_iProgramID) {
 	case GAUSSIAN:
-		Energy::createGaussianInputFile(getInputFileName(populationMemberNumber).c_str(), populationMemberNumber, moleculeSet, false);
-			
-		// Delete the old log file if it exists
-		fileName = getOutputFileName(populationMemberNumber);
-		if (MoleculeSet::fileExists(fileName.c_str())) {
-			snprintf(commandLine, sizeof(commandLine), "rm %s", fileName.c_str());
-			system(commandLine);
-		}
-		moleculeSet.setEnergyFile(fileName.c_str());
-		
-		// Delete the old checkpoint file if there is one
-		if (s_checkPointFileName.length() > 0) {
-			fileName = getCheckPointFileName(populationMemberNumber);
-			if (MoleculeSet::fileExists(fileName.c_str())) {
-				snprintf(commandLine, sizeof(commandLine), "rm %s", fileName.c_str());
-				system(commandLine);
-			}
-			moleculeSet.setCheckPointFile(fileName.c_str());
-		}
+		Energy::createGaussianInputFile(moleculeSet, populationMemberNumber, writeMetaData);
+		break;
+	default:
+		cout << "Please modify the createInputFile function in energy.cc for your energy program." << endl;
+		exit(0);
 		break;
 	}
+	moleculeSet.deleteOutputEnergyFiles(false); // Delete any old output files
 }
 
-void Energy::createGaussianInputFile(const char* inputFileName, int populationMemberNumber, MoleculeSet &moleculeSet, bool writeEnergyValueInHeader)
+void Energy::createGaussianInputFile(MoleculeSet &moleculeSet, int populationMemberNumber, bool writeEnergyValueInHeader)
 {
 	string header = s_header;
 	string footer = s_footer;
@@ -328,7 +277,7 @@ void Energy::createGaussianInputFile(const char* inputFileName, int populationMe
 		}
 	}
 	
-	ofstream fout(inputFileName, ios::out);
+	ofstream fout(moleculeSet.getInputEnergyFile(), ios::out);
 	fout << header << endl;
 	if (writeEnergyValueInHeader)
 		fout << "This is a computer generated structure with energy: " << Atom::printFloat(moleculeSet.getEnergy()) << endl << endl;
@@ -454,7 +403,6 @@ int Energy::readGaussianLogFile(const char* logFile, FLOAT &energy, MoleculeSet*
 	return returnValue;
 }
 
-
 void Energy::lower(string &s)
 {
 	const char *schars = s.c_str();
@@ -475,34 +423,58 @@ bool Energy::isFileCharacter(char character)
 		    (character == '.') || (character == ',') || (character == '_'));
 }
 
+void Energy::setOutputEnergyFiles(int populationMemberNumber, MoleculeSet &moleculeSet, bool checkExistence)
+{
+	switch (s_energyProgram.m_iProgramID) {
+	case GAUSSIAN:
+		moleculeSet.setOutputEnergyFile(s_pathToEnergyFiles.c_str(), ENERGY_TEMP_FILE, populationMemberNumber, s_energyProgram.m_sOutputFileTypeExtensions[0].c_str(), 0, checkExistence);
+		if (s_checkPointFileName.length() > 0)
+			moleculeSet.setOutputEnergyFile(s_pathToEnergyFiles.c_str(), s_checkPointFileName.c_str(), populationMemberNumber, s_energyProgram.m_sOutputFileTypeExtensions[1].c_str(), 1, checkExistence);
+		break;
+	default:
+		for (int i = 0; i < s_energyProgram.m_iNumOutputFileTypes; ++i)
+     		moleculeSet.setOutputEnergyFile(s_pathToEnergyFiles.c_str(), ENERGY_TEMP_FILE, populationMemberNumber, s_energyProgram.m_sOutputFileTypeExtensions[i].c_str(), i, checkExistence);
+		break;
+	}
+}
+
 bool Energy::doEnergyCalculation(int populationMemberNumber)
 {
-	char commandLine[500];
+	char commandLine[1000];
+	MoleculeSet moleculeSet;
+
 	try {
-		switch (s_energyFunction) {
+		moleculeSet.setInputEnergyFile(s_pathToEnergyFiles.c_str(), ENERGY_TEMP_FILE, populationMemberNumber, s_energyProgram.m_sInputFileExtension.c_str());
+		if (s_fullScratchDirectory.length() > 0)
+			if (!moleculeSet.moveOrCopyInputEnergyFile("", false))
+			    throw "Unable to copy input enery file to the scratch directory.";
+		                                           
+		switch (s_energyProgram.m_iProgramID) {
 		case GAUSSIAN:
-			snprintf(commandLine, sizeof(commandLine), "cp %s %s", getInputFileName(populationMemberNumber).c_str(),
-			                                                getScratchInputFileName(populationMemberNumber).c_str());
+			if (s_fullScratchDirectory.length() > 0)
+				moleculeSet.setOutputEnergyFile("", ENERGY_TEMP_FILE, populationMemberNumber, s_energyProgram.m_sOutputFileTypeExtensions[0].c_str(), 0, false);
+			else
+				moleculeSet.setOutputEnergyFile(s_pathToEnergyFiles.c_str(), ENERGY_TEMP_FILE, populationMemberNumber, s_energyProgram.m_sOutputFileTypeExtensions[0].c_str(), 0, false);
+
+			snprintf(commandLine, sizeof(commandLine), "%s%s < %s > %s", s_scratchCommand.c_str(), s_energyProgram.m_sPathToExecutable.c_str(),
+			         moleculeSet.getInputEnergyFile(), moleculeSet.getOutputEnergyFile(0));
 			if (system(commandLine) == -1)
-				throw "";
-			snprintf(commandLine, sizeof(commandLine), "%s%s < %s > %s", s_scratchCommand.c_str(), s_energyProgramWithPath.c_str(),
-			         getScratchInputFileName(populationMemberNumber).c_str(), getScratchOutputFileName(populationMemberNumber).c_str());
-			if (system(commandLine) == -1)
-				throw "";
-			snprintf(commandLine, sizeof(commandLine), "cp %s %s", getScratchOutputFileName(populationMemberNumber).c_str(),
-			                                                              getOutputFileName(populationMemberNumber).c_str());
-			if (system(commandLine) == -1)
-				throw "";
+				throw "Unable to run Gaussian.";
+			
 			if (s_checkPointFileName.length() > 0) {
-				snprintf(commandLine, sizeof(commandLine), "cp %s %s", getScratchCheckPointFileName(populationMemberNumber).c_str(),
-				                                                              getCheckPointFileName(populationMemberNumber).c_str());
-				if (system(commandLine) == -1)
-					throw "";
+				if (s_fullScratchDirectory.length() > 0)
+					moleculeSet.setOutputEnergyFile("", s_checkPointFileName.c_str(), populationMemberNumber, s_energyProgram.m_sOutputFileTypeExtensions[1].c_str(), 1, true);
+				else
+					moleculeSet.setOutputEnergyFile(s_pathToEnergyFiles.c_str(), s_checkPointFileName.c_str(), populationMemberNumber, s_energyProgram.m_sOutputFileTypeExtensions[1].c_str(), 1, true);
 			}
+			break;
+		}
+		if (s_fullScratchDirectory.length() > 0) {
+			if (!moleculeSet.moveOrCopyOutputEnergyFiles(s_pathToEnergyFiles.c_str(), false))
+				throw "Unable to copy output energy files from the scratch directory.";
 			snprintf(commandLine, sizeof(commandLine), "rm %s/*", s_fullScratchDirectory.c_str());
 			if (system(commandLine) == -1)
-				throw "";
-			break;
+				throw "Unable to delete files in the scratch directory.";
 		}
 	} catch (const char* message) {
 		if (PRINT_CATCH_MESSAGES)

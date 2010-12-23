@@ -17,6 +17,12 @@ This program performs searches for minima as specified in the INPUT_FILE.
                                resume and output file and list of best
                                structures. Type './helper -h' and compare with
                                the -u option.
+  -m                           This option specifies that one of the mpi
+                               processes acts as master, not performing any
+                               energy calculations, but assigning these to
+                               other mpi processes.  When this option is off,
+                               mpi processes will not communicate, but will
+                               evenly divide up the energy calculations.
   -s                           This specifies that the starting population will
                                be seeded with structures from previous runs.
                                Specify one or more resume/optimiation files,

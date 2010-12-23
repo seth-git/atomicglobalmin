@@ -35,13 +35,10 @@ using std::setw;
 using std::time;
 using std::ostringstream;
 
-#define GAUSSIAN        1
-#define LENNARD_JONES   2
-
 #define SIMULATED_ANNEALING 1
 #define PARTICLE_SWARM_OPTIMIZATION 2
 #define GENETIC_ALGORITHM 3
-#define VERSION "1.2.1"
+#define VERSION "1.3.2"
 
 #define ACCEPTANCE_RATIO_NUM_ITERATIONS 100
 #define NUM_ITERATIONS_TO_SET_SCALING_FACTOR 200
@@ -49,7 +46,7 @@ using std::ostringstream;
 
 #define HARTREE_TO_JOULES       2622950
 
-#define PRINT_CATCH_MESSAGES	false
+#define PRINT_CATCH_MESSAGES	true
 
 template < class T >
 string ToString(const T &arg)
@@ -122,13 +119,12 @@ public:
 	
 	// General variables
 	string m_sInputFileName;
-	string m_sPathToEnergyProgram;
+	EnergyProgram *m_pSelectedEnergyProgram;
 	string m_sPathToEnergyFiles;
 	string m_sPathToScratch;
 	int m_iAlgorithmToDo;
 	bool m_bResumeFileRead;
 	bool m_bOptimizationFileRead;
-	int m_iEnergyFunction;
 	string m_sOutputFileName;
 	string m_sResumeFileName;
 	int m_iResumeFileNumIterations;
@@ -235,7 +231,6 @@ private:
 	string m_sGAResumeVersionLineDisplayed;
 	string m_sGAOptimizationVersionLineDisplayed;
 	string m_sEnergyFunctionDisplayed;
-	string m_sPathToEnergyProgramDisplayed;
 	string m_sPathToEnergyFilesDisplayed;
 	string m_sPathToScratchDisplayed;
 	string m_sOutputFileNameDisplayed;
@@ -302,7 +297,7 @@ public:
 	bool setupForIndependentRun(vector<string> &inputFiles, vector<MoleculeSet*> &seededMoleculeSets, bool &bSetupPreviouslyDone);
 	static void sortMoleculeSets(vector<MoleculeSet*> &moleculeSets, int lo, int hi);
 	static void saveBestN(vector<MoleculeSet*> &moleculeSets, vector<MoleculeSet*> &bestN, int n,
-                     FLOAT fMinDistnaceBetweenSameMoleculeSets, int iNumEnergyFilesToSave, const char* sLogFilesDirectory, const char* checkPointFilePrefix);
+                     FLOAT fMinDistnaceBetweenSameMoleculeSets, int iNumEnergyFilesToSave, const char* sLogFilesDirectory);
 
 	bool compileIndependentRunData(bool printOutput);
 	

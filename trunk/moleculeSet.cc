@@ -46,7 +46,8 @@ MoleculeSet::~MoleculeSet()
 
 void MoleculeSet::cleanUp()
 {
-	for (int i = 0; i < m_iNumberOfAtoms; ++i)
+	int i;
+	for (i = 0; i < m_iNumberOfAtoms; ++i)
 		delete[] m_atomDistances[i];
 	delete[] m_atomDistances;
 	m_atomDistances = NULL;
@@ -62,18 +63,96 @@ void MoleculeSet::cleanUp()
 	delete[] m_atoms;
 	m_atoms = NULL;
 	m_iNumberOfAtoms = 0;
-
+	
+	for (i = 0; i < (signed int)m_outputEnergyFiles.size(); ++i)
+		if (m_outputEnergyFiles[i] != NULL)
+			delete m_outputEnergyFiles[i];
+	m_outputEnergyFiles.clear();
+	
 	m_fEnergy = 0;
 	m_iRun = IS_FINISHED;
 }
 
+void MoleculeSet::setInputEnergyFile(const char *directory, const char* prefix, int number, const char* extension)
+{
+	char tempString[500];
+	m_inputEnergyFile.m_sDirectory = directory;
+	m_inputEnergyFile.m_sPrefix = prefix;
+	m_inputEnergyFile.m_iNumber = number;
+	m_inputEnergyFile.m_sExtension = extension;
+	
+	if (m_inputEnergyFile.m_sDirectory.length() > 0)
+		snprintf(tempString, sizeof(tempString), "%s/%s%d.%s", directory, prefix, number, extension);
+	else
+		snprintf(tempString, sizeof(tempString), "%s%d.%s", prefix, number, extension);
+	m_inputEnergyFile.m_sFullPathName = tempString;
+}
+
+const char* MoleculeSet::getInputEnergyFile() {
+	if (m_inputEnergyFile.m_sFullPathName.length() > 0)
+		return m_inputEnergyFile.m_sFullPathName.c_str();
+	else
+		return NULL;
+}
+
+void MoleculeSet::setOutputEnergyFile(const char *directory, const char* prefix, int number, const char* extension, unsigned int index, bool checkExistence)
+{
+	char tempString[500];
+	EnergyFileInfo* info = new EnergyFileInfo();
+	info->m_sDirectory = directory;
+	info->m_sPrefix = prefix;
+	info->m_iNumber = number;
+	info->m_sExtension = extension;
+	
+	if (info->m_sDirectory.length() > 0)
+		snprintf(tempString, sizeof(tempString), "%s/%s%d.%s", directory, prefix, number, extension);
+	else
+		snprintf(tempString, sizeof(tempString), "%s%d.%s", prefix, number, extension);
+	info->m_sFullPathName = tempString;
+	
+	if (checkExistence && !fileExists(tempString)) {
+		delete info;
+		info = NULL;
+	}
+
+	while (index > m_outputEnergyFiles.size())
+		m_outputEnergyFiles.push_back(NULL);
+	if (index == m_outputEnergyFiles.size())
+		m_outputEnergyFiles.push_back(info);
+	else {
+		if (m_outputEnergyFiles[index] != NULL)
+			delete m_outputEnergyFiles[index];
+		m_outputEnergyFiles[index] = info;
+	}
+}
+
+const char* MoleculeSet::getOutputEnergyFile(unsigned int index) {
+	if (index < m_outputEnergyFiles.size()) {
+		if (m_outputEnergyFiles[index] == NULL)
+			return NULL;
+		else
+			return m_outputEnergyFiles[index]->m_sFullPathName.c_str();
+	} else
+		return NULL;
+}
+
+void EnergyFileInfo::copy(const EnergyFileInfo &otherEnergyFileInfo)
+{
+	m_sDirectory = otherEnergyFileInfo.m_sDirectory;
+	m_sPrefix = otherEnergyFileInfo.m_sPrefix;
+	m_iNumber = otherEnergyFileInfo.m_iNumber;
+	m_sExtension = otherEnergyFileInfo.m_sExtension;
+	m_sFullPathName = otherEnergyFileInfo.m_sFullPathName;
+}
+
 void MoleculeSet::copy(const MoleculeSet &moleculeSet)
 {
+	EnergyFileInfo* info;
+	int i;
 	m_iStructureId = moleculeSet.m_iStructureId;
-	m_sEnergyFile = moleculeSet.m_sEnergyFile;
-	m_sCheckPointFile = moleculeSet.m_sCheckPointFile;
+	
 	setNumberOfMolecules(moleculeSet.m_iNumberOfMolecules);
-	for (int i = 0; i < moleculeSet.m_iNumberOfMolecules; ++i)
+	for (i = 0; i < moleculeSet.m_iNumberOfMolecules; ++i)
 		m_prgMolecules[i].copy(moleculeSet.m_prgMolecules[i]);
 	initAtomIndexes();
 	initAtomDistances();
@@ -81,6 +160,17 @@ void MoleculeSet::copy(const MoleculeSet &moleculeSet)
 	m_fEnergy = moleculeSet.m_fEnergy;
 	m_iRun = moleculeSet.m_iRun;
 	m_bIsTransitionState = moleculeSet.m_bIsTransitionState;
+	
+	m_inputEnergyFile.copy(moleculeSet.m_inputEnergyFile);
+	for (i = 0; i < (signed int)moleculeSet.m_outputEnergyFiles.size(); ++i) {
+		if (moleculeSet.m_outputEnergyFiles[i] != NULL) {
+			info = new EnergyFileInfo();
+			info->copy(*(moleculeSet.m_outputEnergyFiles[i]));
+		} else {
+			info = NULL;
+		}
+		m_outputEnergyFiles.push_back(info);
+	}
 }
 
 int MoleculeSet::getNumberOfMolecules()
@@ -2423,64 +2513,131 @@ bool MoleculeSet::performBondRotations(FLOAT angleInRad, vector<MoleculeSet*> &m
 	return true;
 }
 
-bool MoleculeSet::moveOrCopyGaussianFiles(const char* newDirectory, const char* newLogFilePrefix, const char* newCheckPointFilePrefix, int newNumber, bool moveOrCopy)
+bool MoleculeSet::moveOrCopyInputEnergyFile(const char* newDirectory, bool moveOrCopy)
 {
 	char fileName[500];
 	char commandLine[500];
 	bool success = true;
-	
-	if ((m_sEnergyFile.length() > 0) && fileExists(m_sEnergyFile.c_str()) && (newLogFilePrefix != NULL) && (newLogFilePrefix[0] != '\0')) {
-		snprintf(fileName, sizeof(fileName), "%s/%s%d.log", newDirectory, newLogFilePrefix, newNumber);
-		if (moveOrCopy)
-			snprintf(commandLine, sizeof(commandLine), "mv %s %s", m_sEnergyFile.c_str(), fileName);
-		else
-			snprintf(commandLine, sizeof(commandLine), "cp %s %s", m_sEnergyFile.c_str(), fileName);
-		if (system(commandLine) == -1) {
-			success = false;
-			m_sEnergyFile = "";
-		} else {
-			m_sEnergyFile = fileName;
-		}
+
+	if (m_inputEnergyFile.m_sFullPathName.length() == 0)
+		return false;
+	m_inputEnergyFile.m_sDirectory = newDirectory;
+
+	if (m_inputEnergyFile.m_sDirectory.length() > 0)
+		snprintf(fileName, sizeof(fileName), "%s/%s%d.%s", newDirectory, m_inputEnergyFile.m_sPrefix.c_str(), m_inputEnergyFile.m_iNumber, m_inputEnergyFile.m_sExtension.c_str());
+	else
+		snprintf(fileName, sizeof(fileName), "%s%d.%s", m_inputEnergyFile.m_sPrefix.c_str(), m_inputEnergyFile.m_iNumber, m_inputEnergyFile.m_sExtension.c_str());
+	if (moveOrCopy)
+		snprintf(commandLine, sizeof(commandLine), "mv %s %s", m_inputEnergyFile.m_sFullPathName.c_str(), fileName);
+	else
+		snprintf(commandLine, sizeof(commandLine), "cp %s %s", m_inputEnergyFile.m_sFullPathName.c_str(), fileName);
+	if (system(commandLine) == -1) {
+		success = false;
+		m_inputEnergyFile.m_sFullPathName = "";
 	} else {
-		m_sEnergyFile = "";
-	}
-	
-	if ((m_sCheckPointFile.length() > 0) && fileExists(m_sCheckPointFile.c_str()) && (newCheckPointFilePrefix != NULL) && (newCheckPointFilePrefix[0] != '\0')) {
-		snprintf(fileName, sizeof(fileName), "%s/%s%d.chk", newDirectory, newCheckPointFilePrefix, newNumber);
-		if (moveOrCopy)
-			snprintf(commandLine, sizeof(commandLine), "mv %s %s", m_sCheckPointFile.c_str(), fileName);
-		else
-			snprintf(commandLine, sizeof(commandLine), "cp %s %s", m_sCheckPointFile.c_str(), fileName);
-		if (system(commandLine) == -1) {
-			success = false;
-			m_sCheckPointFile = "";
-		} else {
-			m_sCheckPointFile = fileName;
-		}
-	} else {
-		m_sCheckPointFile = "";
+		m_inputEnergyFile.m_sFullPathName = fileName;
 	}
 	return success;
 }
 
-bool MoleculeSet::deleteEnergyFiles(void)
+bool MoleculeSet::moveOrCopyOutputEnergyFile(unsigned int index, const char* newFileName, bool moveOrCopy)
+{
+	char commandLine[500];
+	if (moveOrCopy)
+		snprintf(commandLine, sizeof(commandLine), "mv %s %s", m_outputEnergyFiles[index]->m_sFullPathName.c_str(), newFileName);
+	else
+		snprintf(commandLine, sizeof(commandLine), "cp %s %s", m_outputEnergyFiles[index]->m_sFullPathName.c_str(), newFileName);
+	if (system(commandLine) == -1) {
+		delete m_outputEnergyFiles[index];
+		m_outputEnergyFiles[index] = NULL;
+		return false;
+	} else {
+		m_outputEnergyFiles[index]->m_sFullPathName = newFileName;
+		return true;
+	}
+}
+
+bool MoleculeSet::moveOrCopyOutputEnergyFiles(const char* newDirectory, const char* newPrefix, int newNumber, bool moveOrCopy)
+{
+	char fileName[500];
+	bool success = true;
+
+	for (unsigned int i = 0; i < m_outputEnergyFiles.size(); ++i) {
+		if (m_outputEnergyFiles[i] == NULL)
+			continue;
+		m_outputEnergyFiles[i]->m_sDirectory = newDirectory;
+		m_outputEnergyFiles[i]->m_sPrefix = newPrefix;
+		m_outputEnergyFiles[i]->m_iNumber = newNumber;
+		
+		if (m_outputEnergyFiles[i]->m_sDirectory.length() > 0)
+			snprintf(fileName, sizeof(fileName), "%s/%s%d.%s", newDirectory, newPrefix, newNumber, m_outputEnergyFiles[i]->m_sExtension.c_str());
+		else
+			snprintf(fileName, sizeof(fileName), "%s%d.%s", newPrefix, newNumber, m_outputEnergyFiles[i]->m_sExtension.c_str());
+		moveOrCopyOutputEnergyFile(i, fileName, moveOrCopy);
+	}
+	return success;
+}
+
+bool MoleculeSet::moveOrCopyOutputEnergyFiles(const char* newDirectory, bool moveOrCopy)
+{
+	char fileName[500];
+	bool success = true;
+
+	for (unsigned int i = 0; i < m_outputEnergyFiles.size(); ++i) {
+		if (m_outputEnergyFiles[i] == NULL)
+			continue;
+		m_outputEnergyFiles[i]->m_sDirectory = newDirectory;
+		
+		if (m_outputEnergyFiles[i]->m_sDirectory.length() > 0)
+			snprintf(fileName, sizeof(fileName), "%s/%s%d.%s", newDirectory, m_outputEnergyFiles[i]->m_sPrefix.c_str(),
+			         m_outputEnergyFiles[i]->m_iNumber, m_outputEnergyFiles[i]->m_sExtension.c_str());
+		else
+			snprintf(fileName, sizeof(fileName), "%s%d.%s", m_outputEnergyFiles[i]->m_sPrefix.c_str(),
+			         m_outputEnergyFiles[i]->m_iNumber, m_outputEnergyFiles[i]->m_sExtension.c_str());
+		moveOrCopyOutputEnergyFile(i, fileName, moveOrCopy);
+	}
+	return success;
+}
+
+bool MoleculeSet::moveOrCopyOutputEnergyFiles(int newNumber, bool moveOrCopy)
+{
+	char fileName[500];
+	bool success = true;
+
+	for (unsigned int i = 0; i < m_outputEnergyFiles.size(); ++i) {
+		if (m_outputEnergyFiles[i] == NULL)
+			continue;
+		m_outputEnergyFiles[i]->m_iNumber = newNumber;
+		
+		if (m_outputEnergyFiles[i]->m_sDirectory.length() > 0)
+			snprintf(fileName, sizeof(fileName), "%s/%s%d.%s", m_outputEnergyFiles[i]->m_sDirectory.c_str(),
+			         m_outputEnergyFiles[i]->m_sPrefix.c_str(), newNumber, m_outputEnergyFiles[i]->m_sExtension.c_str());
+		else
+			snprintf(fileName, sizeof(fileName), "%s%d.%s",
+			         m_outputEnergyFiles[i]->m_sPrefix.c_str(), newNumber, m_outputEnergyFiles[i]->m_sExtension.c_str());
+		moveOrCopyOutputEnergyFile(i, fileName, moveOrCopy);
+	}
+	return success;
+}
+
+bool MoleculeSet::deleteOutputEnergyFiles(bool forgetAboutFiles)
 {
 	char commandLine[500];
 	bool success = true;
-	
-	if ((m_sEnergyFile.length() > 0) && fileExists(m_sEnergyFile.c_str())) {
-		snprintf(commandLine, sizeof(commandLine), "rm %s", m_sEnergyFile.c_str());
-		if (system(commandLine) == -1)
-			success = false;
+
+	for (unsigned int i = 0; i < m_outputEnergyFiles.size(); ++i) {
+		if (m_outputEnergyFiles[i] == NULL)
+			continue;
+		if (fileExists(m_outputEnergyFiles[i]->m_sFullPathName.c_str())) {
+			snprintf(commandLine, sizeof(commandLine), "rm %s", m_outputEnergyFiles[i]->m_sFullPathName.c_str());
+			if (system(commandLine) == -1)
+				success = false;
+		}
+		if (forgetAboutFiles)
+			m_outputEnergyFiles[i] = NULL;
 	}
-	m_sEnergyFile = "";
-	
-	if ((m_sCheckPointFile.length() > 0) && fileExists(m_sCheckPointFile.c_str())) {
-		snprintf(commandLine, sizeof(commandLine), "rm %s", m_sCheckPointFile.c_str());
-		if (system(commandLine) == -1)
-			success = false;
-	}
-	m_sCheckPointFile = "";
+	if (forgetAboutFiles)
+		m_outputEnergyFiles.clear();
 	
 	return success;
 }

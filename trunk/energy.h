@@ -43,17 +43,13 @@ public:
 	static void createMPIInitMessage(char* mpiInitMessage, int maxSize);
 	static bool createScratchDir(void);
 	static bool deleteScratchDir(void);
-	static string getInputFileName(int populationMemberNumber);
-	static string getOutputFileName(int populationMemberNumber);
-	static string getCheckPointFileName(int populationMemberNumber);
-	static string getScratchInputFileName(int populationMemberNumber);
-	static string getScratchOutputFileName(int populationMemberNumber);
-	static string getScratchCheckPointFileName(int populationMemberNumber);
 	static void createInputFiles(vector<MoleculeSet*> &population);
-	static void createInputFile(MoleculeSet &moleculeSet, int populationMemberNumber);
-	static void createGaussianInputFile(const char* inputFileName, int populationMemberNumber, MoleculeSet &moleculeSet, bool writeEnergyValueInHeader);
+	static void createInputFile(MoleculeSet &moleculeSet, int populationMemberNumber, bool writeMetaData);
+	static void createGaussianInputFile(MoleculeSet &moleculeSet, int populationMemberNumber, bool writeEnergyValueInHeader);
 	static int readGaussianLogFile(const char* logFile, FLOAT &energy, MoleculeSet* pMoleculeSet);
+	static void setOutputEnergyFiles(int populationMemberNumber, MoleculeSet &moleculeSet, bool checkExistence);
 	static bool doEnergyCalculation(int populationMemberNumber);
+	static EnergyProgram* getEnergyProgram() { return &s_energyProgram; }
 
 	static string s_checkPointFileName;
 
@@ -61,7 +57,7 @@ private:
 	static void lower(string &s);
 	static bool isFileCharacter(char character);
 
-	static int s_energyFunction;
+	static EnergyProgram s_energyProgram;
 	static string s_header;
 	static string s_footer;
 	static bool s_bGetStandardOrientation;
@@ -69,7 +65,6 @@ private:
 	static string s_pathToEnergyFiles;
 	static int s_iCharge;
 	static int s_iMultiplicity;
-	static string s_energyProgramWithPath;
 	static string s_scratchDirectory;
 	static string s_fullScratchDirectory;
 	static string s_scratchCommand;

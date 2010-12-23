@@ -19,6 +19,7 @@
 #include <sys/stat.h>
 #include "typedef.h"
 #include "molecule.h"
+#include "energyProgram.h"
 
 using namespace std;
 
@@ -26,13 +27,26 @@ using namespace std;
 #define NEEDS_RUN  2
 #define IS_FINISHED 3
 
+class EnergyFileInfo 
+{
+public:
+	string m_sDirectory;
+	string m_sPrefix;
+	int m_iNumber;
+	string m_sExtension;
+	string m_sFullPathName;
+	
+	EnergyFileInfo() {}
+	void copy(const EnergyFileInfo &otherEnergyFileInfo);
+};
+
 // This class manages a set of molecules
 class MoleculeSet
 {
 private:
 	int m_iStructureId; // an id number for this object
-	string m_sEnergyFile;
-	string m_sCheckPointFile;
+	EnergyFileInfo m_inputEnergyFile;
+	vector<EnergyFileInfo*> m_outputEnergyFiles;
 	int m_iNumberOfMolecules;
 	Molecule* m_prgMolecules;  // array of molecules
 	int m_iNumberOfAtoms;
@@ -56,10 +70,10 @@ public:
 	~MoleculeSet();
 	void setId(int id) { m_iStructureId = id; }
 	int getId() { return m_iStructureId; }
-	void setEnergyFile(const char *energyFile) { m_sEnergyFile = energyFile; }
-	const char* getEnergyFile() { return m_sEnergyFile.c_str(); }
-	void setCheckPointFile(const char *checkpointFile) { m_sCheckPointFile = checkpointFile; }
-	const char* getCheckPointFile() { return m_sCheckPointFile.c_str(); }
+	void setInputEnergyFile(const char *directory, const char* prefix, int number, const char* extension);
+	const char* getInputEnergyFile();
+	void setOutputEnergyFile(const char *directory, const char* prefix, int number, const char* extension, unsigned int index, bool checkExistence);
+	const char* getOutputEnergyFile(unsigned int index);
 	void copy(const MoleculeSet &moleculeSet);
 	int getNumberOfMolecules();
 	int getNumberOfMoleculesWithMultipleAtoms();
@@ -296,10 +310,13 @@ public:
 	
 	
 	bool performBondRotations(FLOAT angleInRad, vector<MoleculeSet*> &moleculeSets);
+	
+	bool moveOrCopyInputEnergyFile(const char* newDirectory, bool moveOrCopy);
+	bool moveOrCopyOutputEnergyFiles(const char* newDirectory, const char* newPrefix, int newNumber, bool moveOrCopy);
+	bool moveOrCopyOutputEnergyFiles(const char* newDirectory, bool moveOrCopy);
+	bool moveOrCopyOutputEnergyFiles(int newNumber, bool moveOrCopy);
 
-	bool moveOrCopyGaussianFiles(const char* newDirectory, const char* newLogFilePrefix, const char* newCheckPointFilePrefix, int newNumber, bool moveOrCopy);
-
-	bool deleteEnergyFiles(void);
+	bool deleteOutputEnergyFiles(bool forgetAboutFiles);
 
 	static bool fileExists(const char* fileName);
 	
@@ -438,6 +455,8 @@ private:
 	FLOAT myPower(FLOAT number, int power);
 	
 	FLOAT computeLennardJonesEnergy(FLOAT epsilon, FLOAT sigma, FLOAT alpha, Point3D s[]);
+
+	bool moveOrCopyOutputEnergyFile(unsigned int index, const char* newFileName, bool moveOrCopy);
 };
 
 #endif
