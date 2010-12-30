@@ -21,6 +21,7 @@ II. Input file formats and optimization of random algorithm parameters
         3. Genetic algorithm output
     C. Particle swarm optimization input parameters
     D. Simulated annealing and basin hopping input parameters
+    E. Genetic Algorithm
 
 III. Running the program on a cluster of computers
     A. Submitting the program to the PBS Scheduler
@@ -33,6 +34,8 @@ IV. Other useful tips
     C. Seeding the starting population with structures from previous runs
     D. Setting a wall time to ensure cleaning of scratch files
     E. Transition State Searches
+    F. Trouble Shooting
+
 I. Introduction
 
 This software searches for chemical structures that are global minima the potential energy surface.  It uses highly accurate ab initio methods and reduces the cost of these by using distributed computations on a Linux cluster.  The software allows energy calculations to be performed using an external Gaussian program as well as an internal Lennard Jones potential used for testing purposes.  The program has also been configured to make adding additional quantum chemistry packages as simple as possible.
@@ -340,12 +343,12 @@ At each step, simulated annealing makes a number of random perturbations.  Each 
 
      p = e^(-ΔE/(k * T))
 
-where ΔE is the change in energy, k is the Boltzmann constant in units of Hartrees per Kelvin (line 25), and T is the temperature in units of Kelvin (line 24).  At the start of a run, the temperature and the probability of accepting a bad perturbation are very high. The temperature T, the number of perturbations P, the coordinate perturbation amount C, and the angle perturbation amount A decrease as follows:
+where ΔE is the change in energy in units of Hartrees, k is the Boltzmann constant in units of Hartrees per Kelvin (line 25), and T is the temperature in units of Kelvin (line 24).  At the start of a run, the temperature and the probability of accepting a bad perturbation are very high. The temperature T, the number of perturbations P, the coordinate perturbation amount C, and the angle perturbation amount A decrease as follows:
 
-     T = T * quenching factor (line 23)
-     P = P * SquareRoot(quenching factor)
-     C = C * SquareRoot(quenching factor)
-     A = A * SquareRoot(quenching factor)
+     T = T x quenching factor (line 23)
+     P = P x SquareRoot(quenching factor)
+     C = C x SquareRoot(quenching factor)
+     A = A x SquareRoot(quenching factor)
 
 At the end, the temperature and the probability of accepting bad perturbations are very low. Essentially, the algorithm is a slow transition between a random search and a downhill search.
 
@@ -359,6 +362,9 @@ Theoretically simulated annealing is guaranteed to find the global minimum if co
 
 It is often best to use the Lennard Jones potential for testing the parameters until they are in the ball park.  Though this energy function behaves very differently, doing this will help you find obvious errors in the input parameters and give you a rough idea of how the algorithm will proceed before you start using expensive ab initio calculations.  After the parameters seem to work well with the Lennard Jones potential, try them with Gaussian.  Check for differences in how the algorithm performs and make adjustments.  This is particularly important if you are performing runs that take several weeks.
 
+E. Genetic Algorithm
+
+Genetic algorithms (GA) are an efficient mechanism used by many search algorithms.  While my focus has been on developing 'new' algorithms such as particle swarm optimization, GA algorithms are very important and widely used.  The genetic algorithm in this application is well designed, but it needs a new mating algorithm (see: the makeChild function in moleculeSet.cc).  If you are interested in doing this, please contact me.  If you want the most efficient algorithm, you might think about implementing a differential evolution algorithm.  In the mean time, use simulated annealing or particle swarm optimization.  Simulated annealing with a small population size, single point energy calculations, and the -i option is quite efficient.  Afterwards it's a good idea to perform local geometry optimization on the list of best structures using an optimization file.  This was my approach in reference [1] above.
 
 III. Running the program on a cluster of computers
 
@@ -383,7 +389,7 @@ Note: Though this application was generally designed to run one Gaussian calcula
 
 B. MPI Options
 
-	When calculating energies for a large population of candidate structures, the program allows options to improve efficiency.  By default, each processor will calculate the same number of Gaussian jobs.  If for example, you have a population of 64 structures and 16 processors, each processor will calculate energies for exactly 4 structures. This means that by default, there is no communication between processors, except at the start of each new batch of calculations.
+When calculating energies for a large population of candidate structures, the program allows options to improve efficiency.  By default, each processor will calculate the same number of Gaussian jobs.  If for example, you have a population of 64 structures and 16 processors, each processor will calculate energies for exactly 4 structures. This means that by default, there is no communication between processors, except at the start of each new batch of calculations.
 
 Since the time required for different Gaussian jobs varies, a better approach is to set aside one processor to act as a master that then deals out Gaussian tasks to the other slave processors.  This can be achieved by specifying the -m option. For example, if you have a population of 64 structures and you want about 4 Gaussian jobs per processor, you would now need 17 processors, one master and 16 slaves.  This can improve efficiency since it allows load balancing to compensate for Gaussian jobs that take a long time.
 
@@ -399,12 +405,11 @@ C. Setting the Gaussian Scratch Directory
 
 The Gaussian scratch directory must be set by the pso program if you specified a scratch directory on line 5 of your input file.  The way this scratch directory is set can vary from system to system.  The pso program uses "export GAUSS_SCRDIR=your_scratch_directory".  If you need to modify this command, it's listed in the energy.cc file in the two init functions.
 
-
 IV. Other useful tips
 
 A. More about Optimization Files
 
-      When performing particle swarm optimization or simulated annealing, you may use single point energy calculations or perform optimization to the nearest local minimum.  If you use single point energy calculations during a run, it is beneficial afterward to optimize the list of best structures to their nearest local minima.  This is done by creating an optimization file from the resume file.  When using the -o option, specify a resume file, followed by the optimization file to be created, followed by the number of structures to transfer, followed by the number of structures to optimize at a time.  An example of how this is done is as follows:
+When performing particle swarm optimization or simulated annealing, you may use single point energy calculations or perform optimization to the nearest local minimum.  If you use single point energy calculations during a run, it is beneficial afterward to optimize the list of best structures to their nearest local minima.  This is done by creating an optimization file from the resume file.  When using the -o option, specify a resume file, followed by the optimization file to be created, followed by the number of structures to transfer, followed by the number of structures to optimize at a time.  An example of how this is done is as follows:
 
       ./helper -o LJ7_PSO.res LJ7_PSO.opt 64 16 
 
@@ -450,5 +455,8 @@ This tells the program to terminate before the specified duration of time has el
 
 E. Transition state searches
 
-This program can also perform searches for transition states.  The method used is essentially a random search, but with allowed constraints on the maximum and minimum distances between molecules.  There are 2 methods for performing a transition state search.  The first way is to use a simulated annealing input file, and the second way is to place random structures in a simulated annealing optimization file using the -or option (./helper -or).  With both of these methods, make sure to put 'yes' for the option: 'Search for transition states (random search with every perturbation accepted)'.  When this option is turned on, the program looks for " 1 imaginary frequencies (negative Signs) " in the Gaussian .log file and will only save .log files with this phrase.  To summarize, using a simulated annealing input file causes the program to treat the search as a simulated annealing search, except that every perturbation is accepted, so the search is essentially random.  When using the optimization file, every structure is randomly initialized, so new random structures are not perturbations of previous random structures.  This is the essential difference between the two methods.
+This program can also perform searches for transition states.  The method used is essentially a random search, but with allowed constraints on the maximum and minimum distances between molecules. There are 2 methods for performing a transition state search.  The first way is to use a simulated annealing input file, and the second way is to place random structures in a simulated annealing optimization file using the -or option (./helper -or).  With both of these methods, make sure to put 'yes' for the option: 'Search for transition states (random search with every perturbation accepted)'.  When this option is turned on, the program looks for " 1 imaginary frequencies (negative Signs) " in the Gaussian .log file and will only save .log files with this phrase.  To summarize, using a simulated annealing input file causes the program to treat the search as a simulated annealing search, except that every perturbation is accepted, so the search is essentially random.  When using the optimization file, every structure is randomly initialized, so new random structures are not perturbations of previous random structures.  This is the essential difference between the two methods.
 
+F. Trouble Shooting
+
+If you encounter unexpected behavior from the application, here are some things you can do.  First, check this manual to ensure the software is not performing as designed.  Second, turn on additional error messages by setting the PRINT_CATCH_MESSAGES constant to 'true' at the top of input.h. This may provide additional information to help identify the problem.  If you believe the problem is related to MPI, you can also turn on the PRINT_MPI_MESSAGES constant at the top of myMpi.h.  This will print information about the messages being passed between MPI processes.  If you find a message that seems related to your unexpected behavior, search for the error in the code to learn more about what the application was doing when it generated the error.  If you find an application error, please submit a bug report with a detailed description of the error, including steps for reproducing it.

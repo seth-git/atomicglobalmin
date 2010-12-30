@@ -46,7 +46,7 @@ using std::ostringstream;
 
 #define HARTREE_TO_JOULES       2622950
 
-#define PRINT_CATCH_MESSAGES	true
+#define PRINT_CATCH_MESSAGES	false
 
 template < class T >
 string ToString(const T &arg)
