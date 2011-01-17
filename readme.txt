@@ -5,7 +5,7 @@ by Seth Call
 Table of Contents
 
 I. Introduction
-    A. Compiling the software
+    A. Getting Started
     B. Input, output, resume, and optimization files
     C. Running and restarting the program
     D. Obtaining results from output, resume, and optimization files
@@ -40,32 +40,31 @@ I. Introduction
 
 This software searches for chemical structures that are global minima the potential energy surface.  It uses highly accurate ab initio methods and reduces the cost of these by using distributed computations on a Linux cluster.  The software allows energy calculations to be performed using an external Gaussian program as well as an internal Lennard Jones potential used for testing purposes.  The program has also been configured to make adding additional quantum chemistry packages as simple as possible.
 
-This program can perform two different types of searches.  First, it searches for the global minimum of a set of molecules that each have fixed geometry using translation and rotation of molecules with respect to one another.  The program has four different random algorithms for this type of search: particle swarm optimization, enhanced simulated annealing, basin hoping, and a privative genetic algorithm. The second type of search is a bond rotational search for a single molecule.  This is a deterministic, non-random search using a user-specified bond rotational angle.
+This program can perform two different types of searches.  First, it searches for the global minimum of a set of molecules that each have fixed geometry using translation and rotation of molecules with respect to one another.  The program has four different random algorithms for this type of search: particle swarm optimization, enhanced simulated annealing, basin hoping, and a simple genetic algorithm. The second type of search is a bond rotational search for a single molecule.  This is a deterministic, non-random search using a user-specified bond rotational angle.
 
-Finding accurate global minima even for small molecules can be challenging.  This software is an automated tool making it easier to find such minima using the more accurate quantum methods.
+Finding accurate global minima even for small molecules can be challenging.  This software is an automated tool making it simple and easy to find such minima using the much more accurate quantum methods.
 
-A. Compiling the software
+A. Getting Started
 
-While this program does not have a graphical user interface, it has a command line interface this is simple to use with a little training.  Links providing training and useful software are below:
+While this program does not have a graphical user interface, it has a command line interface that is very simple to use.  Here are a few programs/information links you might find useful:
 
-	Download putty to access Linux: http://www.chiark.greenend.org.uk/~sgtatham/putty/
-	Download WinSCP to transfer files: http://www.winscp.com/
-	Learning Unix/Linux: http://librenix.com/?inode=4052
-	Vim Editor: http://www.oregonwebradio.net/backup_fedora/tutorials/vim_li/quickstart.html
-	Download Ubuntu: http://www.ubuntu.com/GetUbuntu/download
+	Transfer files between Linux and Windows: http://www.winscp.com/
+	Log into Linux from Windows: http://www.chiark.greenend.org.uk/~sgtatham/putty/
+	Learn Unix/Linux: http://librenix.com/?inode=4052
+	Edit Linux files: http://www.oregonwebradio.net/backup_fedora/tutorials/vim_li/quickstart.html
 
-To compiling this C++ program on a Linux computer (Windows is not supported) do the following:
+You will need to compile the C++ source code on a Linux computer or cluster.  While Windows is not supported, you may easily transfer results to and from your Windows computer.  Steps for installing this program are below:
 
-1. Download the program file: pso1.3.2.tar.gz
+1. Download the program file: pso1.3.3.tar.gz
 2. Install g++ and MPI compilers
 3. Compile the program
 
-Step 1: You can download pso1.3.2.tar.gz file from the same place you downloaded this readme file.  If you want to run the program on a remote Linux cluster, first download the program onto your local computer and then transfer the program to the Linux cluster.  If you use Windows, you can transfer the program file to the Linux cluster using the WinSCP program (see above link).  If you are using Ubuntu or a Mac, open a terminal.  To open a terminal on Ubuntu, click on 'Applications', 'Accessories', 'Terminal'.  Then, use these commands to transfer the program to the Linux cluster:
+Step 1: You can download pso1.3.3.tar.gz file from the same place you downloaded this instruction file.  If you want to run the program on a remote Linux cluster, first download the program onto your local computer and then transfer the program to the Linux cluster.  If you use Windows, you can transfer the program to the Linux cluster using the WinSCP program (see above link).  If you are using Ubuntu or a Mac, open a terminal.  To open a terminal on Ubuntu, click on 'Applications', 'Accessories', 'Terminal'.  On a mac, navigate to your Applications folder, open Utilities, and double click on Terminal. Then, type these commands, pressing 'Enter' or 'Return' after each command:
 
-	cd /directory/where/you/put/pso1.3.2.tar.gz
-	scp  pso1.3.2.tar.gz your_user_name@your.linux.cluster:pso1.3.2.tar.gz
+	cd /directory/where/you/put/pso1.3.3.tar.gz
+	scp  pso1.3.3.tar.gz your_user_name@your.linux.cluster:pso1.3.3.tar.gz
 
-Step 2: If using a University Linux cluster, the g++ and MPI compilers should already be installed, so you can likely skip this step. If using a local Linux box, g++ should already be installed, but you will have to install the MPI compiler.  On Ubuntu Linux, you may install this by clicking on 'System' and 'Administration', then 'Synaptic Package Manager' and searching for mpi.  I installed the libmpich1.0gf and libmpich1.0-dev packages.
+Step 2: If using a University Linux cluster, the g++ and MPI compilers should already be installed, so you can likely skip this step. If using a local Linux box, g++ should already be installed, but you will have to install the MPI compiler.  On Ubuntu Linux, you may install this by clicking on 'System' and 'Administration', then 'Synaptic Package Manager' and searching for mpi.  I installed the mpi-default-bin and mpi-default-dev packages.
 
 Step 3: If you are running the program on a remote Linux cluster, you will need to log into the cluster with ssh.  To do this on Windows, use the putty program (see the above link).  To log in at the command line on Ubuntu or a Mac, type the following at the command line:
 
@@ -73,12 +72,12 @@ Step 3: If you are running the program on a remote Linux cluster, you will need 
 
 Once logged in, navigate to the directory where you placed the program.  Change directories by typing: 'cd some_directory'.  To get out of the current directory type: 'cd ..'   .  To list files and directories in the current directory, type 'ls' or 'ls -al' (the later is a long list format).  When you have navigated to your program directory, type the following to decompress the program:
 
-	gunzip pso1.3.2.tar.gz
-	tar -xf pso1.3.2.tar
+	gunzip pso1.3.3.tar.gz
+	tar -xf pso1.3.3.tar
 
 Then, navigate into the directory:
 
-	cd pso1.3.2
+	cd pso1.3.3
 
 Then compile the program by typing:
 
@@ -94,7 +93,7 @@ Each of the four algorithms, particle swarm optimization (PSO), basin hopping, s
 
 C. Running and restarting the program
 
-Four example input files are LJ7_PSO.inp, LJ7_Sim.inp, LJ7_BH.inp, and LJ7_GA.inp, for PSO, simulated annealing, and the genetic algorithm respectively.  To run the PSO input file, type the following:
+Four example input files are LJ7_PSO.inp, LJ7_Sim.inp, LJ7_BH.inp, and LJ7_GA.inp, for PSO, simulated annealing, and the genetic algorithm respectively.  To run a PSO input file, type:
 
       ./pso LJ7_PSO.inp
 
@@ -112,8 +111,7 @@ Note that if you open an optimization file, it will say simulated annealing, par
 
 D. Obtaining results from output, resume, and optimization files
 
-After normal termination of a run, the program writes the best structure found to the output file.  To open the output file, type "vim LJ7_PSO.out".  When you are done, type ":q" and then the enter key.  To obtain preliminary results from the resume file, open the resume file using the vim command.  The top portion of the resume file contains parameters. Following these are chemical structures in the current population.  Following these are the list of best structures found during the entire run.  To search for this list, type "/Best" and then the enter key. When you are done viewing the list, type ":q" and then the enter key.  The program can also export the structures from the resume or optimization file to a temporary file in a readable format.  Note: the coordinates of units/molecules should never be read directly from a resume or optimization file as these require translation and rotation.  To perform translation and rotation of the list of best structures into a readable format, type "./helper -t LJ7_PSO.res temp.txt".  This also works for optimization files.  Note that when using Gaussian, this program also saves the log files.
-
+After normal termination of a run, the program writes the best structure found to the output file.  To open the output file, type "vim LJ7_PSO.out".  When you are done, type ":q" and then the enter key. To obtain preliminary results from the resume file, open the resume file using the vim command.  The top portion of the resume file contains parameters. Following these are chemical structures in the current population.  Following these are the list of best structures found during the entire run.  To search for this list, type "/Best" and then the enter key. When you are done viewing the list, type ":q" and then the enter key.  The program can also export the structures from the resume or optimization file to a temporary file in a readable format.  Note: the coordinates of units/molecules should never be read directly from a resume or optimization file as these require translation and rotation.  To perform translation and rotation of the list of best structures into a readable format, type "./helper -t LJ7_PSO.res temp.txt".  This also works for optimization files.  Note that when using Gaussian, this program also saves the log files.
 
 E. Performing bond rotations using a deterministic, non-random search
 
@@ -134,9 +132,10 @@ Before doing a bond rotational search be sure to check that bonds are in the app
 Note that the bondLengths.txt file was automatically generated from from average bond lengths stored in the files averageSingleBondLengthsInAngstroms.txt and averageMultipleBondLengthsInAngstroms.txt using the Perl script updateBondLengths.pl.  These average bond lengths were taken from the Handbook of Chemistry and Physics.  The updateBondLengths.pl program allows bonds to be 15% larger or smaller than average bond lengths when generating bondLengths.txt.
 
 Since performing a bond rotational search is non-random, there are no difficult parameters to set. When performing a simulated annealing, particle swarm, or genetic algorithm search, these random algorithms have parameters you will need to set.  More specific information on setting these parameters as well as the general format of input files is given in the next section.
-F. Adding Additional Quantum Chemistry Packages
 
-	This software was designed to be used with the Gaussian.  While other quantum chemistry packages have not yet been implemented, the software has been configured to make adding these as simple as possible.  To add a quantum chemistry package, do the following:
+F. Adding Other Quantum Chemistry Packages
+
+This software was designed to be used with the Gaussian.  While other quantum chemistry packages have not yet been implemented, the software has been configured to make adding these as simple as possible.  To add a quantum chemistry package, do the following:
 
 1. Add a one-line define statement to energyProgram.h as follows:
    #define NAME_OF_YOUR_ENERGY_PROGRAM             UNIQUE_INTEGER
@@ -152,6 +151,7 @@ A few publications where the software has been used are below:
 [2] Averkiev, B. B.; Call, S.; Boldyrev, A. I.; Wang, L. M.; Huang, W.; Wang, L. S. Photoelectron spectroscopy and ab initio study of the structure and bonding of Al7N- and Al7N. J. Phys. Chem. A. 2008, 112(9), 1873-1879.
 
 [3] Call, S. T.; Boldyrev, A. I., Zubarev, D. Y. Global Minimum Structure Searches via Particle Swarm Optimization. J. Comput. Chem. 2007, 28, 1177-1186.
+
 II. Input file formats and optimization of random algorithm parameters
 
 This section discusses the parameters in the input file and techniques for setting them.  Knowing how to set parameters optimally can influence the performance of each algorithm.  While setting these parameters takes practice, examples are provided.  Also, some of the more important parameters can be set for you automatically by the program.
@@ -160,7 +160,7 @@ A. Input parameters common to all algorithms
 
 Parameters common to all algorithms appear at the top and bottom of each input file.  An example of the parameters at the top of an input file for (H2O)OH- are as follows:
 
-1   Particle Swarm Optimization Input File Version 1.3.2
+1   Particle Swarm Optimization Input File Version 1.3.3
 2   
 3   Energy function to use: Gaussian
 4   Path to energy files: /path/to/gaussian/input/and/log/files/
@@ -362,30 +362,34 @@ Theoretically simulated annealing is guaranteed to find the global minimum if co
 
 It is often best to use the Lennard Jones potential for testing the parameters until they are in the ball park.  Though this energy function behaves very differently, doing this will help you find obvious errors in the input parameters and give you a rough idea of how the algorithm will proceed before you start using expensive ab initio calculations.  After the parameters seem to work well with the Lennard Jones potential, try them with Gaussian.  Check for differences in how the algorithm performs and make adjustments.  This is particularly important if you are performing runs that take several weeks.
 
+
 E. Genetic Algorithm
 
 Genetic algorithms (GA) are an efficient mechanism used by many search algorithms.  While my focus has been on developing 'new' algorithms such as particle swarm optimization, GA algorithms are very important and widely used.  The genetic algorithm in this application is well designed, but it needs a new mating algorithm (see: the makeChild function in moleculeSet.cc).  If you are interested in doing this, please contact me.  If you want the most efficient algorithm, you might think about implementing a differential evolution algorithm.  In the mean time, use simulated annealing or particle swarm optimization.  Simulated annealing with a small population size, single point energy calculations, and the -i option is quite efficient.  Afterwards it's a good idea to perform local geometry optimization on the list of best structures using an optimization file.  This was my approach in reference [1] above.
+
 
 III. Running the program on a cluster of computers
 
 A. Submitting the program to the PBS Scheduler
 
-This section describes how to run the program on a cluster of Linux computers with Gaussian.  Some familiarity with Gaussian and Linux is assumed.
+This section describes how to run the program on a cluster of Linux computers with a quantum chemistry package.  Though these instructions focus on Gaussian, they are also intended to be useful when running other quantum chemistry packages.  Some familiarity with your quantum chemistry package and Linux is assumed.
 
-To use a cluster of computers, create a script file for submitting the main program to the PBS (Portable Batch System) scheduler. An example script file for doing this called "examplePBSScript" is in the "pso" directory.  Make a copy of this script and modify it as follows.
+Set the path to Gaussian in the 'init' function of energyProgram.cc.  Then recompile the program by typing 'make' in the main program directory.
+
+Create a script file for submitting the main program to the PBS (Portable Batch System) scheduler. An example script file for doing this called "examplePBSScript" is in the "pso" directory.  Make a copy of this script and modify it as follows.
 
     1. Line 2 in the script file specifies the number of nodes you want to use and the number of processors per node (ppn) you want.  Make sure your population size is divisible by this number.  This application was designed to perform one Gaussian calculation on each processor.  The wall time is a maximum time limit you want to allow your job to run for.  Set this appropriately. The example file specifies 24 hours.
     2. Line 3 is where you set the memory limit per node that you want.  Also set the memory limit in the Gaussian header in the pso input file.
     3. Line 16 specifies that the list of nodes allocated by the PBS scheduler be copped to a file called "nodes.txt" in the energy files directory (line 4 of the pso input file).
     4. Change lines 22 and 23 (the last two lines).  These lines call the pso program.  It is best to put the input, output, and resume files in a separate directory other than in the main pso directory.  NOTE: WHEN RESTARTING THE PROGRAM, DON'T FORGET TO CHANGE THE INPUT FILE NAME TO THE RESUME FILE NAME IN THE PBS SCRIPT FILE.
 
-Also be sure to modify the pso input file appropriately.  On line 4, specify a directory where Gaussian energy files (.com, .log, etc.) will be written.  You will need to create this directory, and it will need to be unique for every input file you intend to run simultaneously with the program.  Specify a scratch directory on line 5.  The pso program will create sub-directories in this directory where Gaussian scratch files will be written.  These sub directories have the name of the pso input or resume file.  The scratch directory can be on the hard drive of each local node or on a shared drive.  The pso program will delete scratch files it creates if you use the -walltime option (see section IV, D).
+Also be sure to modify the pso input file appropriately.  On line 3 for the energy function parameter, specify that you are using 'Gaussian'.  On line 4, specify the full path of a directory where you want Gaussian energy files (.com, .log, etc.) to be written.  You will need to create this directory, and it will need to be unique for every input file you want to run simultaneously with the program.  Specify the full path to the scratch directory on line 5.  The pso program will create sub-directories in this directory where Gaussian scratch files will be written.  These sub directories have the name of the pso input or resume file.  The scratch directory can be on the hard drive of each local node or on a shared drive.  The pso program will delete scratch files it creates if you use the -walltime option (see section IV, D).
 
 Make sure the names of your output and resume files are set appropriately in the input file.  Use full path names.  Also, modify the Gaussian header and optional footer appropriately.  The header will be placed at the start of every Gaussian input file.
 
 Once you have created your script file and your input file and checked them twice, type the command qsub followed by the name of your script file.  To look at jobs in the queue, type the command qstat.  To look at only the jobs you have submitted, type 'qstat | grep your_user_name'.  To delete a job from the queue type: 'qdel job_number'.
 
-Note: Though this application was generally designed to run one Gaussian calculation per processor, it does have some built in functionality to run single Gaussian calculations on multiple processors.  Though I have not done this in a few years, you may talk to your system administrator and get help doing this if desired.  The pso application reads the "nodes.txt" file and used to start one energy calculation for each node/line in the file.  Using mpirun instead of mpiexec can be helpful in this case.  If you specify multiple processors per node and if you want one Gaussian job to use all of the processors on a node, you may need to place this line in your Gaussian header (pso input file): "% nprocshared=number_of_processors_you_want".
+Note: Though this application was generally designed to run one Gaussian calculation per processor, it does have some built in functionality to run single Gaussian calculations on multiple processors.  Though I have not done this in a few years, you may talk to your system administrator and get help doing this if desired.  The pso application reads the "nodes.txt" file and formerly started one energy calculation for each node/line in the file.  Using mpirun instead of mpiexec can be helpful in this case.  If you specify multiple processors per node and if you want one Gaussian job to use all of the processors on a node, you may need to place this line in your Gaussian header (pso input file): "% nprocshared=number_of_processors_you_want".
 
 B. MPI Options
 
@@ -404,6 +408,7 @@ When using the -i option and you must resume an unfinished run, do not change th
 C. Setting the Gaussian Scratch Directory
 
 The Gaussian scratch directory must be set by the pso program if you specified a scratch directory on line 5 of your input file.  The way this scratch directory is set can vary from system to system.  The pso program uses "export GAUSS_SCRDIR=your_scratch_directory".  If you need to modify this command, it's listed in the energy.cc file in the two init functions.
+
 
 IV. Other useful tips
 

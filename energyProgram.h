@@ -9,10 +9,10 @@
 #ifndef __ENERGY_PROGRAM_H__
 #define __ENERGY_PROGRAM_H__
 
-#define GAUSSIAN                                 1
+#define GAUSSIAN                            1
 #define LENNARD_JONES                       2
 
-#define MAX_OUTPUT_FILE_TYPES        10
+#define MAX_OUTPUT_FILE_TYPES               10
 
 #include <iostream>
 #include <vector>
@@ -34,15 +34,18 @@ public:
 	string m_sOutputFileTypeExtensions[MAX_OUTPUT_FILE_TYPES];
 	bool m_bOutputFileTypeRequired[MAX_OUTPUT_FILE_TYPES];
 	
-	EnergyProgram () {}
+	EnergyProgram (const char* name, bool useMPI, const char* pathToExecutable, int programID, const char* inputFileExtension);
+	EnergyProgram (void);
+	void copy(EnergyProgram &energyProgram);
 	string toString();
-	string toString2();
 	bool set(vector<char*> parameters);
 	int getNumParameters();
 
 	static void init(void);
+	static void addOutputFileType(const char* fileExtension, bool required);
+	static void cleanUp(void);
 	
-	static vector<EnergyProgram> s_energyPrograms;
+	static vector<EnergyProgram*> s_energyPrograms;
 };
 
 #endif

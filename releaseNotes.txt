@@ -1,1 +1,1 @@
-This version has functionality added making it easier to encorporate additional quantum chemistry packages.
+Fixed some minor memory issues and made updates to the readme.txt file.

@@ -1845,6 +1845,7 @@ int main(int argc, char *argv[])
 			cerr << "Caught message: " << message << endl;
 	}
 	ArgumentParser::cleanUp();
+	EnergyProgram::cleanUp();
 
 	/* Shut down MPI */
 

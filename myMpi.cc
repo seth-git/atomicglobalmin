@@ -43,7 +43,7 @@ bool Mpi::calculateEnergies (int energyCalculationType, vector<MoleculeSet*> &po
 		
 		return success;
 	}
-
+	
 	if (pEnergyProgram->m_iProgramID == LENNARD_JONES) {
 		switch (energyCalculationType) {
 			case OPTIMIZE_BUT_DONT_READ:

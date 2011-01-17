@@ -8,32 +8,60 @@
 
 #include "energyProgram.h"
 
-vector<EnergyProgram> EnergyProgram::s_energyPrograms;
+vector<EnergyProgram*> EnergyProgram::s_energyPrograms;
 
 void EnergyProgram::init(void) {
-	EnergyProgram energyProgram;
-
-	energyProgram.m_sName = "Gaussian";
-	energyProgram.m_bUsesMPI = true;
-	energyProgram.m_sPathToExecutable = "/fslapps/chem/bin/rung03";
-	energyProgram.m_iProgramID = GAUSSIAN;
-	energyProgram.m_sInputFileExtension = "com";
-	energyProgram.m_iNumOutputFileTypes = 0;
-	energyProgram.m_sOutputFileTypeExtensions[energyProgram.m_iNumOutputFileTypes] = "log";
-	energyProgram.m_bOutputFileTypeRequired[energyProgram.m_iNumOutputFileTypes] = true;
-	++energyProgram.m_iNumOutputFileTypes;
-	energyProgram.m_sOutputFileTypeExtensions[energyProgram.m_iNumOutputFileTypes] = "chk";
-	energyProgram.m_bOutputFileTypeRequired[energyProgram.m_iNumOutputFileTypes] = false;
-	++energyProgram.m_iNumOutputFileTypes;
-	s_energyPrograms.push_back(energyProgram);
+	s_energyPrograms.push_back(new EnergyProgram("Gaussian", true, "/Full/path/to/gaussian", GAUSSIAN, "com"));
+	addOutputFileType("log", true);
+	addOutputFileType("chk", false);
 	
-	energyProgram.m_sName = "Lennard Jones";
-	energyProgram.m_bUsesMPI = false;
-	energyProgram.m_sPathToExecutable = "";
-	energyProgram.m_sInputFileExtension = "";
-	energyProgram.m_iProgramID = LENNARD_JONES;
-	energyProgram.m_iNumOutputFileTypes = 0;
-	s_energyPrograms.push_back(energyProgram);
+	s_energyPrograms.push_back(new EnergyProgram("Lennard Jones", false, "", LENNARD_JONES, ""));
+}
+
+EnergyProgram::EnergyProgram(const char* name, bool useMPI, const char* pathToExecutable, int programID, const char* inputFileExtension) {
+	m_sName = name;
+	m_bUsesMPI = useMPI;
+	m_sPathToExecutable = pathToExecutable;
+	m_iProgramID = programID;
+	m_sInputFileExtension = inputFileExtension;
+	m_iNumOutputFileTypes = 0;
+}
+
+EnergyProgram::EnergyProgram(void) {
+	m_bUsesMPI = false;
+	m_iProgramID = -1;
+	m_iNumOutputFileTypes = 0;
+}
+
+void EnergyProgram::addOutputFileType(const char* fileExtension, bool required) {
+	EnergyProgram *pEnergyProgram;
+	if (s_energyPrograms.size() == 0)
+		return;
+	pEnergyProgram = s_energyPrograms[s_energyPrograms.size()-1];
+	if (pEnergyProgram->m_iNumOutputFileTypes >= MAX_OUTPUT_FILE_TYPES)
+		return;
+	pEnergyProgram->m_sOutputFileTypeExtensions[pEnergyProgram->m_iNumOutputFileTypes] = fileExtension;
+	pEnergyProgram->m_bOutputFileTypeRequired[pEnergyProgram->m_iNumOutputFileTypes] = required;
+	++pEnergyProgram->m_iNumOutputFileTypes;
+}
+
+void EnergyProgram::cleanUp() {
+	for (unsigned int i = 0; i < s_energyPrograms.size(); ++i)
+		delete s_energyPrograms[i];
+	s_energyPrograms.clear();
+}
+
+void EnergyProgram::copy(EnergyProgram &energyProgram) {
+	m_sName = energyProgram.m_sName;
+	m_bUsesMPI = energyProgram.m_bUsesMPI;
+	m_sPathToExecutable = energyProgram.m_sPathToExecutable;
+	m_iProgramID = energyProgram.m_iProgramID;
+	m_sInputFileExtension = energyProgram.m_sInputFileExtension;
+	m_iNumOutputFileTypes = energyProgram.m_iNumOutputFileTypes;
+	for (int i = 0; i < m_iNumOutputFileTypes; ++i) {
+		m_sOutputFileTypeExtensions[i] = energyProgram.m_sOutputFileTypeExtensions[i];
+		m_bOutputFileTypeRequired[i] = energyProgram.m_bOutputFileTypeRequired[i];
+	}
 }
 
 string EnergyProgram::toString() {

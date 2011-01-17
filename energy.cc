@@ -24,7 +24,7 @@ string Energy::s_scratchCommand = "";
 bool Energy::init(const Input &input, int rank)
 {
 	bool success = true;
-	s_energyProgram = *input.m_pSelectedEnergyProgram; // copy the energy program information
+	s_energyProgram.copy(*input.m_pSelectedEnergyProgram);
 	
 	if (input.m_sPathToScratch.length() > 0) {
 		s_scratchDirectory = input.m_sPathToScratch + "/" + Input::fileWithoutPath(input.m_sInputFileName.c_str());
@@ -35,14 +35,13 @@ bool Energy::init(const Input &input, int rank)
 	}
 
 	s_pathToEnergyFiles = input.m_sPathToEnergyFiles;
+	s_header = input.m_sEnergyFileHeader;
+	s_footer = input.m_sEnergyFileFooter;
+	s_iCharge = input.m_iCharge;
+	s_iMultiplicity = input.m_iMultiplicity;
 
 	switch (s_energyProgram.m_iProgramID) {
 	case GAUSSIAN:
-		s_header = input.m_sEnergyFileHeader;
-		s_footer = input.m_sEnergyFileFooter;
-		s_iCharge = input.m_iCharge;
-		s_iMultiplicity = input.m_iMultiplicity;
-
 		if (s_fullScratchDirectory.length() > 0) {
 			s_scratchCommand = "export GAUSS_SCRDIR=" + s_fullScratchDirectory + " && ";
 //			s_scratchCommand = "env SCRDIR=" + s_fullScratchDirectory + " ";
@@ -467,6 +466,10 @@ bool Energy::doEnergyCalculation(int populationMemberNumber)
 				else
 					moleculeSet.setOutputEnergyFile(s_pathToEnergyFiles.c_str(), s_checkPointFileName.c_str(), populationMemberNumber, s_energyProgram.m_sOutputFileTypeExtensions[1].c_str(), 1, true);
 			}
+			break;
+		default:
+			cout << "Please modify the doEnergyCalculation function and indicate how '" << s_energyProgram.m_sName << "' should be called." << endl;
+			exit(0);
 			break;
 		}
 		if (s_fullScratchDirectory.length() > 0) {
