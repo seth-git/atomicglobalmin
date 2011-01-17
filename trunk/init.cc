@@ -200,7 +200,7 @@ bool Init::initProgram(int mpiRank)
 	
 	EnergyProgram::init();
 	for (int i = 0; i < (signed int)EnergyProgram::s_energyPrograms.size(); ++i)
-		Input::checkDirectoryOrFileName(EnergyProgram::s_energyPrograms[i].m_sPathToExecutable);
+		Input::checkDirectoryOrFileName(EnergyProgram::s_energyPrograms[i]->m_sPathToExecutable);
 	
 	return true;
 }

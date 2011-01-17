@@ -610,15 +610,15 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
     
  	m_pSelectedEnergyProgram = NULL;	
 	for (i = 0; i < (int)EnergyProgram::s_energyPrograms.size(); ++i)
-		if (temp == EnergyProgram::s_energyPrograms[i].m_sName)
-			m_pSelectedEnergyProgram = &(EnergyProgram::s_energyPrograms[i]);
+		if (temp == EnergyProgram::s_energyPrograms[i]->m_sName)
+			m_pSelectedEnergyProgram = EnergyProgram::s_energyPrograms[i];
 	if (m_pSelectedEnergyProgram == NULL) {
 		cout << "Energy function not recognized on line " << lineNumber << ": '" << temp << "'" << endl;
 		cout << "Valid energy functions are: ";
 		for (i = 0; i < (int)EnergyProgram::s_energyPrograms.size(); ++i) {
 			if (i >= 1)
 				cout << ", ";
-			cout << EnergyProgram::s_energyPrograms[i].m_sName;
+			cout << EnergyProgram::s_energyPrograms[i]->m_sName;
 		}
 		
 		return false;
