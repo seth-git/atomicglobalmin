@@ -374,7 +374,7 @@ bool Mpi::readOutputFile(int energyCalculationType, vector<MoleculeSet*> &popula
 		}
 		switch (pEnergyProgram->m_iProgramID) {
 			case GAUSSIAN:
-				gaussianReturned = Energy::readGaussianLogFile(population[fileIndex]->getOutputEnergyFile(0), energy, pMoleculeSet);
+				gaussianReturned = Energy::readGaussianOutputFile(population[fileIndex]->getOutputEnergyFile(0), energy, pMoleculeSet);
 				if (!(gaussianReturned & OPENED_FILE)) {
 					cerr << "Could not open file  '" << population[fileIndex]->getOutputEnergyFile(0) << "'.  Exiting... " <<endl;
 					converged = 0;

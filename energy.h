@@ -44,9 +44,9 @@ public:
 	static bool createScratchDir(void);
 	static bool deleteScratchDir(void);
 	static void createInputFiles(vector<MoleculeSet*> &population);
-	static void createInputFile(MoleculeSet &moleculeSet, int populationMemberNumber, bool writeMetaData);
-	static void createGaussianInputFile(MoleculeSet &moleculeSet, int populationMemberNumber, bool writeEnergyValueInHeader);
-	static int readGaussianLogFile(const char* logFile, FLOAT &energy, MoleculeSet* pMoleculeSet);
+	static bool createInputFile(MoleculeSet &moleculeSet, int populationMemberNumber, bool resetInputFileName, bool writeMetaData);
+	static bool createGaussianInputFile(MoleculeSet &moleculeSet, int populationMemberNumber, bool writeEnergyValueInHeader);
+	static int readGaussianOutputFile(const char* logFile, FLOAT &energy, MoleculeSet* pMoleculeSet);
 	static void setOutputEnergyFiles(int populationMemberNumber, MoleculeSet &moleculeSet, bool checkExistence);
 	static bool doEnergyCalculation(int populationMemberNumber);
 	static EnergyProgram* getEnergyProgram() { return &s_energyProgram; }
