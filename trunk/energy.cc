@@ -40,6 +40,7 @@ bool Energy::init(const Input &input, int rank)
 	s_iCharge = input.m_iCharge;
 	s_iMultiplicity = input.m_iMultiplicity;
 
+	
 	switch (s_energyProgram.m_iProgramID) {
 	case GAUSSIAN:
 		if (s_fullScratchDirectory.length() > 0) {
@@ -234,14 +235,15 @@ bool Energy::init(const char* mpiInitMessage, int rank)
 void Energy::createInputFiles(vector<MoleculeSet*> &population)
 {
 	for (int i = 0; i < (signed int)population.size(); ++i)
-		createInputFile(*population[i], i+1, false);
+		createInputFile(*population[i], i+1, true, false);
 }
 
-void Energy::createInputFile(MoleculeSet &moleculeSet, int populationMemberNumber, bool writeMetaData)
+bool Energy::createInputFile(MoleculeSet &moleculeSet, int populationMemberNumber, bool resetInputFileName, bool writeMetaData)
 {
 	string fileName;
 
-	moleculeSet.setInputEnergyFile(s_pathToEnergyFiles.c_str(), ENERGY_TEMP_FILE, populationMemberNumber, s_energyProgram.m_sInputFileExtension.c_str());
+	if (resetInputFileName)
+		moleculeSet.setInputEnergyFile(s_pathToEnergyFiles.c_str(), ENERGY_TEMP_FILE, populationMemberNumber, s_energyProgram.m_sInputFileExtension.c_str());
 	setOutputEnergyFiles(populationMemberNumber, moleculeSet, false); // We expect these output files
 	
 	// Create the input files
@@ -250,14 +252,15 @@ void Energy::createInputFile(MoleculeSet &moleculeSet, int populationMemberNumbe
 		Energy::createGaussianInputFile(moleculeSet, populationMemberNumber, writeMetaData);
 		break;
 	default:
-		cout << "Please modify the createInputFile function in energy.cc for your energy program." << endl;
+		cout << "Please modify the createInputFile function in energy.cc for your energy program: " << s_energyProgram.m_sName << endl;
 		exit(0);
 		break;
 	}
 	moleculeSet.deleteOutputEnergyFiles(false); // Delete any old output files
+	return true;
 }
 
-void Energy::createGaussianInputFile(MoleculeSet &moleculeSet, int populationMemberNumber, bool writeEnergyValueInHeader)
+bool Energy::createGaussianInputFile(MoleculeSet &moleculeSet, int populationMemberNumber, bool writeEnergyValueInHeader)
 {
 	string header = s_header;
 	string footer = s_footer;
@@ -294,12 +297,13 @@ void Energy::createGaussianInputFile(MoleculeSet &moleculeSet, int populationMem
 		     << s_iCharge << " " << s_iMultiplicity << endl;
 	}
 	fout.close();
+	return true;
 }
 
 /************************************************************************
  * Function looking for the SCF-energy and extracting it from the log-file
  * *********************************************************************/
-int Energy::readGaussianLogFile(const char* logFile, FLOAT &energy, MoleculeSet* pMoleculeSet)
+int Energy::readGaussianOutputFile(const char* logFile, FLOAT &energy, MoleculeSet* pMoleculeSet)
 {
 	ifstream fin(logFile);
 	char line[300];

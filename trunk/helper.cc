@@ -357,7 +357,7 @@ int main(int argc, char *argv[])
 			cout << "Creating " << numFiles << " input files..." << endl;
 			for (i = 0; i < numFiles; ++i) {
 				(*moleculeSetsToUse)[i]->setInputEnergyFile(outputDirectory.c_str(), comPrefix.c_str(), i+1, input.m_pSelectedEnergyProgram->m_sInputFileExtension.c_str());
-				Energy::createInputFile(*(*moleculeSetsToUse)[i], i+1, true);
+				Energy::createInputFile(*(*moleculeSetsToUse)[i], i+1, false, true);
 			}
 			cout << "Done!" << endl;
 			// Clean up
