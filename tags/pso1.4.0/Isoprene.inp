@@ -1,0 +1,71 @@
+Monte Carlo Simulated Annealing Input File Version 1.4
+
+Energy function to use: Gaussian
+Path to energy files: 
+Path to scratch directory (optional): 
+Search cube length, width, and height: 10.0
+Number of linear structures: 0
+Initialize linear structures in a box with the above cube length and a height and width of: 1.2
+Number of planar structures: 0
+Number of fragmented 3D structures: 0
+Number of partially non-fragmented 3D structures: 0
+Number of completely non-fragmented 3D structures: 32
+General minimum atom distance (used if no value specified below): 0.7
+Specific minimum atom distances (angstroms): 
+Maximum inter-atomic distance (angstroms): 2.5
+
+Simulated Annealing Parameters:
+Search only for non-fragmented structures: yes
+Use energy value from local optimization(basin hopping): no
+Search for transition states (random search with every perturbation accepted): no
+Starting temperature or desired starting percentage of accepted transitions(use %): 2000
+Boltzmann constant: 0.0000031669
+Minimum number of iterations before decreasing the temperature (N): 200
+Decrease the temperature when the percentage of accepted transitions for the past N iterations is below: 100.0
+Quenching factor(use 1 for basin hopping): 0.9995
+Don't stop while the temperature is above this value: 400.0
+Stop if the percentage of accepted transitions for the past N iterations is below: 5.0
+Maximum number of allowed iterations: 500
+Starting number of perturbations per iteration: 1
+Starting coordinate perturbation (angstroms): 0.25
+Minimum coordinate perturbation (angstroms): 0.05
+Starting angle perturbation (deg): 25.0
+Minimum angle perturbation (deg): 3.0
+
+Save this many of the best "different" structures: 10000
+Consider 2 structures "different" if their RMS distance is greater or equal to (angstroms): 0.3
+Save this many quantum output files from the list of best structures: 20
+Output file name: Isoprene.out
+Resume file name (optional): Isoprene.res
+Write resume file after every set of this number of iterations (optional): 1
+Print summary information after each set of this many iterations: 1
+Charge: 0
+Multiplicity: 2
+Energy file header:
+% mem=2000MB
+# B3LYP/6-311++G(d,p) scfcon=4 scfcyc=300 scf=direct
+
+Energy file footer (optional):
+
+Number of unit types: 1
+
+Number of units of this type: 1
+Format of this unit type: Cartesian
+6   -2.646636   -1.062747   -0.826172
+1   -2.119982   -2.001828   -0.710490
+1   -3.641961   -1.101236   -1.253241
+6   -2.111713    0.099834   -0.464456
+1   -2.678377    1.017862   -0.603423
+6   -0.750835    0.322832    0.142508
+8   -0.067373   -1.001838    0.105605
+6    0.095247    1.231857   -0.794368
+1   -0.461842    2.164024   -0.930859
+1    0.171239    0.736640   -1.769275
+6   -0.831198    0.863314    1.563463
+1   -1.313463    0.140349    2.223240
+1    0.159542    1.102554    1.943679
+1   -1.431320    1.776562    1.552151
+8    0.761868   -1.229237    1.100385
+8    1.355158    1.567601   -0.273791
+1    1.981122    0.839765   -0.438313
+

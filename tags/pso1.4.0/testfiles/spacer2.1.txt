@@ -1,0 +1,75 @@
+ ---------------------------------------------------------------------
+                    Distance matrix (angstroms):
+                    1          2          3          4          5
+     1  C    0.000000
+     2  H    1.092613   0.000000
+     3  H    1.094145   1.784792   0.000000
+     4  H    1.094542   1.780355   1.775814   0.000000
+     5  C    1.541311   2.160460   2.174023   2.186248   0.000000
+     6  C    2.533481   3.475271   2.765940   2.794539   1.541517
+     7  H    2.824764   3.823951   3.152494   2.644486   2.208474
+     8  H    3.475446   4.299864   3.726189   3.816383   2.169952
+     9  C    2.510565   2.752351   3.458388   2.760106   1.511595
+    10  H    2.799486   3.120877   3.805644   2.604833   2.207108
+    11  C    3.577200   3.534832   4.480726   3.985692   2.499998
+    12  H    3.865316   3.744966   4.603019   4.514550   2.721192
+    13  H    4.458173   4.342025   5.433880   4.703768   3.495440
+    14  O    2.865569   3.857394   2.488096   3.241332   2.450970
+    15  O    3.893679   4.731538   3.455842   4.479710   3.197969
+    16  O    2.467610   2.704641   2.740261   3.413543   1.443521
+    17  H    2.581419   2.896984   2.435501   3.597134   1.985292
+                    6          7          8          9         10
+     6  C    0.000000
+     7  H    1.091524   0.000000
+     8  H    1.088151   1.811667   0.000000
+     9  C    2.469166   2.746883   2.757898   0.000000
+    10  H    2.806179   2.642065   3.222621   1.087564   0.000000
+    11  C    3.491311   3.926367   3.449579   1.328699   2.111728
+    12  H    3.759276   4.437016   3.589295   2.094327   3.071681
+    13  H    4.378940   4.646657   4.283300   2.110960   2.467310
+    14  O    1.489444   2.070689   2.093142   3.771255   4.149770
+    15  O    2.352250   3.168388   2.343744   4.482699   5.072662
+    16  O    2.419100   3.389500   2.591858   2.389460   3.377766
+    17  H    2.646840   3.653870   2.925020   3.247592   4.142655
+                   11         12         13         14         15
+    11  C    0.000000
+    12  H    1.083035   0.000000
+    13  H    1.084498   1.858832   0.000000
+    14  O    4.760101   4.828756   5.732585   0.000000
+    15  O    5.189292   4.996729   6.196095   1.384811   0.000000
+    16  O    2.695488   2.308672   3.777951   2.895838   3.029605
+    17  H    3.679118   3.262432   4.762199   2.569454   2.536672
+                   16         17
+    16  O    0.000000
+    17  H    0.989523   0.000000
+ Symmetry turned off by external request.
+ Stoichiometry    C5H9O3(2)
+ Framework group  C1[X(C5H9O3)]
+ Deg. of freedom    45
+ Full point group                 C1
+ Rotational constants (GHZ):      3.5382766      1.3306019      1.2358497
+ Standard basis: 3-21G (6D, 7F)
+ Integral buffers will be    131072 words long.
+ Raffenetti 2 integral format.
+ Two-electron integral symmetry is turned off.
+    90 basis functions,   147 primitive gaussians,    90 cartesian basis functions
+    32 alpha electrons       31 beta electrons
+       nuclear repulsion energy       392.1446912140 Hartrees.
+ NAtoms=   17 NActive=   17 NUniq=   17 SFac= 7.50D-01 NAtFMM=   80 NAOKFM=F Big=F
+ One-electron integrals computed using PRISM.
+ NBasis=    90 RedAO= T  NBF=    90
+ NBsUse=    90 1.00D-06 NBFU=    90
+ Initial guess read from the read-write file:
+ <S**2> of initial guess= 0.7520
+ Harris functional with IExCor=  402 diagonalized for initial guess.
+ ExpMin= 1.83D-01 ExpMax= 3.22D+02 ExpMxC= 3.22D+02 IAcc=1 IRadAn=         1 AccDes= 1.00D-06
+ HarFok:  IExCor= 402 AccDes= 1.00D-06 IRadAn=         1 IDoV=1
+ ScaDFX=  1.000000  1.000000  1.000000  1.000000
+ Requested convergence on RMS density matrix=1.00D-06 within 300 cycles.
+ Requested convergence on MAX density matrix=1.00D-04.
+ Requested convergence on             energy=1.00D-04.
+ No special actions if energy rises.
+ Keep R1 and R2 integrals in memory in canonical form, NReq=    18745265.
+ Integral accuracy reduced to 1.0D-05 until final iterations.
+ Initial convergence to 1.0D-05 achieved.  Increase integral accuracy.
+ SCF Done:  E(UB+HF-LYP) =  
