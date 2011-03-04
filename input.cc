@@ -188,7 +188,7 @@ Input::Input (void)
 	
 	m_sMinDistnaceBetweenSameMoleculeSetsDisplayed = "Consider 2 structures \"different\" if their RMS distance is greater or equal to (angstroms)";
 	m_sNumberOfBestStructuresToSaveDisplayed = "Save this many of the best \"different\" structures";
-	m_sNumberOfLogFilesToSaveDisplayed = "Save this many .log/energy output files from the list of best structures";
+	m_sNumberOfLogFilesToSaveDisplayed = "Save this many quantum output files from the list of best structures";
 	
 	m_sMaxAtomDistanceDisplayed = "Maximum inter-atomic distance (angstroms)";
 	m_sMinGeneralAtomDistanceDisplayed = "General minimum atom distance (used if no value specified below)";
@@ -579,7 +579,7 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 	trim(temp);
 	versionPos = temp.rfind(" ") + 1;
 	version = temp.substr(versionPos);
-	if (version != VERSION)
+	if (strncmp(version.c_str(),VERSION, strlen(VERSION)) != 0)
 		cout << "Warning: this input file is not version " << VERSION << "." << endl;
 	
 	// Read the next line which should be blank
@@ -620,6 +620,7 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 				cout << ", ";
 			cout << EnergyProgram::s_energyPrograms[i]->m_sName;
 		}
+		cout << endl;
 		
 		return false;
 	}

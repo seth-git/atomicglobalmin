@@ -1,4 +1,4 @@
-Monte Carlo Simulated Annealing Input File Version 1.3.3
+Monte Carlo Simulated Annealing Input File Version 1.4
 
 Energy function to use: Lennard Jones
 Path to energy files:
@@ -35,7 +35,7 @@ Minimum angle perturbation (deg): 20
 
 Save this many of the best "different" structures: 1
 Consider 2 structures "different" if their RMS distance is greater or equal to (angstroms): 1
-Save this many .log/energy output files from the list of best structures: 0
+Save this many quantum output files from the list of best structures: 0
 Output file name: LJ7_BH.out
 Resume file name (optional): LJ7_BH.res
 Write resume file after every set of this number of iterations (optional): 100

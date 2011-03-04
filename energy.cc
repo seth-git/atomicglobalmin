@@ -43,6 +43,7 @@ bool Energy::init(const Input &input, int rank)
 	
 	switch (s_energyProgram.m_iProgramID) {
 	case GAUSSIAN:
+	case GAUSSIAN_WITH_CCLIB:
 		if (s_fullScratchDirectory.length() > 0) {
 			s_scratchCommand = "export GAUSS_SCRDIR=" + s_fullScratchDirectory + " && ";
 //			s_scratchCommand = "env SCRDIR=" + s_fullScratchDirectory + " ";
@@ -124,6 +125,7 @@ void Energy::createMPIInitMessage(char* mpiInitMessage, int maxSize)
 {
 	switch (s_energyProgram.m_iProgramID) {
 	case GAUSSIAN:
+	case GAUSSIAN_WITH_CCLIB:
 		snprintf(mpiInitMessage, maxSize, "%s|%s|%s|%s", s_energyProgram.toString().c_str(), s_pathToEnergyFiles.c_str(),
 		         s_scratchDirectory.c_str(), s_checkPointFileName.c_str());
 		break;
@@ -196,6 +198,7 @@ bool Energy::init(const char* mpiInitMessage, int rank)
 	
 	switch (s_energyProgram.m_iProgramID) {
 	case GAUSSIAN:
+	case GAUSSIAN_WITH_CCLIB:
 		i = s_energyProgram.getNumParameters();
 		if (i+3 != (signed int)messages.size())
 			return false;
@@ -249,6 +252,7 @@ bool Energy::createInputFile(MoleculeSet &moleculeSet, int populationMemberNumbe
 	// Create the input files
 	switch (s_energyProgram.m_iProgramID) {
 	case GAUSSIAN:
+	case GAUSSIAN_WITH_CCLIB:
 		Energy::createGaussianInputFile(moleculeSet, populationMemberNumber, writeMetaData);
 		break;
 	default:
@@ -300,16 +304,39 @@ bool Energy::createGaussianInputFile(MoleculeSet &moleculeSet, int populationMem
 	return true;
 }
 
+void Energy::readOutputFile(const char* outputFileName, FLOAT &energy, MoleculeSet* pMoleculeSet,
+                            bool &openedFile, bool &readEnergy, bool &obtainedGeometry)
+{
+	bool normalTerminationOfGaussian, cclibInstalled;
+
+	if (s_energyProgram.m_bUsesCclib) {
+		readOutputFileWithCCLib(outputFileName, energy, pMoleculeSet, cclibInstalled, openedFile, readEnergy, obtainedGeometry);
+		if (!cclibInstalled) {
+			cout << "Please install cclib!" << endl;
+			exit(0);
+		}
+	} else {
+		switch (s_energyProgram.m_iProgramID) {
+			case GAUSSIAN:
+				readGaussianOutputFile(outputFileName, energy, pMoleculeSet, openedFile, readEnergy, obtainedGeometry, normalTerminationOfGaussian);
+				break;
+			default:
+				cout << "Please modify the readOutputFile function in energy.cc for your energy program: " << s_energyProgram.m_sName << endl;
+				exit(0);
+				break;
+		}
+	}
+}
+
 /************************************************************************
  * Function looking for the SCF-energy and extracting it from the log-file
  * *********************************************************************/
-int Energy::readGaussianOutputFile(const char* logFile, FLOAT &energy, MoleculeSet* pMoleculeSet)
+void Energy::readGaussianOutputFile(const char* logFile, FLOAT &energy, MoleculeSet* pMoleculeSet,
+                                    bool &openedFile, bool &readEnergy, bool &obtainedGeometry, bool &normalTermination)
 {
 	ifstream fin(logFile);
 	char line[300];
 	string stringLine;
-	bool foundEnergy = false;
-	bool foundCoordinates = false;
 	string nextLine;
 	string pieceLine;
 	int dummy;
@@ -317,8 +344,15 @@ int Energy::readGaussianOutputFile(const char* logFile, FLOAT &energy, MoleculeS
 	int *atomicNumbers = NULL;
 	int i;
 	int startingIndex, endIndex;
-	bool normalTermination = false;
-	int returnValue = 0;
+
+	openedFile = false;
+	readEnergy = false;
+	obtainedGeometry = false;
+	normalTermination = false;
+	
+	if(!fin)
+		return;
+	openedFile = true;
 	
 	if (pMoleculeSet != NULL) {
 		cartesianPoints = new Point3D[(unsigned int)pMoleculeSet->getNumberOfAtoms()];
@@ -326,84 +360,222 @@ int Energy::readGaussianOutputFile(const char* logFile, FLOAT &energy, MoleculeS
 	}
 
 	energy = 0;
-	if(!fin)
-		return 0;
-	else
-		returnValue |= OPENED_FILE;
-	while(fin.getline(line, 300))
-	{
-		stringLine=line;
-		if (s_bSemiEmpirical)
-			startingIndex=stringLine.find("Energy=   ");
-		else
-			startingIndex=stringLine.find("SCF Done:");
-		
-		if (startingIndex>=0) // If we found it
+	try {
+		while(fin.getline(line, 300))
 		{
-			startingIndex=stringLine.find("=");
-			startingIndex=stringLine.find("-",startingIndex); //energy should be negative.
-			if (startingIndex < 0) { // Sometimes the energy isn't negative with semi-emperical methods
-				energy = 0;
-				foundEnergy=true;
-				continue;
-			}
-			endIndex=stringLine.find(" ",startingIndex);
-			
-			pieceLine=stringLine.substr(startingIndex, endIndex-startingIndex);
-			energy=atof(pieceLine.c_str());
-			if (pMoleculeSet != NULL)
-				pMoleculeSet->setEnergy(energy);
-			foundEnergy=true;
-		}
-		if (pMoleculeSet != NULL) {
-			startingIndex=stringLine.find(" 1 imaginary frequencies (negative Signs) ");
-			if (startingIndex>=0) // if we found it
-				pMoleculeSet->setIsTransitionState(true);
-
-			if (s_bGetStandardOrientation)
-				startingIndex=stringLine.find("Standard orientation");
+			stringLine=line;
+			if (s_bSemiEmpirical)
+				startingIndex=stringLine.find("Energy=   ");
 			else
-				startingIndex=stringLine.find("Input orientation");
-			
-			if (startingIndex>=0)
+				startingIndex=stringLine.find("SCF Done:");
+		
+			if (startingIndex>=0) // If we found it
 			{
-				foundCoordinates = true;
-				fin.getline(line, 300); //get ----
-				fin.getline(line, 300); //get first line of text
-				fin.getline(line, 300); //get second line of text
-				fin.getline(line, 300); //get ----
-				
-				for (i = 0; i < pMoleculeSet->getNumberOfAtoms(); ++i)
+				startingIndex=stringLine.find("=");
+				startingIndex=stringLine.find("-",startingIndex); //energy should be negative.
+				if (startingIndex < 0) { // Sometimes the energy isn't negative with semi-emperical methods
+					energy = 0;
+					readEnergy=true;
+					continue;
+				}
+				endIndex=stringLine.find(" ",startingIndex);
+			
+				pieceLine=stringLine.substr(startingIndex, endIndex-startingIndex);
+				energy=atof(pieceLine.c_str());
+				if (pMoleculeSet != NULL)
+					pMoleculeSet->setEnergy(energy);
+				readEnergy=true;
+			}
+			if (pMoleculeSet != NULL) {
+				startingIndex=stringLine.find(" 1 imaginary frequencies (negative Signs) ");
+				if (startingIndex>=0) // if we found it
+					pMoleculeSet->setIsTransitionState(true);
+
+				if (s_bGetStandardOrientation)
+					startingIndex=stringLine.find("Standard orientation");
+				else
+					startingIndex=stringLine.find("Input orientation");
+			
+				if (startingIndex>=0)
 				{
-					fin >> dummy;//center number
-					fin >> atomicNumbers[i];
-					fin >> dummy;//atomic type
-					fin >> cartesianPoints[i].x;
-					fin >> cartesianPoints[i].y;
-					fin >> cartesianPoints[i].z;
+					obtainedGeometry = true;
+					fin.getline(line, 300); //get ----
+					fin.getline(line, 300); //get first line of text
+					fin.getline(line, 300); //get second line of text
+					fin.getline(line, 300); //get ----
+				
+					for (i = 0; i < pMoleculeSet->getNumberOfAtoms(); ++i)
+					{
+						fin >> dummy;//center number
+						fin >> atomicNumbers[i];
+						fin >> dummy;//atomic type
+						fin >> cartesianPoints[i].x;
+						fin >> cartesianPoints[i].y;
+						fin >> cartesianPoints[i].z;
+					}
 				}
 			}
+			startingIndex=stringLine.find("Normal termination");
+			if (startingIndex>=0) // if we found it
+				normalTermination = true;
 		}
-		startingIndex=stringLine.find("Normal termination");
-		if (startingIndex>=0) // if we found it
-			normalTermination = true;
-	}
-	fin.close();
-	if (pMoleculeSet != NULL) {
-		if (foundCoordinates)
+		fin.close();
+		if (obtainedGeometry && (pMoleculeSet != NULL))
 			pMoleculeSet->assignReadCoordinates(cartesianPoints, atomicNumbers);
-		delete[] cartesianPoints;
-		delete[] atomicNumbers;
+	} catch (const char* message) {
+		if (PRINT_CATCH_MESSAGES)
+			cerr << "Caught message: '" << message << "'" << endl;
 	}
 	
-	if (foundEnergy)
-		returnValue |= READ_ENERGY;
-	if (foundCoordinates || (pMoleculeSet == NULL))
-		returnValue |= OBTAINED_GEOMETRY;
-	if (normalTermination)
-		returnValue |= NORMAL_TERMINATION;
+	if (atomicNumbers != NULL)
+		delete[] atomicNumbers;
+	if (cartesianPoints != NULL)
+		delete[] cartesianPoints;
+}
 
-	return returnValue;
+void Energy::readOutputFileWithCCLib(const char* fileName, FLOAT &energy, MoleculeSet* pMoleculeSet,
+                                     bool &cclibInstalled, bool &openedFile, bool &readEnergy, bool &obtainedGeometry)
+{
+	char cmd[500];
+	char line[500];
+	int numAtoms;
+	int lineLength;
+	Point3D *cartesianPoints = NULL;
+	int *atomicNumbers = NULL;
+	int i;
+	char* myString;
+	const char* infoNotFoundFlag = "not found\n";
+	bool isTransitionState;
+
+	cclibInstalled = false;
+	openedFile = false;
+	readEnergy = false;
+	obtainedGeometry = false;
+	energy = 0;
+	isTransitionState = false;
+
+	if (pMoleculeSet != NULL)
+		snprintf(cmd, sizeof(cmd), "python %s %s scfenergies_last_au isTransitionState natom atomnos atomcoords_last", EnergyProgram::cclibPythonScript, fileName);
+	else
+		snprintf(cmd, sizeof(cmd), "python %s %s scfenergies_last_au", EnergyProgram::cclibPythonScript, fileName);
+//	cout << "executing: " << cmd << endl;
+	FILE* pipe;
+	try {
+		pipe = popen(cmd, "r");
+		if (pipe == NULL)
+			throw "Unable to call cclib!";
+		if (feof(pipe) || (fgets(line, sizeof(line), pipe) == NULL))
+			throw "Unable get output from cclib.";
+		cclibInstalled = true;
+		
+		if ((strncmp("I/O error 2 (", line, 13) == 0) && (strstr(line, fileName) != 0)) {
+			cout << line;
+			throw "Could not upen the output file in readOutputFileWithCCLib.";
+		}
+		openedFile = true;
+
+		if (strcmp(line,infoNotFoundFlag) == 0)
+			throw "The energy was not found in the output file.";
+		energy=atof(line);
+		readEnergy = true;
+
+		if (pMoleculeSet != NULL) {
+			pMoleculeSet->setEnergy(energy);
+			
+			if (feof(pipe) || (fgets(line, sizeof(line), pipe) == NULL))
+				throw "Error reading transition state information from cclib.";
+			if (strcmp(line,infoNotFoundFlag) == 0)
+				isTransitionState = false;
+			else
+				isTransitionState = (bool)atoi(line);
+			pMoleculeSet->setIsTransitionState(isTransitionState);
+			
+			if (feof(pipe) || (fgets(line, sizeof(line), pipe) == NULL))
+				throw "Error reading the number of atoms from from cclib.";
+			if (strcmp(line,infoNotFoundFlag) == 0)
+				throw "The number of atoms was not found in the output file.";
+			numAtoms = atoi(line);
+			if (numAtoms <= 0)
+				throw "The number of atoms returned from cclib must be greater than zero.";
+		
+			atomicNumbers = new int[(unsigned int)numAtoms];
+			i = 0;
+			while (i < numAtoms) {
+				if (feof(pipe) || (fgets(line, sizeof(line), pipe) == NULL))
+					throw "Error reading atomic number line from cclib.";
+				if (strcmp(line,infoNotFoundFlag) == 0)
+					throw "The atomic numbers were not found in the output file.";
+				lineLength = strlen(line);
+				if (lineLength < 2)
+					throw "cclib atomic number line length is less than the minimum.";
+			
+				// get rid of brakets
+				line[0] = ' ';
+				if (line[lineLength-2] == ']')
+					line[lineLength-2] = ' ';
+			
+				myString = strtok(line, " ");
+				while ((myString != NULL) && (i < numAtoms)) {
+					atomicNumbers[i] = atoi(myString);
+					++i;
+					myString = strtok(NULL, " ");
+				}
+			}
+			if (i != numAtoms)
+				throw "Failed to read the atomic numbers in Energy::readOutputFileWithCCLib.";
+		
+			cartesianPoints = new Point3D[(unsigned int)numAtoms];
+			for (i = 0; i < numAtoms; ++i) {
+				if (feof(pipe) || (fgets(line, sizeof(line), pipe) == NULL))
+					throw "Error reading geometry line from cclib.";
+				if (strcmp(line,infoNotFoundFlag) == 0)
+					throw "The geometry was not found in the output file.";
+				lineLength = strlen(line);
+				if (lineLength < 8)
+					throw "cclib geometry line length is less than the minimum.";
+
+				// get rid of brakets
+				line[0] = ' ';
+				line[1] = ' ';
+				line[lineLength-2] = ' ';
+				if (line[lineLength-3] == ']')
+					line[lineLength-3] = ' ';
+				if (sscanf(line, "%lf %lf %lf", &cartesianPoints[i].x, &cartesianPoints[i].y, &cartesianPoints[i].z) != 3)
+					throw "Error reading cartesian coordinates in Energy::readOutputFileWithCCLib";
+			}
+			obtainedGeometry = true;
+			if (numAtoms == pMoleculeSet->getNumberOfAtoms())
+				pMoleculeSet->assignReadCoordinates(cartesianPoints, atomicNumbers);
+			else {
+				vector<Point3D> cartesianPointVector;
+				vector<int> atomicNumberVector;
+				for (i = 0; i < numAtoms; ++i) {
+					cartesianPointVector.push_back(cartesianPoints[i]);
+					atomicNumberVector.push_back(atomicNumbers[i]);
+				}
+				
+				Molecule tempMolecule;
+				tempMolecule.makeFromCartesian(cartesianPointVector, atomicNumberVector);
+				tempMolecule.initRotationMatrix();
+				tempMolecule.localToGlobal();
+
+				pMoleculeSet->setNumberOfMolecules(1);
+				Molecule* moleculeArray = pMoleculeSet->getMolecules();
+				moleculeArray[0].copy(tempMolecule);
+				pMoleculeSet->setEnergy(energy); // do this again, since we recreated the moleculeSet
+				pMoleculeSet->setIsTransitionState(isTransitionState); // do this again, since we recreated the moleculeSet
+			}
+		}
+	} catch (const char* message) {
+		if (PRINT_CATCH_MESSAGES)
+			cerr << "Caught message: '" << message << "'" << endl;
+	}
+	if (atomicNumbers != NULL)
+		delete[] atomicNumbers;
+	if (cartesianPoints != NULL)
+		delete[] cartesianPoints;
+	if (pipe != NULL)
+		pclose(pipe);
 }
 
 void Energy::lower(string &s)
@@ -430,6 +602,7 @@ void Energy::setOutputEnergyFiles(int populationMemberNumber, MoleculeSet &molec
 {
 	switch (s_energyProgram.m_iProgramID) {
 	case GAUSSIAN:
+	case GAUSSIAN_WITH_CCLIB:
 		moleculeSet.setOutputEnergyFile(s_pathToEnergyFiles.c_str(), ENERGY_TEMP_FILE, populationMemberNumber, s_energyProgram.m_sOutputFileTypeExtensions[0].c_str(), 0, checkExistence);
 		if (s_checkPointFileName.length() > 0)
 			moleculeSet.setOutputEnergyFile(s_pathToEnergyFiles.c_str(), s_checkPointFileName.c_str(), populationMemberNumber, s_energyProgram.m_sOutputFileTypeExtensions[1].c_str(), 1, checkExistence);
@@ -454,6 +627,7 @@ bool Energy::doEnergyCalculation(int populationMemberNumber)
 		                                           
 		switch (s_energyProgram.m_iProgramID) {
 		case GAUSSIAN:
+		case GAUSSIAN_WITH_CCLIB:
 			if (s_fullScratchDirectory.length() > 0)
 				moleculeSet.setOutputEnergyFile("", ENERGY_TEMP_FILE, populationMemberNumber, s_energyProgram.m_sOutputFileTypeExtensions[0].c_str(), 0, false);
 			else

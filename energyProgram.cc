@@ -9,18 +9,24 @@
 #include "energyProgram.h"
 
 vector<EnergyProgram*> EnergyProgram::s_energyPrograms;
+const char* EnergyProgram::cclibPythonScript = "/Full/path/to/cclib-1.0/atomicGlobalMin.py";
 
 void EnergyProgram::init(void) {
-	s_energyPrograms.push_back(new EnergyProgram("Gaussian", true, "/Full/path/to/gaussian", GAUSSIAN, "com"));
+	s_energyPrograms.push_back(new EnergyProgram("Gaussian", true, false, "/Full/path/to/gaussian", GAUSSIAN, "com"));
 	addOutputFileType("log", true);
 	addOutputFileType("chk", false);
 	
-	s_energyPrograms.push_back(new EnergyProgram("Lennard Jones", false, "", LENNARD_JONES, ""));
+	s_energyPrograms.push_back(new EnergyProgram("Gaussian with cclib", true, true, "/Full/path/to/gaussian", GAUSSIAN_WITH_CCLIB, "com"));
+	addOutputFileType("log", true);
+	addOutputFileType("chk", false);
+	
+	s_energyPrograms.push_back(new EnergyProgram("Lennard Jones", false, false, "", LENNARD_JONES, ""));
 }
 
-EnergyProgram::EnergyProgram(const char* name, bool useMPI, const char* pathToExecutable, int programID, const char* inputFileExtension) {
+EnergyProgram::EnergyProgram(const char* name, bool useMPI, bool bUsesCclib, const char* pathToExecutable, int programID, const char* inputFileExtension) {
 	m_sName = name;
 	m_bUsesMPI = useMPI;
+	m_bUsesCclib = bUsesCclib;
 	m_sPathToExecutable = pathToExecutable;
 	m_iProgramID = programID;
 	m_sInputFileExtension = inputFileExtension;
