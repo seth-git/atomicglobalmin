@@ -26,11 +26,6 @@ using namespace std;
 
 #define ENERGY_TEMP_FILE	"temporaryJob"
 
-#define OPENED_FILE	1
-#define READ_ENERGY	2
-#define OBTAINED_GEOMETRY	4
-#define NORMAL_TERMINATION	8
-
 #define MIN_SUCCESSFULL_ENERGY_CALCULATION_PERCENTAGE	0.9 // 90 percent
 
 class Energy
@@ -46,7 +41,12 @@ public:
 	static void createInputFiles(vector<MoleculeSet*> &population);
 	static bool createInputFile(MoleculeSet &moleculeSet, int populationMemberNumber, bool resetInputFileName, bool writeMetaData);
 	static bool createGaussianInputFile(MoleculeSet &moleculeSet, int populationMemberNumber, bool writeEnergyValueInHeader);
-	static int readGaussianOutputFile(const char* logFile, FLOAT &energy, MoleculeSet* pMoleculeSet);
+	static void readOutputFile(const char* outputFileName, FLOAT &energy, MoleculeSet* pMoleculeSet,
+                               bool &openedFile, bool &readEnergy, bool &obtainedGeometry);
+	static void readGaussianOutputFile(const char* logFile, FLOAT &energy, MoleculeSet* pMoleculeSet,
+	                                  bool &openedFile, bool &readEnergy, bool &obtainedGeometry, bool &normalTermination);
+	static void readOutputFileWithCCLib(const char* fileName, FLOAT &energy, MoleculeSet* pMoleculeSet,
+                                        bool &cclibInstalled, bool &openedFile, bool &readEnergy, bool &obtainedGeometry);
 	static void setOutputEnergyFiles(int populationMemberNumber, MoleculeSet &moleculeSet, bool checkExistence);
 	static bool doEnergyCalculation(int populationMemberNumber);
 	static EnergyProgram* getEnergyProgram() { return &s_energyProgram; }

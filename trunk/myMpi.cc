@@ -361,10 +361,9 @@ bool Mpi::master(int energyCalculationType, vector<MoleculeSet*> &population, ve
 bool Mpi::readOutputFile(int energyCalculationType, vector<MoleculeSet*> &population, vector<MoleculeSet*> &optimizedPopulation, int fileIndex, int &converged)
 {	
 	MoleculeSet* pMoleculeSet = NULL;
-	int gaussianReturned;
 	FLOAT energy;
 	bool success = true;
-	EnergyProgram* pEnergyProgram = Energy::getEnergyProgram();
+	bool openedFile, readEnergy, obtainedGeometry;
 	
 	try {
 		// Read the output file
@@ -372,24 +371,18 @@ bool Mpi::readOutputFile(int energyCalculationType, vector<MoleculeSet*> &popula
 			pMoleculeSet = new MoleculeSet();
 			pMoleculeSet->copy(*population[fileIndex]);
 		}
-		switch (pEnergyProgram->m_iProgramID) {
-			case GAUSSIAN:
-				gaussianReturned = Energy::readGaussianOutputFile(population[fileIndex]->getOutputEnergyFile(0), energy, pMoleculeSet);
-				if (!(gaussianReturned & OPENED_FILE)) {
-					cerr << "Could not open file  '" << population[fileIndex]->getOutputEnergyFile(0) << "'.  Exiting... " <<endl;
-					converged = 0;
-					throw "";
-				}
-				if ((gaussianReturned & READ_ENERGY) && (gaussianReturned & OBTAINED_GEOMETRY))
-					++converged;
-				else
-					cerr << "Opened this file, but could not read it: '" << population[fileIndex]->getOutputEnergyFile(0) << "'." <<endl;
-				break;
-			default:
-				
-				success = false;
-				break;
+		Energy::readOutputFile(population[fileIndex]->getOutputEnergyFile(0), energy, pMoleculeSet,
+		                       openedFile, readEnergy, obtainedGeometry);
+		if (!openedFile) {
+			cerr << "Could not open file  '" << population[fileIndex]->getOutputEnergyFile(0) << "'.  Exiting... " <<endl;
+			converged = 0;
+			throw "Could not open an output file.";
 		}
+		if (readEnergy && (obtainedGeometry || (pMoleculeSet == NULL)))
+			++converged;
+		else
+			cerr << "Opened this file, but could not read it: '" << population[fileIndex]->getOutputEnergyFile(0) << "'." <<endl;
+		
 		if (((energyCalculationType == TRANSITION_STATE_SEARCH) && pMoleculeSet->getIsTransitionState()) ||
 		    (energyCalculationType == OPTIMIZE_AND_READ)) {
 			optimizedPopulation.push_back(pMoleculeSet);

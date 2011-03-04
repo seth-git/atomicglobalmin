@@ -26,4 +26,6 @@
 using std::ofstream;
 using namespace std;
 
+const string unitTestFolder = "testfiles";
+
 #endif
