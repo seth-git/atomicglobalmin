@@ -9,11 +9,11 @@ This program provides utilities that support the pso application.
                                resume file.
   -b                           This option displays bonding information for an
                                input file.  Specify the name of an input file.
-  -c                           This creates Gaussian .com files from the list of
+  -c                           This creates quantum input files from the list of
                                best structures. Specify a resume or optimization
-                               file, followed by a directory where .com files
+                               file, followed by a directory where input files
                                will be written, followed by a prefix for the
-                               .com files.
+                               input files.
   -m                           This option performs a monomer search by
                                generating all possible combinations of bond
                                rotations that can be performed.  Specify an
@@ -35,11 +35,11 @@ This program provides utilities that support the pso application.
                                file, followed by an optimization file to be
                                created, followed by the number of structures
                                to optimize at a time.
-  -p                           This creates Gaussian .com files from the current
+  -p                           This creates quantum input files from the current
                                population of structures. Specify a resume or
                                optimization file, followed by a directory where
-                               .com files will be written, followed by a prefix
-                               for the .com files.
+                               input files will be written, followed by a prefix
+                               for the input files.
   -t                           This writes the list of best structures to a
                                temporary file with coordinates in a readable
                                format. Specify a resume or optimization file

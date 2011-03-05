@@ -19,19 +19,19 @@ Simulated Annealing Parameters:
 Search only for non-fragmented structures: yes
 Use energy value from local optimization(basin hopping): yes
 Search for transition states (random search with every perturbation accepted): no
-Starting temperature or desired starting percentage of accepted transitions(use %): 30000
+Starting temperature or desired starting percentage of accepted transitions(use %): 50000
 Boltzmann constant: 3.1669e-6 
 Minimum number of iterations before decreasing the temperature (N): 200
 Decrease the temperature when the percentage of accepted transitions for the past N iterations is below: 100
 Quenching factor(use 1 for basin hopping): 1.0
 Don't stop while the temperature is above this value: 400.0
 Stop if the percentage of accepted transitions for the past N iterations is below: 50.0
-Maximum number of allowed iterations: 50000
-Starting number of perturbations per iteration: 7
-Starting coordinate perturbation (angstroms): 0.03
+Maximum number of allowed iterations: 10000
+Starting number of perturbations per iteration: 1
+Starting coordinate perturbation (angstroms): 0.1
 Minimum coordinate perturbation (angstroms): 0.1
-Starting angle perturbation (deg): 20
-Minimum angle perturbation (deg): 20
+Starting angle perturbation (deg): 0
+Minimum angle perturbation (deg): 0
 
 Save this many of the best "different" structures: 1
 Consider 2 structures "different" if their RMS distance is greater or equal to (angstroms): 1

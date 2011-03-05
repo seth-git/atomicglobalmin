@@ -7,16 +7,16 @@ Search cube length, width, and height: 5.5
 Number of linear structures: 0
 Initialize linear structures in a box with the above cube length and a height and width of: 1.2
 Number of planar structures: 0
-Number of fragmented 3D structures: 0
-Number of partially non-fragmented 3D structures: 0
-Number of completely non-fragmented 3D structures: 256
+Number of fragmented 3D structures: 96
+Number of partially non-fragmented 3D structures: 96
+Number of completely non-fragmented 3D structures: 160
 General minimum atom distance (used if no value specified below): 0.7
 Specific minimum atom distances (angstroms):
 2 2 1.0
 Maximum inter-atomic distance (angstroms): 1.5
 
 Genetic Algorithm Parameters:
-Use energy value from local optimization: no
+Use energy value from local optimization: yes
 
 Save this many of the best "different" structures: 1
 Consider 2 structures "different" if their RMS distance is greater or equal to (angstroms): 1.0
