@@ -12,6 +12,7 @@ I. Introduction
     E. Performing bond rotations using a deterministic, non-random search
     F. Configuring quantum chemistry packages
     G. References
+    H. Disclaimer
 
 II. Input file formats and optimization of random algorithm parameters
     A. Input parameters common to all algorithms
@@ -55,14 +56,14 @@ While this program does not have a graphical user interface, it has a command li
 
 You will need to compile the C++ source code on a Linux computer or cluster.  While Windows is not supported, you may easily transfer results to and from your Windows computer.  Steps for installing this program are below:
 
-1. Download the program file: pso1.3.3.tar.gz
+1. Download the program file: pso1.4.1.tar.gz
 2. Install g++ and MPI compilers
 3. Compile the program
 
-Step 1: You can download pso1.3.3.tar.gz file from the same place you downloaded this instruction file.  If you want to run the program on a remote Linux cluster, first download the program onto your local computer and then transfer the program to the Linux cluster.  If you use Windows, you can transfer the program to the Linux cluster using the WinSCP program (see above link).  If you are using Ubuntu or a Mac, open a terminal.  To open a terminal on Ubuntu, click on 'Applications', 'Accessories', 'Terminal'.  On a mac, navigate to your Applications folder, open Utilities, and double click on Terminal. Then, type these commands, pressing 'Enter' or 'Return' after each command:
+Step 1: You can download pso1.4.1.tar.gz file from the same place you downloaded this instruction file.  If you want to run the program on a remote Linux cluster, first download the program onto your local computer and then transfer the program to the Linux cluster.  If you use Windows, you can transfer the program to the Linux cluster using the WinSCP program (see above link).  If you are using Ubuntu or a Mac, open a terminal.  To open a terminal on Ubuntu, click on 'Applications', 'Accessories', 'Terminal'.  On a mac, navigate to your Applications folder, open Utilities, and double click on Terminal. Then, type these commands, pressing 'Enter' or 'Return' after each command:
 
-	cd /directory/where/you/put/pso1.3.3.tar.gz
-	scp  pso1.3.3.tar.gz your_user_name@your.linux.cluster:pso1.3.3.tar.gz
+	cd /directory/where/you/put/pso1.4.1.tar.gz
+	scp  pso1.4.1.tar.gz your_user_name@your.linux.cluster:pso1.4.1.tar.gz
 
 Step 2: If using a University Linux cluster, the g++ and MPI compilers should already be installed, so you can likely skip this step. If using a local Linux box, g++ should already be installed, but you will have to install the MPI compiler.  On Ubuntu Linux, you may install this by clicking on 'System' and 'Administration', then 'Synaptic Package Manager' and searching for mpi.  I installed the mpi-default-bin and mpi-default-dev packages.
 
@@ -72,12 +73,12 @@ Step 3: If you are running the program on a remote Linux cluster, you will need 
 
 Once logged in, navigate to the directory where you placed the program.  Change directories by typing: 'cd some_directory'.  To get out of the current directory type: 'cd ..'   .  To list files and directories in the current directory, type 'ls' or 'ls -al' (the later is a long list format).  When you have navigated to your program directory, type the following to decompress the program:
 
-	gunzip pso1.3.3.tar.gz
-	tar -xf pso1.3.3.tar
+	gunzip pso1.4.1.tar.gz
+	tar -xf pso1.4.1.tar
 
 Then, navigate into the directory:
 
-	cd pso1.3.3
+	cd pso
 
 Then compile the program by typing:
 
@@ -88,6 +89,8 @@ You may see warning messages.  If so, this is OK.  If you see error messages, th
 When you have successfully compiled the program, two executables will be created: pso and helper. The pso executable is an MPI application, while helper is not.  The helper application contains additional utilities.  A list of the options available with the pso and helper executables can be obtained by typing "./pso" or "./helper" respectively.
 
 If using the program with ADF, GAMESS, GAMESS-UK, Jaguar, Molpro, or ORCA , please see configuration instructions in section F.
+
+You may get updates to the program if you have subversion installed.  To do this, navigate to the directory where the pso directory is located, then type 'svn update pso'.  Please wait to do this until after major revisions have been released.
 
 B. Input, output, resume, and optimization files
 
@@ -159,6 +162,12 @@ A few publications where the software has been used are below:
 
 [3] Call, S. T.; Boldyrev, A. I., Zubarev, D. Y. Global Minimum Structure Searches via Particle Swarm Optimization. J. Comput. Chem. 2007, 28, 1177-1186.
 
+H. Disclaimer
+
+Note that while developers of this product strive to write high quality software, bugs do happen occasionally.  If you find bugs, please report them.  Also, this software needs more unit tests.  If you can help write these by modifying unit.cc, that would be helpful.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 II. Input file formats and optimization of random algorithm parameters
 
 This section discusses the parameters in the input file and techniques for setting them.  Knowing how to set parameters optimally can influence the performance of each algorithm.  While setting these parameters takes practice, examples are provided.  Also, some of the more important parameters can be set for you automatically by the program.
@@ -167,7 +176,7 @@ A. Input parameters common to all algorithms
 
 Parameters common to all algorithms appear at the top and bottom of each input file.  An example of the parameters at the top of an input file for (H2O)OH- are as follows:
 
-1   Particle Swarm Optimization Input File Version 1.3.3
+1   Particle Swarm Optimization Input File Version 1.4.1
 2   
 3   Energy function to use: Gaussian
 4   Path to energy files: /path/to/quantum/input/and/output/files/
