@@ -414,7 +414,7 @@ int main(int argc, char *argv[])
 					emptyMoleculeSets, 0, false);
 			cout << "Created Optimization File: " << tempOutputFileName << endl;
 			if (input.m_iNumberOfLogFilesToSave > 0)
-				cout << "Please move or delete any files in the .log/energy files directory: " << input.m_sSaveLogFilesInDirectory << endl;
+				cout << "Please move or delete any files in the directory: " << input.m_sSaveLogFilesInDirectory << endl;
 			// Clean up
 			for (i = 0; i < (signed int)moleculeSets.size(); ++i)
 				delete moleculeSets[i];
@@ -491,6 +491,11 @@ int main(int argc, char *argv[])
 				throw "";
 			if (!resume.m_bResumeFileRead) {
 				cout << "This is not a resume file: " << resumeFileName << endl << endl;
+				throw "";
+			}
+			
+			if ((bestNMoleculeSetsTemp.size() - (input.m_iNumEnergyEvaluations + moleculeSets.size())) == 0) {
+				cout << "There are no structures left that can be transfered from " << resumeFileName << "." << endl << endl;
 				throw "";
 			}
 			
