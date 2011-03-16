@@ -1427,7 +1427,9 @@ FLOAT Molecule::randomFloat(FLOAT lo, FLOAT hi)
 
 void Molecule::initRandoms(int mpiRank)
 {
-	srandom(time(NULL)*(mpiRank+1));
+	struct timeval time;
+	gettimeofday(&time, NULL);
+	srandom(time.tv_sec*time.tv_usec*(mpiRank+1));
 //	srandom(1);
 }
 

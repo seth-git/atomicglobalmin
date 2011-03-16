@@ -6,7 +6,7 @@
 
 #include "unit.h"
 
-bool memoryTest()
+string memoryTest()
 {
 	MoleculeSet* pMoleculeSet;
 	
@@ -30,11 +30,12 @@ bool memoryTest()
 	
 	cout << "Testing memory deletion of MoleculeSet objects passed!" << endl;
 	
-	return true;
+	return "";
 }
 
-bool ccLibReadTest()
+string ccLibReadTest()
 {
+	string testName = "ccLibReadTest"; 
 	string unitTestFile = unitTestFolder + "/benzenesulfonamide.gamout";
 	string unitTestFile2 = unitTestFolder + "/transitionState.log";
 	FLOAT energy;
@@ -49,23 +50,23 @@ bool ccLibReadTest()
 	if (!cclibInstalled) {
 		cout << "Testing of cclib failed!" << endl;
 		cout << "\tReason: cclib is not installed correctly!" << endl;
-		return false;
+		return testName;
 	}
 	if (!openedFile) {
 		cout << "Testing of cclib failed!" << endl;
 		cout << "\tReason: Unable to open test file: " << unitTestFile << endl;
-		return false;
+		return testName;
 	}
 	if (!readEnergy) {
 		cout << "Testing of cclib failed!" << endl;
 		cout << "\tReason: Unable to read the energy from: " << unitTestFile << endl;
-		return false;
+		return testName;
 	}
 	cout << "Energy: " << energy << " au " << endl;
 	if (obtainedGeometry) {
 		cout << "Testing of cclib failed!" << endl;
 		cout << "\tReason: Read geometry when it wasn't supposed to have been read from: " << unitTestFile << endl;
-		return false;
+		return testName;
 	}
 
 	cout << "Reading energy and geometry from file: " << unitTestFile.c_str() << endl;
@@ -73,24 +74,24 @@ bool ccLibReadTest()
 	if (!openedFile) {
 		cout << "Testing of cclib failed!" << endl;
 		cout << "\tReason: Unable to open test file: " << unitTestFile << endl;
-		return false;
+		return testName;
 	}
 	if (!readEnergy) {
 		cout << "Testing of cclib failed!" << endl;
 		cout << "\tReason: Unable to read the energy from: " << unitTestFile << endl;
-		return false;
+		return testName;
 	}
 	cout << "Energy: " << moleculeSet.getEnergy() << " au " << endl;
 	if (!obtainedGeometry) {
 		cout << "Testing of cclib failed!" << endl;
 		cout << "\tReason: Unable to read the geometry from: " << unitTestFile << endl;
-		return false;
+		return testName;
 	}
 	moleculeSet.printToScreen();
 	if (moleculeSet.getIsTransitionState()) {
 		cout << "Testing of cclib failed!" << endl;
 		cout << "\tReason: The structure in the output file is not a transition state: " << unitTestFile << endl;
-		return false;
+		return testName;
 	}
 	cout << "Is a transition state: " << moleculeSet.getIsTransitionState() << endl;
 
@@ -99,50 +100,176 @@ bool ccLibReadTest()
 	if (!openedFile) {
 		cout << "Testing of cclib failed!" << endl;
 		cout << "\tReason: Unable to open test file: " << unitTestFile2 << endl;
-		return false;
+		return testName;
 	}
 	if (!readEnergy) {
 		cout << "Testing of cclib failed!" << endl;
 		cout << "\tReason: Unable to read the energy from: " << unitTestFile2 << endl;
-		return false;
+		return testName;
 	}
 	cout << "Energy: " << moleculeSet.getEnergy() << " au " << endl;
 	if (!obtainedGeometry) {
 		cout << "Testing of cclib failed!" << endl;
 		cout << "\tReason: Unable to read the geometry from: " << unitTestFile2 << endl;
-		return false;
+		return testName;
 	}
 	moleculeSet.printToScreen();
 	if (!moleculeSet.getIsTransitionState()) {
 		cout << "Testing of cclib failed!" << endl;
 		cout << "\tReason: The structure in the output file is a transition state: " << unitTestFile2 << endl;
-		return false;
+		return testName;
 	}
 	cout << "Is a transition state: " << moleculeSet.getIsTransitionState() << endl;
 	
 	cout << "Testing of cclib passed!" << endl;
-	return true;
+	return "";
 }
 
+const char* testRandomSeeding(void) {
+	static const char* testName = "testRandomSeeding";
+	char commandLine[500];
+	char line[500];
+	string simulatedAnnealingFile = "LJ7_Sim.inp";
+	const char* failMessage = "Testing of random number seeding failed!";
+	ofstream fout;
+	Input input;
+	vector<MoleculeSet*> moleculeSets;
+	vector<MoleculeSet*> bestNMoleculeSets;
+	vector<MoleculeSet*> bestIndividualMoleculeSets; // The best solution found for each individual (used in particle swarm optimization)
+	string bufferOutputFile = unitTestFolder + "/temp.txt";
+	FILE* pipe;
+	
+	cout << endl;
+	cout << "Testing random number seeding..." << endl;
 
+	if (!input.open(simulatedAnnealingFile, true, false, moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets)) {
+		cout << failMessage << endl;
+		cout << "\tReason: unable to upen file: " << simulatedAnnealingFile << endl;
+		return testName;
+	}
+
+	input.m_sInputFileName = unitTestFolder+"/"+input.m_sInputFileName;
+	input.m_sOutputFileName = unitTestFolder+"/"+input.m_sOutputFileName;
+	input.m_sResumeFileName = unitTestFolder+"/"+input.m_sResumeFileName;
+	input.m_iResumeFileNumIterations = 1;
+	input.m_iMaxIterations = 5;
+	input.m_iPrintSummaryInfoEveryNIterations = 1;
+	cout << "Writing file: " << input.m_sInputFileName << endl;
+	fout.open(input.m_sInputFileName.c_str(), ofstream::out);
+	if (!fout.is_open())
+	{
+		cout << failMessage << endl;
+		cout << "\tReason: unable to write to file: " << input.m_sInputFileName << endl;
+		return testName;
+	}
+	input.printToFile(fout);
+	fout.close();
+	
+	snprintf(commandLine, sizeof(commandLine), "./pso %s > %s", input.m_sInputFileName.c_str(), bufferOutputFile.c_str());
+	cout << "Executing: " << commandLine << endl;
+	if (system(commandLine) == -1) {
+		cout << failMessage << endl;
+		cout << "\tReason: unable to execute command: " << commandLine << endl;
+		return testName;
+	}
+	
+	snprintf(commandLine, sizeof(commandLine), "mv %s %s.saved", input.m_sOutputFileName.c_str(), input.m_sOutputFileName.c_str());
+	cout << "Executing: " << commandLine << endl;
+	if (system(commandLine) == -1) {
+		cout << failMessage << endl;
+		cout << "\tReason: unable to execute command: " << commandLine << endl;
+		return testName;
+	}
+
+	useconds_t sleepTime = 100000;
+	cout << "Sleeping for " << sleepTime << " microseconds." << endl;
+	usleep(sleepTime); // microseconds
+	
+	snprintf(commandLine, sizeof(commandLine), "./pso %s > %s", input.m_sInputFileName.c_str(), bufferOutputFile.c_str());
+	cout << "Executing: " << commandLine << endl;
+	if (system(commandLine) == -1) {
+		cout << failMessage << endl;
+		cout << "\tReason: unable to execute command: " << commandLine << endl;
+		return testName;
+	}
+	
+	snprintf(commandLine, sizeof(commandLine), "diff %s %s.saved", input.m_sOutputFileName.c_str(), input.m_sOutputFileName.c_str());
+	cout << "Executing: " << commandLine << endl;
+	pipe = popen(commandLine, "r");
+	if (pipe == NULL) {
+		cout << failMessage << endl;
+		cout << "\tReason: unable to execute command: " << commandLine << endl;
+		return testName;
+	}
+	if (feof(pipe) || (fgets(line, sizeof(line), pipe) == NULL)) {
+		cout << failMessage << endl;
+		cout << "\tReason: these files are identical when they shouldn't be: " << input.m_sOutputFileName.c_str()
+			 << " and " << input.m_sOutputFileName.c_str() << ".saved" << endl;
+		return testName;
+	}
+	pclose(pipe);
+
+	snprintf(commandLine, sizeof(commandLine), "rm %s %s %s.saved %s %s", input.m_sInputFileName.c_str(),
+	         input.m_sOutputFileName.c_str(), input.m_sOutputFileName.c_str(), input.m_sResumeFileName.c_str(), bufferOutputFile.c_str());
+	cout << "Executing: " << commandLine << endl;
+	if (system(commandLine) == -1) {
+		cout << failMessage << endl;
+		cout << "\tReason: unable to execute command: " << commandLine << endl;
+		return testName;
+	}
+	
+	cout << "Testing of random number seeding succeeded!" << endl;
+	return "";
+}
+
+void addFailedTestName(string &failedUnitTests, string &failedTestName)
+{
+	if (failedUnitTests.length() == 0)
+		failedUnitTests = failedTestName;
+	else
+		failedUnitTests += ", " + failedTestName;
+}
 
 int main(int argc, char *argv[])
 {
+	string failedUnitTests = "";
 	int totalTests = 0;
 	int passedTests = 0;
+	string failedTestName;
+
+	if (!Init::initProgram(0)) {
+		cout << "Failed to initialize program." << endl;
+		return 0;
+	}
 
 	++totalTests;
-	if (memoryTest())
+	failedTestName = memoryTest();
+	if (failedTestName.length() == 0)
 		++passedTests;
+	else
+		addFailedTestName(failedUnitTests, failedTestName);
 
 	++totalTests;
-	if (ccLibReadTest())
+	failedTestName = testRandomSeeding();
+	if (failedTestName.length() == 0)
 		++passedTests;
+	else
+		addFailedTestName(failedUnitTests, failedTestName);
 
+	++totalTests;
+	failedTestName = ccLibReadTest();
+	if (failedTestName.length() == 0)
+		++passedTests;
+	else
+		addFailedTestName(failedUnitTests, failedTestName);
+	
+	cout << endl;
+	cout << "Tests run: " << totalTests << "  Tests passed: " << passedTests << "  Tests failed: " << (totalTests - passedTests) << endl;
 	cout << endl;
 	if (totalTests == passedTests)
 		cout << "All tests passed!" << endl;
-	else
-		cout << (totalTests-passedTests) << " of " << totalTests << " tests failed." << endl;
+	else {
+		cout << "Failed tests: " << failedUnitTests << endl;
+	}
+	cout << endl;
 }
-
