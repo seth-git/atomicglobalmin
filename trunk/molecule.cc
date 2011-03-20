@@ -799,13 +799,23 @@ void Molecule::printPoint(const Point3D &point)
 	     << endl;
 }
 
-void Molecule::writeToGausianComFile(ofstream &fout)
+void Molecule::writeCoordinatesToInputFileWithAtomicNumbers(ofstream &fout)
 {
 	for (int atomIndex = 0; atomIndex < m_iNumberOfAtoms; ++atomIndex)
 		fout << m_atoms[atomIndex].m_iAtomicNumber << setiosflags(ios::fixed) << setprecision(6)
-	                                           << " " << m_atoms[atomIndex].m_globalPoint.x
-	                                           << " " << m_atoms[atomIndex].m_globalPoint.y
-	                                           << " " << m_atoms[atomIndex].m_globalPoint.z << endl;
+		     << " " << m_atoms[atomIndex].m_globalPoint.x
+		     << " " << m_atoms[atomIndex].m_globalPoint.y
+		     << " " << m_atoms[atomIndex].m_globalPoint.z << endl;
+}
+
+void Molecule::writeCoordinatesToInputFileWithAtomicSymbols(ofstream &fout)
+{
+	for (int atomIndex = 0; atomIndex < m_iNumberOfAtoms; ++atomIndex)
+		fout << Atom::s_rgAtomcSymbols[m_atoms[atomIndex].m_iAtomicNumber]
+		     << setiosflags(ios::fixed) << setprecision(6)
+		     << " " << m_atoms[atomIndex].m_globalPoint.x
+		     << " " << m_atoms[atomIndex].m_globalPoint.y
+		     << " " << m_atoms[atomIndex].m_globalPoint.z << endl;
 }
 
 void Molecule::writeToGausianLogFile(FILE* fout)

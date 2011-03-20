@@ -184,9 +184,12 @@ public:
 	
 	FLOAT getDistanceFromPoint(Point3D &point);
 	
-	void writeToGausianComFile(ofstream &fout);
-	void writeToGausianLogFile(FILE* fout);
+	void writeCoordinatesToInputFileWithAtomicNumbers(ofstream &fout);
+
+	void writeCoordinatesToInputFileWithAtomicSymbols(ofstream &fout);
 	
+	void writeToGausianLogFile(FILE* fout);
+
 	void print(ofstream &fout);
 	void printToResumeFile(ofstream &fout, bool printVelocityInfo);
 

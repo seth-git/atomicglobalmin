@@ -101,7 +101,9 @@ public:
 	
 	static void printMatrix(const FLOAT matrix[MATRIX_SIZE][MATRIX_SIZE]);
 	
-	void writeToGausianComFile(ofstream &fout);
+	void writeCoordinatesToInputFileWithAtomicNumbers(ofstream &fout);
+	
+	void writeCoordinatesToInputFileWithAtomicSymbols(ofstream &fout);
 	
 	void writeToGausianLogFile(FILE *fout);
 	

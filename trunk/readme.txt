@@ -39,7 +39,7 @@ IV. Other useful tips
 
 I. Introduction
 
-This software searches for chemical structures that are global minima the potential energy surface.  It uses highly accurate ab initio methods and reduces the cost of these by using distributed computations on a Linux cluster.  The software allows energy calculations to be performed using a wide variety of external quantum chemistry programs including ADF, GAMESS, GAMESS-UK, Gaussian, Jaguar, Molpro, ORCA , as well as an internal Lennard Jones potential used for testing purposes.
+This software searches for chemical structures that are global minima the potential energy surface.  It uses highly accurate ab initio methods and reduces the cost of these by using distributed computations on a Linux cluster.  The software allows energy calculations to be performed using a wide variety of external quantum chemistry programs including ADF, GAMESS, GAMESS-UK, Gaussian, Jaguar, Molpro, and ORCA, as well as an internal Lennard Jones potential used for testing purposes.
 
 This program can perform two different types of searches.  First, it searches for the global minimum of a set of molecules that each have fixed geometry using translation and rotation of molecules with respect to one another.  The program has four different random algorithms for this type of search: particle swarm optimization, enhanced simulated annealing, basin hoping, and a simple genetic algorithm. The second type of search is a bond rotational search for a single molecule.  This is a deterministic, non-random search using a user-specified bond rotational angle.
 
@@ -56,14 +56,14 @@ While this program does not have a graphical user interface, it has a command li
 
 You will need to compile the C++ source code on a Linux computer or cluster.  While Windows is not supported, you may easily transfer results to and from your Windows computer.  Steps for installing this program are below:
 
-1. Download the program file: pso1.4.1.tar.gz
+1. Download the program file: pso1.5.0.tar.gz
 2. Install g++ and MPI compilers
 3. Compile the program
 
-Step 1: You can download pso1.4.1.tar.gz file from the same place you downloaded this instruction file.  If you want to run the program on a remote Linux cluster, first download the program onto your local computer and then transfer the program to the Linux cluster.  If you use Windows, you can transfer the program to the Linux cluster using the WinSCP program (see above link).  If you are using Ubuntu or a Mac, open a terminal.  To open a terminal on Ubuntu, click on 'Applications', 'Accessories', 'Terminal'.  On a mac, navigate to your Applications folder, open Utilities, and double click on Terminal. Then, type these commands, pressing 'Enter' or 'Return' after each command:
+Step 1: You can download pso1.5.0.tar.gz file from the same place you downloaded this instruction file.  If you want to run the program on a remote Linux cluster, first download the program onto your local computer and then transfer the program to the Linux cluster.  If you use Windows, you can transfer the program to the Linux cluster using the WinSCP program (see above link).  If you are using Ubuntu or a Mac, open a terminal.  To open a terminal on Ubuntu, click on 'Applications', 'Accessories', 'Terminal'.  On a mac, navigate to your Applications folder, open Utilities, and double click on Terminal. Then, type these commands, pressing 'Enter' or 'Return' after each command:
 
-	cd /directory/where/you/put/pso1.4.1.tar.gz
-	scp  pso1.4.1.tar.gz your_user_name@your.linux.cluster:pso1.4.1.tar.gz
+	cd /directory/where/you/put/pso1.5.0.tar.gz
+	scp  pso1.5.0.tar.gz your_user_name@your.linux.cluster:pso1.5.0.tar.gz
 
 Step 2: If using a University Linux cluster, the g++ and MPI compilers should already be installed, so you can likely skip this step. If using a local Linux box, g++ should already be installed, but you will have to install the MPI compiler.  On Ubuntu Linux, you may install this by clicking on 'System' and 'Administration', then 'Synaptic Package Manager' and searching for mpi.  I installed the mpi-default-bin and mpi-default-dev packages.
 
@@ -73,8 +73,8 @@ Step 3: If you are running the program on a remote Linux cluster, you will need 
 
 Once logged in, navigate to the directory where you placed the program.  Change directories by typing: 'cd some_directory'.  To get out of the current directory type: 'cd ..'   .  To list files and directories in the current directory, type 'ls' or 'ls -al' (the later is a long list format).  When you have navigated to your program directory, type the following to decompress the program:
 
-	gunzip pso1.4.1.tar.gz
-	tar -xf pso1.4.1.tar
+	gunzip pso1.5.0.tar.gz
+	tar -xf pso1.5.0.tar
 
 Then, navigate into the directory:
 
@@ -140,16 +140,19 @@ Since performing a bond rotational search is non-random, there are no difficult 
 
 F. Configuring the program for various quantum chemistry packages
 
-This software has been tested primarily with the Gaussian quantum chemistry package, and methods for reading and writing Gaussian files are built in.  The cclib package which has been incorporated into this software can also read output files from ADF, GAMESS, GAMESS-UK, Jaguar, Molpro, and ORCA.  If you want to use one of these packages, install cclib using the instructions at cclib.sf.net.  Once installed, copy the atomicGlobalMin.py file from the pso directory to the directory where you installed cclib.  Then add your quantum chemistry package as follows:
+To support various quantum chemistry packages, it is necessary to create methods for writing input files and reading output files.  The more difficult challenge of reading output files has been solved for you by incorporating the cclib package into this software.  The cclib package can read output files from ADF, GAMESS, GAMESS-UK, Gaussian, Jaguar, Molpro, and ORCA.  Methods for creating input files are provided for GAMESS and Gaussian.
 
+To install cclib, follow the instructions at cclib.sf.net.  Once installed, copy the atomicGlobalMin.py file from the pso directory to the directory where you installed cclib.  Then open the energyProgram.cc file inside the pso directory and set the cclibPythonScript variable to the full path of the atomicGlobalMin.py script inside the cclib directory.  Recompile the program by typing 'make'.  Test the cclib package by running unit tests by typing './unit'.  If you see “All tests passed!”, then cclib has been installed correctly.
+
+Then, if necessary add your quantum chemistry package as follows:
 1. Add a one-line define statement to energyProgram.h as follows:
    #define NAME_OF_YOUR_QUANTUM_CHEMISTRY_PROGRAM             UNIQUE_INTEGER
 
-2. Modify energyProgram.cc as follows.  If you are using cclib, set the cclibPythonScript variable to the full path of the atomicGlobalMin.py script inside the cclib directory.  Second, modify the init function, by copying the Gaussian program information and modifying it for your quantum chemistry package.  Set the program name, executable path, input and output file extensions, and other basic information.  You may also list multiple output files types, with a file extension for each.  Please list first the output file extension of the file type you want to be read by the program.  If you list other file types, these will be saved with the results, but will not be read by this program.
+2. Modify energyProgram.cc as follows.  Modify the init function by copying the GAMESS or Gaussian program information and modifying it for your quantum chemistry package.  Note that the parameters you need to set are listed in the EnergyProgram function definition immediately beneath the init function.  Set the program name, executable path, input and output file extensions, and other basic information.  If you are using cclib, set the cclib flag to 'true'.  You may also list multiple output file types, with a file extension for each.  Please list first the output file extension of the file type you want to be read by the program.  If you list other file types, these will be saved with the results, but will not be read by this program.
 
-3. Modify energy.cc as follows.  First, write a method for creating an input file for your quantum program.  To do this, you may copy and modify the createGaussianInputFile method.  Test your method as follows.  Create a resume file by typing './pso LJ7_Sim.inp' and stop the run by pressing control-C.  Open LJ7_Sim.res, change the energy function to the name of your quantum package, insert an energy file header, and set the charge and multiplicity.  Then type './helper -c LJ7_Sim.res test best'. This will create an input file in a directory called test which you can check for correctness.
+3. Modify energy.cc as follows.  First, write a method for creating an input file for your quantum program.  To do this, you may copy and modify the createGamessInputFile method.  Make sure that your method is called correctly from the createInputFile method and that it is declared in energy.h.  Test your input file creation method as follows.  Create a resume file by typing './pso LJ7_Sim.inp' and stop the run by pressing control-C.  Open LJ7_Sim.res, change the energy function to the name of your quantum package, insert an energy file header, and set the charge and multiplicity.  Then type './helper -c LJ7_Sim.res test best'. This will create an input file in a directory called test which you can check for correctness.
 
-Second, write a method in energy.cc for reading your quantum program's output file.  If you are using cclib to do this, instead make sure that the cclib flag is set to true in energyProgram.cc, then test the cclib package by running unit tests in the main pso directory by typing './unit'.
+Second, write a method in energy.cc for reading your quantum program's output file.  Make sure your method is called correctly from the readOutputFile method and that it is declared in energy.h.  If using cclib to read output files, this step can be skipped.
 
 Third, check that your quantum program is called correctly in the doEnergyCalculation method.
 
@@ -176,7 +179,7 @@ A. Input parameters common to all algorithms
 
 Parameters common to all algorithms appear at the top and bottom of each input file.  An example of the parameters at the top of an input file for (H2O)OH- are as follows:
 
-1   Particle Swarm Optimization Input File Version 1.4.1
+1   Particle Swarm Optimization Input File Version 1.5.0
 2   
 3   Energy function to use: Gaussian
 4   Path to energy files: /path/to/quantum/input/and/output/files/
@@ -357,7 +360,7 @@ This simulated annealing algorithm has the ability to perform non-fragmented sea
 
 At each step, simulated annealing makes a number of random perturbations.  Each perturbation can move the center-of-mass for a group of atoms, a molecule, or a "unit" along a random vector the length of which is specified on lines 33 and 34.  Alternatively a perturbation can rotate one of three angles in a molecule or unit by a random amount (see lines 35 and 36).  Once a perturbation has been made, the energy is recalculated.  If the energy value is better, the perturbation is accepted. If it is worse, the perturbation is accepted with a certain probability defined as:
 
-     p = e-ΔE/(k * T)
+     p = e^(-ΔE/(k * T))
 
 where ΔE is the change in energy in atomic units (hartrees), k is the Boltzmann constant in units of hartrees per kelvin (line 25), and T is the temperature in units of kelvin (line 24).  At the start of a run, the temperature and the probability of accepting a bad perturbation are very high. The temperature T, the number of perturbations P, the coordinate perturbation amount C, and the angle perturbation amount A decrease as follows:
 
@@ -386,9 +389,9 @@ III. Running the program on a cluster of computers
 
 A. Submitting the program to the PBS Scheduler
 
-This section describes how to run the program on a cluster of Linux computers with a quantum chemistry package.  Some familiarity with your quantum chemistry package and Linux is assumed.
+This section describes how to run the program on a cluster of Linux computers with a quantum chemistry package.  Some familiarity with your quantum chemistry package and Linux is assumed.  It is also assumed that you have read the instructions for configuring quantum chemistry packages in section F.
 
-In energyProgram.cc, set the full path to your Gamess, Gaussian, or other executable in the 'init' function.  If using cclib to read output files, also modify the cclibPythonScript variable, inserting the location of this script in the directory where you installed cclib.  Then recompile the program by typing 'make' in the main program directory.
+In energyProgram.cc, set the full path to your Gamess, Gaussian, or other executable in the 'init' function.  Then recompile the program by typing 'make' in the main program directory.
 
 Create a script file for submitting the main pso program to the PBS (Portable Batch System) scheduler. An example script file for doing this called "examplePBSScript" is in the "pso" directory.  Make a copy of this script and modify it as follows.
 
@@ -411,9 +414,7 @@ When calculating energies for a large population of candidate structures, the pr
 
 Since the time required for different quantum jobs varies, a better approach is to set aside one processor to act as a master that then deals out quantum tasks to the other slave processors.  This can be achieved by specifying the -m option. For example, if you have a population of 64 structures and you want about 4 quantum jobs per processor, you would now need 17 processors, one master and 16 slaves.  This can improve efficiency since it allows load balancing to compensate for quantum jobs that take a long time.
 
-When using a population of structures with simulated annealing, each member of the population is essentially an independent simulated annealing run, but energy calculations for the entire population must still be performed in synchronized batches.  This means that all energy
- calculations for a particular iteration must be
- completed first.  Next, the iteration number increases and the temperature decreases (both of these are the same for all runs).  Next, perturbations are made on each structure, and a new batch of energy calculations is started.  This is inefficient because of the great differences in the amount of time required for different quantum energy calculations.  To overcome this, the -i option can be used with simulated annealing to allow all independent runs to run separately rather than in a synchronized manner.  It does this by creating separate input, output, and resume files for each population member.  For example, if my input file were named LJ7_Sim.inp, this option would create a directory called LJ7_SimRuns and create input files in this directory named LJ7_Sim_1.inp, LJ7_Sim_2.inp, etc.  Resume and output files would also be placed here.  This option additionally creates a separate list of best structures for each run.  For example if my energy files directory (input file line 4) were called energyFiles, the -i option would create Run1, Run2, etc. directories inside this directory, each with it's own bestSavedStructures directory.
+When using a population of structures with simulated annealing, each member of the population is essentially an independent simulated annealing run, but energy calculations for the entire population must still be performed in synchronized batches.  This means that all energy calculations for a particular iteration must be completed first.  Next, the iteration number increases and the temperature decreases (both of these variables are the same for all runs).  Next, perturbations are made on each structure, and a new batch of energy calculations is started.  This is inefficient because of the great differences in the amount of time required for different quantum energy calculations.  To overcome this, the -i option can be used with simulated annealing to allow all independent runs to run separately rather than in a synchronized manner.  It does this by creating separate input, output, and resume files for each population member.  For example, if my input file were named LJ7_Sim.inp, this option would create a directory called LJ7_SimRuns and create input files in this directory named LJ7_Sim_1.inp, LJ7_Sim_2.inp, etc.  Resume and output files would also be placed here.  This option additionally creates a separate list of best structures for each run.  For example if my energy files directory (input file line 4) were called energyFiles, the -i option would create Run1, Run2, etc. directories inside this directory, each with it's own bestSavedStructures directory.
 
 Also when using the -i option, the program has a method for periodically merging the separate lists of best structures into one master list.  For example, if my energy files directory were called energyFiles, the program will create a sub directory called bestSavedStructures and will copy structures from the bestSavedStructures directory in each of the Run1, Run2, etc. directories.  This method also creates a master ouput and resume file.  The method is run when ever you restart the run, and when the run completely finishes.  You may also run the method manually by typing "./helper -u YourInputFile.inp".
 
@@ -477,4 +478,5 @@ This program can also perform searches for transition states.  The method used i
 
 F. Trouble Shooting
 
-If you encounter unexpected behavior from the application, here are some things you can do.  First, check this manual to ensure the software is not performing as designed.  Second, there are a few unit tests that you can run.  In particular, these can help check that the cclib package is installed correctly.  To run the unit tests, navigate (cd) to the main program directory and type './unit'.  Third, turn on additional error messages by setting the PRINT_CATCH_MESSAGES constant to 'true' at the top of input.h. This may provide additional information to help identify the problem.  If you believe the problem is related to MPI, you can also turn on the PRINT_MPI_MESSAGES constant at the top of myMpi.h.  If you find a message that seems related to your unexpected behavior, search for the error in the code to learn more about what the application was doing when it generated the error.  If you find an genuine error, please submit a bug report with a detailed list of steps for reproducing it.
+If you encounter unexpected behavior from the application, here are some things you can do.  First, check this manual to ensure the software is not performing as designed.  Second, there are a few unit tests that you can run.  In particular, these can help check that the cclib package is installed correctly. To run the unit tests, navigate (cd) to the main program directory and type './unit'.  Third, turn on additional error messages by setting the PRINT_CATCH_MESSAGES constant to 'true' at the top of input.h. This may provide additional information to help identify the problem.  If you believe the problem is related to MPI, you can also turn on the PRINT_MPI_MESSAGES constant at the top of myMpi.h.  If you find a message that seems related to your unexpected behavior, search for the error in the code to learn more about what the application was doing when it generated the error.  If you find an genuine error, please submit a bug report with a detailed list of steps for reproducing it.
+
