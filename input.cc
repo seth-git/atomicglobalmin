@@ -579,8 +579,8 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 	trim(temp);
 	versionPos = temp.rfind(" ") + 1;
 	version = temp.substr(versionPos);
-	if (strncmp(version.c_str(),VERSION, strlen(VERSION)) != 0)
-		cout << "Warning: this input file is not version " << VERSION << "." << endl;
+	if (strncmp(version.c_str(),INPUT_FILE_VERSION, strlen(INPUT_FILE_VERSION)) != 0)
+		cout << "Warning: this input file is not version " << INPUT_FILE_VERSION << "." << endl;
 	
 	// Read the next line which should be blank
 	++lineNumber;
@@ -1935,27 +1935,27 @@ void Input::printToFile(ofstream &outFile)
 	if (m_bResumeFileRead) {
 		outFile << setiosflags(ios::fixed) << setprecision(resumeFilePrecision);
 		if (m_iAlgorithmToDo == SIMULATED_ANNEALING)
-			outFile << m_sSimResumeVersionLineDisplayed << " " << VERSION << endl << endl;
+			outFile << m_sSimResumeVersionLineDisplayed << " " << INPUT_FILE_VERSION << endl << endl;
 		else if (m_iAlgorithmToDo == PARTICLE_SWARM_OPTIMIZATION)
-			outFile << m_sPSOResumeVersionLineDisplayed << " " << VERSION << endl << endl;
+			outFile << m_sPSOResumeVersionLineDisplayed << " " << INPUT_FILE_VERSION << endl << endl;
 		else if (m_iAlgorithmToDo == GENETIC_ALGORITHM)
-			outFile << m_sGAResumeVersionLineDisplayed << " " << VERSION << endl << endl;
+			outFile << m_sGAResumeVersionLineDisplayed << " " << INPUT_FILE_VERSION << endl << endl;
 	} else if (m_bOptimizationFileRead) {
 		outFile << setiosflags(ios::fixed) << setprecision(resumeFilePrecision);
 		if (m_iAlgorithmToDo == SIMULATED_ANNEALING)
-			outFile << m_sSimOptimizationVersionLineDisplayed << " " << VERSION << endl << endl;
+			outFile << m_sSimOptimizationVersionLineDisplayed << " " << INPUT_FILE_VERSION << endl << endl;
 		else if (m_iAlgorithmToDo == PARTICLE_SWARM_OPTIMIZATION)
-			outFile << m_sPSOOptimizationVersionLineDisplayed << " " << VERSION << endl << endl;
+			outFile << m_sPSOOptimizationVersionLineDisplayed << " " << INPUT_FILE_VERSION << endl << endl;
 		else if (m_iAlgorithmToDo == GENETIC_ALGORITHM)
-			outFile << m_sGAOptimizationVersionLineDisplayed << " " << VERSION << endl << endl;
+			outFile << m_sGAOptimizationVersionLineDisplayed << " " << INPUT_FILE_VERSION << endl << endl;
 	} else {
 		outFile << setiosflags(ios::fixed) << setprecision(defaultPrecision);
 		if (m_iAlgorithmToDo == SIMULATED_ANNEALING)
-			outFile << m_sSimInputVersionLineDisplayed << " " << VERSION << endl << endl;
+			outFile << m_sSimInputVersionLineDisplayed << " " << INPUT_FILE_VERSION << endl << endl;
 		else if (m_iAlgorithmToDo == PARTICLE_SWARM_OPTIMIZATION)
-			outFile << m_sPSOInputVersionLineDisplayed << " " << VERSION << endl << endl;
+			outFile << m_sPSOInputVersionLineDisplayed << " " << INPUT_FILE_VERSION << endl << endl;
 		else if (m_iAlgorithmToDo == GENETIC_ALGORITHM)
-			outFile << m_sGAInputVersionLineDisplayed << " " << VERSION << endl << endl;
+			outFile << m_sGAInputVersionLineDisplayed << " " << INPUT_FILE_VERSION << endl << endl;
 	}
 	
 	outFile << m_sEnergyFunctionDisplayed << ": " << m_pSelectedEnergyProgram->m_sName << endl;

@@ -20,6 +20,9 @@ void EnergyProgram::init(void) {
 	addOutputFileType("log", true);
 	addOutputFileType("chk", false);
 	
+	s_energyPrograms.push_back(new EnergyProgram("GAMESS-US", true, true, "/Full/path/to/gamess", GAMESS_US, "gamin"));
+	addOutputFileType("gamout", true);
+	
 	s_energyPrograms.push_back(new EnergyProgram("Lennard Jones", false, false, "", LENNARD_JONES, ""));
 }
 
@@ -60,6 +63,7 @@ void EnergyProgram::cleanUp() {
 void EnergyProgram::copy(EnergyProgram &energyProgram) {
 	m_sName = energyProgram.m_sName;
 	m_bUsesMPI = energyProgram.m_bUsesMPI;
+	m_bUsesCclib = energyProgram.m_bUsesCclib;
 	m_sPathToExecutable = energyProgram.m_sPathToExecutable;
 	m_iProgramID = energyProgram.m_iProgramID;
 	m_sInputFileExtension = energyProgram.m_sInputFileExtension;

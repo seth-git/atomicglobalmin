@@ -12,6 +12,7 @@
 #define LENNARD_JONES                       1
 #define GAUSSIAN                            2
 #define GAUSSIAN_WITH_CCLIB                 3
+#define GAMESS_US                           4
 
 #define MAX_OUTPUT_FILE_TYPES               10
 

@@ -35,10 +35,11 @@ using std::setw;
 using std::time;
 using std::ostringstream;
 
+#define PROGRAM_VERSION "1.5.0"
+#define INPUT_FILE_VERSION "1.4"
 #define SIMULATED_ANNEALING 1
 #define PARTICLE_SWARM_OPTIMIZATION 2
 #define GENETIC_ALGORITHM 3
-#define VERSION "1.4"
 
 #define ACCEPTANCE_RATIO_NUM_ITERATIONS 100
 #define NUM_ITERATIONS_TO_SET_SCALING_FACTOR 200

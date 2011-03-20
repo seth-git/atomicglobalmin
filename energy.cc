@@ -253,7 +253,10 @@ bool Energy::createInputFile(MoleculeSet &moleculeSet, int populationMemberNumbe
 	switch (s_energyProgram.m_iProgramID) {
 	case GAUSSIAN:
 	case GAUSSIAN_WITH_CCLIB:
-		Energy::createGaussianInputFile(moleculeSet, populationMemberNumber, writeMetaData);
+		createGaussianInputFile(moleculeSet, populationMemberNumber, writeMetaData);
+		break;
+	case GAMESS_US:
+		createGamessInputFile(moleculeSet, populationMemberNumber, writeMetaData);
 		break;
 	default:
 		cout << "Please modify the createInputFile function in energy.cc for your energy program: " << s_energyProgram.m_sName << endl;
@@ -291,7 +294,7 @@ bool Energy::createGaussianInputFile(MoleculeSet &moleculeSet, int populationMem
 		fout << "This is a computer generated structure." << endl << endl;
 	fout << s_iCharge << " " << s_iMultiplicity << endl;
 
-	moleculeSet.writeToGausianComFile(fout);
+	moleculeSet.writeCoordinatesToInputFileWithAtomicNumbers(fout);
 
 	fout << endl;
 
@@ -300,6 +303,29 @@ bool Energy::createGaussianInputFile(MoleculeSet &moleculeSet, int populationMem
 		     << "Title" << endl << endl
 		     << s_iCharge << " " << s_iMultiplicity << endl;
 	}
+	fout.close();
+	return true;
+}
+
+bool Energy::createGamessInputFile(MoleculeSet &moleculeSet, int populationMemberNumber, bool writeEnergyValueInHeader)
+{
+	string header = s_header;
+	string footer = s_footer;
+	
+	ofstream fout(moleculeSet.getInputEnergyFile(), ios::out);
+	fout << header;
+	fout << " $CONTRL ICHARG=" << s_iCharge << "  MULT=" << s_iMultiplicity << " $END" << endl;
+	fout << " $DATA" << endl;
+	if (writeEnergyValueInHeader)
+		fout << "This is a computer generated structure with energy: " << Atom::printFloat(moleculeSet.getEnergy()) << endl;
+	else
+		fout << "This is a computer generated structure." << endl;
+	fout << "C1" << endl;
+	moleculeSet.writeCoordinatesToInputFileWithAtomicSymbols(fout);
+
+	fout << " $END" << endl;
+	fout << footer << endl;
+
 	fout.close();
 	return true;
 }
@@ -645,10 +671,17 @@ bool Energy::doEnergyCalculation(int populationMemberNumber)
 					moleculeSet.setOutputEnergyFile(s_pathToEnergyFiles.c_str(), s_checkPointFileName.c_str(), populationMemberNumber, s_energyProgram.m_sOutputFileTypeExtensions[1].c_str(), 1, true);
 			}
 			break;
+		case GAMESS_US:
+			moleculeSet.setOutputEnergyFile(s_pathToEnergyFiles.c_str(), ENERGY_TEMP_FILE, populationMemberNumber, s_energyProgram.m_sOutputFileTypeExtensions[0].c_str(), 0, false);
+
+			snprintf(commandLine, sizeof(commandLine), "%s %s > %s", s_energyProgram.m_sPathToExecutable.c_str(),
+			         moleculeSet.getInputEnergyFile(), moleculeSet.getOutputEnergyFile(0));
+			if (system(commandLine) == -1)
+				throw "Unable to run GAMESS-US.";
+			break;
 		default:
 			cout << "Please modify the doEnergyCalculation function and indicate how '" << s_energyProgram.m_sName << "' should be called." << endl;
 			exit(0);
-			break;
 		}
 		if (s_fullScratchDirectory.length() > 0) {
 			if (!moleculeSet.moveOrCopyOutputEnergyFiles(s_pathToEnergyFiles.c_str(), false))
@@ -660,6 +693,7 @@ bool Energy::doEnergyCalculation(int populationMemberNumber)
 	} catch (const char* message) {
 		if (PRINT_CATCH_MESSAGES)
 			cerr << "Caught message: " << message << endl;
+		return false;
 	}
 	return true;
 }

@@ -41,6 +41,7 @@ public:
 	static void createInputFiles(vector<MoleculeSet*> &population);
 	static bool createInputFile(MoleculeSet &moleculeSet, int populationMemberNumber, bool resetInputFileName, bool writeMetaData);
 	static bool createGaussianInputFile(MoleculeSet &moleculeSet, int populationMemberNumber, bool writeEnergyValueInHeader);
+	static bool createGamessInputFile(MoleculeSet &moleculeSet, int populationMemberNumber, bool writeEnergyValueInHeader);
 	static void readOutputFile(const char* outputFileName, FLOAT &energy, MoleculeSet* pMoleculeSet,
                                bool &openedFile, bool &readEnergy, bool &obtainedGeometry);
 	static void readGaussianOutputFile(const char* logFile, FLOAT &energy, MoleculeSet* pMoleculeSet,

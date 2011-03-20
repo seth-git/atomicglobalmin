@@ -1601,10 +1601,16 @@ void MoleculeSet::printToScreen()
 		m_prgMolecules[i].printToScreen();
 }
 
-void MoleculeSet::writeToGausianComFile(ofstream &fout)
+void MoleculeSet::writeCoordinatesToInputFileWithAtomicNumbers(ofstream &fout)
 {
 	for (int i=0; i < m_iNumberOfMolecules; i++)
-		m_prgMolecules[i].writeToGausianComFile(fout);
+		m_prgMolecules[i].writeCoordinatesToInputFileWithAtomicNumbers(fout);
+}
+
+void MoleculeSet::writeCoordinatesToInputFileWithAtomicSymbols(ofstream &fout)
+{
+	for (int i=0; i < m_iNumberOfMolecules; i++)
+		m_prgMolecules[i].writeCoordinatesToInputFileWithAtomicSymbols(fout);
 }
 
 void MoleculeSet::writeToGausianLogFile(FILE* fout)
