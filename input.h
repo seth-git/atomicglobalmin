@@ -117,6 +117,7 @@ public:
 	FLOAT m_fVisibilityDistance;
 	int m_iNumIterationsBestEnergyHasntChanged;
 	FLOAT m_fAttractionRepulsion; // Either 1 or -1
+	bool m_bRunComplete;
 	
 	// General variables
 	string m_sInputFileName;

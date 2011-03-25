@@ -17,6 +17,7 @@ Maximum inter-atomic distance (angstroms): 1.5
 
 Genetic Algorithm Parameters:
 Use energy value from local optimization: yes
+Maximum number of allowed iterations: 400
 
 Save this many of the best "different" structures: 1
 Consider 2 structures "different" if their RMS distance is greater or equal to (angstroms): 1.0

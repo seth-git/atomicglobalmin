@@ -56,6 +56,10 @@ bool simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 	
 	
 	try {
+		if (input.m_bRunComplete) {
+			cout << "This run has already been completed." << endl;
+			throw "This run has already been completed";
+		}
 		if (!input.m_bResumeFileRead || (bIndependentRun && (seedFiles.length() > 0))) {
 			seconds = time (NULL);
 
@@ -396,6 +400,12 @@ bool simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 				}
 			}
 			
+			if (input.m_iIteration >= input.m_iMaxIterations)
+				input.m_bRunComplete = true;
+			if (input.m_bDecreasingTemp && (input.m_fStartingTemperature < input.m_fMinTemperatureToStop) &&
+			    (fAcceptanceRatio < input.m_fMinAcceptedTransitions))
+				input.m_bRunComplete = true;
+			
 			if ((input.m_sResumeFileName.length() > 0) &&
 			    ((input.m_iIteration % input.m_iResumeFileNumIterations) == 0))
 			{
@@ -408,10 +418,7 @@ bool simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 				}
 			}
 			
-			if (input.m_iIteration >= input.m_iMaxIterations)
-				break;
-			if (input.m_bDecreasingTemp && (input.m_fStartingTemperature < input.m_fMinTemperatureToStop) &&
-			    (fAcceptanceRatio < input.m_fMinAcceptedTransitions))
+			if (input.m_bRunComplete)
 				break;
 			
 			if (input.m_bTestMode)
@@ -470,8 +477,9 @@ bool simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 	for (i = 0; i < (signed int)bestNMoleculeSets.size(); ++i)
 		delete bestNMoleculeSets[i];
 	bestNMoleculeSets.clear();
-	
-	fout.close();
+
+	if (fout.is_open())
+		fout.close();
 	if (input.m_bTestMode)
 		input.printTestFileFooter();
 	return finished;
@@ -536,6 +544,10 @@ void particleSwarmOptimization(Input &input, vector<MoleculeSet*> &moleculeSets,
 	}
 	
 	try {
+		if (input.m_bRunComplete) {
+			cout << "This run has already been completed." << endl;
+			throw "This run has already been completed";
+		}
 		if (!input.m_bResumeFileRead) {
 			seconds = time (NULL);
 			fout.open (input.m_sOutputFileName.c_str(), ofstream::out); // Erase the existing file, if there is one
@@ -795,6 +807,9 @@ void particleSwarmOptimization(Input &input, vector<MoleculeSet*> &moleculeSets,
 				fout << "Removing frozen status from the coordinates of seeded atoms..." << endl;
 			}
 			
+			if (input.m_iIteration >= input.m_iMaxIterations)
+				input.m_bRunComplete = true;
+			
 			if ((input.m_sResumeFileName.length() > 0) && ((input.m_iIteration%input.m_iResumeFileNumIterations) == 0))
 			{
 				input.writeResumeFile(tempResumeFileName, moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets, time (NULL) - seconds, true);
@@ -827,7 +842,7 @@ void particleSwarmOptimization(Input &input, vector<MoleculeSet*> &moleculeSets,
 			} else
 				input.m_fVisibilityDistance += input.m_fVisibilityDistanceIncrease;
 			
-			if (input.m_iIteration >= input.m_iMaxIterations)
+			if (input.m_bRunComplete)
 				break;
 			
 			if (input.m_bTestMode)
@@ -884,25 +899,27 @@ void particleSwarmOptimization(Input &input, vector<MoleculeSet*> &moleculeSets,
 		delete[] particleDistanceMatrix;
 	}
 	
+	for (i = 0; i < (signed int)moleculeSetsMinDistEnforced.size(); ++i)
+		delete moleculeSetsMinDistEnforced[i];
+	moleculeSetsMinDistEnforced.clear();
+	
+	for (i = 0; i < (signed int)localBestMoleculeSets.size(); ++i)
+		delete localBestMoleculeSets[i];
+	localBestMoleculeSets.clear();
+
+	for (i = 0; i < (signed int)bestNMoleculeSets.size(); ++i)
+		delete bestNMoleculeSets[i];
+	bestNMoleculeSets.clear();
+
 	for (i = 0; i < (signed int)moleculeSets.size(); ++i) {
 		delete moleculeSets[i];
 		delete bestIndividualMoleculeSets[i];
 	}
 	moleculeSets.clear();
 	bestIndividualMoleculeSets.clear();
-	if (input.m_bEnforceMinDistOnCopy)
-		for (i = 0; i < (signed int)moleculeSets.size(); ++i)
-			delete moleculeSetsMinDistEnforced[i];
-	moleculeSetsMinDistEnforced.clear();
-	for (i = 0; i < (signed int)localBestMoleculeSets.size(); ++i)
-			delete localBestMoleculeSets[i];
-	localBestMoleculeSets.clear();
 
-	for (i = 0; i < (signed int)bestNMoleculeSets.size(); ++i)
-		delete bestNMoleculeSets[i];
-	bestNMoleculeSets.clear();
-	
-	fout.close();
+	if (fout.is_open())
+		fout.close();
 	if (input.m_bTestMode)
 		input.printTestFileFooter();
 }
@@ -1066,6 +1083,10 @@ void gega(Input &input, vector<MoleculeSet*> &population, vector<MoleculeSet*> &
 		energyCalculationType = SINGLE_POINT_ENERGY_CALCULATION;
 
 	try {	
+		if (input.m_bRunComplete) {
+			cout << "This run has already been completed." << endl;
+			throw "This run has already been completed";
+		}
 		if (!input.m_bResumeFileRead) {
 			seconds = time (NULL);
 			fout.open (input.m_sOutputFileName.c_str(), ofstream::out); // Erase the existing file, if there is one
@@ -1166,6 +1187,9 @@ void gega(Input &input, vector<MoleculeSet*> &population, vector<MoleculeSet*> &
 				fout << "Removing frozen status from the coordinates of seeded atoms..." << endl;
 			}
 			
+			if (input.m_iIteration >= input.m_iMaxIterations)
+				input.m_bRunComplete = true;
+			
 			if ((input.m_sResumeFileName.length() > 0) && ((input.m_iIteration%input.m_iResumeFileNumIterations) == 0))
 			{
 				input.writeResumeFile(tempResumeFileName, *pPopulationB, bestNMoleculeSets, emptyMoleculeSets, time (NULL) - seconds, true);
@@ -1185,7 +1209,7 @@ void gega(Input &input, vector<MoleculeSet*> &population, vector<MoleculeSet*> &
 				pPopulationB = &population2;
 			}
 			
-			if (input.m_iIteration >= input.m_iMaxIterations)
+			if (input.m_bRunComplete)
 				break;
 			if (input.m_bTestMode)
 				if (!input.printTestFileGeometry(input.m_iIteration, *bestNMoleculeSets[0]))
@@ -1251,7 +1275,8 @@ void gega(Input &input, vector<MoleculeSet*> &population, vector<MoleculeSet*> &
 	population2.clear();
 	bestNMoleculeSets.clear();
 	
-	fout.close();
+	if (fout.is_open())
+		fout.close();
 	if (input.m_bTestMode)
 		input.printTestFileFooter();
 }

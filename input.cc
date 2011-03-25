@@ -207,6 +207,8 @@ Input::Input (void)
 	m_sFreezeUntilIterationDisplayed = "Freeze seeded molecules/units for this many iterations";
 	
 	m_sStructuresToOptimizeAtATimeDisplayed = "Number of structures to optimize at a time";
+
+	m_bRunComplete = false;
 	
 	m_bTestMode = false;
 }
@@ -1419,6 +1421,19 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
+	
+		++lineNumber;
+		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
+		{
+			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			return false;
+		}
+		if (!getIntParam(fileLine, m_sMaxIterationsDisplayed, m_iMaxIterations))
+		{
+			cout << "Error reading the parameter '" << m_sMaxIterationsDisplayed << "' on line "
+			     << lineNumber << " in the input file." << endl;
+			return false;
+		}
 	}
 	
 	// Read the next line which should be blank
@@ -2058,6 +2073,7 @@ void Input::printToFile(ofstream &outFile)
 		if (!(m_bResumeFileRead || m_bOptimizationFileRead))
 			outFile << setprecision(defaultPrecision);
 		outFile << m_sUseLocalOptimizationDisplayed << ": " << printYesNoParam(m_bUseLocalOptimization) << endl;
+		outFile << m_sMaxIterationsDisplayed << ": " << m_iMaxIterations << endl;
 	}
 	
 	outFile << endl;
@@ -2184,6 +2200,7 @@ void Input::writeResumeFile(string &fileName, vector<MoleculeSet*> &moleculeSets
 	resumeFile << m_sIterationDisplayed << ": " << m_iIteration << endl;
 	resumeFile << m_sFreezeUntilIterationDisplayed << ": " << m_iFreezeUntilIteration << endl;
 	
+	resumeFile << "Run Complete: " << printYesNoParam(m_bRunComplete) << endl;
 	resumeFile << "Number of times the energy was calculated: " << m_iNumEnergyEvaluations << endl;
 	m_tElapsedSeconds = elapsedSeconds;
 	resumeFile << "Elapsed seconds: " << m_tElapsedSeconds << endl;
@@ -2552,6 +2569,22 @@ bool Input::open(string &fileName, bool setMinDistances, bool bReadNodesFile, ve
 	if (!getIntParam(fileLine, m_sFreezeUntilIterationDisplayed, m_iFreezeUntilIteration))
 	{
 		cout << "Error reading the parameter '" << m_sFreezeUntilIterationDisplayed << "' in the input file." << endl;
+		infile.close();
+		return false;
+	}
+
+	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
+	{
+		cout << "The line that's supposed to have this parameter is missing: "
+		     << "Run Complete" << endl;
+		infile.close();
+		return false;
+	}
+	if (!getYesNoParam(fileLine, "Run Complete", m_bRunComplete))
+	{
+		cout << "Error reading the parameter '" << "Run Complete"
+		     << "' in the input file." << endl;
+		cout << "Line with the error: " << fileLine << endl;
 		infile.close();
 		return false;
 	}
