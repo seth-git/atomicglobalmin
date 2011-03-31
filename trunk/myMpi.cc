@@ -18,8 +18,9 @@ Mpi::~Mpi ()
 }  
 
 time_t	Mpi::s_wallTime;
+time_t  Mpi::s_bufferTime = 0;
 bool	Mpi::s_timeToFinish = false;
-time_t	Mpi::s_longestiCalculationTime = 0;
+time_t	Mpi::s_longestCalculationTime = 0;
 double	Mpi::s_percentageOfSuccessfulCalculations;
 bool    Mpi::s_independent = false; // seperate simulated annealing runs
 bool    Mpi::s_masterDistributingTasks = false; // one extra node sends out tasks to the other slave nodes
@@ -119,7 +120,7 @@ bool Mpi::masterSetup(int populationSize, bool independent, bool masterDistribut
 			for (ranki = populationSize; ranki < nSlaves; ++ranki) {
 				if (PRINT_MPI_MESSAGES)
 					printf("Putting extra slave %d to sleep.\n", ranki);
-				MPI_Send(0, 0, MPI_INT, ranki, DIETAG, MPI_COMM_WORLD);
+				MPI_Send(0, 0, MPI_INT, ranki, DIE_TAG, MPI_COMM_WORLD);
 			}
 			nSlaves = populationSize;
 		}
@@ -131,7 +132,7 @@ bool Mpi::masterSetup(int populationSize, bool independent, bool masterDistribut
 				 bufferSize,                 /* buffer size */
 				 MPI_BYTE,           /* data item is an character or byte */
 				 ranki,              /* destination process rank */
-				 WORKTAG,           /* user chosen message tag */
+				 WORK_TAG,           /* user chosen message tag */
 				 MPI_COMM_WORLD);   /* default communicator */
 		}
 	}
@@ -141,6 +142,8 @@ bool Mpi::masterSetup(int populationSize, bool independent, bool masterDistribut
 		if (PRINT_MPI_MESSAGES)
 			printf("MPI_Irecv returned (%d) for process with rank %d.\n", returned, rank);
 	}
+	if (independent)
+		s_bufferTime = 60; // we need time to compile the results
 	return true;
 }
 
@@ -193,7 +196,7 @@ bool Mpi::master(int energyCalculationType, vector<MoleculeSet*> &population, ve
 				 1,                 /* one data item */
 				 MPI_INT,           /* data item is an integer */
 				 i,                 /* rank of slave */
-				 WORKTAG,           /* user chosen message tag */
+				 WORK_TAG,           /* user chosen message tag */
 				 MPI_COMM_WORLD);   /* default communicator */
 		}
 	} else if (!s_independent) {
@@ -205,7 +208,7 @@ bool Mpi::master(int energyCalculationType, vector<MoleculeSet*> &population, ve
 				 1,                 /* one data item */
 				 MPI_INT,           /* data item is an integer */
 				 i,                 /* rank of slave */
-				 WORKTAG,           /* user chosen message tag */
+				 WORK_TAG,           /* user chosen message tag */
 				 MPI_COMM_WORLD);   /* default communicator */
 		}
 	}
@@ -231,22 +234,22 @@ bool Mpi::master(int energyCalculationType, vector<MoleculeSet*> &population, ve
 						 &status);          /* info about the received message */
 					if (PRINT_MPI_MESSAGES)
 						printf("Slave %d finished task %d.\n", status.MPI_SOURCE, jobDone);
-					if (status.MPI_TAG == DIETAG) {
+					if (status.MPI_TAG == DIE_TAG)
 						throw "Slave reported an error.";
-					}
 				}
 				--jobDone;
 				jobStatus[jobDone] = true;
 				++numJobsDone;
 				
 				totalTime = time(NULL) - jobStartTime[jobDone];
-				if (totalTime > s_longestiCalculationTime)
-					s_longestiCalculationTime = totalTime;
-				if (!s_timeToFinish && ((s_wallTime-time(NULL)) < s_longestiCalculationTime)) {
+				if (totalTime > s_longestCalculationTime)
+					s_longestCalculationTime = totalTime;
+				if (!s_timeToFinish && (s_wallTime - time(NULL) < s_longestCalculationTime + s_bufferTime)) {
 					s_timeToFinish = true;
 					if (PRINT_MPI_MESSAGES) {
 						cout << "Time: " << time(NULL) << ", walltime: " << s_wallTime
-						     << ", the longest job took: " << s_longestiCalculationTime
+						     << ", buffer time: " << s_bufferTime
+						     << ", the longest job took: " << s_longestCalculationTime
 						     << ", we better finish." << endl;
 						if (s_masterDistributingTasks)
 							printf("Sending slaves the kill signal.\n");
@@ -264,16 +267,12 @@ bool Mpi::master(int energyCalculationType, vector<MoleculeSet*> &population, ve
 						 1,                 /* one data item */
 						 MPI_INT,           /* data item is an integer */
 						 status.MPI_SOURCE, /* to who we just received from */
-						 WORKTAG,           /* user chosen message tag */
+						 WORK_TAG,           /* user chosen message tag */
 						 MPI_COMM_WORLD);   /* default communicator */
 				}
-				if (!readOutputFile(energyCalculationType, population, optimizedPopulation, jobDone, converged)) {
-					error = true;
+				if (!readOutputFile(energyCalculationType, population, optimizedPopulation, jobDone, converged))
 					throw "Couldn't read log file";
-				}
 			}
-			if (s_timeToFinish)
-				end(rank);
 		} else { // if (!s_masterDistributingTasks)
 			int message;
 			for (i = 0; i < (int)population.size(); i += nWorkers) {
@@ -283,13 +282,14 @@ bool Mpi::master(int energyCalculationType, vector<MoleculeSet*> &population, ve
 					printf("Master with rank %d finished task %d.\n", rank, (i+1));
 				
 				totalTime = time(NULL) - jobStartTime[i];
-				if (totalTime > s_longestiCalculationTime)
-					s_longestiCalculationTime = totalTime;
-				if (!s_timeToFinish && ((s_wallTime-time(NULL)) < s_longestiCalculationTime)) {
+				if (totalTime > s_longestCalculationTime)
+					s_longestCalculationTime = totalTime;
+				if (!s_timeToFinish && ((s_wallTime-time(NULL)) < s_longestCalculationTime + s_bufferTime)) {
 					s_timeToFinish = true;
 					if (PRINT_MPI_MESSAGES) {
 						cout << "Time: " << time(NULL) << ", walltime: " << s_wallTime
-						     << ", the longest job took: " << s_longestiCalculationTime
+						     << ", buffer time: " << s_bufferTime
+						     << ", the longest job took: " << s_longestCalculationTime
 						     << ", we better finish." << endl;
 						printf("Sending slaves the kill signal.\n");
 					}
@@ -300,12 +300,12 @@ bool Mpi::master(int energyCalculationType, vector<MoleculeSet*> &population, ve
 				/* Receive results from a slave */
 				MPI_Recv(&message,          /* message buffer */
 					 1,                 /* one data item */
-					 MPI_INT,           /* of type double real */
+					 MPI_INT,           /* of type int */
 					 i,                 /* receive from sender i */
 					 MPI_ANY_TAG,       /* any type of message */
 					 MPI_COMM_WORLD,    /* default communicator */
 					 &status);          /* info about the received message */
-				if (status.MPI_TAG == DIETAG) {
+				if (status.MPI_TAG == DIE_TAG) {
 					if (PRINT_MPI_MESSAGES)
 						printf("Slave %d quit without being told.", status.MPI_SOURCE);
 					throw "Slave quit without being told.";
@@ -321,37 +321,35 @@ bool Mpi::master(int energyCalculationType, vector<MoleculeSet*> &population, ve
 				}
 		}
 		s_percentageOfSuccessfulCalculations = (FLOAT)converged / (FLOAT)population.size();
-		if (!s_timeToFinish) {
-			if ((s_percentageOfSuccessfulCalculations < MIN_SUCCESSFULL_ENERGY_CALCULATION_PERCENTAGE) && (population.size() > 1)) {
-				error = true;
-				if (rank == 0)
-					cout << "The pecentage of successful energy calculations is " << (100.0*s_percentageOfSuccessfulCalculations) << "% which is below the limit of "
-					     << setprecision(2) << (100.0*MIN_SUCCESSFULL_ENERGY_CALCULATION_PERCENTAGE) << "%.  Something may be wrong.  Exiting..." << endl;
-				else
-					cout << "The pecentage of successful energy calculations is " << (100.0*s_percentageOfSuccessfulCalculations) << "% which is below the limit of "
-					     << setprecision(2) << (100.0*MIN_SUCCESSFULL_ENERGY_CALCULATION_PERCENTAGE) << "%.  Something may be wrong.  Process with rank " << rank << " exiting..." << endl;
-				end(rank);
-			} else if (rank == 0) {
+		if ((s_percentageOfSuccessfulCalculations < MIN_SUCCESSFULL_ENERGY_CALCULATION_PERCENTAGE) && (population.size() > 1)) {
+			error = true;
+			if (rank == 0)
+				cout << "The pecentage of successful energy calculations is " << (100.0*s_percentageOfSuccessfulCalculations) << "% which is below the limit of "
+				     << setprecision(2) << (100.0*MIN_SUCCESSFULL_ENERGY_CALCULATION_PERCENTAGE) << "%.  Something may be wrong.  Exiting..." << endl;
+			else
+				cout << "The pecentage of successful energy calculations is " << (100.0*s_percentageOfSuccessfulCalculations) << "% which is below the limit of "
+				     << setprecision(2) << (100.0*MIN_SUCCESSFULL_ENERGY_CALCULATION_PERCENTAGE) << "%.  Something may be wrong.  Process with rank " << rank << " exiting..." << endl;
+		} else if (!s_timeToFinish) {
+			if (rank == 0) {
 				if ((s_EndIfFileExists.length() > 0) && MoleculeSet::fileExists(s_EndIfFileExists.c_str())) {
 					s_timeToFinish = true;
 					cout << "Recieved the stop signal." << endl;
-					end(rank);
 				}
 			} else if (s_independent) {
 				int messageReceived = 0;
 				int returned = MPI_Test(&s_mpiRequest, &messageReceived, &status);
-				if (PRINT_MPI_MESSAGES)
-					printf("MPI_Test returned %d and messageReceived %d for process with rank %d and status %d (die=%d).\n", returned, messageReceived, rank, status.MPI_TAG, DIETAG);
-				if (messageReceived && (status.MPI_TAG == DIETAG)) {
+				if (messageReceived && (status.MPI_TAG == DIE_TAG)) {
 					s_timeToFinish = true;
-					end(rank);
+					if (PRINT_MPI_MESSAGES)
+						printf("MPI_Test returned %d and messageReceived %d for process with rank %d and status %d (die=%d).\n", returned, messageReceived, rank, status.MPI_TAG, DIE_TAG);
 				}
 			}
 		} 
 	} catch (const char* message) {
 		if (PRINT_CATCH_MESSAGES)
 			cerr << "Caught message: " << message << endl;
-		end(rank);
+		if (strcmp("times up!",message) != 0) // if we haven't hit the wall time
+			error = true;
 	}
 	delete[] jobStatus;
 	delete[] jobStartTime;
@@ -403,6 +401,7 @@ bool Mpi::readOutputFile(int energyCalculationType, vector<MoleculeSet*> &popula
 	return success;
 }
 
+// Call this function when you are finished performing calculations
 void Mpi::end(int rank)
 {
 	int nWorkers;
@@ -411,15 +410,40 @@ void Mpi::end(int rank)
 	nSlaves = nWorkers - 1;
 	
 	if (rank == 0) {
-		if (s_independent || !s_masterDistributingTasks || (nSlaves == 0))
+		if ((nSlaves == 0) || s_independent || !s_masterDistributingTasks)
 			Energy::deleteScratchDir();
-		for (int ranki = 1; ranki <= nSlaves; ++ranki) {
-			if (PRINT_MPI_MESSAGES)
-				cout << "Sending slave " << ranki << " the kill signal at time " << time(NULL) << "." << endl;
-			MPI_Send(0, 0, MPI_INT, ranki, DIETAG, MPI_COMM_WORLD);
+		if (s_independent) {
+			int message;
+			MPI_Status status;
+			for (int ranki = 1; ranki <= nSlaves; ++ranki) {
+				MPI_Recv(&message,          /* message buffer */
+					 1,                 /* one data item */
+					 MPI_INT,           /* of type int */
+					 ranki,                 /* receive from sender i */
+					 MPI_ANY_TAG,       /* any type of message */
+					 MPI_COMM_WORLD,    /* default communicator */
+					 &status);          /* info about the received message */
+				if ((status.MPI_TAG != DIE_TAG) && (status.MPI_TAG != FINISHED_TAG)) {
+					--ranki;
+					continue;
+				}
+				if (PRINT_MPI_MESSAGES)
+					cout << "Master received the finished signal from the mpi prossess " << ranki << " at time " << time(NULL) << "." << endl;
+			}
+		} else {
+			for (int ranki = 1; ranki <= nSlaves; ++ranki) {
+				if (PRINT_MPI_MESSAGES)
+					cout << "Sending slave " << ranki << " the finished signal at time " << time(NULL) << "." << endl;
+				MPI_Send(0, 0, MPI_INT, ranki, FINISHED_TAG, MPI_COMM_WORLD);
+			}
 		}
 	} else {
 		Energy::deleteScratchDir();
+		if (s_independent) {
+			if (PRINT_MPI_MESSAGES)
+				cout << "Sending the finished signal to the mpi process with rank 0 at time " << time(NULL) << "." << endl;
+			MPI_Send(0, 0, MPI_INT, 0, FINISHED_TAG, MPI_COMM_WORLD);
+		}
 	}
 }
 
@@ -437,7 +461,7 @@ void Mpi::slave(int rank, bool masterDistributingTasks)
 	MPI_Comm_size(MPI_COMM_WORLD, &nWorkers);
 	MPI_Recv(messageBuffer, sizeof(messageBuffer), MPI_BYTE, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 	
-	if (status.MPI_TAG == DIETAG)
+	if ((status.MPI_TAG == DIE_TAG) || (status.MPI_TAG == FINISHED_TAG))
 		return;
 	if (PRINT_MPI_MESSAGES)
 		cout << "mpiSlave " << rank << " received initial message: " << messageBuffer << " at time " << time(NULL) << endl;
@@ -449,7 +473,7 @@ void Mpi::slave(int rank, bool masterDistributingTasks)
 	if (masterDistributingTasks) {
 		while (true) {
 			MPI_Recv(&taskNumber, 1, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status); // Get a new taskNumber to do
-			if (status.MPI_TAG == DIETAG) {
+			if ((status.MPI_TAG == DIE_TAG) || (status.MPI_TAG == FINISHED_TAG)) {
 				if (PRINT_MPI_MESSAGES)
 					cout << "Slave " << rank << " received the kill signal at time " << time(NULL) << endl;
 				break;
@@ -457,13 +481,13 @@ void Mpi::slave(int rank, bool masterDistributingTasks)
 			if (PRINT_MPI_MESSAGES)
 				printf("Slave %d received task %d.\n", rank, taskNumber);
 			Energy::doEnergyCalculation(taskNumber);
-			MPI_Send(&taskNumber, 1, MPI_INT, 0, WORKTAG, MPI_COMM_WORLD); // Tell the master we did taskNumber
+			MPI_Send(&taskNumber, 1, MPI_INT, 0, WORK_TAG, MPI_COMM_WORLD); // Tell the master we did taskNumber
 		}
 	} else {
 		try {
 			while (true) {
 				MPI_Recv(&populationSize, 1, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status); // Get a new taskNumber to do
-				if (status.MPI_TAG == DIETAG) {
+				if ((status.MPI_TAG == DIE_TAG) || (status.MPI_TAG == FINISHED_TAG)) {
 					if (PRINT_MPI_MESSAGES)
 						cout << "Slave " << rank << " received the kill signal at time " << time(NULL) << endl;
 					break;
@@ -477,26 +501,25 @@ void Mpi::slave(int rank, bool masterDistributingTasks)
 						printf("Slave %d finished task %d.\n", rank, taskNumber);
 				
 					endTime = time(NULL) - startTime;
-					if (endTime > s_longestiCalculationTime)
-						s_longestiCalculationTime = endTime;
-					if (!s_timeToFinish && ((s_wallTime-time(NULL)) < s_longestiCalculationTime)) {
+					if (endTime > s_longestCalculationTime)
+						s_longestCalculationTime = endTime;
+					if (!s_timeToFinish && ((s_wallTime-time(NULL)) < s_longestCalculationTime)) {
 						s_timeToFinish = true;
 						if (PRINT_MPI_MESSAGES) {
 							cout << "Time: " << time(NULL) << ", walltime: " << s_wallTime
-							     << ", the longest job took: " << s_longestiCalculationTime
+							     << ", the longest job took: " << s_longestCalculationTime
 							     << ", this slave better finish." << endl;
 						}
-						MPI_Send(&populationSize, 1, MPI_INT, 0, DIETAG, MPI_COMM_WORLD); // Tell the master we are done early
+						MPI_Send(&populationSize, 1, MPI_INT, 0, DIE_TAG, MPI_COMM_WORLD); // Tell the master we are done early
 						throw "times up!";
 					}
 				}
-				MPI_Send(&populationSize, 1, MPI_INT, 0, WORKTAG, MPI_COMM_WORLD); // Tell the master we are done
+				MPI_Send(&populationSize, 1, MPI_INT, 0, WORK_TAG, MPI_COMM_WORLD); // Tell the master we are done
 			}
 		} catch (const char* message) {
 			if (PRINT_CATCH_MESSAGES)
 				cerr << "Caught message: " << message << endl;
 		}
 	}
-	Energy::deleteScratchDir();
 }
 

@@ -35,9 +35,9 @@ using namespace std;
 * Parameters: input - an input object
 *             moleculeSets - the population (initizlied inside input if a resume file is read)
 *             bestNMoleculeSets - the bestNStructures (initizlied inside input if a resume file is read)
-* Returns: true if the run completed
+* Returns: nothing
 *******************************************************************************/
-bool simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector<MoleculeSet*> &bestNMoleculeSets, string &seedFiles, bool bIndependentRun);
+void simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector<MoleculeSet*> &bestNMoleculeSets, string &seedFiles, bool bIndependentRun);
 
 FLOAT probabilitySum(vector<FLOAT> &deltaEnergies, FLOAT scalingFactor, FLOAT temperature);
 

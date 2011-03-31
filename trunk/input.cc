@@ -2959,10 +2959,6 @@ bool Input::setupForIndependentRun(vector<string> &inputFiles, vector<MoleculeSe
 	m_sPathToEnergyFiles = savedPathToEnergyFiles;
 	m_sNodesFile = m_sPathToEnergyFiles + "/nodes.txt";
 	
-	if (success && bSetupPreviouslyDone)
-		if (!compileIndependentRunData(false))
-			success = false;
-	
 	return success;
 }
 

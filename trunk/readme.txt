@@ -391,8 +391,6 @@ A. Submitting the program to the PBS Scheduler
 
 This section describes how to run the program on a cluster of Linux computers with a quantum chemistry package.  Some familiarity with your quantum chemistry package and Linux is assumed.  It is also assumed that you have read the instructions for configuring quantum chemistry packages in section F.
 
-In energyProgram.cc, set the full path to your Gamess, Gaussian, or other executable in the 'init' function.  Then recompile the program by typing 'make' in the main program directory.
-
 Create a script file for submitting the main pso program to the PBS (Portable Batch System) scheduler. An example script file for doing this called "examplePBSScript" is in the "pso" directory.  Make a copy of this script and modify it as follows.
 
     1. Line 2 in the script file specifies the number of nodes you want to use and the number of processors per node (ppn) you want.  Make sure your population size is divisible by this number.  This application was designed to perform one energy calculation on each processor.  The wall time is a maximum time limit you want to allow your job to run for.  Set this appropriately. The example file specifies 24 hours.
