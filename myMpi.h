@@ -23,8 +23,9 @@
 #define LENNARD_JONES_SIGMA     1.0
 #define PRINT_MPI_MESSAGES	false
 
-#define DIETAG 1
-#define WORKTAG 2
+#define DIE_TAG      1
+#define WORK_TAG     2
+#define FINISHED_TAG 3
 
 using namespace std;
 
@@ -58,12 +59,13 @@ public:
 	static void slave(int rank, bool masterDistributingTasks);
 
 	static time_t s_wallTime;
+	static time_t s_bufferTime;
 	static bool s_timeToFinish;
 	static double s_percentageOfSuccessfulCalculations;
 private:
 	static bool readOutputFile(int energyCalculationType, vector<MoleculeSet*> &population, vector<MoleculeSet*> &optimizedPopulation, int fileIndex, int &converged);
 	
-	static time_t s_longestiCalculationTime;
+	static time_t s_longestCalculationTime;
 	static bool s_independent;
 	static bool s_masterDistributingTasks;
 	static string s_EndIfFileExists;

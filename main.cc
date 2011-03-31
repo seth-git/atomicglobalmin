@@ -7,7 +7,7 @@
 #include "main.h"
 #include <mpi.h>
 
-bool simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector<MoleculeSet*> &bestNMoleculeSets, string &seedFiles, bool bIndependentRun)
+void simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector<MoleculeSet*> &bestNMoleculeSets, string &seedFiles, bool bIndependentRun)
 {
 	vector<MoleculeSet*> emptyMoleculeSets; // This is only created here so we have something to pass in for
 	                                        // bestIndividualMoleculeSets which is used in PSO, not simulated annealing.
@@ -43,7 +43,6 @@ bool simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 	FLOAT lowTemp, highTemp;
 	FLOAT newTemp = 0;
 	FLOAT myFloat;
-	bool finished = false;
 	
 	int iNumTransitions;
 
@@ -56,10 +55,6 @@ bool simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 	
 	
 	try {
-		if (input.m_bRunComplete) {
-			cout << "This run has already been completed." << endl;
-			throw "This run has already been completed";
-		}
 		if (!input.m_bResumeFileRead || (bIndependentRun && (seedFiles.length() > 0))) {
 			seconds = time (NULL);
 
@@ -414,19 +409,16 @@ bool simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 				if (system(commandString)) {	
 					cout << "Error copying the temporary resume file(" << tempResumeFileName
 					     << ") to the real resume file." << endl;
-					break;
+					throw "Error copying a temporary resume file to the real resume file.";
 				}
 			}
 			
-			if (input.m_bRunComplete)
-				break;
-			
 			if (input.m_bTestMode)
 				if (!input.printTestFileGeometry(input.m_iIteration, *moleculeSets[0]))
-					throw "";
-			if (Mpi::s_timeToFinish)
+					throw "Couldn't print test file geometry";
+			if (Mpi::s_timeToFinish && !input.m_bRunComplete)
 				throw "Time to finish, cleaning up.";
-		} while (true);
+		} while (!input.m_bRunComplete);
 		
 		cout << "Finished after " << input.m_iIteration << " iterations at a temperature of " << input.m_fStartingTemperature << "." << endl;
 		if ((input.m_pSelectedEnergyProgram->m_sPathToExecutable.length() == 0) && !input.m_bTransitionStateSearch) {
@@ -461,7 +453,6 @@ bool simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 		     << minutes << " minutes, " << seconds << " seconds." << endl;
 		cout << "Finished in " << days << " days, " << hours << " hours, "
 		     << minutes << " minutes, " << seconds << " seconds." << endl;
-		finished = true;
 	} catch (const char* message) {
 		if (PRINT_CATCH_MESSAGES)
 			cerr << "Caught message: " << message << endl;
@@ -482,7 +473,6 @@ bool simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 		fout.close();
 	if (input.m_bTestMode)
 		input.printTestFileFooter();
-	return finished;
 }
 
 FLOAT probabilitySum(vector<FLOAT> &deltaEnergies, FLOAT scalingFactor, FLOAT temperature)
@@ -544,10 +534,6 @@ void particleSwarmOptimization(Input &input, vector<MoleculeSet*> &moleculeSets,
 	}
 	
 	try {
-		if (input.m_bRunComplete) {
-			cout << "This run has already been completed." << endl;
-			throw "This run has already been completed";
-		}
 		if (!input.m_bResumeFileRead) {
 			seconds = time (NULL);
 			fout.open (input.m_sOutputFileName.c_str(), ofstream::out); // Erase the existing file, if there is one
@@ -817,7 +803,7 @@ void particleSwarmOptimization(Input &input, vector<MoleculeSet*> &moleculeSets,
 				{
 					cout << "Error copying the temporary resume file(" << tempResumeFileName
 					     << ") to the real resume file." << endl;
-					break;
+					throw "Error copying a temporary resume file to the real resume file.";
 				}
 			}
 			
@@ -842,15 +828,12 @@ void particleSwarmOptimization(Input &input, vector<MoleculeSet*> &moleculeSets,
 			} else
 				input.m_fVisibilityDistance += input.m_fVisibilityDistanceIncrease;
 			
-			if (input.m_bRunComplete)
-				break;
-			
 			if (input.m_bTestMode)
 				if (!input.printTestFileGeometry(input.m_iIteration, *moleculeSets[iRandomMolecule]))
-					throw "";
-			if (Mpi::s_timeToFinish)
+					throw "Couldn't print test file geometry";
+			if (Mpi::s_timeToFinish && !input.m_bRunComplete)
 				throw "Time to finish, cleaning up.";
-		} while (true);
+		} while (!input.m_bRunComplete);
 		
 		cout << "Finished after " << input.m_iIteration << " iterations." << endl;
 		fout << "Finished after " << input.m_iIteration << " iterations." << endl;
@@ -1083,10 +1066,6 @@ void gega(Input &input, vector<MoleculeSet*> &population, vector<MoleculeSet*> &
 		energyCalculationType = SINGLE_POINT_ENERGY_CALCULATION;
 
 	try {	
-		if (input.m_bRunComplete) {
-			cout << "This run has already been completed." << endl;
-			throw "This run has already been completed";
-		}
 		if (!input.m_bResumeFileRead) {
 			seconds = time (NULL);
 			fout.open (input.m_sOutputFileName.c_str(), ofstream::out); // Erase the existing file, if there is one
@@ -1197,7 +1176,7 @@ void gega(Input &input, vector<MoleculeSet*> &population, vector<MoleculeSet*> &
 				{
 					cout << "Error copying the temporary resume file(" << tempResumeFileName
 					     << ") to the real resume file." << endl;
-					break;
+					throw "Error copying a temporary resume file to the real resume file.";
 				}
 			}
 			
@@ -1209,14 +1188,12 @@ void gega(Input &input, vector<MoleculeSet*> &population, vector<MoleculeSet*> &
 				pPopulationB = &population2;
 			}
 			
-			if (input.m_bRunComplete)
-				break;
 			if (input.m_bTestMode)
 				if (!input.printTestFileGeometry(input.m_iIteration, *bestNMoleculeSets[0]))
-					throw "";
-			if (Mpi::s_timeToFinish)
+					throw "Couldn't print test file geometry";
+			if (Mpi::s_timeToFinish && !input.m_bRunComplete)
 				throw "Time to finish, cleaning up.";
-		} while (true);
+		} while (!input.m_bRunComplete);
 		
 		cout << "Finished after " << input.m_iIteration << " iterations." << endl;
 		fout << "Finished after " << input.m_iIteration << " iterations." << endl;
@@ -1701,7 +1678,7 @@ int master(int rank)
 					         inputFileNames[i].length()+1,                 /* buffer size */
 					         MPI_BYTE,           /* data item is an character or byte */
 					         i,              /* destination process rank */
-					         WORKTAG,           /* user chosen message tag */
+					         WORK_TAG,           /* user chosen message tag */
 					         MPI_COMM_WORLD);   /* default communicator */
 				}
 				inputFileName = inputFileNames[0];
@@ -1709,8 +1686,8 @@ int master(int rank)
 				MPI_Status status;
 				char messageBuffer[500];
 				MPI_Recv(messageBuffer, sizeof(messageBuffer), MPI_BYTE, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-				if (status.MPI_TAG == DIETAG)
-					throw "";
+				if (status.MPI_TAG != WORK_TAG)
+					throw "Failed to receive work tag in main.cc";
 				inputFileName = messageBuffer;
 			}
 			cout << "Reading File: " << inputFileName << endl;
@@ -1792,29 +1769,16 @@ int master(int rank)
 			if (!Mpi::masterSetup(input.m_iStructuresToOptimizeAtATime, false,masterDistributingTasks, rank))
 				throw "Couldn't create scratch directory";
 			optimizeBestStructures(input, moleculeSets, bestNMoleculeSets);
+			Mpi::end(rank);
 		} else {
-			switch (input.m_iAlgorithmToDo) {
+			if (!Mpi::masterSetup(input.m_iTotalPopulationSize, ArgumentParser::optionPresent("-i"), masterDistributingTasks, rank))
+				throw "Couldn't create scratch directory";
+			if (input.m_bResumeFileRead && input.m_bRunComplete) {
+				cout << "This run has already been completed." << endl;
+			} else {
+				switch (input.m_iAlgorithmToDo) {
 				case SIMULATED_ANNEALING:
-				case PARTICLE_SWARM_OPTIMIZATION:
-				case GENETIC_ALGORITHM:
-					if (!Mpi::masterSetup(input.m_iTotalPopulationSize, ArgumentParser::optionPresent("-i"), masterDistributingTasks, rank))
-						throw "Couldn't create scratch directory";
-					break;
-				default:
-					Mpi::end(rank);
-			}
-			bool finished;
-			switch (input.m_iAlgorithmToDo) {
-				case SIMULATED_ANNEALING:
-					finished = simulatedAnnealing(input, moleculeSets, bestNMoleculeSets, seedFiles, ArgumentParser::optionPresent("-i"));
-					
-					if (finished && ArgumentParser::optionPresent("-i") && (rank == 0)) {
-						inputFileName = ArgumentParser::s_argv[ArgumentParser::s_argc-1];
-						cout << "Reading File: " << inputFileName << endl;
-						if (!input.open(inputFileName, true, true, moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets))
-							throw "";
-						input.compileIndependentRunData(true);
-					}
+					simulatedAnnealing(input, moleculeSets, bestNMoleculeSets, seedFiles, ArgumentParser::optionPresent("-i"));
 					break;
 				case PARTICLE_SWARM_OPTIMIZATION:
 					particleSwarmOptimization(input, moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets, seedFiles);
@@ -1822,8 +1786,18 @@ int master(int rank)
 				case GENETIC_ALGORITHM:
 					gega(input, moleculeSets, bestNMoleculeSets, seedFiles);
 					break;
+				}
 			}
-					}
+			Mpi::end(rank);
+			if ((input.m_iAlgorithmToDo == SIMULATED_ANNEALING) && (rank == 0) &&
+			    ArgumentParser::optionPresent("-i") && (input.m_bRunComplete || Mpi::s_timeToFinish)) {
+				inputFileName = ArgumentParser::s_argv[ArgumentParser::s_argc-1];
+				cout << "Reading File: " << inputFileName << endl;
+				if (!input.open(inputFileName, true, false, moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets))
+					throw "Failed to reopen input file name before calling compileIndependentRunData.";
+				input.compileIndependentRunData(true);
+			}
+		}
 	} catch (const char* message) {
 		if (PRINT_CATCH_MESSAGES)
 			cerr << "Caught message: " << message << endl;
@@ -1863,8 +1837,10 @@ int main(int argc, char *argv[])
 			throw "";
 		if ((myrank == 0) || ArgumentParser::optionPresent("-i"))
 			master(myrank);
-		else
+		else {
 			Mpi::slave(myrank, ArgumentParser::optionPresent("-m"));
+			Mpi::end(myrank);
+		}
 	} catch(const char* message) {
 		if (PRINT_CATCH_MESSAGES)
 			cerr << "Caught message: " << message << endl;
@@ -1873,7 +1849,6 @@ int main(int argc, char *argv[])
 	EnergyProgram::cleanUp();
 
 	/* Shut down MPI */
-
 	MPI_Finalize();
 	return 0;
 }
