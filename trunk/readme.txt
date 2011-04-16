@@ -43,7 +43,7 @@ This software searches for chemical structures that are global minima the potent
 
 This program can perform two different types of searches.  First, it searches for the global minimum of a set of molecules that each have fixed geometry using translation and rotation of molecules with respect to one another.  The program has four different random algorithms for this type of search: particle swarm optimization, enhanced simulated annealing, basin hoping, and a simple genetic algorithm. The second type of search is a bond rotational search for a single molecule.  This is a deterministic, non-random search using a user-specified bond rotational angle.
 
-Finding accurate global minima even for small molecules can be challenging.  This software is an automated tool making it simple and easy to find such minima using the much more accurate quantum methods.
+Finding accurate global minima even for small molecules can be challenging.  This software is an automated tool making it simple and easy to find such minima using the more accurate quantum methods.
 
 A. Getting Started
 
