@@ -10,9 +10,10 @@ I. Introduction
     C. Running and restarting the program
     D. Obtaining results from output, resume, and optimization files
     E. Performing bond rotations using a deterministic, non-random search
-    F. Configuring quantum chemistry packages
-    G. References
-    H. Disclaimer
+    F. Configuring the program for quantum chemistry packages
+    G. Developing new features
+    H. References
+    I. Disclaimer
 
 II. Input file formats and optimization of random algorithm parameters
     A. Input parameters common to all algorithms
@@ -27,7 +28,6 @@ II. Input file formats and optimization of random algorithm parameters
 III. Running the program on a cluster of computers
     A. Submitting the program to the PBS Scheduler
     B. MPI options
-    C. Telling your quantum chemistry package where the scratch directory is located
 
 IV. Other useful tips
     A. More about optimization files
@@ -39,7 +39,7 @@ IV. Other useful tips
 
 I. Introduction
 
-This software searches for chemical structures that are global minima the potential energy surface.  It uses highly accurate ab initio methods and reduces the cost of these by using distributed computations on a Linux cluster.  The software allows energy calculations to be performed using a wide variety of external quantum chemistry programs including ADF, GAMESS, GAMESS-UK, Gaussian, Jaguar, Molpro, and ORCA, as well as an internal Lennard Jones potential used for testing purposes.
+This software searches for chemical structures that are global minima on the potential energy surface.  It uses highly accurate ab initio methods and reduces the cost of these by using distributed computations on a Linux cluster. The software allows energy calculations to be performed using a wide variety of external quantum chemistry programs including ADF, GAMESS, GAMESS-UK, Gaussian, Jaguar, Molpro, and ORCA, as well as an internal Lennard Jones potential used for testing purposes.
 
 This program can perform two different types of searches.  First, it searches for the global minimum of a set of molecules that each have fixed geometry using translation and rotation of molecules with respect to one another.  The program has four different random algorithms for this type of search: particle swarm optimization, enhanced simulated annealing, basin hoping, and a simple genetic algorithm. The second type of search is a bond rotational search for a single molecule.  This is a deterministic, non-random search using a user-specified bond rotational angle.
 
@@ -90,15 +90,13 @@ When you have successfully compiled the program, two executables will be created
 
 If using the program with ADF, GAMESS, GAMESS-UK, Jaguar, Molpro, or ORCA , please see configuration instructions in section F.
 
-You may get updates to the program if you have subversion installed.  To do this, navigate to the directory where the pso directory is located, then type 'svn update pso'.  Please wait to do this until after major revisions have been released.
-
 B. Input, output, resume, and optimization files
 
 Each of the four algorithms, particle swarm optimization (PSO), basin hopping, simulated annealing, and the genetic algorithm has a different input file (file extension .inp).  These were designed to be as self explanatory as possible. Simulated annealing and basin hopping have a common input file, since they are similar algorithms.  Each time the program is run, it creates an output file (file extension .out), which contains the input parameters as well as summary information on the progress of the run.  The program also creates a resume file (file extension .res), which contains all information necessary for restarting a run that was stopped before it was completed.  An optimization file (file extension .opt) can be created from a resume file in order to perform a local geometry optimization on the list of best structures after the run has completed.
 
 C. Running and restarting the program
 
-Four example input files are LJ7_PSO.inp, LJ7_Sim.inp, LJ7_BH.inp, and LJ7_GA.inp, for PSO, simulated annealing, and the genetic algorithm respectively.  To run a PSO input file, type:
+Four example input files are LJ7_PSO.inp, LJ7_Sim.inp, LJ7_BH.inp, and LJ7_GA.inp, for PSO, simulated annealing, basin hopping, and the genetic algorithm respectively. To run PSO, type:
 
       ./pso LJ7_PSO.inp
 
@@ -110,7 +108,11 @@ To create a geometry optimization file from the LJ7_PSO.res resume file, type:
 
 	./helper -o LJ7_PSO.res LJ7_PSO.opt 100 10
 
-This creates an optimization file called LJ7_PSO.opt and transfers 100 structures to it from LJ7_PSO.res.  To run the optimization file type "./pso LJ7_PSO.opt". After each set of 10 structures have been optimized, the program will update the LJ7_PSO.opt file until all structures have been optimized.
+This creates an optimization file called LJ7_PSO.opt and transfers 100 structures to it from LJ7_PSO.res.  To run the optimization file type:
+
+	./pso LJ7_PSO.opt
+
+After each set of 10 structures have been optimized, the program will update the LJ7_PSO.opt file until all structures have been optimized.
 
 Note that if you open an optimization file, it will say simulated annealing, particle swarm, or genetic algorithm at the top. This is because optimization files were originally designed to perform a geometry optimization on the list of best structures after a simulated annealing, particle swarm, or genetic algorithm run.  Now, they are more generally used to perform calculations on any list of chemical structures.  For example, this program uses optimization files to perform bond rotational searches.  Even though geometry optimization may or may not be used, the file type is still called an 'optimization' file.
 
@@ -130,15 +132,13 @@ Use the -b option to ensure that bonds have been correctly identified. Then, use
 
 This creates the optimization file Isoprene.opt from the input file Isoprene.inp, using bond rotational angles of 30 degrees.  When the structures in Isoprene.opt are optimized, the file is re-written after every set of 200 structures have been optimized.
 
-Before generating an optimization file, consider how many bond rotational positions are possible to ensure that the optimization file to be created will not be too large.  For this Isoprene Hydroxy Alkyl Peroxy Radical example, if we rotate bonds by 30 degrees, that gives 360 / 30 = 12 possible rotational positions for each bond.  In this molecule, there are 5 rotatable bonds. That gives 12 to the power of 5 or 248,832 possible combinations.  Fortunately, one of the rotatable bonds has a methyl group attached, leaving only 12/3 = 4 rotational positions for that case.  This reduces the number of possible combinations to 4*(12^4) = 82,944.  This program automatically detects methyl groups and also removes configurations that do not satisfy minimum inter-atomic distance constraints specified in the input file.  Also note that while this program does detect rings, it does not handle them.  Ring bonds are therefore labeled as none 'rotatable'.
+Before generating an optimization file, consider how many bond rotational positions are possible to ensure that the optimization file to be created will not be too large.  For this Isoprene Hydroxy Alkyl Peroxy Radical example, if we rotate bonds by 30 degrees, that gives 360 / 30 = 12 possible rotational positions for each bond.  In this molecule, there are 5 rotatable bonds. That gives 12 to the power of 5 or 248,832 possible combinations.  Fortunately, one of the rotatable bonds has a methyl group attached, leaving only 12/3 = 4 rotational positions for that case.  This reduces the number of possible combinations to 4*(12^4) = 82,944.  This program automatically detects methyl groups and also removes configurations that do not satisfy minimum inter-atomic distance constraints specified in the input file.  Also note that while this program does detect rings, it does not handle them.  Ring bonds are therefore labeled as non-rotatable.
 
-Before doing a bond rotational search be sure to check that bonds are in the appropriate locations and are identified correctly as single, double, triple using the -b option.  If they have not, manually change the criteria used to identify bonds stored in the file bondLengths.txt. The format of this file is atomic symbol, atomic symbol, bond type ('s' for single, 'd' for double, 't' for triple), minimum distance-maximum distance, where distances are in angstroms.
+Before doing a bond rotational search be sure to check that bonds are in the appropriate locations and are identified correctly as single, double, or triple using the -b option.  If they are not, manually change the criteria used to identify bonds in the file bondLengths.txt. The format of this file is atomic symbol, atomic symbol, bond type ('s' for single, 'd' for double, 't' for triple), minimum distance-maximum distance, where distances are in angstroms.
 
-Note that the bondLengths.txt file was automatically generated from from average bond lengths stored in the files averageSingleBondLengthsInAngstroms.txt and averageMultipleBondLengthsInAngstroms.txt using the Perl script updateBondLengths.pl.  These average bond lengths were taken from the Handbook of Chemistry and Physics.  The updateBondLengths.pl program allows bonds to be 15% larger or smaller than average bond lengths when generating bondLengths.txt.
+Note that the bondLengths.txt file was automatically generated from average bond lengths stored in the files averageSingleBondLengthsInAngstroms.txt and averageMultipleBondLengthsInAngstroms.txt using the Perl script updateBondLengths.pl.  These average bond lengths were taken from the Handbook of Chemistry and Physics.  The updateBondLengths.pl program allows bonds to be 15% larger or smaller than average bond lengths when generating bondLengths.txt.
 
-Since performing a bond rotational search is non-random, there are no difficult parameters to set. When performing a simulated annealing, particle swarm, or genetic algorithm search, these random algorithms have parameters you will need to set.  More specific information on setting these parameters as well as the general format of input files is given in the next section.
-
-F. Configuring the program for various quantum chemistry packages
+F. Configuring the program for quantum chemistry packages
 
 To support various quantum chemistry packages, it is necessary to create methods for writing input files and reading output files.  The more difficult challenge of reading output files has been solved for you by incorporating the cclib package into this software.  The cclib package can read output files from ADF, GAMESS, GAMESS-UK, Gaussian, Jaguar, Molpro, and ORCA.  Methods for creating input files are provided for GAMESS and Gaussian.
 
@@ -156,16 +156,25 @@ Second, write a method in energy.cc for reading your quantum program's output fi
 
 Third, check that your quantum program is called correctly in the doEnergyCalculation method.
 
-G. References
+Note: programs such as Gaussian require a scratch directory.  The scratch directory is specified on line 5 of your input file.  If using Gaussian, the pso program tells Gaussian where to put scratch files using the command "export GAUSS_SCRDIR = your_scratch_directory".  If you need to modify this command, or change it for another quantum chemistry package, it's listed in the energy.cc file in the two init functions.
+
+G. Developing new features
+
+If you create a method for writing a new input file type or reading a new output file type, please contribute your method so others can use it too. In fact if you have any new features you want, we encourage you to participate in their development.  Feel free to contact us by going to the website and clicking 'Support'.  Then, click 'creating a new item', select 'New Feature' or 'Question' for the category, enter a subject and description, select a file if you have one, and click 'Add Artifact'.
+
+H. References
 
 A few publications where the software has been used are below:
+
 [1] Clark, J.; Call, S. T.; Austin, D.; Hansen, J. Computational Study of Isopren Hydroxyalkyl Peroxy Radical-Water complexes (C5H8(OH)O2-H2O). J. Phys. Chem. A, 2010, 114 (23), 6534–6541.
 
 [2] Averkiev, B. B.; Call, S.; Boldyrev, A. I.; Wang, L. M.; Huang, W.; Wang, L. S. Photoelectron spectroscopy and ab initio study of the structure and bonding of Al7N- and Al7N. J. Phys. Chem. A. 2008, 112(9), 1873-1879.
 
 [3] Call, S. T.; Boldyrev, A. I., Zubarev, D. Y. Global Minimum Structure Searches via Particle Swarm Optimization. J. Comput. Chem. 2007, 28, 1177-1186.
 
-H. Disclaimer
+Note: If you wish to reference this software in a publication, please reference the web site, http://sourceforge.net/projects/atomicglobalmin/, as well as the publications above.
+
+I. Disclaimer
 
 Note that while developers of this product strive to write high quality software, bugs do happen occasionally.  If you find bugs, please report them.  Also, this software needs more unit tests.  If you can help write these by modifying unit.cc, that would be helpful.
 
@@ -177,7 +186,7 @@ This section discusses the parameters in the input file and techniques for setti
 
 A. Input parameters common to all algorithms
 
-Parameters common to all algorithms appear at the top and bottom of each input file.  An example of the parameters at the top of an input file for (H2O)OH- are as follows:
+Parameters common to all algorithms appear at the top and bottom of each input file.  An example of the parameters at the top of an input file for (H2O)3OH- are as follows:
 
 1   Particle Swarm Optimization Input File Version 1.5.0
 2   
@@ -198,9 +207,9 @@ Parameters common to all algorithms appear at the top and bottom of each input f
 17  8 8 1.2
 18  Maximum inter-atomic distance (angstroms): 3.0
 
-The header on line 1 specifies the type of algorithm (particle swarm optimization, simulated annealing, etc.).  It contains the phrase "Input File" for input files and "Resume File" for resume files and "Optimization File" for optimization files.  The header also contains a version number.  If you attempt to run an input file that belongs to an older version of the program, you may have to change or insert lines in the input file before it will run.  The program will specify when lines are missing or need to be changed.  The path to the energy files on line 4 is the directory where the input and output files for your quantum chemistry package are stored.  If using a cluster of Linux computers, this should be a directory accessible to all nodes.  The scratch directory (line 5) is where all scratch files are written.  When using Gaussian, always specify a scratch directory.  If running on a cluster, the scratch directory can be on a local hard drive to decrease network traffic.  Output files are copied from the scratch directory back to the energy files directory (line 4).
+The header on line 1 specifies the type of algorithm (particle swarm optimization, simulated annealing, etc.).  The phrases "Input File", "Resume File", and "Optimization File" indicate the file's purpose.  The header also contains a version number.  If you attempt to run an input file that belongs to an older version of the program, you may have to change or insert lines in the input file before it will run.  The program will specify when lines are missing or need to be changed.  The path to the energy files on line 4 is the directory where the input and output files for your quantum chemistry package are stored.  If using a cluster of Linux computers, this should be a directory accessible to all nodes.  The scratch directory (line 5) is where all scratch files are written.  When using Gaussian, always specify a scratch directory.  If running on a cluster, the scratch directory can be on a local hard drive to decrease network traffic.  Output files are copied from the scratch directory back to the energy files directory (line 4).
 
-When specifying the number of each structure type to initialize (lines 7-12), keep in mind that atoms are placed in groups each of which is moved and rotated as a "unit" or molecule.  Each "unit" contains one or more atoms.  Line 8 indicates that linear structures are initialized so that all atoms are in a 3D box that is 1.2 x 1.2 x 7.0.  Planar structures are initialized so that centers of mass of each "unit" are on the same plane.  The fragmented, partially non-fragmented, and completely non-fragmented structures are described informally here.  For a more precise discussion, see the literature.  Fragmented structures contain "units" in random locations within the search cube. Partially non-fragmented structures are created such that every atom is within the maximum distance of at least one other atom.  These are called "partially" non-fragmented because two units may be isolated from the rest of the units (further than the maximum distance).  With completely non-fragmented structures, no two units can be isolated from other units.  For example, if you started at some unit and could only travel to other units within the maximum distance of that unit, you could travel to any unit.
+When specifying the number of each structure type to initialize (lines 7-12), keep in mind that atoms are placed in groups each of which is moved and rotated as a "unit" or molecule.  Each "unit" contains one or more atoms.  Line 8 indicates that linear structures are initialized so that all atoms are in a 3D box that is 1.2 x 1.2 x 7.0.  Planar structures are initialized so that centers of mass of each "unit" are on the same plane.  The fragmented, partially non-fragmented, and completely non-fragmented structures are described informally here.  For a more precise discussion, see reference 3 above.  Fragmented structures contain "units" in random locations within the search cube. Partially non-fragmented structures are created such that every atom is within the maximum distance of at least one other atom.  These are called "partially" non-fragmented because two units may be isolated from the rest of the units (further than the maximum distance).  With completely non-fragmented structures, no two units can be isolated from other units.  For example, if you started at some unit and could only travel to other units within the maximum distance of that unit, you could travel to any unit.
 
 The program allows one maximum distance between atoms (in this case 3 angstroms), and multiple minimum distances between different types of atoms.  In this case the minimum distance is 0.9 between two hydrogens, 0.8 between hydrogen and oxygen, and 1.2 between two oxygen atoms.
 
@@ -238,7 +247,7 @@ An example of the parameters at the end of the input file are given below:
 71  1 0.0 0.0 1.064890
 72  8 0.0 0.0 0.0
 
-Line 42 specifies the size of the list of best structures that are saved during the course of the entire run.  This list is updated after every iteration.  Line 43 specifies that each structure in the list of best structures is different from every other structure in the list by a certain RMS distance (see article above).  Line 44 is the number of chemical structures for which the quantum chemistry package output files will be saved.  These output files are saved in a folder called bestSavedStructures located inside the directory where energy files are stored (specified on line 4 of the input file).  Lines 45-54 should be self explanatory.  When using Gaussian, the program will automatically rename the checkpoint file for each structure in the population of candidate structures, so that there aren't naming conflicts.  The energy file footer (lines 55-59) is placed at the end of the quantum package input file.  In this case, the footer specifies that a frequency calculation be performed.  Note that the energy file header and footer are not used when energies are calculated using the Lennard Jones potential.
+Line 42 specifies the size of the list of best structures that are saved during the course of the entire run.  This list is updated after every iteration.  Line 43 specifies that each structure in the list of best structures is different from every other structure in the list by a certain RMS distance (see reference 3 above).  Line 44 is the number of chemical structures for which the quantum chemistry package output files will be saved.  These output files are saved in a folder called bestSavedStructures located inside the directory where energy files are stored (specified on line 4 of the input file).  Lines 45-53 should be self explanatory.  When using Gaussian, the program will automatically rename the checkpoint file for each structure in the population of candidate structures, so that there aren't naming conflicts.  The energy file footer (lines 55-59) is placed at the end of the quantum package input file.  In this case, the footer specifies that a frequency calculation be performed.  Note that the energy file header and footer are not used when energies are calculated using the Lennard Jones potential.
 
 Lines 61-72 are an example of how to specify groups of atoms, molecules, or "units".  The above consists of three water molecules and one hydroxide ion. Lines 65-67 specifies the coordinates of water with two hydrogen atoms and one oxygen atom.  Lines 71-72 specify coordinates for hydroxide.  If you are dealing with single atoms that are moved separately form other components in the system, one atom can be specified for each "unit".  The "format of this unit type" can only be "Cartesian ".  At some point in the future, I may allow other types of input such as "Z-matrix."
 
@@ -383,7 +392,8 @@ It is often best to use the Lennard Jones potential for testing the parameters u
 
 E. Genetic Algorithm
 
-Genetic algorithms (GA) are an efficient mechanism used by many search algorithms.  While my focus has been on developing 'new' algorithms such as particle swarm optimization, GA algorithms are very important and widely used.  The genetic algorithm in this application is well designed, but it needs a new mating algorithm (see: the makeChild function in moleculeSet.cc).  If you are interested in doing this, please contact me.  If you want the most efficient algorithm, you might think about implementing a differential evolution algorithm.  In the mean time, use simulated annealing or particle swarm optimization.  Simulated annealing with a small population size, single point energy calculations, and the -i option is quite efficient.  Afterwards it's a good idea to perform local geometry optimization on the list of best structures using an optimization file.  This was my approach in reference [1] above.
+Genetic algorithms (GA) are an efficient means of searching for global minima.  While my focus has been on developing 'new' algorithms such as particle swarm optimization, GA algorithms are very important and widely used.  The genetic algorithm in this application is well designed, but it needs a new mating algorithm (see: the makeChild function in moleculeSet.cc).  If you are interested in doing this, please contact me.  If you want the most efficient algorithm, you might think about implementing a differential evolution algorithm.  In the mean time, use simulated annealing or particle swarm optimization.  Simulated annealing with a small population size, single point energy calculations, and the -i option is quite efficient.  Afterwards it's a good idea to perform local geometry optimization on the list of best structures using an optimization file.  This was my approach in reference 1 above.
+
 
 III. Running the program on a cluster of computers
 
@@ -417,10 +427,6 @@ When using a population of structures with simulated annealing, each member of t
 Also when using the -i option, the program has a method for periodically merging the separate lists of best structures into one master list.  For example, if my energy files directory were called energyFiles, the program will create a sub directory called bestSavedStructures and will copy structures from the bestSavedStructures directory in each of the Run1, Run2, etc. directories.  This method also creates a master ouput and resume file.  The method is run when ever you restart the run, and when the run completely finishes.  You may also run the method manually by typing "./helper -u YourInputFile.inp".
 
 When using the -i option and you must resume an unfinished run, do not change the input file to a resume file.  Since each population member has its own resume file, the program is smart enough to find each of these resume files and restart the run.  While the ./helper -u method does create a master resume file, this is only used to store the list of best structures and/or create an optimization file.
-
-C. Telling your quantum chemistry package where the scratch directory is located
-
-The scratch directory is specified on line 5 of your input file.  If using Gaussian, the pso program tells Gaussian where to put scratch files using the command "export GAUSS_SCRDIR = your_scratch_directory".  If you need to modify this command, or change it for another quantum chemistry package, it's listed in the energy.cc file in the two init functions.
 
 IV. Other useful tips
 
@@ -476,5 +482,5 @@ This program can also perform searches for transition states.  The method used i
 
 F. Trouble Shooting
 
-If you encounter unexpected behavior from the application, here are some things you can do.  First, check this manual to ensure the software is not performing as designed.  Second, there are a few unit tests that you can run.  In particular, these can help check that the cclib package is installed correctly. To run the unit tests, navigate (cd) to the main program directory and type './unit'.  Third, turn on additional error messages by setting the PRINT_CATCH_MESSAGES constant to 'true' at the top of input.h. This may provide additional information to help identify the problem.  If you believe the problem is related to MPI, you can also turn on the PRINT_MPI_MESSAGES constant at the top of myMpi.h.  If you find a message that seems related to your unexpected behavior, search for the error in the code to learn more about what the application was doing when it generated the error.  If you find an genuine error, please submit a bug report with a detailed list of steps for reproducing it.
+If you encounter unexpected behavior from the application, here are some things you can do.  First, check this manual to ensure the software is not performing as designed.  Second, there are a few unit tests that you can run.  In particular, these can help check that the cclib package is installed correctly. To run the unit tests, navigate (cd) to the main program directory and type './unit'.  Third, turn on additional error messages by setting the PRINT_CATCH_MESSAGES constant to 'true' at the top of input.h. This may provide additional information to help identify the problem.  If you believe the problem is related to MPI, you can also turn on the PRINT_MPI_MESSAGES constant at the top of myMpi.h.  If you find a message that seems related to your unexpected behavior, search for the error in the code to learn more about what the application was doing when it generated the error.  If you find an genuine error, please submit a bug report with a list of steps for reproducing it.
 
