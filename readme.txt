@@ -1,4 +1,4 @@
-﻿Atomic Global Minimum Locater Software
+﻿Atomic Global Minimum Locator Software
 
 by Seth Call
 
