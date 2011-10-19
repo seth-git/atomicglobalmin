@@ -1,0 +1,55 @@
+<style type="text/css">
+	ol.numbers {
+		list-style-type: decimal;
+	}
+	ol.letters {
+		list-style-type: upper-alpha;
+	}
+	body.mainBody {
+		font-size:12pt;
+		text-align:center;
+		width: 100%;
+	}
+	table.mainLayoutTable {
+		font-size:14pt;
+		width:75%;
+		margin-left: auto;
+		margin-right: auto;
+	}
+	table.mainLayoutTable td {
+		text-align:left;
+	}
+	table.itemLayoutTable {
+		font-size:14pt;
+		width:75%;
+		margin-left: auto;
+		margin-right: auto;
+	}
+	table.itemLayoutTable td {
+		text-align:left;
+	}
+	.textObjects {
+		font-size:14pt;
+	}
+	.toggleObjects {
+		display: none;
+	}
+	.sup {
+		font-size:70%;
+		position:relative;
+		bottom: 0.5em;
+	}
+	.sub {
+		font-size:70%;
+		position:relative;
+		bottom:-0.5em;
+	}
+	.ital {
+		font-style: italic;
+	}
+	.bold {
+		font-weight: bold;
+	}
+</style>
+
+
