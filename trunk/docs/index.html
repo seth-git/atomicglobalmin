@@ -69,20 +69,18 @@ Finding accurate global minima even for small molecules can be challenging.  Thi
             </li>
             <li>
               <a href="#" onClick="$('#algorithms').toggle();">Input file formats and optimization of random algorithm parameters</a>
-              <ol id="algorithms" class="letters toggleObjects">
-                <li><a href="#">Input parameters common to all algorithms</a></li>
-                <li>
-                  <a href="#" onClick="$('#formats').toggle();">Run output formats</a>
-                  <ol id="formats" class="numbers toggleObjects">
-                    <li><a href="#">Particle swarm output</a></li>
-                    <li><a href="#">Simulated annealing and basin hopping output</a></li>
-                    <li><a href="#">Genetic algorithm output</a></li>
-                  </ol>
-                </li>
-                <li><a href="#">Particle swarm optimization input parameters</a></li>
-                <li><a href="#">Simulated annealing and basin hopping input parameters</a></li>
-                <li><a href="#">Genetic Algorithm</a></li>
-              </ol>
+              <div id="algorithms" class="textObjects toggleObjects">
+<p>
+This section discusses the parameters in the input file and techniques for setting them.  Knowing how to set parameters optimally can influence the performance of each algorithm.  While setting these parameters takes practice, examples are provided.  Also, some of the more important parameters can be set for you automatically by the program.
+</p>
+                <ol class="letters">
+                  <li><a href="algorithms/input.html">Input parameters common to all algorithms</a></li>
+                  <li><a href="algorithms/output.html"">Run output formats</a></li>
+                  <li><a href="algorithms/pso.html">Particle swarm optimization input parameters</a></li>
+                  <li><a href="algorithms/sim.html">Simulated annealing and basin hopping input parameters</a></li>
+                  <li><a href="algorithms/ga.html">Genetic Algorithm</a></li>
+                </ol>
+              </div>
             </li>
             <li>
               <a href="#" onClick="$('#cluster').toggle();">Running the program on a cluster of computers</a>
