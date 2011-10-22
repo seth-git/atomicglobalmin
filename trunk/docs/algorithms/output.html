@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Atomic Global Minimum Locator: Run output formats</title>
+    <link href="../styles/styles.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body class="mainBody">
+    <h1>Atomic Global Minimum Locator: Run output formats</h1>
+    <br/>
+    <table class="itemLayoutTable"><tr><td>
+    <a href="../index.html?show=algorithms">Menu</a>
+    <br/><br/>
+    <a href="input.html">Previous</a>
+    <a href="pso.html" style="float:right">Next</a>
+    <br/><br/>
+As the program runs, it prints summary information to the screen.  As you modify the particle swarm or simulated annealing parameters, monitor the run's progress using this output.  The output meaning is described below.
+    <br/>
+    <ol class="numbers">
+      <li>
+     Particle swarm output
+      <br/><br/>
+     The summary output from the PSO program looks like this:<br/>
+     &#160;&#160;&#160;&#160;It: 110 Best Energy: -12.105384 Coord Vel Max,Avg: 0.200, 0.057 Angle Vel Max,Avg: 0.000, 0.000 Div: 0.070 Vis: 72.9%
+      <br/><br/>
+     The meaning of each value is as follows:<br/>
+     &#160;&#160;&#160;&#160;It: iteration number<br/>
+     &#160;&#160;&#160;&#160;Best Energy: the energy value of the lowest energy structure<br/>
+     &#160;&#160;&#160;&#160;Coord Vel Max,Avg: Coordinate velocity (the maximum and average respectively) for each atom or group of atoms<br/>
+     &#160;&#160;&#160;&#160;Angle Vel Max,Avg: Angle velocity (the maximum and average respectively) for each group of atom (will be zero if
+               there are no groups containing more than one atom)<br/>
+     &#160;&#160;&#160;&#160;Div: The diversity in the population (typically between 0 and 0.5)<br/>
+     &#160;&#160;&#160;&#160;Vis: The percentage visibility (average percentage of other solutions that is visible to each solution, see paper 3)
+      <br/><br/>
+      </li>
+      <li id="sim">Simulated annealing and basin hopping output
+      <br/><br/>
+     The summary output for simulated annealing and basin hopping looks like this:<br/>
+     It: 30 Best Energy: -9.62310778 Temp: 777346.9 Num Pert: 4 Coord, Angle Pert: 0.3000, 20.0000 Accepted Pert: 87.1%
+      <br/><br/>
+     The meaning of each value is as follows:<br/>
+     &#160;&#160;&#160;&#160;It: iteration number<br/>
+     &#160;&#160;&#160;&#160;Best Energy: the energy value of the lowest energy structure<br/>
+     &#160;&#160;&#160;&#160;Temp: The current temperature<br/>
+     &#160;&#160;&#160;&#160;Num Pert: The number of perturbations performed at one time<br/>
+     &#160;&#160;&#160;&#160;Coord, Angle Pert: The amount by which coordinates and angles change respectively (coordinates are moved
+              in a random direction by the specified amount)<br/>
+     &#160;&#160;&#160;&#160;Accepted Pert: The percentage of accepted perturbations over the previous n iterations (see input file)
+      <br/><br/>
+      </li>
+      <li id="ga">Genetic algorithm output
+      <br/><br/>
+     The summary output for the genetic algorithm looks like this:<br/>
+     &#160;&#160;&#160;&#160;It: 60 Best Energy: -10.10563270 Diversity: 0.05333658
+      <br/><br/>
+     The meaning of each value is as follows:<br/>
+     &#160;&#160;&#160;&#160;It: iteration number<br/>
+     &#160;&#160;&#160;&#160;Best Energy: the energy value of the lowest energy structure<br/>
+     &#160;&#160;&#160;&#160;Diversity: The diversity in the population (typically between 0 and 0.5)
+      </li>
+    </ol>
+    <br/>
+When monitoring the course of an algorithm, check to see how often the best energy value changes and by how much.  For simulated annealing, the percentage of accepted transitions should start high (about 90%).  If this starts too high (i.e. 95%), however, it may take a very long time to come down.  For particle swarm optimization, the visibility should start low (i.e. 0%) and increase slowly to (100 %).  For particle swarm optimization and the genetic algorithm, the diversity indicates how different members of the population are from one another.  Populations must be sufficiently diverse in order to produce meaningful progress.  See the <a href="../intro/references.html">reference 3</a> for the formulas used to calculate visibility and diversity.
+    <br/><br/>
+    <a href="../index.html?show=algorithms">Menu</a>
+    <br/><br/>
+    <a href="input.html">Previous</a>
+    <a href="pso.html" style="float:right">Next</a>
+    </td></tr></table>
+  </body>
+</html>
+
