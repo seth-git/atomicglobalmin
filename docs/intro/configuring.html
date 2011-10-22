@@ -14,7 +14,7 @@
     <a href="new.html" style="float:right">Next</a>
     <br/><br/>
 
-To support various quantum chemistry packages, it is necessary to create methods for writing input files and reading output files.  The more difficult challenge of reading output files has been solved for you by incorporating the cclib package into this software.  The cclib package can read output files from ADF, GAMESS, GAMESS-UK, Gaussian, Jaguar, Molpro, and ORCA.  Methods for creating input files are provided for GAMESS and Gaussian.
+To support various quantum chemistry packages, it is necessary to create methods for writing input files and reading output files.  The more difficult challenge of reading output files has been solved for you by incorporating the cclib package into this software.  The cclib package can read output files from ADF, GAMESS, GAMESS-UK, Firefly, Gaussian, Jaguar, Molpro, and ORCA.  Methods for creating input files are provided for GAMESS and Gaussian.
 
     <br/><br/>
 To install cclib, follow the instructions at <a href="http://cclib.sf.net">cclib.sf.net</a>.  Once installed, copy the atomicGlobalMin.py file from the pso directory to the directory where you installed cclib.  Then open the energyProgram.cc file inside the pso directory and set the cclibPythonScript variable to the full path of the atomicGlobalMin.py script inside the cclib directory.  Recompile the program by typing 'make'.  Test the cclib package by running unit tests by typing './unit'.  If you see "All tests passed!", then cclib has been installed correctly.
