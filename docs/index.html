@@ -84,11 +84,15 @@ This section discusses the parameters in the input file and techniques for setti
             </li>
             <li>
               <a href="#" onClick="$('#cluster').toggle();">Running the program on a cluster of computers</a>
-              <ol id="cluster" class="letters toggleObjects">
-                <li><a href="#">Submitting the program to the PBS Scheduler</a></li>
-                <li><a href="#">MPI options</a></li>
-                <li><a href="#">Telling your quantum chemistry package where the scratch directory is located</a></li>
-              </ol>
+              <div id="cluster" class="toggleObjects">
+<p>
+This section discusses how to run the program on a cluster of Linux computers using a quantum chemistry package and a Portable Batch System (PBS) scheduler.  Other schedulers besides PBS may be used, but these will not be discussed here.  Understanding this section requires familiarity with Linux and your quantum chemistry package.  See also <a href="intro/configuring.html">Section I, F</a> for instructions on configuring the program for various quantum chemistry packages.
+</p>
+                <ol class="letters">
+                  <li><a href="cluster/pbs.html">Submitting the program to the PBS Scheduler</a></li>
+                  <li><a href="cluster/mpi.html">MPI options</a></li>
+                </ol>
+              </div>
             </li>
             <li>
               <a href="#" onClick="$('#tips').toggle();">Other useful tips</a>
