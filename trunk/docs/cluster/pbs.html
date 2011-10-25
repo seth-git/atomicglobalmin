@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Atomic Global Minimum Locator: Submitting the program to a PBS Scheduler</title>
+    <link href="../styles/styles.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body class="mainBody">
+    <h1>Atomic Global Minimum Locator: Submitting the program to a PBS Scheduler</h1>
+    <br/>
+    <table class="itemLayoutTable"><tr><td>
+    <a href="../index.html?show=cluster">Menu</a>
+    <a href="mpi.html" style="float:right">Next</a>
+    <br/><br/>
+
+Submitting the program to the PBS scheduler requires creating a script file. An example script file called "examplePBSScript" is in the main "pso" directory.  Make a copy of this script with the cp command and modify it as follows.
+    <br/>
+    <ol class="numbers">
+      <li>Line 2 in the script file specifies the number of nodes you want to use and the number of processors per node (ppn) you want.  Make sure your population size is divisible by this number.  This application was designed to perform one energy calculation on each processor.  The wall time is a maximum time limit you want to allow your job to run for.  Set this appropriately. The example file specifies 24 hours.
+      </li>
+      <li>
+    Line 3 is where you set the memory limit per node that you want.  Also set the memory limit in the Gamess or Gaussian header in the pso input file.
+      </li>
+      <li>
+    Line 16 specifies that the list of nodes allocated by the PBS scheduler be copped to a file called "nodes.txt" in the energy files directory (line 4 of the pso input file).
+      </li>
+      <li>
+      Change lines 22 and 23 (the last two lines).  These lines call the pso program.  It is best to put the input, output, and resume files in a separate directory that is backed up and not in the main pso directory.    NOTE: WHEN RESTARTING THE PROGRAM, DON'T FORGET TO CHANGE THE INPUT FILE NAME TO THE RESUME FILE NAME IN THE PBS SCRIPT FILE.
+      </li>
+    </ol>
+
+Also be sure to modify the pso input file appropriately.  On line 3 for the energy function parameter, specify the name of your quantum chemistry package.  On line 4, specify the full path of a directory where you want output files from your quantum chemistry package to be written.  You will need to create this directory, and it will need to be unique for every input file you want to run simultaneously with the program.  Specify the full path to the scratch directory on line 5.  The pso program will create sub-directories in this directory where scratch files will be written.  These sub directories have the name of the pso input or resume file.  The scratch directory can be on the hard drive of each local node or on a shared drive.  The pso program will delete scratch files it creates if you use the -walltime option (see section IV, D).
+    <br/><br/>
+
+Make sure the names of your output and resume files are set appropriately in the input file.  Use full path names.  Also, modify the header and optional footer to your quantum package appropriately.  The header will be placed at the start of every quantum input file.
+    <br/><br/>
+
+Once you have created your script file and your input file and checked them twice, type the command qsub followed by the name of your script file.  To look at jobs in the queue, type the command qstat.  To look at only the jobs you have submitted, type 'qstat | grep your_user_name'.  To delete a job from the queue type: 'qdel job_number'.
+    <br/><br/>
+
+Note: Though this application was generally designed to run one quantum calculation per processor, it does have some built in functionality to run single quantum calculations on multiple processors.  Though I have not done this in a few years, you may talk to your system administrator and get help doing this if desired.  The pso application reads the "nodes.txt" file and formerly started one energy calculation for each node/line in the file.  Using mpirun instead of mpiexec can be helpful in this case.  If you specify multiple processors per node and if you want one Gaussian job to use all of the processors on a node, you may need to place this line in your Gaussian header (pso input file): "% nprocshared=number_of_processors_you_want".
+
+    <br/><br/>
+    <a href="../index.html?show=algorithms">Menu</a>
+    <a href="mpi.html" style="float:right">Next</a>
+    </td></tr></table>
+  </body>
+</html>
+
