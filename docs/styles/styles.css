@@ -50,6 +50,13 @@
 	.bold {
 		font-weight: bold;
 	}
+	.isoprene {
+		background: url('../images/Isopren_Hydroxyalkyl_Peroxy_Radical-Water.gif');
+	}
+        .background {
+		background-repeat: no-repeat;
+		background-position: center 100px;
+        }
 </style>
 
 
