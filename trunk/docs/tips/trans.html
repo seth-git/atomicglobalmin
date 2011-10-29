@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Atomic Global Minimum Locator: Transition state searches</title>
+    <link href="../styles/styles.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body class="mainBody">
+    <h1>Atomic Global Minimum Locator: Transition state searches</h1>
+    <br/>
+    <table class="itemLayoutTable"><tr><td>
+    <a href="../index.html?show=tips">Menu</a>
+    <br/><br/>
+    <a href="wall.html">Previous</a>
+    <a href="trouble.html" style="float:right">Next</a>
+    <br/><br/>
+
+This program can also perform searches for transition states.  The method used is essentially a random search, but with allowed constraints on the maximum and minimum distances between molecules. There are 2 methods for performing a transition state search.  The first way is to use a simulated annealing input file, and the second way is to place random structures in a simulated annealing optimization file using the -or option (./helper -or).  With both of these methods, make sure to put 'yes' for the option: 'Search for transition states (random search with every perturbation accepted)'.  To summarize, using a simulated annealing input file causes the program to treat the search as a simulated annealing search, except that every perturbation is accepted, so the search is essentially random.  When using the optimization file, every structure is randomly initialized, so new random structures are not perturbations of previous random structures.  This is the essential difference between the two methods.
+
+    <br/><br/>
+    <a href="../index.html?show=tips">Menu</a>
+    <br/><br/>
+    <a href="wall.html">Previous</a>
+    <a href="trouble.html" style="float:right">Next</a>
+    </td></tr></table>
+  </body>
+</html>
+
