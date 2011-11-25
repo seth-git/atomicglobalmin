@@ -1,0 +1,51 @@
+﻿Usage: helper [OPTION]
+This program provides utilities that support the pso application.
+
+  -a                           This moves additional structures from the
+                               list of best structures in a resume file to
+                               an existing optimization file. Specify an
+                               optimization file, followed by the number of
+                               additional structures to transfer from the
+                               resume file.
+  -b                           This option displays bonding information for an
+                               input file.  Specify the name of an input file.
+  -c                           This creates quantum input files from the list of
+                               best structures. Specify a resume or optimization
+                               file, followed by a directory where input files
+                               will be written, followed by a prefix for the
+                               input files.
+  -m                           This option performs a monomer search by
+                               generating all possible combinations of bond
+                               rotations that can be performed.  Specify an
+                               input file, followed by the number of degrees to
+                               rotate bond angles, followed by an optimization
+                               file to be created, followed by the number of
+                               structures to optimize at a time.
+  -o                           This creates an optimization file from a resume
+                               file.  It is used to optimize structures in the
+                               list of best structures to their nearest minima.
+                               Specify a resume file, followed by the
+                               optimization file to be created, followed by the
+                               number of structures to transfer, followed by
+                               the number of structures to optimize at a time.
+  -or                          This creates an optimization file from an input
+                               file.  It creates a population containing random
+                               structures of the same number and type as
+                               indicated in the input file. Specify an input
+                               file, followed by an optimization file to be
+                               created, followed by the number of structures
+                               to optimize at a time.
+  -p                           This creates quantum input files from the current
+                               population of structures. Specify a resume or
+                               optimization file, followed by a directory where
+                               input files will be written, followed by a prefix
+                               for the input files.
+  -t                           This writes the list of best structures to a
+                               temporary file with coordinates in a readable
+                               format. Specify a resume or optimization file
+                               followed by the name of the temporary file.
+  -u                           This updates a simulated annealing output file
+                               and list of best structures when using the -i
+                               option with the pso executable (type './pso -h' and
+                               read the -i option description for more
+                               information).  Specify an input file.
