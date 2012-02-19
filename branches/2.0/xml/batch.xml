@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<agml version="2.0"
+      xmlns="http://sourceforge.net/projects/atomicglobalmin/"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation= "http://sourceforge.net/projects/atomicglobalmin/ agml.xsd">
+	<action>
+		<batch>
+			<setup>
+				<populationTemplate>
+					<seed>
+						<file path="sim.xml"/>
+					</seed>
+				</populationTemplate>
+			</setup>
+		</batch>
+	</action>
+	<energy>
+		<external method="Gaussian">
+			<sharedDirectory path="path"/>
+			<resultsDirectory path="path" maxFiles="100" filePrefix="res"/>
+			<multiplicity value="2"/>
+			<charge value="0"/>
+			<header>
+% mem=2000MB
+# B3LYP/6-311++G(d,p) scfcon=4 scfcyc=300 scf=direct
+			</header>
+		</external>
+	</energy>
+</agml>
