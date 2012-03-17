@@ -3,18 +3,30 @@
 #define __INPUT_H__
 
 #include <stdio.h>
-#include "../tinyxml/tinyxml.h"
+#include <string>
+#include "xsdElementUtil.h"
+#include "internalEnergy.h"
 
-using namespace std;
+#define SIMULATED_ANNEALING              1
+#define RANDOM_SEARCH                    2
+#define PARTICLE_SWARM_OPTIMIZATION      3
+#define GENETIC_ALGORITHM                4
+#define BATCH                            5
 
 class Input {
-	public:
-		double x,y,z;
-		const char *value;
+	private:
 		TiXmlDocument *m_pXMLDocument;
 
-		Input() : x(0), y(0), z(0), m_pXMLDocument(NULL)
+	public:
+		std::string m_pVersion;
+		int m_iAction;
+		bool m_bExternalEnergy;
+		InternalEnergy m_internalEnergy;
+		
+		Input()
 		{
+			m_pXMLDocument = NULL;
+			m_iAction = -1;
 		}
 
 		~Input()
@@ -23,8 +35,8 @@ class Input {
 		}
 
 		void cleanUp();
+		bool load(const char* pFilename);
 		void save(const char* pFilename);
-		void load(const char* pFilename);
 };
 
 #endif
