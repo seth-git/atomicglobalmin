@@ -11,26 +11,18 @@ void Input::cleanUp() {
 
 bool Input::load(const char* pFilename)
 {
-	static const std::string elementNames[] = {"action", "energy", "constraints", "results"};
-	static const unsigned int   minOccurs[] = {1       , 1       , 0            , 0        };
-	XsdElementUtil atmlUtil("agml", XSD_ALL, elementNames, 4, minOccurs, NULL);
-	static const std::string actionElementNames[] = {"simulatedAnnealing", "randomSearch", "particleSwarmOptimization", "geneticAlgorithm", "batch"};
-	XsdElementUtil actionUtil("action", XSD_CHOICE, actionElementNames, 5, NULL, NULL);
-	static const std::string energyElementNames[] = {"internal", "external"};
-	XsdElementUtil energyUtil("energy", XSD_CHOICE, energyElementNames, 2, NULL, NULL);
-	
 	TiXmlElement** atgmlElements;
 	TiXmlHandle hRoot(0);
 	TiXmlHandle hChild(0);
 	TiXmlElement* pElem;
 
 	cleanUp();
+	printf("Opening %s...\n", pFilename);
 	m_pXMLDocument = new TiXmlDocument(pFilename);
 	if (!m_pXMLDocument->LoadFile()) {
-		printf("Failed to load file \"%s\".\n", pFilename);
+		printf("Failed to load file '%s'.\n", pFilename);
 		return false;
 	}
-	printf("Opening %s...\n", pFilename);
 	TiXmlHandle hDoc(m_pXMLDocument);
 	
 	pElem=hDoc.FirstChildElement().Element();
@@ -45,6 +37,9 @@ bool Input::load(const char* pFilename)
 		printf("There can be only one root element.\n");
 		return false;
 	}
+	static const std::string elementNames[] = {"action", "energy", "constraints", "results"};
+	static const unsigned int   minOccurs[] = {1       , 1       , 0            , 0        };
+	XsdElementUtil atmlUtil(agml.c_str(), XSD_ALL, elementNames, 4, minOccurs, NULL);
 	hRoot=TiXmlHandle(pElem);
 	if (!atmlUtil.process(hRoot)) {
 		return false;
@@ -56,12 +51,16 @@ bool Input::load(const char* pFilename)
 		printf("The action element must not contain any attributes.\n");
 		return false;
 	}
+	static const std::string actionElementNames[] = {"simulatedAnnealing", "randomSearch", "particleSwarmOptimization", "geneticAlgorithm", "batch"};
+	XsdElementUtil actionUtil(elementNames[0].c_str(), XSD_CHOICE, actionElementNames, 5, NULL, NULL);
 	hChild=TiXmlHandle(pElem);
 	if (!actionUtil.process(hChild)) {
 		return false;
 	}
 	pElem = actionUtil.getChoiceElement();
 	
+	static const std::string energyElementNames[] = {"internal", "external"};
+	XsdElementUtil energyUtil(elementNames[1].c_str(), XSD_CHOICE, energyElementNames, 2, NULL, NULL);
 	hChild=TiXmlHandle(atgmlElements[1]);
 	if (!energyUtil.process(hChild)) {
 		return false;
@@ -75,6 +74,9 @@ bool Input::load(const char* pFilename)
 			break;
 		default: // 1
 			m_bExternalEnergy = true;
+			if (!m_externalEnergy.load(energyUtil.getChoiceElement())) {
+				return false;
+			}
 			break;
 	}
 	

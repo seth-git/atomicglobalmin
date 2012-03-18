@@ -90,7 +90,7 @@ all: ${OUTPUT}
 # Source files
 #****************************************************************************
 
-SRCS := tinyxml/tinyxml.cpp tinyxml/tinyxmlparser.cpp tinyxml/tinyxmlerror.cpp tinyxml/tinystr.cpp input/xsdTypeUtil.cpp input/xsdElementUtil.cpp input/xsdAttributeUtil.cpp input/internalEnergy.cpp input/input.cpp main.cpp
+SRCS := tinyxml/tinyxml.cpp tinyxml/tinyxmlparser.cpp tinyxml/tinyxmlerror.cpp tinyxml/tinystr.cpp input/xsdTypeUtil.cpp input/xsdElementUtil.cpp input/xsdAttributeUtil.cpp input/internalEnergy.cpp input/externalEnergy.cpp input/input.cpp main.cpp
 
 # Add on the sources for libraries
 SRCS := ${SRCS}
@@ -132,6 +132,7 @@ xsdTypeUtil.o: tinyxml/tinyxml.h tinyxml/tinystr.h
 xsdElementUtil.o: tinyxml/tinyxml.h tinyxml/tinystr.h
 xsdAttributeUtil.o: tinyxml/tinyxml.h tinyxml/tinystr.h
 internalEnergy.o: tinyxml/tinyxml.h tinyxml/tinystr.h input/xsdAttributeUtil.h input/xsdTypeUtil.h
-input.o: tinyxml/tinyxml.h tinyxml/tinystr.h input/xsdTypeUtil.h input/xsdElementUtil.h input/xsdAttributeUtil.h input/internalEnergy.h
-main.o: main.h input.o internalEnergy.o xsdElementUtil.o xsdAttributeUtil.o xsdTypeUtil.o
+externalEnergy.o: tinyxml/tinyxml.h tinyxml/tinystr.h input/xsdAttributeUtil.h input/xsdElementUtil.h input/xsdTypeUtil.h
+input.o: tinyxml/tinyxml.h tinyxml/tinystr.h input/xsdTypeUtil.h input/xsdElementUtil.h input/xsdAttributeUtil.h input/internalEnergy.h input/externalEnergy.h
+main.o: main.h input.o internalEnergy.o externalEnergy.o xsdElementUtil.o xsdAttributeUtil.o xsdTypeUtil.o
 

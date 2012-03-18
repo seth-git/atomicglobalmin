@@ -7,9 +7,6 @@ bool InternalEnergy::load(TiXmlElement *pElem)
 	static const bool        required[]       = {true    , false };
 	static const std::string defaultValues[]  = {""      , "false"};
 	const char** values;
-	
-	static const std::string methods[] = {"Lennard Jones"};
-	static const int methodConstants[] = {LENNARD_JONES};
 
 	XsdAttributeUtil attUtil(pElem->Value(), attributeNames, 2, required, defaultValues);
 	if (!attUtil.process(pElem)) {
@@ -17,16 +14,15 @@ bool InternalEnergy::load(TiXmlElement *pElem)
 	}
 	values = attUtil.getAllAttributes();
 
-	m_iMethod = XsdTypeUtil::getEnumValue(attributeNames[0].c_str(), values[0], pElem->Value(), methods, 1, methodConstants);
-	if (m_iMethod == ERROR_VALUE) {
+	static const std::string methods[] = {"Lennard Jones"};
+	static const int methodConstants[] = {LENNARD_JONES};
+	if (!XsdTypeUtil::getEnumValue(attributeNames[0].c_str(), values[0], m_iMethod, pElem->Value(), methods, 1, methodConstants)) {
 		return false;
 	}
 
-	int val = XsdTypeUtil::getBoolValue(attributeNames[1].c_str(), values[1], pElem->Value());
-	if (val == ERROR_VALUE) {
+	if (!XsdTypeUtil::getBoolValue(attributeNames[1].c_str(), values[1], m_bLocalOptimization, pElem->Value())) {
 		return false;
 	}
-	m_bLocalOptimization = (bool)val;
 	
 	return true;
 }

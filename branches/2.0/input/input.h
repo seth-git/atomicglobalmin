@@ -6,6 +6,7 @@
 #include <string>
 #include "xsdElementUtil.h"
 #include "internalEnergy.h"
+#include "externalEnergy.h"
 
 #define SIMULATED_ANNEALING              1
 #define RANDOM_SEARCH                    2
@@ -22,6 +23,7 @@ class Input {
 		int m_iAction;
 		bool m_bExternalEnergy;
 		InternalEnergy m_internalEnergy;
+		ExternalEnergy m_externalEnergy;
 		
 		Input()
 		{
