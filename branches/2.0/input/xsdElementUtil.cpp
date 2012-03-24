@@ -9,12 +9,11 @@ bool XsdElementUtil::process (TiXmlHandle &handle)
 	const char *pName;
 	unsigned int i;
 	bool bMatch;
+	const char* pPrevName;
 
+	cleanUp();
 	switch(m_type) {
 		case XSD_ALL:
-			if (m_allElements != NULL) {
-				delete[] m_allElements;
-			}
 			m_allElements = new TiXmlElement*[m_iElements];
 			for (i = 0; i < m_iElements; ++i) {
 				m_allElements[i] = NULL;
@@ -73,6 +72,41 @@ bool XsdElementUtil::process (TiXmlHandle &handle)
 				return false;
 			}
 			break;
+		case XSD_SEQUENCE:
+			m_sequenceElements = new vector<TiXmlElement*>[m_iElements];
+			
+			pElem = handle.FirstChild().Element();
+			pPrevName = NULL;
+			i = 0;
+			while (pElem) {
+				pName=pElem->Value();
+				while (strncmp(m_elementNames[i].c_str(), pName, m_elementNames[i].length()+1) != 0) {
+					if (m_sequenceElements[i].size() < m_minOccurs[i]) {
+						if (m_minOccurs[i] > 1) {
+							printf("There must be at least %u '%s' elements inside the '%s' element.\n", m_minOccurs[i], m_elementNames[i].c_str(), m_sParentElement);
+						} else if (m_minOccurs[i] > 0) {
+							printf("There must be at least one '%s' element inside the '%s' element.\n", m_elementNames[i].c_str(), m_sParentElement);
+						}
+						printSequenceError();
+						return false;
+					}
+					++i;
+					if (i >= m_iElements) {
+						printf("Unrecognized or misplaced '%s' element inside the '%s' element.\n", pName, m_sParentElement);
+						printSequenceError();
+						return false;
+					}
+				}
+
+				if (m_maxOccurs[i] != XSD_UNLIMITED && m_sequenceElements[i].size() == m_maxOccurs[i]) {
+					printf("There can't be more than %u '%s' element(s) inside the '%s' element.\n", m_maxOccurs[i], pName, m_sParentElement);
+					return false;
+				}
+				m_sequenceElements[i].push_back(pElem);
+
+				pElem = pElem->NextSiblingElement();
+			}
+			break;
 	}
 	return true;
 }
@@ -83,6 +117,26 @@ void XsdElementUtil::printChoiceError() {
 		printf(", '%s'", m_elementNames[i].c_str());
 	}
 	printf(".\n");
+}
+
+void XsdElementUtil::printSequenceError() {
+	if (m_iElements > 1) {
+		printf("Elements inside the '%s' element must be listed in this order:\n", m_sParentElement);
+		for (unsigned int i = 0; i < m_iElements; ++i) {
+			printf("%u. %s", i+1, m_elementNames[i].c_str());
+			if (m_minOccurs[i] == m_maxOccurs[i] && m_maxOccurs[i] != XSD_UNLIMITED) {
+				printf(" (%u)", m_minOccurs[i]);
+			} else {
+				printf(" (%u-", m_minOccurs[i]);
+				if (m_maxOccurs[i] == XSD_UNLIMITED) {
+					printf("unlimited)");
+				} else {
+					printf("%u)", m_maxOccurs[i]);
+				}
+			}
+			printf("\n");
+		}
+	}
 }
 
 TiXmlElement** XsdElementUtil::getAllElements() {
@@ -96,4 +150,9 @@ TiXmlElement* XsdElementUtil::getChoiceElement() {
 unsigned int XsdElementUtil::getChoiceElementIndex() {
 	return m_pChoiceIndex;
 }
+
+vector<TiXmlElement*>* XsdElementUtil::getSequenceElements() {
+	return m_sequenceElements;
+}
+
 

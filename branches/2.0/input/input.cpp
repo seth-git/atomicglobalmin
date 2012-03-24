@@ -11,7 +11,7 @@ void Input::cleanUp() {
 
 bool Input::load(const char* pFilename)
 {
-	TiXmlElement** atgmlElements;
+	vector<TiXmlElement*>* atgmlElements;
 	TiXmlHandle hRoot(0);
 	TiXmlHandle hChild(0);
 	TiXmlElement* pElem;
@@ -37,16 +37,17 @@ bool Input::load(const char* pFilename)
 		printf("There can be only one root element.\n");
 		return false;
 	}
-	static const std::string elementNames[] = {"action", "energy", "constraints", "results"};
-	static const unsigned int   minOccurs[] = {1       , 1       , 0            , 0        };
-	XsdElementUtil atmlUtil(agml.c_str(), XSD_ALL, elementNames, 4, minOccurs, NULL);
+	static const std::string elementNames[] = {"action", "constraints", "energy", "results"};
+	static const unsigned int   minOccurs[] = {1       , 0            , 1       , 0        };
+	static const unsigned int   maxOccurs[] = {1       , XSD_UNLIMITED, 1       , 1        };
+	XsdElementUtil atmlUtil(agml.c_str(), XSD_SEQUENCE, elementNames, 4, minOccurs, maxOccurs);
 	hRoot=TiXmlHandle(pElem);
 	if (!atmlUtil.process(hRoot)) {
 		return false;
 	}
-	atgmlElements = atmlUtil.getAllElements();
+	atgmlElements = atmlUtil.getSequenceElements();
 	
-	pElem=atgmlElements[0];
+	pElem=atgmlElements[0][0];
 	if (pElem->FirstAttribute()) {
 		printf("The action element must not contain any attributes.\n");
 		return false;
@@ -61,7 +62,7 @@ bool Input::load(const char* pFilename)
 	
 	static const std::string energyElementNames[] = {"internal", "external"};
 	XsdElementUtil energyUtil(elementNames[1].c_str(), XSD_CHOICE, energyElementNames, 2, NULL, NULL);
-	hChild=TiXmlHandle(atgmlElements[1]);
+	hChild=TiXmlHandle(atgmlElements[2][0]);
 	if (!energyUtil.process(hChild)) {
 		return false;
 	}

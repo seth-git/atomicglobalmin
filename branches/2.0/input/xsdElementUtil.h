@@ -4,11 +4,15 @@
 
 #include <stdio.h>
 #include <string>
+#include <vector>
 #include "../tinyxml/tinyxml.h"
+using namespace std;
 
 #define XSD_ALL              1
 #define XSD_CHOICE           2
 #define XSD_SEQUENCE         3
+
+#define XSD_UNLIMITED        0
 
 class XsdElementUtil {
 	private:
@@ -22,11 +26,8 @@ class XsdElementUtil {
 		TiXmlElement* m_pChoiceElement;
 		unsigned int m_pChoiceIndex;
 		TiXmlElement** m_allElements;
-		
-//		vector<TiXmlElement*> m_childElements;
-		
-//		std::string* m_attributeNames;
-//		unsigned int m_iAttributes;
+
+		vector<TiXmlElement*>* m_sequenceElements;
 		
 	public:
 
@@ -42,13 +43,28 @@ class XsdElementUtil {
 
 			m_pChoiceElement = NULL;
 			m_allElements = NULL;
+			m_sequenceElements = NULL;
 		}
 
 		~XsdElementUtil()
 		{
+			cleanUp();
+		}
+
+		void cleanUp()
+		{
+			unsigned int i;
 			// We don't need to deallocate m_pChoiceElement
 			if (m_allElements != NULL) {
 				delete[] m_allElements;
+				m_allElements = NULL;
+			}
+			if (m_sequenceElements != NULL) {
+				for (i = 0; i < m_iElements; ++i) {
+					m_sequenceElements[i].clear();
+				}
+				delete[] m_sequenceElements;
+				m_sequenceElements = NULL;
 			}
 		}
 
@@ -56,8 +72,10 @@ class XsdElementUtil {
 		TiXmlElement** getAllElements();
 		TiXmlElement* getChoiceElement();
 		unsigned int getChoiceElementIndex();
+		vector<TiXmlElement*>* getSequenceElements();
 	private:
 		void printChoiceError();
+		void printSequenceError();
 };
 
 #endif
