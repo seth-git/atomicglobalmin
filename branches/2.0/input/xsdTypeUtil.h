@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string>
 #include "xsdAttributeUtil.h"
+#include "typedef.h"
 
 class XsdTypeUtil {
 	public:
@@ -16,10 +17,14 @@ class XsdTypeUtil {
 
 		static bool getInteger(const char* value, int &result, const char* attributeName, const char* elementName);
 		static bool getPositiveInt(const char* value, unsigned int &result, const char* attributeName, const char* elementName);
+		static bool getPositiveFloat(const char* value, FLOAT &result, const char* attributeName, const char* elementName);
 		
 		static bool readStrValueElement(TiXmlElement *pElem, std::string &result);
+		static bool readStrValueElement(TiXmlElement *pElem, std::string &result, const std::string* attributeName);
 		static bool readIntValueElement(TiXmlElement *pElem, int &result);
 		static bool readPosIntValueElement(TiXmlElement *pElem, unsigned int &result);
+		static bool readPosFloatValueElement(TiXmlElement *pElem, FLOAT &result);
+		static bool readPosFloatValueElement(TiXmlElement *pElem, FLOAT &result, const std::string* attributeName);
 		
 		static bool readElementText(TiXmlElement *pElem, std::string &result);
 	private:

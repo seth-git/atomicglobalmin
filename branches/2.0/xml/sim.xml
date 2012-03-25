@@ -48,8 +48,9 @@
 	<constraints name="myConstraints">
 		<cube size="10"/>
 		<atomicDistances>
-			<min value="0.7" />
-			<max value="2.5" />
+			<min value="0.9" z1="8" z2="1"/>
+			<min value="0.7"/>
+			<max value="2.5"/>
 		</atomicDistances>
 	</constraints>
 	<energy>

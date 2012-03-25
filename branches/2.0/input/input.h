@@ -7,6 +7,7 @@
 #include "xsdElementUtil.h"
 #include "internalEnergy.h"
 #include "externalEnergy.h"
+#include "constraints.h"
 
 #define SIMULATED_ANNEALING              1
 #define RANDOM_SEARCH                    2
@@ -24,6 +25,7 @@ class Input {
 		bool m_bExternalEnergy;
 		InternalEnergy m_internalEnergy;
 		ExternalEnergy m_externalEnergy;
+		vector<Constraints> m_constraints;
 		
 		Input()
 		{

@@ -7,6 +7,7 @@ void Input::cleanUp() {
 		m_pXMLDocument= NULL;
 	}
 	m_iAction = -1;
+	m_constraints.clear();
 }
 
 bool Input::load(const char* pFilename)
@@ -15,6 +16,7 @@ bool Input::load(const char* pFilename)
 	TiXmlHandle hRoot(0);
 	TiXmlHandle hChild(0);
 	TiXmlElement* pElem;
+	unsigned int i, j;
 
 	cleanUp();
 	printf("Opening %s...\n", pFilename);
@@ -59,6 +61,17 @@ bool Input::load(const char* pFilename)
 		return false;
 	}
 	pElem = actionUtil.getChoiceElement();
+
+	for (i = 0; i < atgmlElements[1].size(); ++i) {
+		m_constraints.push_back(Constraints());
+		m_constraints[i].load(atgmlElements[1][i]);
+		for (j = 0; j < i; ++j) {
+			if (m_constraints[j].m_sName == m_constraints[i].m_sName) {
+				printf("Two elements '%s' have the same name '%s'.\n", elementNames[1].c_str(), m_constraints[i].m_sName.c_str());
+				return false;
+			}
+		}
+	}
 	
 	static const std::string energyElementNames[] = {"internal", "external"};
 	XsdElementUtil energyUtil(elementNames[1].c_str(), XSD_CHOICE, energyElementNames, 2, NULL, NULL);

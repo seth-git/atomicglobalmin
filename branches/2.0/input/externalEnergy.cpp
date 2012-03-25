@@ -82,11 +82,18 @@ bool ExternalEnergy::load(TiXmlElement *pExternalElem)
 }
 
 bool ExternalEnergy::readResultsDir(TiXmlElement *pElem) {
+	if (pElem == NULL) {
+		m_sResultsDir == "";
+		m_iMaxResultsFiles = 0;
+		m_sResultsFilePrefix = "";
+		return true;
+	}
+
 	static const std::string attributeNames[] = {"path", "maxFiles", "filePrefix"};
 	static const bool        required[]       = {true  , false     , false};
 	static const std::string defaultValues[]  = {""    , "1"       , "best"};
 	const char** values;
-
+	
 	XsdAttributeUtil resultsDirUtil(pElem->Value(), attributeNames, 3, required, defaultValues);
 	if (!resultsDirUtil.process(pElem)) {
 		return false;

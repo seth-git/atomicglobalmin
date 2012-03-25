@@ -32,7 +32,7 @@ class XsdElementUtil {
 	public:
 
 		XsdElementUtil(const char* parentElement, int type, const std::string* elementNames, unsigned int numElements,
-		        const unsigned int* minOccurs, const unsigned int* maxOccurs)
+		               const unsigned int* minOccurs, const unsigned int* maxOccurs)
 		{
 			m_sParentElement = parentElement;
 			m_type = type;

@@ -113,11 +113,31 @@ bool XsdTypeUtil::getPositiveInt(const char* value, unsigned int &result, const 
 	return true;
 }
 
+bool XsdTypeUtil::getPositiveFloat(const char* value, FLOAT &result, const char* attributeName, const char* elementName)
+{
+	if (sscanf(value, "%lf", &result) != 1) {
+		printf("Unable to read positive float '%s' from attribute '%s' in element '%s'.\n", value, attributeName, elementName);
+		return false;
+	}
+	if (result == 0) {
+		printf("Zero is not allowed for the attribute '%s' in the element '%s'.\n", attributeName, elementName);
+		return false;
+	}
+	if (result < 0) {
+		printf("Negative numbers such as %lf are not allowed for the attribute '%s' in the element '%s'.\n", result, attributeName, elementName);
+		return false;
+	}
+	return true;
+}
 
 bool XsdTypeUtil::readStrValueElement(TiXmlElement *pElem, std::string &result) {
+	return readStrValueElement(pElem, result, s_valueAttNames);
+}
+
+bool XsdTypeUtil::readStrValueElement(TiXmlElement *pElem, std::string &result, const std::string* attributeName) {
 	const char** values;
 
-	XsdAttributeUtil valueUtil(pElem->Value(), s_valueAttNames, 1, s_valueAttReq, s_valueAttDef);
+	XsdAttributeUtil valueUtil(pElem->Value(), attributeName, 1, s_valueAttReq, s_valueAttDef);
 	if (!valueUtil.process(pElem)) {
 		return false;
 	}
@@ -149,6 +169,24 @@ bool XsdTypeUtil::readPosIntValueElement(TiXmlElement *pElem, unsigned int &resu
 	}
 	values = valueUtil.getAllAttributes();
 	if (!getPositiveInt(values[0], result, s_valueAttNames[0].c_str(), pElem->Value())) {
+		return false;
+	}
+	return true;
+}
+
+bool XsdTypeUtil::readPosFloatValueElement(TiXmlElement *pElem, FLOAT &result) {
+	return readPosFloatValueElement(pElem, result, s_valueAttNames);
+}
+
+bool XsdTypeUtil::readPosFloatValueElement(TiXmlElement *pElem, FLOAT &result, const std::string* attributeName) {
+	const char** values;
+
+	XsdAttributeUtil valueUtil(pElem->Value(), attributeName, 1, s_valueAttReq, s_valueAttDef);
+	if (!valueUtil.process(pElem)) {
+		return false;
+	}
+	values = valueUtil.getAllAttributes();
+	if (!getPositiveFloat(values[0], result, attributeName->c_str(), pElem->Value())) {
 		return false;
 	}
 	return true;
