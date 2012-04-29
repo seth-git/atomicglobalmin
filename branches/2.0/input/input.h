@@ -5,23 +5,21 @@
 #include <stdio.h>
 #include <string>
 #include "xsdElementUtil.h"
+#include "xsdAttributeUtil.h"
 #include "internalEnergy.h"
 #include "externalEnergy.h"
 #include "constraints.h"
 
-#define SIMULATED_ANNEALING              1
-#define RANDOM_SEARCH                    2
-#define PARTICLE_SWARM_OPTIMIZATION      3
-#define GENETIC_ALGORITHM                4
-#define BATCH                            5
+#define SIMULATED_ANNEALING              0
+#define RANDOM_SEARCH                    1
+#define PARTICLE_SWARM_OPTIMIZATION      2
+#define GENETIC_ALGORITHM                3
+#define BATCH                            4
 
 class Input {
-	private:
-		TiXmlDocument *m_pXMLDocument;
-
 	public:
-		std::string m_pVersion;
-		int m_iAction;
+		std::string m_sVersion;
+		int m_iAction; // a constant value and an index to s_actionElementNames
 		bool m_bExternalEnergy;
 		InternalEnergy m_internalEnergy;
 		ExternalEnergy m_externalEnergy;
@@ -38,9 +36,25 @@ class Input {
 			cleanUp();
 		}
 
-		void cleanUp();
 		bool load(const char* pFilename);
 		void save(const char* pFilename);
+	private:
+		TiXmlDocument*            m_pXMLDocument;
+
+		static const std::string  s_agml;
+		
+		static const std::string  s_attributeNames[];
+		static const bool         s_required[];
+		static const std::string  s_defaultValues[];
+		
+		static const std::string  s_elementNames[];
+		static const unsigned int s_minOccurs[];
+		static const unsigned int s_maxOccurs[];
+
+		static const std::string  s_actionElementNames[];
+		static const std::string  s_energyElementNames[];
+
+		void cleanUp();
 };
 
 #endif

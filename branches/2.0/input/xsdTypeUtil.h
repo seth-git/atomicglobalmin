@@ -11,7 +11,7 @@ class XsdTypeUtil {
 	public:
 		static bool getBoolValue(const char* attributeName, const char* attributeValue, bool &result, const char* elementName);
 		static bool getEnumValue(const char* attributeName, const char* attributeValue, int &result, const char* elementName,
-                                const std::string* possibleValues, unsigned int numPossibleValues, const int* responses);
+                                 const std::string* possibleValues, unsigned int numPossibleValues, const int* responses);
 		static bool readDirType(TiXmlElement *pElem, std::string &resultDir);
 		static void checkDirectoryOrFileName(const char* sourceDir, std::string &newDir);
 

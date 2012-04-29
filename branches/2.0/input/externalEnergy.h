@@ -31,6 +31,24 @@ class ExternalEnergy {
 		void save();
 		
 	private:
+		static const std::string  s_attributeNames[];
+		static const bool         s_required[];
+		static const std::string  s_defaultValues[];
+
+		static const std::string  s_elementNames[];
+		static const unsigned int s_minOccurs[];
+
+		static const std::string  s_methods[];
+		static const int          s_methodConstants[];
+		
+		static const std::string  s_resAttributeNames[];
+		static const bool         s_resRequired[];
+		static const std::string  s_resDefaultValues[];
+
+		static const std::string  s_mpiAttributeNames[];
+		static const bool         s_mpiRequired[];
+		static const std::string  s_mpiDefaultValues[];
+
 		bool readResultsDir(TiXmlElement *pElem);
 		bool readMpiMaster(TiXmlElement *pElem);
 };

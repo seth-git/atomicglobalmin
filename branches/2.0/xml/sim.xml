@@ -2,7 +2,7 @@
 <agml version="2.0"
       xmlns="http://sourceforge.net/projects/atomicglobalmin/"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation= "http://sourceforge.net/projects/atomicglobalmin/ agml.xsd">
+      xsi:schemaLocation="http://sourceforge.net/projects/atomicglobalmin/ agml.xsd">
 	<action>
 		<simulatedAnnealing constraints="myConstraints">
 			<setup>

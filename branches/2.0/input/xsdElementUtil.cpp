@@ -9,7 +9,6 @@ bool XsdElementUtil::process (TiXmlHandle &handle)
 	const char *pName;
 	unsigned int i;
 	bool bMatch;
-	const char* pPrevName;
 
 	cleanUp();
 	switch(m_type) {
@@ -76,7 +75,6 @@ bool XsdElementUtil::process (TiXmlHandle &handle)
 			m_sequenceElements = new vector<TiXmlElement*>[m_iElements];
 			
 			pElem = handle.FirstChild().Element();
-			pPrevName = NULL;
 			i = 0;
 			while (pElem) {
 				pName=pElem->Value();

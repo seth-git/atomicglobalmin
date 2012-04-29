@@ -49,3 +49,11 @@ const char** XsdAttributeUtil::getAllAttributes()
 {
 	return m_values;
 }
+
+bool XsdAttributeUtil::hasNoAttributes(TiXmlElement *pElem, const char* elementName) {
+	if (pElem->FirstAttribute()) {
+		printf("The %s element must not contain any attributes.\n", elementName);
+		return false;
+	}
+	return true;
+}

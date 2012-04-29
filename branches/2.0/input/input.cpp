@@ -10,6 +10,19 @@ void Input::cleanUp() {
 	m_constraints.clear();
 }
 
+const std::string  Input::s_agml = "agml";
+
+const std::string  Input::s_attributeNames[]   = {"version", "xmlns",                                            "xmlns:xsi",                                 "xsi:schemaLocation"};
+const bool         Input::s_required[]         = {true     , false  ,                                            false      ,                                 false };
+const std::string  Input::s_defaultValues[]    = {""       , "http://sourceforge.net/projects/atomicglobalmin/", "http://www.w3.org/2001/XMLSchema-instance", "http://sourceforge.net/projects/atomicglobalmin/ agml.xsd"};
+
+const std::string  Input::s_elementNames[] = {"action", "constraints", "energy", "results"};
+const unsigned int Input::s_minOccurs[]    = {1       , 0            , 1       , 0        };
+const unsigned int Input::s_maxOccurs[]    = {1       , XSD_UNLIMITED, 1       , 1        };
+
+const std::string  Input::s_actionElementNames[] = {"simulatedAnnealing", "randomSearch", "particleSwarmOptimization", "geneticAlgorithm", "batch"};
+const std::string  Input::s_energyElementNames[] = {"internal", "external"};
+
 bool Input::load(const char* pFilename)
 {
 	vector<TiXmlElement*>* atgmlElements;
@@ -22,76 +35,74 @@ bool Input::load(const char* pFilename)
 	printf("Opening %s...\n", pFilename);
 	m_pXMLDocument = new TiXmlDocument(pFilename);
 	if (!m_pXMLDocument->LoadFile()) {
-		printf("Failed to load file '%s'.\n", pFilename);
+		//
 		return false;
 	}
 	TiXmlHandle hDoc(m_pXMLDocument);
-	
+
 	pElem=hDoc.FirstChildElement().Element();
-	static const std::string agml = "agml";
-	if (!pElem || !pElem->Value() || agml != pElem->Value()) {
-		printf("The agml element was not found.\n");
+	if (!pElem || !pElem->Value() || s_agml != pElem->Value()) {
+		printf("The %s element was not found.\n", s_agml.c_str());
 		return false;
 	}
-	m_pVersion = pElem->Attribute("version");
+
+	const char** rootAttributeValues;
+	XsdAttributeUtil rootAttUtil(pElem->Value(), s_attributeNames, 4, s_required, s_defaultValues);
+	if (!rootAttUtil.process(pElem)) {
+		return false;
+	}
+	rootAttributeValues = rootAttUtil.getAllAttributes();
+	m_sVersion = rootAttributeValues[0];
 
 	if (pElem->NextSiblingElement()) {
 		printf("There can be only one root element.\n");
 		return false;
 	}
-	static const std::string elementNames[] = {"action", "constraints", "energy", "results"};
-	static const unsigned int   minOccurs[] = {1       , 0            , 1       , 0        };
-	static const unsigned int   maxOccurs[] = {1       , XSD_UNLIMITED, 1       , 1        };
-	XsdElementUtil atmlUtil(agml.c_str(), XSD_SEQUENCE, elementNames, 4, minOccurs, maxOccurs);
+
+	XsdElementUtil atmlUtil(s_agml.c_str(), XSD_SEQUENCE, s_elementNames, 4, s_minOccurs, s_maxOccurs);
 	hRoot=TiXmlHandle(pElem);
 	if (!atmlUtil.process(hRoot)) {
 		return false;
 	}
 	atgmlElements = atmlUtil.getSequenceElements();
-	
+
 	pElem=atgmlElements[0][0];
-	if (pElem->FirstAttribute()) {
-		printf("The action element must not contain any attributes.\n");
+	if (!XsdAttributeUtil::hasNoAttributes(pElem, s_elementNames[0].c_str())) {
 		return false;
 	}
-	static const std::string actionElementNames[] = {"simulatedAnnealing", "randomSearch", "particleSwarmOptimization", "geneticAlgorithm", "batch"};
-	XsdElementUtil actionUtil(elementNames[0].c_str(), XSD_CHOICE, actionElementNames, 5, NULL, NULL);
+	XsdElementUtil actionUtil(s_elementNames[0].c_str(), XSD_CHOICE, s_actionElementNames, 5, NULL, NULL);
 	hChild=TiXmlHandle(pElem);
 	if (!actionUtil.process(hChild)) {
 		return false;
 	}
 	pElem = actionUtil.getChoiceElement();
+	m_iAction = actionUtil.getChoiceElementIndex();
 
 	for (i = 0; i < atgmlElements[1].size(); ++i) {
 		m_constraints.push_back(Constraints());
 		m_constraints[i].load(atgmlElements[1][i]);
 		for (j = 0; j < i; ++j) {
 			if (m_constraints[j].m_sName == m_constraints[i].m_sName) {
-				printf("Two elements '%s' have the same name '%s'.\n", elementNames[1].c_str(), m_constraints[i].m_sName.c_str());
+				printf("Two elements '%s' have the same name '%s'.\n", s_elementNames[1].c_str(), m_constraints[i].m_sName.c_str());
 				return false;
 			}
 		}
 	}
-	
-	static const std::string energyElementNames[] = {"internal", "external"};
-	XsdElementUtil energyUtil(elementNames[1].c_str(), XSD_CHOICE, energyElementNames, 2, NULL, NULL);
+
+	XsdElementUtil energyUtil(s_elementNames[2].c_str(), XSD_CHOICE, s_energyElementNames, 2, NULL, NULL);
 	hChild=TiXmlHandle(atgmlElements[2][0]);
 	if (!energyUtil.process(hChild)) {
 		return false;
 	}
-	switch (energyUtil.getChoiceElementIndex()) {
-		case 0:
-			m_bExternalEnergy = false;
-			if (!m_internalEnergy.load(energyUtil.getChoiceElement())) {
-				return false;
-			}
-			break;
-		default: // 1
-			m_bExternalEnergy = true;
-			if (!m_externalEnergy.load(energyUtil.getChoiceElement())) {
-				return false;
-			}
-			break;
+	m_bExternalEnergy = (bool)energyUtil.getChoiceElementIndex();
+	if (m_bExternalEnergy) {
+		if (!m_externalEnergy.load(energyUtil.getChoiceElement())) {
+			return false;
+		}
+	} else {
+		if (!m_internalEnergy.load(energyUtil.getChoiceElement())) {
+			return false;
+		}
 	}
 	
 	return true;

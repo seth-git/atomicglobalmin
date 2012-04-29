@@ -28,35 +28,21 @@ class Constraints {
 		{
 			cleanUp();
 		}
-		
-		void cleanUp() {
-			unsigned int i;
-			if (m_pfCubeLWH != NULL) {
-				delete m_pfCubeLWH;
-				m_pfCubeLWH = NULL;
-			}
-			if (m_pfGeneralMinAtomicDistance != NULL) {
-				delete m_pfGeneralMinAtomicDistance;
-				m_pfGeneralMinAtomicDistance = NULL;
-			}
-			if (m_pfGeneralMaxAtomicDistance != NULL) {
-				delete m_pfGeneralMaxAtomicDistance;
-				m_pfGeneralMaxAtomicDistance = NULL;
-			}
-			if (m_rgMinAtomicDistances != NULL) {
-				for (i = 1; i <= MAX_ATOMIC_NUMBERS; ++i) {
-					delete[] m_rgMinAtomicDistances[i];
-				}
-				delete[] m_rgMinAtomicDistances;
-				m_rgMinAtomicDistances = NULL;
-			}
-		}
 
 		bool load(TiXmlElement *pElem);
 		void save();
 	
 	private:
+		static const std::string  s_elementNames[];
+		static const unsigned int s_minOccurs[];
+		
+		static const std::string  s_distElementNames[];
+		static const unsigned int s_distMinOccurs[];
+		static const unsigned int s_distMaxOccurs[];
+
 		bool addMinDist(TiXmlElement *pElem);
+		
+		void cleanUp();
 };
 
 #endif

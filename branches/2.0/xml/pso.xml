@@ -40,7 +40,7 @@
 						<inertia value="0.95"/>
 						<ci value="0.15"/>
 						<cp value="0.15"/>
-						<vMax value="0.3"/>
+						<vMax value="0.3"
 					</coordinate>
 					<angle>
 						<inertia value="0.95"/>

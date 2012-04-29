@@ -1,11 +1,39 @@
 
 #include "constraints.h"
 
+const std::string  Constraints::s_elementNames[]     = {"cube", "atomicDistances"};
+const unsigned int Constraints::s_minOccurs[]        = {0     , 0                };
+
+const std::string  Constraints::s_distElementNames[] = {"min"        , "max"};
+const unsigned int Constraints::s_distMinOccurs[]    = {0            , 0    };
+const unsigned int Constraints::s_distMaxOccurs[]    = {XSD_UNLIMITED, 1    };
+
+void Constraints::cleanUp() {
+	unsigned int i;
+	if (m_pfCubeLWH != NULL) {
+		delete m_pfCubeLWH;
+		m_pfCubeLWH = NULL;
+	}
+	if (m_pfGeneralMinAtomicDistance != NULL) {
+		delete m_pfGeneralMinAtomicDistance;
+		m_pfGeneralMinAtomicDistance = NULL;
+	}
+	if (m_pfGeneralMaxAtomicDistance != NULL) {
+		delete m_pfGeneralMaxAtomicDistance;
+		m_pfGeneralMaxAtomicDistance = NULL;
+	}
+	if (m_rgMinAtomicDistances != NULL) {
+		for (i = 1; i <= MAX_ATOMIC_NUMBERS; ++i) {
+			delete[] m_rgMinAtomicDistances[i];
+		}
+		delete[] m_rgMinAtomicDistances;
+		m_rgMinAtomicDistances = NULL;
+	}
+}
+
 bool Constraints::load(TiXmlElement *pElem)
 {
-	static const std::string elementNames[] = {"cube", "atomicDistances"};
-	static const unsigned int   minOccurs[] = {0     , 0                };
-	XsdElementUtil constraintUtil(pElem->Value(), XSD_ALL, elementNames, 2, minOccurs, NULL);
+	XsdElementUtil constraintUtil(pElem->Value(), XSD_ALL, s_elementNames, 2, s_minOccurs, NULL);
 	TiXmlHandle handle(0);
 	TiXmlElement** constraintElements;
 
@@ -29,10 +57,7 @@ bool Constraints::load(TiXmlElement *pElem)
 	}
 
 	if (constraintElements[1] != NULL) {
-		static const std::string distElementNames[] = {"min"        , "max"};
-		static const unsigned int   distMinOccurs[] = {0            , 0    };
-		static const unsigned int   distMaxOccurs[] = {XSD_UNLIMITED, 1    };
-		XsdElementUtil distUtil(pElem->Value(), XSD_SEQUENCE, distElementNames, 2, distMinOccurs, distMaxOccurs);
+		XsdElementUtil distUtil(pElem->Value(), XSD_SEQUENCE, s_distElementNames, 2, s_distMinOccurs, s_distMaxOccurs);
 		TiXmlHandle handle(0);
 		vector<TiXmlElement*>* distElements;
 		unsigned int i;

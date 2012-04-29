@@ -1,32 +1,35 @@
 
 #include "externalEnergy.h"
 
+const std::string ExternalEnergy::s_attributeNames[]   = {"method", "transitionStateSearch"};
+const bool        ExternalEnergy::s_required[]         = {true    , false };
+const std::string ExternalEnergy::s_defaultValues[]    = {""      , "false"};
+
+const std::string  ExternalEnergy::s_elementNames[]    = {"sharedDirectory", "localDirectory", "resultsDirectory", "charge", "multiplicity", "header", "footer", "mpi"};
+const unsigned int ExternalEnergy::s_minOccurs[]       = {1                , 0               , 0                 , 1       , 1             , 1       , 0       , 0    };
+
+const std::string  ExternalEnergy::s_methods[]         = {"GAMESS", "GAMESS-UK", "Gaussian"};
+const int          ExternalEnergy::s_methodConstants[] = {GAMESS,   GAMESS_UK,   GAUSSIAN};
+
 bool ExternalEnergy::load(TiXmlElement *pExternalElem)
 {
-	static const std::string attributeNames[] = {"method", "transitionStateSearch"};
-	static const bool        required[]       = {true    , false };
-	static const std::string defaultValues[]  = {""      , "false"};
 	const char** values;
 	
-	XsdAttributeUtil attUtil(pExternalElem->Value(), attributeNames, 2, required, defaultValues);
+	XsdAttributeUtil attUtil(pExternalElem->Value(), s_attributeNames, 2, s_required, s_defaultValues);
 	if (!attUtil.process(pExternalElem)) {
 		return false;
 	}
 	values = attUtil.getAllAttributes();
 
-	static const std::string methods[] = {"GAMESS", "GAMESS-UK", "Gaussian"};
-	static const int methodConstants[] = {GAMESS, GAMESS_UK, GAUSSIAN};
-	if (!XsdTypeUtil::getEnumValue(attributeNames[0].c_str(), values[0], m_iMethod, pExternalElem->Value(), methods, 3, methodConstants)) {
+	if (!XsdTypeUtil::getEnumValue(s_attributeNames[0].c_str(), values[0], m_iMethod, pExternalElem->Value(), s_methods, 3, s_methodConstants)) {
 		return false;
 	}
 
-	if (!XsdTypeUtil::getBoolValue(attributeNames[1].c_str(), values[1], m_bTransitionStateSearch, pExternalElem->Value())) {
+	if (!XsdTypeUtil::getBoolValue(s_attributeNames[1].c_str(), values[1], m_bTransitionStateSearch, pExternalElem->Value())) {
 		return false;
 	}
 
-	static const std::string elementNames[] = {"sharedDirectory", "localDirectory", "resultsDirectory", "charge", "multiplicity", "header", "footer", "mpi"};
-	static const unsigned int   minOccurs[] = {1                , 0               , 0                 , 1       , 1             , 1       , 0       , 0    };
-	XsdElementUtil extUtil(pExternalElem->Value(), XSD_ALL, elementNames, 8, minOccurs, NULL);
+	XsdElementUtil extUtil(pExternalElem->Value(), XSD_ALL, s_elementNames, 8, s_minOccurs, NULL);
 	TiXmlHandle handle(0);
 	TiXmlElement** extElements;
 
@@ -81,6 +84,10 @@ bool ExternalEnergy::load(TiXmlElement *pExternalElem)
 	return true;
 }
 
+const std::string ExternalEnergy::s_resAttributeNames[] = {"path", "maxFiles", "filePrefix"};
+const bool        ExternalEnergy::s_resRequired[]       = {true  , false     , false};
+const std::string ExternalEnergy::s_resDefaultValues[]  = {""    , "1"       , "best"};
+
 bool ExternalEnergy::readResultsDir(TiXmlElement *pElem) {
 	if (pElem == NULL) {
 		m_sResultsDir == "";
@@ -89,37 +96,35 @@ bool ExternalEnergy::readResultsDir(TiXmlElement *pElem) {
 		return true;
 	}
 
-	static const std::string attributeNames[] = {"path", "maxFiles", "filePrefix"};
-	static const bool        required[]       = {true  , false     , false};
-	static const std::string defaultValues[]  = {""    , "1"       , "best"};
 	const char** values;
 	
-	XsdAttributeUtil resultsDirUtil(pElem->Value(), attributeNames, 3, required, defaultValues);
+	XsdAttributeUtil resultsDirUtil(pElem->Value(), s_resAttributeNames, 3, s_resRequired, s_resDefaultValues);
 	if (!resultsDirUtil.process(pElem)) {
 		return false;
 	}
 	values = resultsDirUtil.getAllAttributes();
 	XsdTypeUtil::checkDirectoryOrFileName(values[0], m_sResultsDir);
-	if (!XsdTypeUtil::getPositiveInt(values[1], m_iMaxResultsFiles, attributeNames[1].c_str(), pElem->Value())) {
+	if (!XsdTypeUtil::getPositiveInt(values[1], m_iMaxResultsFiles, s_resAttributeNames[1].c_str(), pElem->Value())) {
 		return false;
 	}
 	m_sResultsFilePrefix = values[2];
 	return true;
 }
 
+const std::string ExternalEnergy::s_mpiAttributeNames[] = {"master"};
+const bool        ExternalEnergy::s_mpiRequired[]       = {true};
+const std::string ExternalEnergy::s_mpiDefaultValues[]  = {""};
+
 bool ExternalEnergy::readMpiMaster(TiXmlElement *pElem) {
-	static const std::string attributeNames[] = {"master"};
-	static const bool        required[]       = {true};
-	static const std::string defaultValues[]  = {""};
 	const char** values;
 
-	XsdAttributeUtil util(pElem->Value(), attributeNames, 1, required, defaultValues);
+	XsdAttributeUtil util(pElem->Value(), s_mpiAttributeNames, 1, s_mpiRequired, s_mpiDefaultValues);
 	if (!util.process(pElem)) {
 		return false;
 	}
 	values = util.getAllAttributes();
 
-	if (!XsdTypeUtil::getBoolValue(attributeNames[0].c_str(), values[0], m_bMpiMaster, pElem->Value())) {
+	if (!XsdTypeUtil::getBoolValue(s_mpiAttributeNames[0].c_str(), values[0], m_bMpiMaster, pElem->Value())) {
 		return false;
 	}
 	return true;
