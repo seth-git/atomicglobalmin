@@ -2671,13 +2671,9 @@ bool Input::printBondInfo()
 	int i;
 	int j;
 	Molecule* molecules = m_tempelateMoleculeSet.getMolecules();
-	int iSingleBonds, iDoubleBonds, iTripleBonds;
 	
 	j = 0;
 	for (i = 0; i < m_iNumStructureTypes; ++i) {
-		iSingleBonds = 0;
-		iDoubleBonds = 0;
-		iTripleBonds = 0;
 		cout << "Molecule No.: " << (i+1) << endl;
 		if (!molecules[j].findBonds())
 			return false;
