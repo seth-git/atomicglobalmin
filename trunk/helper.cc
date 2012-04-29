@@ -44,7 +44,7 @@ void enterSingleMolecule(Input &input, bool askNumber)
 	char line[500];
 	vector<string> lines;
 	int atomic_number;
-	int answer;
+//	int answer;
 	Point3D point;
 	
 	cout << "Enter the cartesian coordinates of a molecule(or set of atoms) with one atom per line in the format below.  Enter 'done' when finished." << endl;
@@ -65,7 +65,7 @@ void enterSingleMolecule(Input &input, bool askNumber)
 	}
 	if (askNumber) {
 		cout << "How many of these molecules are there?" << endl;
-		answer = getChoiceInRange(1,-1);
+//		answer = getChoiceInRange(1,-1);
 	}
 	++input.m_iNumStructureTypes;
 }
