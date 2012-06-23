@@ -60,8 +60,8 @@ Input::Input (void)
 	m_boxDimensions.z = 5;
 	m_fLinearBoxHeight = 1.5;
 	m_fMinTemperatureToStop = 400;
-	m_sOutputFileName = "output.txt";
-	m_sResumeFileName = "resume.txt";
+	m_sOutputFileName = "output.out";
+	m_sResumeFileName = "resume.res";
 	m_iResumeFileNumIterations = 1;
 	m_iPrintSummaryInfoEveryNIterations = 20;
 	
@@ -76,7 +76,6 @@ Input::Input (void)
 	m_atomicNumbers = NULL;
 
 	// Variables used in Simulated Annealing Simulation
-	m_sSimulatedAnnealingParametersDisplayed = "Simulated Annealing Parameters";
 	m_bPerformNonFragSearch = false;
 	m_bPerformBasinHopping = false;
 	m_iIteration = 0;
@@ -88,7 +87,6 @@ Input::Input (void)
 
 	
 	// Varables used in PSO
-	m_sParticleSwarmParametersDisplayed = "Particle Swarm Optimization Parameters";
 	m_fStartCoordInertia = 0.99;
 	m_fEndCoordInertia = 0.4;
 	m_iReachEndInertiaAtIteration = 150;
@@ -115,102 +113,16 @@ Input::Input (void)
 	m_fAttractionRepulsion = 1;
 	m_iNumIterationsBestEnergyHasntChanged = 0;
 
-	// Varables used in Genetic Algorithm
-	m_sGeneticAlgorithmParametersDisplayed = "Genetic Algorithm Parameters";
-	
 	// Variables used in optimization files
 	m_iStructuresToOptimizeAtATime = 10;
 	
-	// Simulated Annealing Strings
-	m_sPerformNonFragSearchDisplayed = "Search only for non-fragmented structures";
-	m_sPerformBasinHoppingDisplayed = "Use energy value from local optimization(basin hopping)";
-	m_sTransitionStateSearchDisplayed = "Search for transition states (random search with every perturbation accepted)";
-	m_sStartingTemperatureDisplayed = "Starting temperature or desired starting percentage of accepted transitions(use %)";
-	m_sBoltzmanConstantDisplayed = "Boltzmann constant";
-	m_sNumIterationsBeforeDecreasingTempDisplayed = "Minimum number of iterations before decreasing the temperature (N)";
-	m_sAcceptanceRatioDisplayed = "Decrease the temperature when the percentage of accepted transitions for the past N iterations is below";
-	m_sNumPerterbationsDisplayed = "Starting number of perturbations per iteration";
-	m_sStartCoordinatePerturbationDisplayed = "Starting coordinate perturbation (angstroms)";
-	m_sMinCoordinatePerturbationDisplayed = "Minimum coordinate perturbation (angstroms)";
-	m_sStartAnglePerturbationDisplayed = "Starting angle perturbation (deg)";
-	m_sMinAnglePerturbationDisplayed = "Minimum angle perturbation (deg)";
-	m_sMinTemperatureToStopDisplayed = "Don't stop while the temperature is above this value";
-	m_sMinAcceptedTransitionsDisplayed = "Stop if the percentage of accepted transitions for the past N iterations is below";
-	m_sQuenchingFactorDisplayed = "Quenching factor(use 1 for basin hopping)";
-	m_sDecreasingTempDisplayed = "Decreasing temperature";
-	m_sAverageTransitionsDisplayDisplayed = "Transition count";
-	m_sAcceptedTransitionsDisplayed = "Number of accepted transitions in the past several iterations";
-	m_sAcceptedTransitionsIndexDisplayed = "Index to the above parameter";
-	
-	// PSO strings
-	m_sStartCoordInertiaDisplayed = "Start coordinate inertia (w)";
-	m_sEndCoordInertiaDisplayed = "End coordinate inertia (optional)";
-	m_sReachEndInertiaAtIterationDisplayed = "Reach end coordinate and angle inertias at iteration (optional)";
-	m_sCoordIndividualMinimumAttractionDisplayed = "Coordinate individual minimum attraction (c2)";
-	m_sCoordPopulationMinimumAttractionDisplayed = "Coordinate population minimum attraction (c1)";
-	m_sCoordMaximumVelocityDisplayed = "Maximum Coordinate Velocity (Vmax, optional)";
-	m_sStartAngleInertiaDisplayed = "Start angle inertia (w)";
-	m_sEndAngleInertiaDisplayed = "End angle inertia (optional)";
-	m_sAngleIndividualMinimumAttractionDisplayed = "Angle individual minimum attraction (c2, deg)";
-	m_sAnglePopulationMinimumAttractionDisplayed = "Angle population minimum attraction (c1, deg)";
-	m_sAngleMaximumVelocityDisplayed = "Maximum Angle Velocity (Vmax, optional)";
-	m_sSwitchToRepulsionWhenDiversityIsDisplayed = "Switch to the repulsion phase when (1) diversity is below (optional)";
-	m_sSwitchToRepulsionWhenNoProgressDisplayed = "And when (2) progress hasn't been made for this number of iterations (optional)";
-	m_sSwitchToAttractionWhenDiversityIsDisplayed = "Switch to the attraction phase when diversity is above (optional)";
-	m_sIndividualBestUpdateDistDisplayed = "Don't update individual best solutions within this RMS distance of the best seen by the population";
-	m_sEnforceMinDistOnCopyDisplayed = "Enforce minimum distance constraints on a copy of each structure rather than on the original";
-	m_sStartVisibilityDistanceDisplayed = "Starting RMS visibility distance (use 'auto' for automatic)";
-	m_sVisibilityDistanceIncreaseDisplayed = "Increase the RMS visibility distance by this amount each iteration";
-	m_sUseLocalOptimizationDisplayed = "Use energy value from local optimization";
-	
-	m_sSimInputVersionLineDisplayed = "Monte Carlo Simulated Annealing Input File Version";
-	m_sSimResumeVersionLineDisplayed = "Monte Carlo Simulated Annealing Resume File Version";
-	m_sSimOptimizationVersionLineDisplayed = "Monte Carlo Simulated Annealing Optimization File Version";
-	m_sPSOInputVersionLineDisplayed = "Particle Swarm Optimization Input File Version ";
-	m_sPSOResumeVersionLineDisplayed = "Particle Swarm Optimization Resume File Version";
-	m_sPSOOptimizationVersionLineDisplayed = "Particle Swarm Optimization Optimization File Version";
-	m_sGAInputVersionLineDisplayed = "Genetic Algorithm Input File Version ";
-	m_sGAResumeVersionLineDisplayed = "Genetic Algorithm Resume File Version";
-	m_sGAOptimizationVersionLineDisplayed = "Genetic Algorithm Optimization File Version";
-	m_sEnergyFunctionDisplayed = "Energy function to use";
-	m_sPathToEnergyFilesDisplayed = "Path to energy files";
-	m_sPathToScratchDisplayed = "Path to scratch directory (optional)";
-	m_sOutputFileNameDisplayed = "Output file name";
-	m_sResumeFileNameDisplayed = "Resume file name (optional)";
-	m_sResumeFileNumIterationsDisplayed = "Write resume file after every set of this number of iterations (optional)";
-	m_sChargeDisplayed = "Charge";
-	m_sMultiplicityDisplayed = "Multiplicity";
-	m_sLinearSructuresDisplayed = "Number of linear structures";
-	m_sPlanarStructuresDisplayed = "Number of planar structures";
-	m_s3DStructuresDisplayed = "Number of fragmented 3D structures";
-	m_s3DStructuresWithMaxDistDisplayed = "Number of partially non-fragmented 3D structures";
-	m_s3DNonFragStructuresWithMaxDistDisplayed = "Number of completely non-fragmented 3D structures";
-	
-	m_sMinDistnaceBetweenSameMoleculeSetsDisplayed = "Consider 2 structures \"different\" if their RMS distance is greater or equal to (angstroms)";
-	m_sNumberOfBestStructuresToSaveDisplayed = "Save this many of the best \"different\" structures";
-	m_sNumberOfLogFilesToSaveDisplayed = "Save this many quantum output files from the list of best structures";
-	
-	m_sMaxAtomDistanceDisplayed = "Maximum inter-atomic distance (angstroms)";
-	m_sMinGeneralAtomDistanceDisplayed = "General minimum atom distance (used if no value specified below)";
-	m_sMinAtomDistanceDisplayed = "Specific minimum atom distances (angstroms)";
-	m_sBoxLengthDisplayed = "Search cube length, width, and height";
-	m_sLinearBoxHeightDisplayed = "Initialize linear structures in a box with the above cube length and a height and width of";
-	m_sMaxIterationsDisplayed = "Maximum number of allowed iterations";
-	m_sNumStructureTypesDisplayed = "Number of unit types";
-	m_sNumStructuresOfEachTypeDisplayed = "Number of units of this type";
-	m_sStructureFormatOfThisTypeDisplayed = "Format of this unit type";
-	m_sPrintSummaryInfoEveryNIterationsDisplayed = "Print summary information after each set of this many iterations";
-	m_sEnergyFileHeaderDisplayed = "Energy file header";
-	m_sEnergyFileFooterDisplayed = "Energy file footer (optional)";
-	
-	m_sIterationDisplayed = "Iteration number";
-	m_sFreezeUntilIterationDisplayed = "Freeze seeded molecules/units for this many iterations";
-	
-	m_sStructuresToOptimizeAtATimeDisplayed = "Number of structures to optimize at a time";
-
 	m_bRunComplete = false;
 	
+	m_messages = NULL;
+	m_messagesDL = NULL;
+	
 	m_bTestMode = false;
+	m_sLanguageCode = Strings::s_sDefaultLanguageCode;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -249,7 +161,7 @@ Input::~Input (void)
 // Returns: True if parameterName appeared in the file with a colon (:)
 //          after it and the string was read correctly.
 //          Note: no error will be reported if the string is empty
-bool Input::getStringParam(const char *fileLine, string parameterNameString, string &stringParam)
+bool Input::getStringParam(const char *fileLine, const string& parameterNameString, string &stringParam)
 {
 	int counter;
 	const char* parameterName = parameterNameString.c_str();
@@ -289,7 +201,7 @@ bool Input::getStringParam(const char *fileLine, string parameterNameString, str
 //          after it and the integer was read correctly.
 //          Note: no error will be reported if there is no integer present.
 //          In this case, the integer is assigned to be zero.
-bool Input::getIntParam(const char *fileLine, string parameterNameString, int &myInt)
+bool Input::getIntParam(const char *fileLine, const string& parameterNameString, int &myInt)
 {
 	int counter;
 	const char* parameterName = parameterNameString.c_str();
@@ -329,7 +241,7 @@ bool Input::getIntParam(const char *fileLine, string parameterNameString, int &m
 //          after it and the float was read correctly.
 //          Note: no error will be reported if there is no float present.
 //          In this case, the float is assigned to be zero.
-bool Input::getFloatParam(const char *fileLine, string parameterNameString, FLOAT &myFloat)
+bool Input::getFloatParam(const char *fileLine, const string& parameterNameString, FLOAT &myFloat)
 {
 	int counter;
 	const char* parameterName = parameterNameString.c_str();
@@ -387,11 +299,11 @@ bool Input::readCartesianLine(const char *fileLine, const int maxLineLength, Poi
 					break;
 				}
 			if (atomicNumber < 1) {
-				cout << "Unidentified element symbol: " << myString << endl;
+				cout << m_messagesDL->m_sUnidentifiedElementSymbol << ": " << myString << endl;
 				return false;
 			}
 		} else if (atomicNumber > MAX_ATOMIC_NUMBERS) {
-			cout << "No there is no information available the for element with atomic number " << atomicNumber << "." << endl;
+			cout << "No there is no information available for the element with atomic number " << atomicNumber << "." << endl;
 			cout << "Please update the periodic table file." << endl;
 			return false;
 		}
@@ -427,16 +339,15 @@ bool Input::readCartesianLine(const char *fileLine, const int maxLineLength, Poi
 //          after it and the boolean parameter was read correctly.
 //          Note: this function expects a yes or no to be read from
 //          the input file and returns false if it's not there.
-bool Input::getYesNoParam(const char *fileLine, string parameterNameString, bool &yesNoParam)
+bool Input::getYesNoParam(const char *fileLine, const string& parameterNameString, bool &yesNoParam)
 {
 	string tempStr;
 	if (!getStringParam(fileLine, parameterNameString, tempStr))
 		return false;
 
-	// Do a case insensitive comparison.
-	if (strncmp(tempStr.c_str(),"yes",3) == 0)
+	if (m_messages->m_sYes == tempStr)
 		yesNoParam = true;
-	else if (strncmp(tempStr.c_str(),"no",2) == 0)
+	else if (m_messages->m_sNo == tempStr)
 		yesNoParam = false;
 	else
 		return false;
@@ -450,9 +361,9 @@ bool Input::getYesNoParam(const char *fileLine, string parameterNameString, bool
 const char *Input::printYesNoParam(bool yesNoParam)
 {
 	if (yesNoParam)
-		return "yes";
+		return m_messages->m_sYes.c_str();
 	else
-		return "no";
+		return m_messages->m_sNo.c_str();
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -525,8 +436,11 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 	int length;
 	string::size_type versionPos;
 	string version;
+	string language = "Language";
 	
 	m_sInputFileName = "";
+	m_messagesDL = Strings::instance();
+	m_messages = m_messagesDL;
 	
 	// Read in each line of the file
 	lineNumber = 1;
@@ -535,40 +449,51 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		cout << "Line " << lineNumber << " is missing in the input file." << endl;
 		return false;
 	}
+	
+	if (getStringParam(fileLine, language, m_sLanguageCode)) {
+		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
+		{
+			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			return false;
+		}
+	} else {
+		m_sLanguageCode = "en";
+	}
+	m_messages = Strings::instance(m_sLanguageCode);
 
-	if (strncmp(m_sSimInputVersionLineDisplayed.c_str(), fileLine, m_sSimInputVersionLineDisplayed.length()) == 0) {
+	if (strncmp(m_messages->m_sSimInputVersionLine.c_str(), fileLine, m_messages->m_sSimInputVersionLine.length()) == 0) {
 		m_iAlgorithmToDo = SIMULATED_ANNEALING;
 		m_bResumeFileRead = false;
 		m_bOptimizationFileRead = false;
-	} else if (strncmp(m_sSimResumeVersionLineDisplayed.c_str(), fileLine, m_sSimResumeVersionLineDisplayed.length()) == 0) {
+	} else if (strncmp(m_messages->m_sSimResumeVersionLine.c_str(), fileLine, m_messages->m_sSimResumeVersionLine.length()) == 0) {
 		m_iAlgorithmToDo = SIMULATED_ANNEALING;
 		m_bResumeFileRead = true;
 		m_bOptimizationFileRead = false;
-	} else if (strncmp(m_sSimOptimizationVersionLineDisplayed.c_str(), fileLine, m_sSimOptimizationVersionLineDisplayed.length()) == 0) {
+	} else if (strncmp(m_messages->m_sSimOptimizationVersionLine.c_str(), fileLine, m_messages->m_sSimOptimizationVersionLine.length()) == 0) {
 		m_iAlgorithmToDo = SIMULATED_ANNEALING;
 		m_bResumeFileRead = false;
 		m_bOptimizationFileRead = true;
-	} else if (strncmp(m_sPSOInputVersionLineDisplayed.c_str(), fileLine, m_sPSOInputVersionLineDisplayed.length()) == 0) {
+	} else if (strncmp(m_messages->m_sPSOInputVersionLine.c_str(), fileLine, m_messages->m_sPSOInputVersionLine.length()) == 0) {
 		m_iAlgorithmToDo = PARTICLE_SWARM_OPTIMIZATION;
 		m_bResumeFileRead = false;
 		m_bOptimizationFileRead = false;
-	} else if (strncmp(m_sPSOResumeVersionLineDisplayed.c_str(), fileLine, m_sPSOResumeVersionLineDisplayed.length()) == 0) {
+	} else if (strncmp(m_messages->m_sPSOResumeVersionLine.c_str(), fileLine, m_messages->m_sPSOResumeVersionLine.length()) == 0) {
 		m_iAlgorithmToDo = PARTICLE_SWARM_OPTIMIZATION;
 		m_bResumeFileRead = true;
 		m_bOptimizationFileRead = false;
-	} else if (strncmp(m_sPSOOptimizationVersionLineDisplayed.c_str(), fileLine, m_sPSOOptimizationVersionLineDisplayed.length()) == 0) {
+	} else if (strncmp(m_messages->m_sPSOOptimizationVersionLine.c_str(), fileLine, m_messages->m_sPSOOptimizationVersionLine.length()) == 0) {
 		m_iAlgorithmToDo = PARTICLE_SWARM_OPTIMIZATION;
 		m_bResumeFileRead = false;
 		m_bOptimizationFileRead = true;
-	} else if (strncmp(m_sGAInputVersionLineDisplayed.c_str(), fileLine, m_sGAInputVersionLineDisplayed.length()) == 0) {
+	} else if (strncmp(m_messages->m_sGAInputVersionLine.c_str(), fileLine, m_messages->m_sGAInputVersionLine.length()) == 0) {
 		m_iAlgorithmToDo = GENETIC_ALGORITHM;
 		m_bResumeFileRead = false;
 		m_bOptimizationFileRead = false;
-	} else if (strncmp(m_sGAResumeVersionLineDisplayed.c_str(), fileLine, m_sGAResumeVersionLineDisplayed.length()) == 0) {
+	} else if (strncmp(m_messages->m_sGAResumeVersionLine.c_str(), fileLine, m_messages->m_sGAResumeVersionLine.length()) == 0) {
 		m_iAlgorithmToDo = GENETIC_ALGORITHM;
 		m_bResumeFileRead = true;
 		m_bOptimizationFileRead = false;
-	} else if (strncmp(m_sGAOptimizationVersionLineDisplayed.c_str(), fileLine, m_sGAOptimizationVersionLineDisplayed.length()) == 0) {
+	} else if (strncmp(m_messages->m_sGAOptimizationVersionLine.c_str(), fileLine, m_messages->m_sGAOptimizationVersionLine.length()) == 0) {
 		m_iAlgorithmToDo = GENETIC_ALGORITHM;
 		m_bResumeFileRead = false;
 		m_bOptimizationFileRead = true;
@@ -603,10 +528,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		cout << "Line " << lineNumber << " is missing in the input file." << endl;
 		return false;
 	}
-	if (!getStringParam(fileLine, m_sEnergyFunctionDisplayed, temp))
+	if (!getStringParam(fileLine, m_messages->m_sEnergyFunction, temp))
 	{
-		cout << "Error reading the parameter '" << m_sEnergyFunctionDisplayed << "' on line "
-		     << lineNumber << " in the input file." << endl;
+		printf("Error reading the parameter '%1$s' on line %2$d in the input file.\n", m_messages->m_sEnergyFunction.c_str(), lineNumber);
 		return false;
 	}
     
@@ -633,9 +557,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		cout << "Line " << lineNumber << " is missing in the input file." << endl;
 		return false;
 	}
-	if (!getStringParam(fileLine, m_sPathToEnergyFilesDisplayed, m_sPathToEnergyFiles))
+	if (!getStringParam(fileLine, m_messages->m_sPathToEnergyFiles, m_sPathToEnergyFiles))
 	{
-		cout << "Error reading the parameter '" << m_sPathToEnergyFilesDisplayed << "' on line "
+		cout << "Error reading the parameter '" << m_messages->m_sPathToEnergyFiles << "' on line "
 		     << lineNumber << " in the input file." << endl;
 		return false;
 	}
@@ -657,9 +581,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		cout << "Line " << lineNumber << " is missing in the input file." << endl;
 		return false;
 	}
-	if (!getStringParam(fileLine, m_sPathToScratchDisplayed, m_sPathToScratch))
+	if (!getStringParam(fileLine, m_messages->m_sPathToScratch, m_sPathToScratch))
 	{
-		cout << "Error reading the parameter '" << m_sPathToScratchDisplayed << "' on line "
+		cout << "Error reading the parameter '" << m_messages->m_sPathToScratch << "' on line "
 		     << lineNumber << " in the input file." << endl;
 		return false;
 	}
@@ -671,9 +595,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		cout << "Line " << lineNumber << " is missing in the input file." << endl;
 		return false;
 	}
-	if (!getFloatParam(fileLine, m_sBoxLengthDisplayed, m_boxDimensions.x))
+	if (!getFloatParam(fileLine, m_messages->m_sBoxLength, m_boxDimensions.x))
 	{
-		cout << "Error reading the parameter '" << m_sBoxLengthDisplayed << "' on line "
+		cout << "Error reading the parameter '" << m_messages->m_sBoxLength << "' on line "
 		     << lineNumber << " in the input file." << endl;
 		return false;
 	}
@@ -687,9 +611,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		cout << "Line " << lineNumber << " is missing in the input file." << endl;
 		return false;
 	}
-	if (!getIntParam(fileLine, m_sLinearSructuresDisplayed, m_iLinearSructures))
+	if (!getIntParam(fileLine, m_messages->m_sLinearSructures, m_iLinearSructures))
 	{
-		cout << "Error reading the parameter '" << m_sLinearSructuresDisplayed << "' on line " << lineNumber << 
+		cout << "Error reading the parameter '" << m_messages->m_sLinearSructures << "' on line " << lineNumber << 
 			" in the input file." << endl;
 		return false;
 	}
@@ -700,9 +624,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		cout << "Line " << lineNumber << " is missing in the input file." << endl;
 		return false;
 	}
-	if (!getFloatParam(fileLine, m_sLinearBoxHeightDisplayed, m_fLinearBoxHeight))
+	if (!getFloatParam(fileLine, m_messages->m_sLinearBoxHeight, m_fLinearBoxHeight))
 	{
-		cout << "Error reading the parameter '" << m_sLinearBoxHeightDisplayed << "' on line "
+		cout << "Error reading the parameter '" << m_messages->m_sLinearBoxHeight << "' on line "
 		     << lineNumber << " in the input file." << endl;
 		return false;
 	}
@@ -713,9 +637,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		cout << "Line " << lineNumber << " is missing in the input file." << endl;
 		return false;
 	}
-	if (!getIntParam(fileLine, m_sPlanarStructuresDisplayed, m_iPlanarStructures))
+	if (!getIntParam(fileLine, m_messages->m_sPlanarStructures, m_iPlanarStructures))
 	{
-		cout << "Error reading the parameter '" << m_sPlanarStructuresDisplayed << "' on line " << lineNumber << 
+		cout << "Error reading the parameter '" << m_messages->m_sPlanarStructures << "' on line " << lineNumber << 
 			" in the input file." << endl;
 		return false;
 	}
@@ -726,9 +650,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		cout << "Line " << lineNumber << " is missing in the input file." << endl;
 		return false;
 	}
-	if (!getIntParam(fileLine, m_s3DStructuresDisplayed, m_i3DStructures))
+	if (!getIntParam(fileLine, m_messages->m_s3DStructures, m_i3DStructures))
 	{
-		cout << "Error reading the parameter '" << m_s3DStructuresDisplayed << "' on line " << lineNumber << 
+		cout << "Error reading the parameter '" << m_messages->m_s3DStructures << "' on line " << lineNumber << 
 			" in the input file." << endl;
 		return false;
 	}
@@ -739,9 +663,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		cout << "Line " << lineNumber << " is missing in the input file." << endl;
 		return false;
 	}
-	if (!getIntParam(fileLine, m_s3DStructuresWithMaxDistDisplayed, m_i3DStructuresWithMaxDist))
+	if (!getIntParam(fileLine, m_messages->m_s3DStructuresWithMaxDist, m_i3DStructuresWithMaxDist))
 	{
-		cout << "Error reading the parameter '" << m_s3DStructuresWithMaxDistDisplayed << "' on line " << lineNumber << 
+		cout << "Error reading the parameter '" << m_messages->m_s3DStructuresWithMaxDist << "' on line " << lineNumber << 
 			" in the input file." << endl;
 		return false;
 	}
@@ -752,9 +676,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		cout << "Line " << lineNumber << " is missing in the input file." << endl;
 		return false;
 	}
-	if (!getIntParam(fileLine, m_s3DNonFragStructuresWithMaxDistDisplayed, m_i3DNonFragStructuresWithMaxDist))
+	if (!getIntParam(fileLine, m_messages->m_s3DNonFragStructuresWithMaxDist, m_i3DNonFragStructuresWithMaxDist))
 	{
-		cout << "Error reading the parameter '" << m_s3DNonFragStructuresWithMaxDistDisplayed << "' on line " << lineNumber << 
+		cout << "Error reading the parameter '" << m_messages->m_s3DNonFragStructuresWithMaxDist << "' on line " << lineNumber << 
 			" in the input file." << endl;
 		return false;
 	}
@@ -774,9 +698,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		cout << "Line " << lineNumber << " is missing in the input file." << endl;
 		return false;
 	}
-	if (!getFloatParam(fileLine, m_sMinGeneralAtomDistanceDisplayed, m_fGeneralMinAtomDistance))
+	if (!getFloatParam(fileLine, m_messages->m_sMinGeneralAtomDistance, m_fGeneralMinAtomDistance))
 	{
-		cout << "Error reading the parameter '" << m_sMinGeneralAtomDistanceDisplayed << "' on line "
+		cout << "Error reading the parameter '" << m_messages->m_sMinGeneralAtomDistance << "' on line "
 		     << lineNumber << " in the input file." << endl;
 		return false;
 	}
@@ -787,9 +711,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		cout << "Line " << lineNumber << " is missing in the input file." << endl;
 		return false;
 	}
-	if (strncmp(fileLine,m_sMinAtomDistanceDisplayed.c_str(),m_sMinAtomDistanceDisplayed.length()) != 0)
+	if (strncmp(fileLine,m_messages->m_sMinAtomDistance.c_str(),m_messages->m_sMinAtomDistance.length()) != 0)
 	{
-		cout << "Error reading the parameter '" << m_sMinAtomDistanceDisplayed << "' on line "
+		cout << "Error reading the parameter '" << m_messages->m_sMinAtomDistance << "' on line "
 		     << lineNumber << " in the input file." << endl;
 		return false;
 	}
@@ -804,16 +728,16 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (strncmp(fileLine,m_sMaxAtomDistanceDisplayed.c_str(),m_sMaxAtomDistanceDisplayed.length()) == 0)
+		if (strncmp(fileLine,m_messages->m_sMaxAtomDistance.c_str(),m_messages->m_sMaxAtomDistance.length()) == 0)
 			break;
 		sscanf(fileLine, "%d %d %lf", &i, &j, &tempFloat);
 		if (setMinDistances)
 			Atom::setMinAtomicDistance(i,j,tempFloat);
 	}
 	
-	if (!getFloatParam(fileLine, m_sMaxAtomDistanceDisplayed, m_fMaxAtomDistance))
+	if (!getFloatParam(fileLine, m_messages->m_sMaxAtomDistance, m_fMaxAtomDistance))
 	{
-		cout << "Error reading the parameter '" << m_sMaxAtomDistanceDisplayed << "' on line "
+		cout << "Error reading the parameter '" << m_messages->m_sMaxAtomDistance << "' on line "
 		     << lineNumber << " in the input file." << endl;
 		return false;
 	}
@@ -838,9 +762,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getStringParam(fileLine, m_sSimulatedAnnealingParametersDisplayed, temp))
+		if (!getStringParam(fileLine, m_messages->m_sSimulatedAnnealingParameters, temp))
 		{
-			cout << "Error reading '" << m_sParticleSwarmParametersDisplayed << ":' on line "
+			cout << "Error reading '" << m_messages->m_sParticleSwarmParameters << ":' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -851,9 +775,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getYesNoParam(fileLine, m_sPerformNonFragSearchDisplayed, m_bPerformNonFragSearch))
+		if (!getYesNoParam(fileLine, m_messages->m_sPerformNonFragSearch, m_bPerformNonFragSearch))
 		{
-			cout << "Error reading the parameter '" << m_sPerformNonFragSearchDisplayed << "' on line " << lineNumber << 
+			cout << "Error reading the parameter '" << m_messages->m_sPerformNonFragSearch << "' on line " << lineNumber << 
 				" in the input file." << endl;
 			return false;
 		}
@@ -872,9 +796,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getYesNoParam(fileLine, m_sPerformBasinHoppingDisplayed, m_bPerformBasinHopping))
+		if (!getYesNoParam(fileLine, m_messages->m_sPerformBasinHopping, m_bPerformBasinHopping))
 		{
-			cout << "Error reading the parameter '" << m_sPerformBasinHoppingDisplayed << "' on line " << lineNumber << 
+			cout << "Error reading the parameter '" << m_messages->m_sPerformBasinHopping << "' on line " << lineNumber << 
 				" in the input file." << endl;
 			return false;
 		}
@@ -885,9 +809,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getYesNoParam(fileLine, m_sTransitionStateSearchDisplayed, m_bTransitionStateSearch))
+		if (!getYesNoParam(fileLine, m_messages->m_sTransitionStateSearch, m_bTransitionStateSearch))
 		{
-			cout << "Error reading the parameter '" << m_sTransitionStateSearchDisplayed << "' on line " << lineNumber << 
+			cout << "Error reading the parameter '" << m_messages->m_sTransitionStateSearch << "' on line " << lineNumber << 
 				" in the input file." << endl;
 			return false;
 		}
@@ -903,9 +827,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getStringParam(fileLine, m_sStartingTemperatureDisplayed, temp))
+		if (!getStringParam(fileLine, m_messages->m_sStartingTemperature, temp))
 		{
-			cout << "Error reading the parameter '" << m_sStartingTemperatureDisplayed << "' on line " << lineNumber << 
+			cout << "Error reading the parameter '" << m_messages->m_sStartingTemperature << "' on line " << lineNumber << 
 				" in the input file." << endl;
 			return false;
 		}
@@ -923,9 +847,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getFloatParam(fileLine, m_sBoltzmanConstantDisplayed, m_fBoltzmanConstant))
+		if (!getFloatParam(fileLine, m_messages->m_sBoltzmanConstant, m_fBoltzmanConstant))
 		{
-			cout << "Error reading the parameter '" << m_sBoltzmanConstantDisplayed << "' on line " << lineNumber << 
+			cout << "Error reading the parameter '" << m_messages->m_sBoltzmanConstant << "' on line " << lineNumber << 
 				" in the input file." << endl;
 			return false;
 		}
@@ -938,15 +862,15 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getIntParam(fileLine, m_sNumIterationsBeforeDecreasingTempDisplayed, m_iNumIterationsBeforeDecreasingTemp))
+		if (!getIntParam(fileLine, m_messages->m_sNumIterationsBeforeDecreasingTemp, m_iNumIterationsBeforeDecreasingTemp))
 		{
-			cout << "Error reading the parameter '" << m_sNumIterationsBeforeDecreasingTempDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sNumIterationsBeforeDecreasingTemp << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
 		if (m_iNumIterationsBeforeDecreasingTemp < 1)
 		{
-			cout << "The parameter '" << m_sNumIterationsBeforeDecreasingTempDisplayed << "' on line "
+			cout << "The parameter '" << m_messages->m_sNumIterationsBeforeDecreasingTemp << "' on line "
 			     << lineNumber << " in the input file cannot be less than one." << endl;
 			return false;
 		}
@@ -961,9 +885,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getFloatParam(fileLine, m_sAcceptanceRatioDisplayed, m_fAcceptanceRatio))
+		if (!getFloatParam(fileLine, m_messages->m_sAcceptanceRatio, m_fAcceptanceRatio))
 		{
-			cout << "Error reading the parameter '" << m_sAcceptanceRatioDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sAcceptanceRatio << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -975,9 +899,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getFloatParam(fileLine, m_sQuenchingFactorDisplayed, m_fQuenchingFactor))
+		if (!getFloatParam(fileLine, m_messages->m_sQuenchingFactor, m_fQuenchingFactor))
 		{
-			cout << "Error reading the parameter '" << m_sQuenchingFactorDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sQuenchingFactor << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -988,9 +912,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getFloatParam(fileLine, m_sMinTemperatureToStopDisplayed, m_fMinTemperatureToStop))
+		if (!getFloatParam(fileLine, m_messages->m_sMinTemperatureToStop, m_fMinTemperatureToStop))
 		{
-			cout << "Error reading the parameter '" << m_sMinTemperatureToStopDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sMinTemperatureToStop << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1001,9 +925,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getFloatParam(fileLine, m_sMinAcceptedTransitionsDisplayed, m_fMinAcceptedTransitions))
+		if (!getFloatParam(fileLine, m_messages->m_sMinAcceptedTransitions, m_fMinAcceptedTransitions))
 		{
-			cout << "Error reading the parameter '" << m_sMinAcceptedTransitionsDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sMinAcceptedTransitions << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1015,9 +939,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getIntParam(fileLine, m_sMaxIterationsDisplayed, m_iMaxIterations))
+		if (!getIntParam(fileLine, m_messages->m_sMaxIterations, m_iMaxIterations))
 		{
-			cout << "Error reading the parameter '" << m_sMaxIterationsDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sMaxIterations << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1028,9 +952,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getFloatParam(fileLine, m_sNumPerterbationsDisplayed, m_fNumPerterbations))
+		if (!getFloatParam(fileLine, m_messages->m_sNumPerterbations, m_fNumPerterbations))
 		{
-			cout << "Error reading the parameter '" << m_sNumPerterbationsDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sNumPerterbations << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1043,9 +967,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getFloatParam(fileLine, m_sStartCoordinatePerturbationDisplayed, m_fStartCoordinatePerturbation))
+		if (!getFloatParam(fileLine, m_messages->m_sStartCoordinatePerturbation, m_fStartCoordinatePerturbation))
 		{
-			cout << "Error reading the parameter '" << m_sStartCoordinatePerturbationDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sStartCoordinatePerturbation << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1056,9 +980,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getFloatParam(fileLine, m_sMinCoordinatePerturbationDisplayed, m_fMinCoordinatePerturbation))
+		if (!getFloatParam(fileLine, m_messages->m_sMinCoordinatePerturbation, m_fMinCoordinatePerturbation))
 		{
-			cout << "Error reading the parameter '" << m_sMinCoordinatePerturbationDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sMinCoordinatePerturbation << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1069,9 +993,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getFloatParam(fileLine, m_sStartAnglePerturbationDisplayed, m_fStartAnglePerturbation))
+		if (!getFloatParam(fileLine, m_messages->m_sStartAnglePerturbation, m_fStartAnglePerturbation))
 		{
-			cout << "Error reading the parameter '" << m_sStartAnglePerturbationDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sStartAnglePerturbation << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1083,9 +1007,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getFloatParam(fileLine, m_sMinAnglePerturbationDisplayed, m_fMinAnglePerturbation))
+		if (!getFloatParam(fileLine, m_messages->m_sMinAnglePerturbation, m_fMinAnglePerturbation))
 		{
-			cout << "Error reading the parameter '" << m_sMinAnglePerturbationDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sMinAnglePerturbation << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1097,9 +1021,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getStringParam(fileLine, m_sParticleSwarmParametersDisplayed, temp))
+		if (!getStringParam(fileLine, m_messages->m_sParticleSwarmParameters, temp))
 		{
-			cout << "Error reading '" << m_sParticleSwarmParametersDisplayed << ":' on line "
+			cout << "Error reading '" << m_messages->m_sParticleSwarmParameters << ":' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1110,9 +1034,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getFloatParam(fileLine, m_sStartCoordInertiaDisplayed, m_fStartCoordInertia))
+		if (!getFloatParam(fileLine, m_messages->m_sStartCoordInertia, m_fStartCoordInertia))
 		{
-			cout << "Error reading the parameter '" << m_sStartCoordInertiaDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sStartCoordInertia << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1123,9 +1047,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getFloatParam(fileLine, m_sEndCoordInertiaDisplayed, m_fEndCoordInertia))
+		if (!getFloatParam(fileLine, m_messages->m_sEndCoordInertia, m_fEndCoordInertia))
 		{
-			cout << "Error reading the parameter '" << m_sEndCoordInertiaDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sEndCoordInertia << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1136,9 +1060,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getIntParam(fileLine, m_sReachEndInertiaAtIterationDisplayed, m_iReachEndInertiaAtIteration))
+		if (!getIntParam(fileLine, m_messages->m_sReachEndInertiaAtIteration, m_iReachEndInertiaAtIteration))
 		{
-			cout << "Error reading the parameter '" << m_sReachEndInertiaAtIterationDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sReachEndInertiaAtIteration << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1149,9 +1073,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getFloatParam(fileLine, m_sCoordIndividualMinimumAttractionDisplayed, m_fCoordIndividualMinimumAttraction))
+		if (!getFloatParam(fileLine, m_messages->m_sCoordIndividualMinimumAttraction, m_fCoordIndividualMinimumAttraction))
 		{
-			cout << "Error reading the parameter '" << m_sCoordIndividualMinimumAttractionDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sCoordIndividualMinimumAttraction << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1162,9 +1086,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getFloatParam(fileLine, m_sCoordPopulationMinimumAttractionDisplayed, m_fCoordPopulationMinimumAttraction))
+		if (!getFloatParam(fileLine, m_messages->m_sCoordPopulationMinimumAttraction, m_fCoordPopulationMinimumAttraction))
 		{
-			cout << "Error reading the parameter '" << m_sCoordPopulationMinimumAttractionDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sCoordPopulationMinimumAttraction << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1175,9 +1099,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getFloatParam(fileLine, m_sCoordMaximumVelocityDisplayed, m_fCoordMaximumVelocity))
+		if (!getFloatParam(fileLine, m_messages->m_sCoordMaximumVelocity, m_fCoordMaximumVelocity))
 		{
-			cout << "Error reading the parameter '" << m_sCoordMaximumVelocityDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sCoordMaximumVelocity << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1188,9 +1112,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getFloatParam(fileLine, m_sStartAngleInertiaDisplayed, m_fStartAngleInertia))
+		if (!getFloatParam(fileLine, m_messages->m_sStartAngleInertia, m_fStartAngleInertia))
 		{
-			cout << "Error reading the parameter '" << m_sStartAngleInertiaDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sStartAngleInertia << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1201,9 +1125,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getFloatParam(fileLine, m_sEndAngleInertiaDisplayed, m_fEndAngleInertia))
+		if (!getFloatParam(fileLine, m_messages->m_sEndAngleInertia, m_fEndAngleInertia))
 		{
-			cout << "Error reading the parameter '" << m_sEndAngleInertiaDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sEndAngleInertia << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1211,9 +1135,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		if ((m_fEndCoordInertia != 0) || (m_fEndAngleInertia != 0) || (m_iReachEndInertiaAtIteration != 0))
 			if ((m_fEndCoordInertia == 0) || (m_fEndAngleInertia == 0) || (m_iReachEndInertiaAtIteration == 0)) {
 				cout << "Please either specify values for all these parameters or none of them:" << endl;
-				cout << "\tParameter: " << m_sEndCoordInertiaDisplayed << endl;
-				cout << "\tParameter: " << m_sReachEndInertiaAtIterationDisplayed << endl;
-				cout << "\tParameter: " << m_sEndAngleInertiaDisplayed << endl;
+				cout << "\tParameter: " << m_messages->m_sEndCoordInertia << endl;
+				cout << "\tParameter: " << m_messages->m_sReachEndInertiaAtIteration << endl;
+				cout << "\tParameter: " << m_messages->m_sEndAngleInertia << endl;
 				return false;
 			}
 				
@@ -1224,9 +1148,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getFloatParam(fileLine, m_sAngleIndividualMinimumAttractionDisplayed, m_fAngleIndividualMinimumAttraction))
+		if (!getFloatParam(fileLine, m_messages->m_sAngleIndividualMinimumAttraction, m_fAngleIndividualMinimumAttraction))
 		{
-			cout << "Error reading the parameter '" << m_sAngleIndividualMinimumAttractionDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sAngleIndividualMinimumAttraction << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1238,9 +1162,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getFloatParam(fileLine, m_sAnglePopulationMinimumAttractionDisplayed, m_fAnglePopulationMinimumAttraction))
+		if (!getFloatParam(fileLine, m_messages->m_sAnglePopulationMinimumAttraction, m_fAnglePopulationMinimumAttraction))
 		{
-			cout << "Error reading the parameter '" << m_sAnglePopulationMinimumAttractionDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sAnglePopulationMinimumAttraction << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1252,9 +1176,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getFloatParam(fileLine, m_sAngleMaximumVelocityDisplayed, m_fAngleMaximumVelocity))
+		if (!getFloatParam(fileLine, m_messages->m_sAngleMaximumVelocity, m_fAngleMaximumVelocity))
 		{
-			cout << "Error reading the parameter '" << m_sAngleMaximumVelocityDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sAngleMaximumVelocity << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1266,9 +1190,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getStringParam(fileLine, m_sStartVisibilityDistanceDisplayed, temp))
+		if (!getStringParam(fileLine, m_messages->m_sStartVisibilityDistance, temp))
 		{
-			cout << "Error reading the parameter '" << m_sStartVisibilityDistanceDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sStartVisibilityDistance << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1287,9 +1211,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getFloatParam(fileLine, m_sVisibilityDistanceIncreaseDisplayed, m_fVisibilityDistanceIncrease))
+		if (!getFloatParam(fileLine, m_messages->m_sVisibilityDistanceIncrease, m_fVisibilityDistanceIncrease))
 		{
-			cout << "Error reading the parameter '" << m_sVisibilityDistanceIncreaseDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sVisibilityDistanceIncrease << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1300,9 +1224,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getFloatParam(fileLine, m_sSwitchToRepulsionWhenDiversityIsDisplayed, m_fSwitchToRepulsionWhenDiversityIs))
+		if (!getFloatParam(fileLine, m_messages->m_sSwitchToRepulsionWhenDiversityIs, m_fSwitchToRepulsionWhenDiversityIs))
 		{
-			cout << "Error reading the parameter '" << m_sSwitchToRepulsionWhenDiversityIsDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sSwitchToRepulsionWhenDiversityIs << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1313,9 +1237,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getIntParam(fileLine, m_sSwitchToRepulsionWhenNoProgressDisplayed, m_iSwitchToRepulsionWhenNoProgress))
+		if (!getIntParam(fileLine, m_messages->m_sSwitchToRepulsionWhenNoProgress, m_iSwitchToRepulsionWhenNoProgress))
 		{
-			cout << "Error reading the parameter '" << m_sSwitchToRepulsionWhenNoProgressDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sSwitchToRepulsionWhenNoProgress << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1326,9 +1250,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getFloatParam(fileLine, m_sSwitchToAttractionWhenDiversityIsDisplayed, m_fSwitchToAttractionWhenDiversityIs))
+		if (!getFloatParam(fileLine, m_messages->m_sSwitchToAttractionWhenDiversityIs, m_fSwitchToAttractionWhenDiversityIs))
 		{
-			cout << "Error reading the parameter '" << m_sSwitchToAttractionWhenDiversityIsDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sSwitchToAttractionWhenDiversityIs << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1338,9 +1262,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		      ((m_fSwitchToRepulsionWhenDiversityIs <= 0) && (m_iSwitchToRepulsionWhenNoProgress <= 0) &&
 		       (m_fSwitchToAttractionWhenDiversityIs <= 0)))) {
 			cout << "Please either specify values for all these parameters or none of them:" << endl;
-			cout << "\tParameter: " << m_sSwitchToRepulsionWhenDiversityIsDisplayed << endl;
-			cout << "\tParameter: " << m_sSwitchToRepulsionWhenNoProgressDisplayed << endl;
-			cout << "\tParameter: " << m_sSwitchToAttractionWhenDiversityIsDisplayed << endl;
+			cout << "\tParameter: " << m_messages->m_sSwitchToRepulsionWhenDiversityIs << endl;
+			cout << "\tParameter: " << m_messages->m_sSwitchToRepulsionWhenNoProgress << endl;
+			cout << "\tParameter: " << m_messages->m_sSwitchToAttractionWhenDiversityIs << endl;
 			return false;
 		}
 		
@@ -1350,9 +1274,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getFloatParam(fileLine, m_sIndividualBestUpdateDistDisplayed, m_fIndividualBestUpdateDist))
+		if (!getFloatParam(fileLine, m_messages->m_sIndividualBestUpdateDist, m_fIndividualBestUpdateDist))
 		{
-			cout << "Error reading the parameter '" << m_sIndividualBestUpdateDistDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sIndividualBestUpdateDist << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1363,9 +1287,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getIntParam(fileLine, m_sMaxIterationsDisplayed, m_iMaxIterations))
+		if (!getIntParam(fileLine, m_messages->m_sMaxIterations, m_iMaxIterations))
 		{
-			cout << "Error reading the parameter '" << m_sMaxIterationsDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sMaxIterations << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1376,9 +1300,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getYesNoParam(fileLine, m_sEnforceMinDistOnCopyDisplayed, m_bEnforceMinDistOnCopy))
+		if (!getYesNoParam(fileLine, m_messages->m_sEnforceMinDistOnCopy, m_bEnforceMinDistOnCopy))
 		{
-			cout << "Error reading the parameter '" << m_sEnforceMinDistOnCopyDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sEnforceMinDistOnCopy << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1389,9 +1313,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getYesNoParam(fileLine, m_sUseLocalOptimizationDisplayed, m_bUseLocalOptimization))
+		if (!getYesNoParam(fileLine, m_messages->m_sUseLocalOptimization, m_bUseLocalOptimization))
 		{
-			cout << "Error reading the parameter '" << m_sUseLocalOptimizationDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sUseLocalOptimization << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1402,9 +1326,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getStringParam(fileLine, m_sGeneticAlgorithmParametersDisplayed, temp))
+		if (!getStringParam(fileLine, m_messages->m_sGeneticAlgorithmParameters, temp))
 		{
-			cout << "Error reading '" << m_sParticleSwarmParametersDisplayed << ":' on line "
+			cout << "Error reading '" << m_messages->m_sParticleSwarmParameters << ":' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1415,9 +1339,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getYesNoParam(fileLine, m_sUseLocalOptimizationDisplayed, m_bUseLocalOptimization))
+		if (!getYesNoParam(fileLine, m_messages->m_sUseLocalOptimization, m_bUseLocalOptimization))
 		{
-			cout << "Error reading the parameter '" << m_sUseLocalOptimizationDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sUseLocalOptimization << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1428,9 +1352,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getIntParam(fileLine, m_sMaxIterationsDisplayed, m_iMaxIterations))
+		if (!getIntParam(fileLine, m_messages->m_sMaxIterations, m_iMaxIterations))
 		{
-			cout << "Error reading the parameter '" << m_sMaxIterationsDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sMaxIterations << "' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1455,9 +1379,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		cout << "Line " << lineNumber << " is missing in the input file." << endl;
 		return false;
 	}
-	if (!getIntParam(fileLine, m_sNumberOfBestStructuresToSaveDisplayed, m_iNumberOfBestStructuresToSave))
+	if (!getIntParam(fileLine, m_messages->m_sNumberOfBestStructuresToSave, m_iNumberOfBestStructuresToSave))
 	{
-		cout << "Error reading the parameter '" << m_sNumberOfBestStructuresToSaveDisplayed << "' on line "
+		cout << "Error reading the parameter '" << m_messages->m_sNumberOfBestStructuresToSave << "' on line "
 		     << lineNumber << " in the input file." << endl;
 		return false;
 	}
@@ -1468,9 +1392,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		cout << "Line " << lineNumber << " is missing in the input file." << endl;
 		return false;
 	}
-	if (!getFloatParam(fileLine, m_sMinDistnaceBetweenSameMoleculeSetsDisplayed, m_fMinDistnaceBetweenSameMoleculeSets))
+	if (!getFloatParam(fileLine, m_messages->m_sMinDistnaceBetweenSameMoleculeSets, m_fMinDistnaceBetweenSameMoleculeSets))
 	{
-		cout << "Error reading the parameter '" << m_sMinDistnaceBetweenSameMoleculeSetsDisplayed << "' on line "
+		cout << "Error reading the parameter '" << m_messages->m_sMinDistnaceBetweenSameMoleculeSets << "' on line "
 		     << lineNumber << " in the input file." << endl;
 		return false;
 	}
@@ -1481,9 +1405,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		cout << "Line " << lineNumber << " is missing in the input file." << endl;
 		return false;
 	}
-	if (!getIntParam(fileLine, m_sNumberOfLogFilesToSaveDisplayed, m_iNumberOfLogFilesToSave))
+	if (!getIntParam(fileLine, m_messages->m_sNumberOfLogFilesToSave, m_iNumberOfLogFilesToSave))
 	{
-		cout << "Error reading the parameter '" << m_sNumberOfLogFilesToSaveDisplayed << "' on line "
+		cout << "Error reading the parameter '" << m_messages->m_sNumberOfLogFilesToSave << "' on line "
 		     << lineNumber << " in the input file." << endl;
 		return false;
 	}
@@ -1494,8 +1418,8 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 	
 	if (m_fSwitchToRepulsionWhenDiversityIs > 0) {
 		if (m_fSwitchToRepulsionWhenDiversityIs > m_fSwitchToAttractionWhenDiversityIs) {
-			cout << "The parameter: '" << m_sSwitchToRepulsionWhenDiversityIsDisplayed << "'" << endl;
-			cout << "can not be bigger than the parameter: '" << m_sSwitchToAttractionWhenDiversityIsDisplayed << "'" << endl;
+			cout << "The parameter: '" << m_messages->m_sSwitchToRepulsionWhenDiversityIs << "'" << endl;
+			cout << "can not be bigger than the parameter: '" << m_messages->m_sSwitchToAttractionWhenDiversityIs << "'" << endl;
 			return false;
 		}
 	}
@@ -1506,9 +1430,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		cout << "Line " << lineNumber << " is missing in the input file." << endl;
 		return false;
 	}
-	if (!getStringParam(fileLine, m_sOutputFileNameDisplayed, m_sOutputFileName))
+	if (!getStringParam(fileLine, m_messages->m_sOutputFileName, m_sOutputFileName))
 	{
-		cout << "Error reading the parameter '" << m_sOutputFileNameDisplayed << "' on line "
+		cout << "Error reading the parameter '" << m_messages->m_sOutputFileName << "' on line "
 		     << lineNumber << " in the input file." << endl;
 		return false;
 	}
@@ -1519,9 +1443,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		cout << "Line " << lineNumber << " is missing in the input file." << endl;
 		return false;
 	}
-	if (!getStringParam(fileLine, m_sResumeFileNameDisplayed, m_sResumeFileName))
+	if (!getStringParam(fileLine, m_messages->m_sResumeFileName, m_sResumeFileName))
 	{
-		cout << "Error reading the parameter '" << m_sResumeFileNameDisplayed << "' on line "
+		cout << "Error reading the parameter '" << m_messages->m_sResumeFileName << "' on line "
 		     << lineNumber << " in the input file." << endl;
 		return false;
 	}
@@ -1532,9 +1456,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		cout << "Line " << lineNumber << " is missing in the input file." << endl;
 		return false;
 	}
-	if (!getIntParam(fileLine, m_sResumeFileNumIterationsDisplayed, m_iResumeFileNumIterations))
+	if (!getIntParam(fileLine, m_messages->m_sResumeFileNumIterations, m_iResumeFileNumIterations))
 	{
-		cout << "Error reading the parameter '" << m_sResumeFileNumIterationsDisplayed << "' on line "
+		cout << "Error reading the parameter '" << m_messages->m_sResumeFileNumIterations << "' on line "
 		     << lineNumber << " in the input file." << endl;
 		return false;
 	}
@@ -1547,9 +1471,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		cout << "Line " << lineNumber << " is missing in the input file." << endl;
 		return false;
 	}
-	if (!getIntParam(fileLine, m_sPrintSummaryInfoEveryNIterationsDisplayed, m_iPrintSummaryInfoEveryNIterations))
+	if (!getIntParam(fileLine, m_messages->m_sPrintSummaryInfoEveryNIterations, m_iPrintSummaryInfoEveryNIterations))
 	{
-		cout << "Error reading the parameter '" << m_sPrintSummaryInfoEveryNIterationsDisplayed << "' on line "
+		cout << "Error reading the parameter '" << m_messages->m_sPrintSummaryInfoEveryNIterations << "' on line "
 		     << lineNumber << " in the input file." << endl;
 		return false;
 	}
@@ -1560,9 +1484,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		cout << "Line " << lineNumber << " is missing in the input file." << endl;
 		return false;
 	}
-	if (!getIntParam(fileLine, m_sChargeDisplayed, m_iCharge))
+	if (!getIntParam(fileLine, m_messages->m_sCharge, m_iCharge))
 	{
-		cout << "Error reading the parameter '" << m_sChargeDisplayed << "' on line " << lineNumber << 
+		cout << "Error reading the parameter '" << m_messages->m_sCharge << "' on line " << lineNumber << 
 			" in the input file." << endl;
 		return false;
 	}
@@ -1573,9 +1497,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		cout << "Line " << lineNumber << " is missing in the input file." << endl;
 		return false;
 	}
-	if (!getIntParam(fileLine, m_sMultiplicityDisplayed, m_iMultiplicity))
+	if (!getIntParam(fileLine, m_messages->m_sMultiplicity, m_iMultiplicity))
 	{
-		cout << "Error reading the parameter '" << m_sMultiplicityDisplayed << "' on line " << lineNumber << 
+		cout << "Error reading the parameter '" << m_messages->m_sMultiplicity << "' on line " << lineNumber << 
 			" in the input file." << endl;
 		return false;
 	}
@@ -1586,9 +1510,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		cout << "Line " << lineNumber << " is missing in the input file." << endl;
 		return false;
 	}
-	if (!getStringParam(fileLine, m_sEnergyFileHeaderDisplayed, temp))
+	if (!getStringParam(fileLine, m_messages->m_sEnergyFileHeader, temp))
 	{
-		cout << "Error reading the parameter '" << m_sEnergyFileHeaderDisplayed << "' on line "
+		cout << "Error reading the parameter '" << m_messages->m_sEnergyFileHeader << "' on line "
 		     << lineNumber << " in the input file." << endl;
 		return false;
 	}
@@ -1620,9 +1544,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		cout << "Line " << lineNumber << " is missing in the input file." << endl;
 		return false;
 	}
-	if (!getStringParam(fileLine, m_sEnergyFileFooterDisplayed, temp))
+	if (!getStringParam(fileLine, m_messages->m_sEnergyFileFooter, temp))
 	{
-		cout << "Error reading the parameter '" << m_sEnergyFileFooterDisplayed << "' on line "
+		cout << "Error reading the parameter '" << m_messages->m_sEnergyFileFooter << "' on line "
 		     << lineNumber << " in the input file." << endl;
 		return false;
 	}
@@ -1683,9 +1607,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		cout << "Line " << lineNumber << " is missing in the input file." << endl;
 		return false;
 	}
-	if (!getIntParam(fileLine, m_sNumStructureTypesDisplayed, m_iNumStructureTypes))
+	if (!getIntParam(fileLine, m_messages->m_sNumStructureTypes, m_iNumStructureTypes))
 	{
-		cout << "Error reading the parameter '" << m_sNumStructureTypesDisplayed << "' on line " << lineNumber << 
+		cout << "Error reading the parameter '" << m_messages->m_sNumStructureTypes << "' on line " << lineNumber << 
 			" in the input file." << endl;
 		return false;
 	}
@@ -1717,9 +1641,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getIntParam(fileLine, m_sNumStructuresOfEachTypeDisplayed, m_iNumStructuresOfEachType[i]))
+		if (!getIntParam(fileLine, m_messages->m_sNumStructuresOfEachType, m_iNumStructuresOfEachType[i]))
 		{
-			cout << "Error reading the parameter '" << m_sNumStructuresOfEachTypeDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sNumStructuresOfEachType << "' on line "
 	                     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1730,9 +1654,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			cout << "Line " << lineNumber << " is missing in the input file." << endl;
 			return false;
 		}
-		if (!getStringParam(fileLine, m_sStructureFormatOfThisTypeDisplayed, m_sStructureFormats[i]))
+		if (!getStringParam(fileLine, m_messages->m_sStructureFormatOfThisType, m_sStructureFormats[i]))
 		{
-			cout << "Error reading the parameter '" << m_sStructureFormatOfThisTypeDisplayed << "' on line "
+			cout << "Error reading the parameter '" << m_messages->m_sStructureFormatOfThisType << "' on line "
 	                     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1778,7 +1702,7 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		}
 		else
 		{
-			cout << "Unknown input for parameter '" << m_sStructureFormatOfThisTypeDisplayed
+			cout << "Unknown input for parameter '" << m_messages->m_sStructureFormatOfThisType
 			     << "' on line " << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1794,7 +1718,7 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 	moleculeVector.clear();
 	if (m_iAlgorithmToDo == SIMULATED_ANNEALING)
 		if ((int)m_fNumPerterbations > m_tempelateMoleculeSet.getNumberOfMolecules()) {
-			cout << "Please enter a number between 1 and " << m_tempelateMoleculeSet.getNumberOfMolecules() << " for the parameter '" << m_sNumPerterbationsDisplayed << "' in the input file." << endl;
+			cout << "Please enter a number between 1 and " << m_tempelateMoleculeSet.getNumberOfMolecules() << " for the parameter '" << m_messages->m_sNumPerterbations << "' in the input file." << endl;
 			return false;
 		}
 	return true;
@@ -1835,47 +1759,6 @@ bool Input::readNodesFile()
 }
 
 /////////////////////////////////////////////////////////////////////
-// Purpose: See returns below.
-// Parameters: string - a character array
-// Returns: true if the string contains one or more numbers and if
-//          it contains no non-numeric characters.
-bool Input::containsOnlyNumbers(const char *string)
-{
-	const char *stringPtr;
-
-	if (string == NULL)
-		return false;
-
-	stringPtr = string;
-	while (true)
-	{
-		switch (*stringPtr)
-		{
-		case '0':
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
-			++stringPtr;
-			continue; // go to the start of the next loop
-		case '\0':
-			if (stringPtr == string)
-				return false;
-			else
-				return true;
-		default:
-			return false;
-		}
-	}
-
-}
-
-/////////////////////////////////////////////////////////////////////
 // Purpose: This function determines if the give file name has the
 //    given extension.
 // Parameters: fileName - the file name
@@ -1890,25 +1773,6 @@ bool Input::containsFileExtension(const char *fileName, const char *extension)
 	if (fileNameLength < 4)
 		return false;
 	return (strncmp(fileName+fileNameLength-4,extension,3) == 0);
-}
-
-/////////////////////////////////////////////////////////////////////
-// Purpose: This function converts a boolean value to a string.
-// Parameters: aBool - input boolean value
-// Returns: a pointer to "yes" if aBool is true
-//          a pointer to "no" if aBool is false
-char *Input::trueFalseToYesNoStr(int aBool)
-{
-	static char yesStr[4];
-	static char noStr[3];
-	
-	strcpy(yesStr,"yes");
-	strcpy(noStr,"no");
-
-	if (aBool)
-		return yesStr;
-	else
-		return noStr;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -1947,163 +1811,170 @@ void Input::printToFile(ofstream &outFile)
 	const int resumeFilePrecision = 15;
 	int i, j;
 	
+	m_sLanguageCode = Strings::s_sDefaultLanguageCode;
+	m_messages = Strings::instance(m_sLanguageCode);
+	m_messagesDL = m_messages;
+
+	if (m_sLanguageCode != "en") {
+		outFile << "Language: " << m_sLanguageCode << endl;
+	}
 	if (m_bResumeFileRead) {
 		outFile << setiosflags(ios::fixed) << setprecision(resumeFilePrecision);
 		if (m_iAlgorithmToDo == SIMULATED_ANNEALING)
-			outFile << m_sSimResumeVersionLineDisplayed << " " << INPUT_FILE_VERSION << endl << endl;
+			outFile << m_messages->m_sSimResumeVersionLine << " " << INPUT_FILE_VERSION << endl << endl;
 		else if (m_iAlgorithmToDo == PARTICLE_SWARM_OPTIMIZATION)
-			outFile << m_sPSOResumeVersionLineDisplayed << " " << INPUT_FILE_VERSION << endl << endl;
+			outFile << m_messages->m_sPSOResumeVersionLine << " " << INPUT_FILE_VERSION << endl << endl;
 		else if (m_iAlgorithmToDo == GENETIC_ALGORITHM)
-			outFile << m_sGAResumeVersionLineDisplayed << " " << INPUT_FILE_VERSION << endl << endl;
+			outFile << m_messages->m_sGAResumeVersionLine << " " << INPUT_FILE_VERSION << endl << endl;
 	} else if (m_bOptimizationFileRead) {
 		outFile << setiosflags(ios::fixed) << setprecision(resumeFilePrecision);
 		if (m_iAlgorithmToDo == SIMULATED_ANNEALING)
-			outFile << m_sSimOptimizationVersionLineDisplayed << " " << INPUT_FILE_VERSION << endl << endl;
+			outFile << m_messages->m_sSimOptimizationVersionLine << " " << INPUT_FILE_VERSION << endl << endl;
 		else if (m_iAlgorithmToDo == PARTICLE_SWARM_OPTIMIZATION)
-			outFile << m_sPSOOptimizationVersionLineDisplayed << " " << INPUT_FILE_VERSION << endl << endl;
+			outFile << m_messages->m_sPSOOptimizationVersionLine << " " << INPUT_FILE_VERSION << endl << endl;
 		else if (m_iAlgorithmToDo == GENETIC_ALGORITHM)
-			outFile << m_sGAOptimizationVersionLineDisplayed << " " << INPUT_FILE_VERSION << endl << endl;
+			outFile << m_messages->m_sGAOptimizationVersionLine << " " << INPUT_FILE_VERSION << endl << endl;
 	} else {
 		outFile << setiosflags(ios::fixed) << setprecision(defaultPrecision);
 		if (m_iAlgorithmToDo == SIMULATED_ANNEALING)
-			outFile << m_sSimInputVersionLineDisplayed << " " << INPUT_FILE_VERSION << endl << endl;
+			outFile << m_messages->m_sSimInputVersionLine << " " << INPUT_FILE_VERSION << endl << endl;
 		else if (m_iAlgorithmToDo == PARTICLE_SWARM_OPTIMIZATION)
-			outFile << m_sPSOInputVersionLineDisplayed << " " << INPUT_FILE_VERSION << endl << endl;
+			outFile << m_messages->m_sPSOInputVersionLine << " " << INPUT_FILE_VERSION << endl << endl;
 		else if (m_iAlgorithmToDo == GENETIC_ALGORITHM)
-			outFile << m_sGAInputVersionLineDisplayed << " " << INPUT_FILE_VERSION << endl << endl;
+			outFile << m_messages->m_sGAInputVersionLine << " " << INPUT_FILE_VERSION << endl << endl;
 	}
 	
-	outFile << m_sEnergyFunctionDisplayed << ": " << m_pSelectedEnergyProgram->m_sName << endl;
-	outFile << m_sPathToEnergyFilesDisplayed << ": " << m_sPathToEnergyFiles << endl;
-	outFile << m_sPathToScratchDisplayed << ": " << m_sPathToScratch << endl;
+	outFile << m_messages->m_sEnergyFunction << ": " << m_pSelectedEnergyProgram->m_sName << endl;
+	outFile << m_messages->m_sPathToEnergyFiles << ": " << m_sPathToEnergyFiles << endl;
+	outFile << m_messages->m_sPathToScratch << ": " << m_sPathToScratch << endl;
 	
-	outFile << m_sBoxLengthDisplayed << ": " << Atom::printFloat(m_boxDimensions.x) << endl;
-	outFile << m_sLinearSructuresDisplayed << ": " << m_iLinearSructures << endl;
-	outFile << m_sLinearBoxHeightDisplayed << ": " << Atom::printFloat(m_fLinearBoxHeight) << endl;
-	outFile << m_sPlanarStructuresDisplayed << ": " << m_iPlanarStructures << endl;
-	outFile << m_s3DStructuresDisplayed << ": " << m_i3DStructures << endl;
-	outFile << m_s3DStructuresWithMaxDistDisplayed << ": " << m_i3DStructuresWithMaxDist << endl;
-	outFile << m_s3DNonFragStructuresWithMaxDistDisplayed << ": " << m_i3DNonFragStructuresWithMaxDist << endl;
-	outFile << m_sMinGeneralAtomDistanceDisplayed << ": " << Atom::printFloat(m_fGeneralMinAtomDistance) << endl;
-	outFile << m_sMinAtomDistanceDisplayed << ": " << endl;
+	outFile << m_messages->m_sBoxLength << ": " << Atom::printFloat(m_boxDimensions.x) << endl;
+	outFile << m_messages->m_sLinearSructures << ": " << m_iLinearSructures << endl;
+	outFile << m_messages->m_sLinearBoxHeight << ": " << Atom::printFloat(m_fLinearBoxHeight) << endl;
+	outFile << m_messages->m_sPlanarStructures << ": " << m_iPlanarStructures << endl;
+	outFile << m_messages->m_s3DStructures << ": " << m_i3DStructures << endl;
+	outFile << m_messages->m_s3DStructuresWithMaxDist << ": " << m_i3DStructuresWithMaxDist << endl;
+	outFile << m_messages->m_s3DNonFragStructuresWithMaxDist << ": " << m_i3DNonFragStructuresWithMaxDist << endl;
+	outFile << m_messages->m_sMinGeneralAtomDistance << ": " << Atom::printFloat(m_fGeneralMinAtomDistance) << endl;
+	outFile << m_messages->m_sMinAtomDistance << ": " << endl;
 	Atom::outputMinDistances(outFile);
-	outFile << m_sMaxAtomDistanceDisplayed << ": " << Atom::printFloat(m_fMaxAtomDistance) << endl;
+	outFile << m_messages->m_sMaxAtomDistance << ": " << Atom::printFloat(m_fMaxAtomDistance) << endl;
 	outFile << endl;
 	
 	if (m_iAlgorithmToDo == SIMULATED_ANNEALING) {
-		outFile << m_sSimulatedAnnealingParametersDisplayed << ":" << endl;
-		outFile << m_sPerformNonFragSearchDisplayed << ": " << printYesNoParam(m_bPerformNonFragSearch) << endl;
-		outFile << m_sPerformBasinHoppingDisplayed << ": " << printYesNoParam(m_bPerformBasinHopping) << endl;
-		outFile << m_sTransitionStateSearchDisplayed << ": " << printYesNoParam(m_bTransitionStateSearch) << endl;
+		outFile << m_messages->m_sSimulatedAnnealingParameters << ":" << endl;
+		outFile << m_messages->m_sPerformNonFragSearch << ": " << printYesNoParam(m_bPerformNonFragSearch) << endl;
+		outFile << m_messages->m_sPerformBasinHopping << ": " << printYesNoParam(m_bPerformBasinHopping) << endl;
+		outFile << m_messages->m_sTransitionStateSearch << ": " << printYesNoParam(m_bTransitionStateSearch) << endl;
 		if (!(m_bResumeFileRead || m_bOptimizationFileRead))
 			outFile << setprecision(1);
 		if ((m_fDesiredAcceptedTransitions == 0) || (m_iIteration > NUM_ITERATIONS_TO_SET_SCALING_FACTOR))
-			outFile << m_sStartingTemperatureDisplayed << ": " << Atom::printFloat(m_fStartingTemperature) << endl;
+			outFile << m_messages->m_sStartingTemperature << ": " << Atom::printFloat(m_fStartingTemperature) << endl;
 		else
-			outFile << m_sStartingTemperatureDisplayed << ": " << Atom::printFloat(m_fDesiredAcceptedTransitions*100) << "%" << endl;
+			outFile << m_messages->m_sStartingTemperature << ": " << Atom::printFloat(m_fDesiredAcceptedTransitions*100) << "%" << endl;
 		if (!(m_bResumeFileRead || m_bOptimizationFileRead))
 			outFile << setprecision(defaultPrecision);
-		outFile << m_sBoltzmanConstantDisplayed << ": " << Atom::printFloat(m_fBoltzmanConstant) << endl;
-		outFile << m_sNumIterationsBeforeDecreasingTempDisplayed << ": " << m_iNumIterationsBeforeDecreasingTemp << endl;
+		outFile << m_messages->m_sBoltzmanConstant << ": " << Atom::printFloat(m_fBoltzmanConstant) << endl;
+		outFile << m_messages->m_sNumIterationsBeforeDecreasingTemp << ": " << m_iNumIterationsBeforeDecreasingTemp << endl;
 		if (!(m_bResumeFileRead || m_bOptimizationFileRead))
 			outFile << setprecision(1);
-		outFile << m_sAcceptanceRatioDisplayed << ": " << Atom::printFloat(m_fAcceptanceRatio * 100) << endl;
+		outFile << m_messages->m_sAcceptanceRatio << ": " << Atom::printFloat(m_fAcceptanceRatio * 100) << endl;
 		if (!(m_bResumeFileRead || m_bOptimizationFileRead))
 			outFile << setprecision(defaultPrecision);
-		outFile << m_sQuenchingFactorDisplayed << ": " << Atom::printFloat(m_fQuenchingFactor) << endl;
+		outFile << m_messages->m_sQuenchingFactor << ": " << Atom::printFloat(m_fQuenchingFactor) << endl;
 		if (!(m_bResumeFileRead || m_bOptimizationFileRead))
 			outFile << setprecision(1);
-		outFile << m_sMinTemperatureToStopDisplayed << ": " << Atom::printFloat(m_fMinTemperatureToStop) << endl;
-		outFile << m_sMinAcceptedTransitionsDisplayed << ": " << Atom::printFloat(m_fMinAcceptedTransitions * 100) << endl;
+		outFile << m_messages->m_sMinTemperatureToStop << ": " << Atom::printFloat(m_fMinTemperatureToStop) << endl;
+		outFile << m_messages->m_sMinAcceptedTransitions << ": " << Atom::printFloat(m_fMinAcceptedTransitions * 100) << endl;
 		if (!(m_bResumeFileRead || m_bOptimizationFileRead))
 			outFile << setprecision(defaultPrecision);
-		outFile << m_sMaxIterationsDisplayed << ": " << m_iMaxIterations << endl;
+		outFile << m_messages->m_sMaxIterations << ": " << m_iMaxIterations << endl;
 		if (m_bResumeFileRead)
-			outFile << m_sNumPerterbationsDisplayed << ": " << Atom::printFloat(m_fNumPerterbations) << endl;
+			outFile << m_messages->m_sNumPerterbations << ": " << Atom::printFloat(m_fNumPerterbations) << endl;
 		else
-			outFile << m_sNumPerterbationsDisplayed << ": " << (int)m_fNumPerterbations << endl;
-		outFile << m_sStartCoordinatePerturbationDisplayed << ": " << Atom::printFloat(m_fStartCoordinatePerturbation) << endl;
-		outFile << m_sMinCoordinatePerturbationDisplayed << ": " << Atom::printFloat(m_fMinCoordinatePerturbation) << endl;
-		outFile << m_sStartAnglePerturbationDisplayed << ": " << Atom::printFloat(m_fStartAnglePerturbation * RAD_TO_DEG) << endl;
-		outFile << m_sMinAnglePerturbationDisplayed << ": " << Atom::printFloat(m_fMinAnglePerturbation * RAD_TO_DEG) << endl;
+			outFile << m_messages->m_sNumPerterbations << ": " << (int)m_fNumPerterbations << endl;
+		outFile << m_messages->m_sStartCoordinatePerturbation << ": " << Atom::printFloat(m_fStartCoordinatePerturbation) << endl;
+		outFile << m_messages->m_sMinCoordinatePerturbation << ": " << Atom::printFloat(m_fMinCoordinatePerturbation) << endl;
+		outFile << m_messages->m_sStartAnglePerturbation << ": " << Atom::printFloat(m_fStartAnglePerturbation * RAD_TO_DEG) << endl;
+		outFile << m_messages->m_sMinAnglePerturbation << ": " << Atom::printFloat(m_fMinAnglePerturbation * RAD_TO_DEG) << endl;
 	} else if (m_iAlgorithmToDo == PARTICLE_SWARM_OPTIMIZATION) {
-		outFile << m_sParticleSwarmParametersDisplayed << ":" << endl;
+		outFile << m_messages->m_sParticleSwarmParameters << ":" << endl;
 		if (!(m_bResumeFileRead || m_bOptimizationFileRead))
 			outFile << setprecision(defaultPrecision);
-		outFile << m_sStartCoordInertiaDisplayed << ": " << Atom::printFloat(m_fStartCoordInertia) << endl;
-		outFile << m_sEndCoordInertiaDisplayed << ": " << Atom::printFloat(m_fEndCoordInertia) << endl;
-		outFile << m_sReachEndInertiaAtIterationDisplayed << ": " << m_iReachEndInertiaAtIteration << endl;
-		outFile << m_sCoordIndividualMinimumAttractionDisplayed << ": " << Atom::printFloat(m_fCoordIndividualMinimumAttraction) << endl;
-		outFile << m_sCoordPopulationMinimumAttractionDisplayed << ": " << Atom::printFloat(m_fCoordPopulationMinimumAttraction) << endl;
+		outFile << m_messages->m_sStartCoordInertia << ": " << Atom::printFloat(m_fStartCoordInertia) << endl;
+		outFile << m_messages->m_sEndCoordInertia << ": " << Atom::printFloat(m_fEndCoordInertia) << endl;
+		outFile << m_messages->m_sReachEndInertiaAtIteration << ": " << m_iReachEndInertiaAtIteration << endl;
+		outFile << m_messages->m_sCoordIndividualMinimumAttraction << ": " << Atom::printFloat(m_fCoordIndividualMinimumAttraction) << endl;
+		outFile << m_messages->m_sCoordPopulationMinimumAttraction << ": " << Atom::printFloat(m_fCoordPopulationMinimumAttraction) << endl;
 		if (m_fCoordMaximumVelocity != 0)
-			outFile << m_sCoordMaximumVelocityDisplayed << ": " << Atom::printFloat(m_fCoordMaximumVelocity) << endl;
+			outFile << m_messages->m_sCoordMaximumVelocity << ": " << Atom::printFloat(m_fCoordMaximumVelocity) << endl;
 		else
-			outFile << m_sCoordMaximumVelocityDisplayed << ": " << endl;
-		outFile << m_sStartAngleInertiaDisplayed << ": " << Atom::printFloat(m_fStartAngleInertia) << endl;
-		outFile << m_sEndAngleInertiaDisplayed << ": " << Atom::printFloat(m_fEndAngleInertia) << endl;
-		outFile << m_sAngleIndividualMinimumAttractionDisplayed << ": " << Atom::printFloat(m_fAngleIndividualMinimumAttraction * RAD_TO_DEG) << endl;
-		outFile << m_sAnglePopulationMinimumAttractionDisplayed << ": " << Atom::printFloat(m_fAnglePopulationMinimumAttraction * RAD_TO_DEG) << endl;
+			outFile << m_messages->m_sCoordMaximumVelocity << ": " << endl;
+		outFile << m_messages->m_sStartAngleInertia << ": " << Atom::printFloat(m_fStartAngleInertia) << endl;
+		outFile << m_messages->m_sEndAngleInertia << ": " << Atom::printFloat(m_fEndAngleInertia) << endl;
+		outFile << m_messages->m_sAngleIndividualMinimumAttraction << ": " << Atom::printFloat(m_fAngleIndividualMinimumAttraction * RAD_TO_DEG) << endl;
+		outFile << m_messages->m_sAnglePopulationMinimumAttraction << ": " << Atom::printFloat(m_fAnglePopulationMinimumAttraction * RAD_TO_DEG) << endl;
 		if (m_fAngleMaximumVelocity != 0)
-			outFile << m_sAngleMaximumVelocityDisplayed << ": " << Atom::printFloat(m_fAngleMaximumVelocity * RAD_TO_DEG) << endl;
+			outFile << m_messages->m_sAngleMaximumVelocity << ": " << Atom::printFloat(m_fAngleMaximumVelocity * RAD_TO_DEG) << endl;
 		else
-			outFile << m_sAngleMaximumVelocityDisplayed << ": " << endl;
+			outFile << m_messages->m_sAngleMaximumVelocity << ": " << endl;
 		
 		if (m_bStartingVisibilityAuto && (m_fStartVisibilityDistance == -1))
-			outFile << m_sStartVisibilityDistanceDisplayed << ": auto" << endl;
+			outFile << m_messages->m_sStartVisibilityDistance << ": auto" << endl;
 		else
-			outFile << m_sStartVisibilityDistanceDisplayed << ": " << Atom::printFloat(m_fStartVisibilityDistance) << endl;
-		outFile << m_sVisibilityDistanceIncreaseDisplayed << ": " << Atom::printFloat(m_fVisibilityDistanceIncrease) << endl;
+			outFile << m_messages->m_sStartVisibilityDistance << ": " << Atom::printFloat(m_fStartVisibilityDistance) << endl;
+		outFile << m_messages->m_sVisibilityDistanceIncrease << ": " << Atom::printFloat(m_fVisibilityDistanceIncrease) << endl;
 		
 		if (m_fSwitchToRepulsionWhenDiversityIs > 0) {
-			outFile << m_sSwitchToRepulsionWhenDiversityIsDisplayed << ": " << Atom::printFloat(m_fSwitchToRepulsionWhenDiversityIs) << endl;
-			outFile << m_sSwitchToRepulsionWhenNoProgressDisplayed << ": " << m_iSwitchToRepulsionWhenNoProgress << endl;
-			outFile << m_sSwitchToAttractionWhenDiversityIsDisplayed << ": " << Atom::printFloat(m_fSwitchToAttractionWhenDiversityIs) << endl;
+			outFile << m_messages->m_sSwitchToRepulsionWhenDiversityIs << ": " << Atom::printFloat(m_fSwitchToRepulsionWhenDiversityIs) << endl;
+			outFile << m_messages->m_sSwitchToRepulsionWhenNoProgress << ": " << m_iSwitchToRepulsionWhenNoProgress << endl;
+			outFile << m_messages->m_sSwitchToAttractionWhenDiversityIs << ": " << Atom::printFloat(m_fSwitchToAttractionWhenDiversityIs) << endl;
 		} else {
-			outFile << m_sSwitchToRepulsionWhenDiversityIsDisplayed << ": " << endl;
-			outFile << m_sSwitchToRepulsionWhenNoProgressDisplayed << ": " << endl;
-			outFile << m_sSwitchToAttractionWhenDiversityIsDisplayed << ": " << endl;
+			outFile << m_messages->m_sSwitchToRepulsionWhenDiversityIs << ": " << endl;
+			outFile << m_messages->m_sSwitchToRepulsionWhenNoProgress << ": " << endl;
+			outFile << m_messages->m_sSwitchToAttractionWhenDiversityIs << ": " << endl;
 		}
-		outFile << m_sIndividualBestUpdateDistDisplayed << ": " << Atom::printFloat(m_fIndividualBestUpdateDist) << endl;
+		outFile << m_messages->m_sIndividualBestUpdateDist << ": " << Atom::printFloat(m_fIndividualBestUpdateDist) << endl;
 
-		outFile << m_sMaxIterationsDisplayed << ": " << m_iMaxIterations << endl;
-		outFile << m_sEnforceMinDistOnCopyDisplayed << ": " << printYesNoParam(m_bEnforceMinDistOnCopy) << endl;
-		outFile << m_sUseLocalOptimizationDisplayed << ": " << printYesNoParam(m_bUseLocalOptimization) << endl;
+		outFile << m_messages->m_sMaxIterations << ": " << m_iMaxIterations << endl;
+		outFile << m_messages->m_sEnforceMinDistOnCopy << ": " << printYesNoParam(m_bEnforceMinDistOnCopy) << endl;
+		outFile << m_messages->m_sUseLocalOptimization << ": " << printYesNoParam(m_bUseLocalOptimization) << endl;
 	} else if (m_iAlgorithmToDo == GENETIC_ALGORITHM) {
-		outFile << m_sGeneticAlgorithmParametersDisplayed << ":" << endl;
+		outFile << m_messages->m_sGeneticAlgorithmParameters << ":" << endl;
 		if (!(m_bResumeFileRead || m_bOptimizationFileRead))
 			outFile << setprecision(defaultPrecision);
-		outFile << m_sUseLocalOptimizationDisplayed << ": " << printYesNoParam(m_bUseLocalOptimization) << endl;
-		outFile << m_sMaxIterationsDisplayed << ": " << m_iMaxIterations << endl;
+		outFile << m_messages->m_sUseLocalOptimization << ": " << printYesNoParam(m_bUseLocalOptimization) << endl;
+		outFile << m_messages->m_sMaxIterations << ": " << m_iMaxIterations << endl;
 	}
 	
 	outFile << endl;
 	if (!(m_bResumeFileRead || m_bOptimizationFileRead))
 		outFile << setprecision(1);
-	outFile << m_sNumberOfBestStructuresToSaveDisplayed << ": " << m_iNumberOfBestStructuresToSave << endl;
+	outFile << m_messages->m_sNumberOfBestStructuresToSave << ": " << m_iNumberOfBestStructuresToSave << endl;
 	if (!(m_bResumeFileRead || m_bOptimizationFileRead))
 		outFile << setprecision(defaultPrecision);
-	outFile << m_sMinDistnaceBetweenSameMoleculeSetsDisplayed << ": " << Atom::printFloat(m_fMinDistnaceBetweenSameMoleculeSets) << endl;
-	outFile << m_sNumberOfLogFilesToSaveDisplayed << ": " << m_iNumberOfLogFilesToSave << endl;
-	outFile << m_sOutputFileNameDisplayed << ": " << m_sOutputFileName << endl;
-	outFile << m_sResumeFileNameDisplayed << ": " << m_sResumeFileName << endl;
-	outFile << m_sResumeFileNumIterationsDisplayed << ": " << m_iResumeFileNumIterations << endl;
-	outFile << m_sPrintSummaryInfoEveryNIterationsDisplayed << ": " << m_iPrintSummaryInfoEveryNIterations << endl;
+	outFile << m_messages->m_sMinDistnaceBetweenSameMoleculeSets << ": " << Atom::printFloat(m_fMinDistnaceBetweenSameMoleculeSets) << endl;
+	outFile << m_messages->m_sNumberOfLogFilesToSave << ": " << m_iNumberOfLogFilesToSave << endl;
+	outFile << m_messages->m_sOutputFileName << ": " << m_sOutputFileName << endl;
+	outFile << m_messages->m_sResumeFileName << ": " << m_sResumeFileName << endl;
+	outFile << m_messages->m_sResumeFileNumIterations << ": " << m_iResumeFileNumIterations << endl;
+	outFile << m_messages->m_sPrintSummaryInfoEveryNIterations << ": " << m_iPrintSummaryInfoEveryNIterations << endl;
 	
-	outFile << m_sChargeDisplayed << ": " << m_iCharge << endl;
-	outFile << m_sMultiplicityDisplayed << ": " << m_iMultiplicity << endl;
-	outFile << m_sEnergyFileHeaderDisplayed << ":" << endl;
+	outFile << m_messages->m_sCharge << ": " << m_iCharge << endl;
+	outFile << m_messages->m_sMultiplicity << ": " << m_iMultiplicity << endl;
+	outFile << m_messages->m_sEnergyFileHeader << ":" << endl;
 	outFile << m_sEnergyFileHeader << endl;
-	outFile << m_sEnergyFileFooterDisplayed << ":" << endl;
+	outFile << m_messages->m_sEnergyFileFooter << ":" << endl;
 	outFile << m_sEnergyFileFooter << endl;
 	
-	outFile << m_sNumStructureTypesDisplayed << ": " << m_iNumStructureTypes << endl;
+	outFile << m_messages->m_sNumStructureTypes << ": " << m_iNumStructureTypes << endl;
 	
 	if (!(m_bResumeFileRead || m_bOptimizationFileRead))
 		outFile << setprecision(defaultPrecision);
 	for (i = 0; i < m_iNumStructureTypes; ++i)
 	{
-		outFile << endl << m_sNumStructuresOfEachTypeDisplayed << ": " << m_iNumStructuresOfEachType[i] << endl;
-		outFile << m_sStructureFormatOfThisTypeDisplayed << ": " << m_sStructureFormats[i] << endl;
+		outFile << endl << m_messages->m_sNumStructuresOfEachType << ": " << m_iNumStructuresOfEachType[i] << endl;
+		outFile << m_messages->m_sStructureFormatOfThisType << ": " << m_sStructureFormats[i] << endl;
 		for (j = 0; j < (int)m_cartesianPoints[i].size(); ++j)
 		{
 			outFile << m_atomicNumbers[i][j] << " ";
@@ -2116,6 +1987,7 @@ void Input::printToFile(ofstream &outFile)
 
 void Input::printInputParamsToFile(ofstream &outFile)
 {
+	m_sLanguageCode = Strings::s_sDefaultLanguageCode;
 	Input outputFile;
 	vector<MoleculeSet*> moleculeSets;
 	vector<MoleculeSet*> bestNMoleculeSets;
@@ -2141,6 +2013,10 @@ void Input::writeResumeFile(string &fileName, vector<MoleculeSet*> &moleculeSets
                             time_t elapsedSeconds, bool resumeOrOptimizationFile)
 {
 	int i;
+	m_sLanguageCode = Strings::s_sDefaultLanguageCode;
+	m_messages = Strings::instance(m_sLanguageCode);
+	m_messagesDL = m_messages;
+	
 	m_iTotalPopulationSize = (int)moleculeSets.size();
 	// Create the resume file just in case we need to stop the program
 	ofstream resumeFile(fileName.c_str(), ios::out);
@@ -2171,17 +2047,17 @@ void Input::writeResumeFile(string &fileName, vector<MoleculeSet*> &moleculeSets
 	}
 
 	if (m_bOptimizationFileRead) {
-		resumeFile << m_sStructuresToOptimizeAtATimeDisplayed << ": " << m_iStructuresToOptimizeAtATime << endl;
+		resumeFile << m_messages->m_sStructuresToOptimizeAtATime << ": " << m_iStructuresToOptimizeAtATime << endl;
 	} else if (m_iAlgorithmToDo == SIMULATED_ANNEALING) {
-		resumeFile << m_sDecreasingTempDisplayed << ": " << m_bDecreasingTemp << endl;
+		resumeFile << m_messages->m_sDecreasingTemp << ": " << m_bDecreasingTemp << endl;
 		
-		resumeFile << m_sAcceptedTransitionsDisplayed << ":" << endl;
+		resumeFile << m_messages->m_sAcceptedTransitions << ":" << endl;
 		resumeFile << m_prgAcceptedTransitions[0];
 		for (i = 1; i < m_iNumIterationsBeforeDecreasingTemp; ++i)
 			resumeFile << "," << m_prgAcceptedTransitions[i];
 		resumeFile << endl;
 		
-		resumeFile << m_sAcceptedTransitionsIndexDisplayed << ": "
+		resumeFile << m_messages->m_sAcceptedTransitionsIndex << ": "
 		           << m_iAcceptedTransitionsIndex << endl;
 	} else if (m_iAlgorithmToDo == PARTICLE_SWARM_OPTIMIZATION) {
 		resumeFile << "\nIndividual best structures:" << endl;
@@ -2197,8 +2073,8 @@ void Input::writeResumeFile(string &fileName, vector<MoleculeSet*> &moleculeSets
 	} else if (m_iAlgorithmToDo == GENETIC_ALGORITHM) {
 	}
 	
-	resumeFile << m_sIterationDisplayed << ": " << m_iIteration << endl;
-	resumeFile << m_sFreezeUntilIterationDisplayed << ": " << m_iFreezeUntilIteration << endl;
+	resumeFile << m_messages->m_sIteration << ": " << m_iIteration << endl;
+	resumeFile << m_messages->m_sFreezeUntilIteration << ": " << m_iFreezeUntilIteration << endl;
 	
 	resumeFile << "Run Complete: " << printYesNoParam(m_bRunComplete) << endl;
 	resumeFile << "Number of times the energy was calculated: " << m_iNumEnergyEvaluations << endl;
@@ -2234,6 +2110,8 @@ bool Input::open(string &fileName, bool setMinDistances, bool bReadNodesFile, ve
 	
 	if (!infile)
 	{
+		m_messagesDL = Strings::instance();
+		m_messages = m_messagesDL;
 		cout << "Can't open the input file: " << fileName << endl;
 		return false;
 	}
@@ -2370,26 +2248,26 @@ bool Input::open(string &fileName, bool setMinDistances, bool bReadNodesFile, ve
 	if (m_bOptimizationFileRead) {
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "The line that's supposed to have this parameter is missing: " << m_sStructuresToOptimizeAtATimeDisplayed << endl;
+			cout << "The line that's supposed to have this parameter is missing: " << m_messages->m_sStructuresToOptimizeAtATime << endl;
 			infile.close();
 			return false;
 		}
-		if (!getIntParam(fileLine, m_sStructuresToOptimizeAtATimeDisplayed, m_iStructuresToOptimizeAtATime))
+		if (!getIntParam(fileLine, m_messages->m_sStructuresToOptimizeAtATime, m_iStructuresToOptimizeAtATime))
 		{
-			cout << "Error reading the parameter '" << m_sStructuresToOptimizeAtATimeDisplayed << "' in the input file." << endl;
+			cout << "Error reading the parameter '" << m_messages->m_sStructuresToOptimizeAtATime << "' in the input file." << endl;
 			infile.close();
 			return false;
 		}
 	} else if (m_iAlgorithmToDo == SIMULATED_ANNEALING) {
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "The line that's supposed to have this parameter is missing: " << m_sDecreasingTempDisplayed << endl;
+			cout << "The line that's supposed to have this parameter is missing: " << m_messages->m_sDecreasingTemp << endl;
 			infile.close();
 			return false;
 		}
-		if (!getIntParam(fileLine, m_sDecreasingTempDisplayed, temp))
+		if (!getIntParam(fileLine, m_messages->m_sDecreasingTemp, temp))
 		{
-			cout << "Error reading the parameter '" << m_sDecreasingTempDisplayed << "' in the input file." << endl;
+			cout << "Error reading the parameter '" << m_messages->m_sDecreasingTemp << "' in the input file." << endl;
 			infile.close();
 			return false;
 		}
@@ -2397,14 +2275,14 @@ bool Input::open(string &fileName, bool setMinDistances, bool bReadNodesFile, ve
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
 			cout << "The line that's supposed to have this parameter is missing: "
-			     << m_sAcceptedTransitionsDisplayed << endl;
+			     << m_messages->m_sAcceptedTransitions << endl;
 			infile.close();
 			return false;
 		}
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
 			cout << "The line after this parameter is missing: "
-			     << m_sAcceptedTransitionsDisplayed << endl;
+			     << m_messages->m_sAcceptedTransitions << endl;
 			infile.close();
 			return false;
 		}
@@ -2428,21 +2306,21 @@ bool Input::open(string &fileName, bool setMinDistances, bool bReadNodesFile, ve
 		}
 		if (i != m_iNumIterationsBeforeDecreasingTemp) {
 			cout << "The list of numbers after this parameter should be of length " << m_iNumIterationsBeforeDecreasingTemp
-			     << " but it's of length " << i << ": " << m_sAcceptedTransitionsDisplayed << endl;
+			     << " but it's of length " << i << ": " << m_messages->m_sAcceptedTransitions << endl;
 			return false;
 		}
 		
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
 			cout << "The line that's supposed to have this parameter is missing: "
-			     << m_sAcceptedTransitionsIndexDisplayed << endl;
+			     << m_messages->m_sAcceptedTransitionsIndex << endl;
 			infile.close();
 			return false;
 		}
-		if (!getIntParam(fileLine, m_sAcceptedTransitionsIndexDisplayed,
+		if (!getIntParam(fileLine, m_messages->m_sAcceptedTransitionsIndex,
 		                 m_iAcceptedTransitionsIndex))
 		{
-			cout << "Error reading the parameter '" << m_sAcceptedTransitionsIndexDisplayed
+			cout << "Error reading the parameter '" << m_messages->m_sAcceptedTransitionsIndex
 			     << "' in the input file." << endl;
 			infile.close();
 			return false;
@@ -2550,25 +2428,25 @@ bool Input::open(string &fileName, bool setMinDistances, bool bReadNodesFile, ve
 	// Read some more parameters
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "The line that's supposed to have this parameter is missing: " << m_sIterationDisplayed << endl;
+		cout << "The line that's supposed to have this parameter is missing: " << m_messages->m_sIteration << endl;
 		infile.close();
 		return false;
 	}
-	if (!getIntParam(fileLine, m_sIterationDisplayed, m_iIteration))
+	if (!getIntParam(fileLine, m_messages->m_sIteration, m_iIteration))
 	{
-		cout << "Error reading the parameter '" << m_sIterationDisplayed << "' in the input file." << endl;
+		cout << "Error reading the parameter '" << m_messages->m_sIteration << "' in the input file." << endl;
 		infile.close();
 		return false;
 	}
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "The line that's supposed to have this parameter is missing: " << m_sFreezeUntilIterationDisplayed << endl;
+		cout << "The line that's supposed to have this parameter is missing: " << m_messages->m_sFreezeUntilIteration << endl;
 		infile.close();
 		return false;
 	}
-	if (!getIntParam(fileLine, m_sFreezeUntilIterationDisplayed, m_iFreezeUntilIteration))
+	if (!getIntParam(fileLine, m_messages->m_sFreezeUntilIteration, m_iFreezeUntilIteration))
 	{
-		cout << "Error reading the parameter '" << m_sFreezeUntilIterationDisplayed << "' in the input file." << endl;
+		cout << "Error reading the parameter '" << m_messages->m_sFreezeUntilIteration << "' in the input file." << endl;
 		infile.close();
 		return false;
 	}
@@ -2668,6 +2546,7 @@ bool Input::seedCompatible(Input &seedInput)
 
 bool Input::printBondInfo()
 {
+	m_sLanguageCode = Strings::s_sDefaultLanguageCode;
 	int i;
 	int j;
 	Molecule* molecules = m_tempelateMoleculeSet.getMolecules();
