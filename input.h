@@ -13,6 +13,7 @@
 #include "typedef.h"
 #include "molecule.h"
 #include "moleculeSet.h"
+#include "strings.h"
 #include <stdio.h>
 #include <cstdio>
 #include <string>
@@ -64,6 +65,11 @@ string ToString(const T &arg)
 class Input
 {
 public:
+	string m_sLanguageCode; // 2 characters long
+	const Strings* m_messages; // messages for m_sLanguageCode
+	const Strings* m_messagesDL; // messages for the default language
+
+
 	// This class reads the following parameters from the input file.
 	// These are public member variables for the sake of easy access.
 
@@ -175,104 +181,6 @@ public:
 	
 	static string s_program_directory; // the directory where the pso application is
 
-private:
-	// This is a list of string parameters that have the text descriptons of the above variables
-	
-	// Strings specific to simulated annealing
-	string m_sSimulatedAnnealingParametersDisplayed;
-	string m_sPerformNonFragSearchDisplayed;
-	string m_sPerformBasinHoppingDisplayed;
-	string m_sTransitionStateSearchDisplayed;
-	string m_sStartingTemperatureDisplayed;
-	string m_sBoltzmanConstantDisplayed;
-	string m_sNumIterationsBeforeDecreasingTempDisplayed;
-	string m_sAcceptanceRatioDisplayed;
-	string m_sQuenchingFactorDisplayed;
-	string m_sMinTemperatureToStopDisplayed;
-	string m_sMinAcceptedTransitionsDisplayed;
-	string m_sNumPerterbationsDisplayed;
-	string m_sStartCoordinatePerturbationDisplayed;
-	string m_sMinCoordinatePerturbationDisplayed;
-	string m_sStartAnglePerturbationDisplayed;
-	string m_sMinAnglePerturbationDisplayed;
-	
-	// Strings specific to PSO
-	string m_sParticleSwarmParametersDisplayed;
-	string m_sStartCoordInertiaDisplayed;
-	string m_sEndCoordInertiaDisplayed;
-	string m_sCoordIndividualMinimumAttractionDisplayed;
-	string m_sCoordPopulationMinimumAttractionDisplayed;
-	string m_sCoordMaximumVelocityDisplayed;
-	string m_sStartAngleInertiaDisplayed;
-	string m_sEndAngleInertiaDisplayed;
-	string m_sAngleIndividualMinimumAttractionDisplayed;
-	string m_sAnglePopulationMinimumAttractionDisplayed;
-	string m_sAngleMaximumVelocityDisplayed;
-	string m_sReachEndInertiaAtIterationDisplayed;
-	string m_sSwitchToRepulsionWhenDiversityIsDisplayed;
-	string m_sSwitchToRepulsionWhenNoProgressDisplayed;
-	string m_sSwitchToAttractionWhenDiversityIsDisplayed;
-	string m_sSwitchToAttractionReplaceBestDisplayed;
-	string m_sIndividualBestUpdateDistDisplayed;
-	string m_sEnforceMinDistOnCopyDisplayed;
-	string m_sStartVisibilityDistanceDisplayed;
-	string m_sVisibilityDistanceIncreaseDisplayed;
-	string m_sUseLocalOptimizationDisplayed;
-	
-	// Strings specific to the genetic algorithm
-	string m_sGeneticAlgorithmParametersDisplayed;
-	
-	// Strings used in all algorithms
-	string m_sSimInputVersionLineDisplayed;
-	string m_sSimResumeVersionLineDisplayed;
-	string m_sSimOptimizationVersionLineDisplayed;
-	string m_sPSOInputVersionLineDisplayed;
-	string m_sPSOResumeVersionLineDisplayed;
-	string m_sPSOOptimizationVersionLineDisplayed;
-	string m_sGAInputVersionLineDisplayed;
-	string m_sGAResumeVersionLineDisplayed;
-	string m_sGAOptimizationVersionLineDisplayed;
-	string m_sEnergyFunctionDisplayed;
-	string m_sPathToEnergyFilesDisplayed;
-	string m_sPathToScratchDisplayed;
-	string m_sOutputFileNameDisplayed;
-	string m_sResumeFileNameDisplayed;
-	string m_sResumeFileNumIterationsDisplayed;
-	string m_sChargeDisplayed;
-	string m_sMultiplicityDisplayed;
-	string m_sLinearSructuresDisplayed;
-	string m_sPlanarStructuresDisplayed;
-	string m_s3DStructuresDisplayed;
-	string m_s3DStructuresWithMaxDistDisplayed;
-	string m_s3DNonFragStructuresWithMaxDistDisplayed;
-	string m_sMinDistnaceBetweenSameMoleculeSetsDisplayed;
-	string m_sNumberOfBestStructuresToSaveDisplayed;
-	string m_sNumberOfLogFilesToSaveDisplayed;
-	string m_sMaxAtomDistanceDisplayed;
-	string m_sMinGeneralAtomDistanceDisplayed;
-	string m_sMinAtomDistanceDisplayed;
-	string m_sBoxLengthDisplayed;
-	string m_sLinearBoxHeightDisplayed;
-	string m_sMaxIterationsDisplayed;
-	string m_sNumStructureTypesDisplayed;
-	string m_sNumStructuresOfEachTypeDisplayed;
-	string m_sStructureFormatOfThisTypeDisplayed;
-	string m_sPrintSummaryInfoEveryNIterationsDisplayed;
-	string m_sJobQueueTemplateDisplayed;
-	string m_sNumJobQueueJobsDisplayed;
-	string m_sEnergyFileHeaderDisplayed;
-	string m_sEnergyFileFooterDisplayed;
-	string m_sUsePrevWaveFunctionDisplayed;
-
-	string m_sIterationDisplayed;
-	string m_sFreezeUntilIterationDisplayed;
-	string m_sDecreasingTempDisplayed;
-	string m_sAverageTransitionsDisplayDisplayed;
-	string m_sAcceptedTransitionsDisplayed;
-	string m_sAcceptedTransitionsIndexDisplayed;
-
-	string m_sStructuresToOptimizeAtATimeDisplayed;
-
 public:
 	Input ();
 	~Input ();
@@ -304,15 +212,13 @@ public:
 	bool compileIndependentRunData(bool printOutput);
 	
 private:
-	bool getStringParam(const char *fileLine, string parameterNameString, string &stringParam);
-	bool getIntParam(const char *fileLine, string parameterNameString, int &myInt);
-	bool getFloatParam(const char *fileLine, string parameterNameString, FLOAT &myFloat);
+	bool getStringParam(const char *fileLine, const string& parameterNameString, string &stringParam);
+	bool getIntParam(const char *fileLine, const string& parameterNameString, int &myInt);
+	bool getFloatParam(const char *fileLine, const string& parameterNameString, FLOAT &myFloat);
 	bool readCartesianLine(const char *fileLine, const int maxLineLength, Point3D &cartesianPoint, int &atomicNumber);
-	bool getYesNoParam(const char *fileLine, string parameterNameString, bool &yesNoParam);
+	bool getYesNoParam(const char *fileLine, const string& parameterNameString, bool &yesNoParam);
 	const char *printYesNoParam(bool yesNoParam);
 	bool containsFileExtension(const char *fileName, const char *extension);
-	bool containsOnlyNumbers(const char *string);
-	static char *trueFalseToYesNoStr(int aBool);
 	bool readNodesFile();
 	bool copyFileLines(const char* fromFileName, FILE* toFile);
 };

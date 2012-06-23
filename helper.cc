@@ -6,18 +6,6 @@
 
 #include "helper.h"
 
-
-void printHelpMenu()
-{
-	ifstream infile("helperHelp.txt");
-	const int MAX_LINE_LENGTH = 500;
-	char fileLine[MAX_LINE_LENGTH];
-	while (infile.getline(fileLine, MAX_LINE_LENGTH))
-		cout << fileLine << endl;
-	cout << endl;
-	infile.close();
-}
-
 int getChoiceInRange(int low, int high)
 {
 	string answerString;
@@ -174,7 +162,7 @@ int main(int argc, char *argv[])
 	
 	try {
 		if ((ArgumentParser::getNumOptions() == 0) || ArgumentParser::optionPresent("-h") || ArgumentParser::optionPresent("--help")) {
-			printHelpMenu();
+			Strings::instance()->printHelperOptions();
 			throw "";
 		}
 		if (ArgumentParser::optionPresent("-w")) { // # Run the wizzard
