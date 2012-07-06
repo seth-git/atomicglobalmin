@@ -33,14 +33,14 @@
 							8 0.0 0.0 0.0
 						</moleculeTemplate>
 					</moleculeSetTemplate>
-					<nonFragmented number="32" />
+					<nonFragmented number="32"/>
 				</populationTemplate>
 				<velocities>
 					<coordinate>
 						<inertia value="0.95"/>
 						<ci value="0.15"/>
 						<cp value="0.15"/>
-						<vMax value="0.3"
+						<vMax value="0.3"/>
 					</coordinate>
 					<angle>
 						<inertia value="0.95"/>

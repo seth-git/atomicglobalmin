@@ -34,8 +34,11 @@ bool Input::load(const char* pFilename)
 	cleanUp();
 	printf("Opening %s...\n", pFilename);
 	m_pXMLDocument = new TiXmlDocument(pFilename);
-	if (!m_pXMLDocument->LoadFile()) {
-		//
+	if (!m_pXMLDocument->LoadFile() || m_pXMLDocument->Error()) {
+		if (strncmp(m_pXMLDocument->ErrorDesc(), "Failed to open file", 20) == 0)
+			printf("Error: %s\n", m_pXMLDocument->ErrorDesc());
+		else
+			printf("Error on line %d and character %d: %s\n", m_pXMLDocument->ErrorRow(), m_pXMLDocument->ErrorCol(), m_pXMLDocument->ErrorDesc());
 		return false;
 	}
 	TiXmlHandle hDoc(m_pXMLDocument);
