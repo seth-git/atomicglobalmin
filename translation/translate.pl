@@ -61,6 +61,7 @@ sub createArb
 			$line = $2;
 			$line =~ s/\%(\d+)\$\S*[a-zA-Z]/\{\1\}/g;
 			$line =~ s/"/\\"/g;
+			$line =~ s/\%\%/\%/g;
 			if ($firstParam == 1) {
 				print OUT_FILE "\n";
 				$firstParam = 0;
@@ -151,6 +152,8 @@ sub updateFromARB
 			if (/^\s*"([^"\@]+)":\s*"(.*)",?\s*$/) {
 				$id = $1;
 				$line = $2;
+				$line =~ s/\\"/"/g;
+				$line =~ s/\%/\%\%/g;
 				my $number;
 				while ($line =~ /\{(\d+)\}/) {
 					$number = $1;
