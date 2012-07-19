@@ -1,12 +1,12 @@
 
 #include "internalEnergy.h"
 
-const std::string InternalEnergy::s_attributeNames[]  = {"method", "opt"};
-const bool        InternalEnergy::s_required[]        = {true    , false };
-const std::string InternalEnergy::s_defaultValues[]   = {""      , "false"};
+const char* InternalEnergy::s_attributeNames[]  = {"method", "opt"};
+const bool  InternalEnergy::s_required[]        = {true    , false };
+const char* InternalEnergy::s_defaultValues[]   = {""      , "false"};
 
-const std::string InternalEnergy::s_methods[]         = {"Lennard Jones"};
-const int         InternalEnergy::s_methodConstants[] = {LENNARD_JONES};
+const char* InternalEnergy::s_methods[]         = {"Lennard Jones"};
+const int   InternalEnergy::s_methodConstants[] = {LENNARD_JONES};
 
 bool InternalEnergy::load(TiXmlElement *pElem)
 {
@@ -18,11 +18,11 @@ bool InternalEnergy::load(TiXmlElement *pElem)
 	}
 	values = attUtil.getAllAttributes();
 
-	if (!XsdTypeUtil::getEnumValue(s_attributeNames[0].c_str(), values[0], m_iMethod, pElem->Value(), s_methods, 1, s_methodConstants)) {
+	if (!XsdTypeUtil::getEnumValue(s_attributeNames[0], values[0], m_iMethod, pElem->Value(), s_methods, 1, s_methodConstants)) {
 		return false;
 	}
 
-	if (!XsdTypeUtil::getBoolValue(s_attributeNames[1].c_str(), values[1], m_bLocalOptimization, pElem->Value())) {
+	if (!XsdTypeUtil::getBoolValue(s_attributeNames[1], values[1], m_bLocalOptimization, pElem->Value())) {
 		return false;
 	}
 	

@@ -1,14 +1,14 @@
 
 #include "externalEnergy.h"
 
-const std::string ExternalEnergy::s_attributeNames[]   = {"method", "transitionStateSearch"};
-const bool        ExternalEnergy::s_required[]         = {true    , false };
-const std::string ExternalEnergy::s_defaultValues[]    = {""      , "false"};
+const char*        ExternalEnergy::s_attributeNames[]  = {"method", "transitionStateSearch"};
+const bool         ExternalEnergy::s_required[]        = {true    , false };
+const char*        ExternalEnergy::s_defaultValues[]   = {""      , "false"};
 
-const std::string  ExternalEnergy::s_elementNames[]    = {"sharedDirectory", "localDirectory", "resultsDirectory", "charge", "multiplicity", "header", "footer", "mpi"};
+const char*        ExternalEnergy::s_elementNames[]    = {"sharedDirectory", "localDirectory", "resultsDirectory", "charge", "multiplicity", "header", "footer", "mpi"};
 const unsigned int ExternalEnergy::s_minOccurs[]       = {1                , 0               , 0                 , 1       , 1             , 1       , 0       , 0    };
 
-const std::string  ExternalEnergy::s_methods[]         = {"GAMESS", "GAMESS-UK", "Gaussian"};
+const char*        ExternalEnergy::s_methods[]         = {"GAMESS", "GAMESS-UK", "Gaussian"};
 const int          ExternalEnergy::s_methodConstants[] = {GAMESS,   GAMESS_UK,   GAUSSIAN};
 
 bool ExternalEnergy::load(TiXmlElement *pExternalElem)
@@ -21,11 +21,11 @@ bool ExternalEnergy::load(TiXmlElement *pExternalElem)
 	}
 	values = attUtil.getAllAttributes();
 
-	if (!XsdTypeUtil::getEnumValue(s_attributeNames[0].c_str(), values[0], m_iMethod, pExternalElem->Value(), s_methods, 3, s_methodConstants)) {
+	if (!XsdTypeUtil::getEnumValue(s_attributeNames[0], values[0], m_iMethod, pExternalElem->Value(), s_methods, 3, s_methodConstants)) {
 		return false;
 	}
 
-	if (!XsdTypeUtil::getBoolValue(s_attributeNames[1].c_str(), values[1], m_bTransitionStateSearch, pExternalElem->Value())) {
+	if (!XsdTypeUtil::getBoolValue(s_attributeNames[1], values[1], m_bTransitionStateSearch, pExternalElem->Value())) {
 		return false;
 	}
 
@@ -84,9 +84,9 @@ bool ExternalEnergy::load(TiXmlElement *pExternalElem)
 	return true;
 }
 
-const std::string ExternalEnergy::s_resAttributeNames[] = {"path", "maxFiles", "filePrefix"};
-const bool        ExternalEnergy::s_resRequired[]       = {true  , false     , false};
-const std::string ExternalEnergy::s_resDefaultValues[]  = {""    , "1"       , "best"};
+const char* ExternalEnergy::s_resAttributeNames[] = {"path", "maxFiles", "filePrefix"};
+const bool  ExternalEnergy::s_resRequired[]       = {true  , false     , false};
+const char* ExternalEnergy::s_resDefaultValues[]  = {""    , "1"       , "best"};
 
 bool ExternalEnergy::readResultsDir(TiXmlElement *pElem) {
 	if (pElem == NULL) {
@@ -104,16 +104,16 @@ bool ExternalEnergy::readResultsDir(TiXmlElement *pElem) {
 	}
 	values = resultsDirUtil.getAllAttributes();
 	XsdTypeUtil::checkDirectoryOrFileName(values[0], m_sResultsDir);
-	if (!XsdTypeUtil::getPositiveInt(values[1], m_iMaxResultsFiles, s_resAttributeNames[1].c_str(), pElem->Value())) {
+	if (!XsdTypeUtil::getPositiveInt(values[1], m_iMaxResultsFiles, s_resAttributeNames[1], pElem->Value())) {
 		return false;
 	}
 	m_sResultsFilePrefix = values[2];
 	return true;
 }
 
-const std::string ExternalEnergy::s_mpiAttributeNames[] = {"master"};
-const bool        ExternalEnergy::s_mpiRequired[]       = {true};
-const std::string ExternalEnergy::s_mpiDefaultValues[]  = {""};
+const char* ExternalEnergy::s_mpiAttributeNames[] = {"master"};
+const bool  ExternalEnergy::s_mpiRequired[]       = {true};
+const char* ExternalEnergy::s_mpiDefaultValues[]  = {""};
 
 bool ExternalEnergy::readMpiMaster(TiXmlElement *pElem) {
 	const char** values;
@@ -124,7 +124,7 @@ bool ExternalEnergy::readMpiMaster(TiXmlElement *pElem) {
 	}
 	values = util.getAllAttributes();
 
-	if (!XsdTypeUtil::getBoolValue(s_mpiAttributeNames[0].c_str(), values[0], m_bMpiMaster, pElem->Value())) {
+	if (!XsdTypeUtil::getBoolValue(s_mpiAttributeNames[0], values[0], m_bMpiMaster, pElem->Value())) {
 		return false;
 	}
 	return true;

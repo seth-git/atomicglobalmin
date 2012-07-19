@@ -1,12 +1,12 @@
 
 #include "xsdTypeUtil.h"
 
-const std::string XsdTypeUtil::s_booleanValues[] = {"true", "false"};
+const char* XsdTypeUtil::s_booleanValues[] = {"true", "false"};
 const int XsdTypeUtil::s_booleanResponses[]      = {1     , 0};
 
-const std::string XsdTypeUtil::s_valueAttNames[] = {"value"};
+const char* XsdTypeUtil::s_valueAttNames[] = {"value"};
 const bool        XsdTypeUtil::s_valueAttReq[]   = {true};
-const std::string XsdTypeUtil::s_valueAttDef[]   = {""};
+const char* XsdTypeUtil::s_valueAttDef[]   = {""};
 
 
 bool XsdTypeUtil::getBoolValue(const char* attributeName, const char* attributeValue, bool &result, const char* elementName) {
@@ -19,9 +19,9 @@ bool XsdTypeUtil::getBoolValue(const char* attributeName, const char* attributeV
 }
 
 bool XsdTypeUtil::getEnumValue(const char* attributeName, const char* attributeValue, int &result, const char* elementName,
-                              const std::string* possibleValues, unsigned int numPossibleValues, const int* responses) {
+                              const char** possibleValues, unsigned int numPossibleValues, const int* responses) {
 	for (unsigned int i = 0; i < numPossibleValues; ++i) {
-		if (strncmp(possibleValues[i].c_str(), attributeValue, possibleValues[i].length() + 1) == 0) {
+		if (strcmp(possibleValues[i], attributeValue) == 0) {
 			result = responses[i];
 			return true;
 		}
@@ -30,18 +30,18 @@ bool XsdTypeUtil::getEnumValue(const char* attributeName, const char* attributeV
 	return false;
 }
 
-void XsdTypeUtil::printError(const char* attributeName, const char* attributeValue, const char* elementName, const std::string* possibleValues, unsigned int numPossibleValues) {
-	printf("Value '%s' is unrecognized for attribute '%s' in element '%s'.  The available values are '%s'", attributeValue, attributeName, elementName, possibleValues[0].c_str());
+void XsdTypeUtil::printError(const char* attributeName, const char* attributeValue, const char* elementName, const char** possibleValues, unsigned int numPossibleValues) {
+	printf("Value '%s' is unrecognized for attribute '%s' in element '%s'.  The available values are '%s'", attributeValue, attributeName, elementName, possibleValues[0]);
 	for (unsigned int i = 1; i < numPossibleValues; ++i) {
-		printf(", '%s'", possibleValues[i].c_str());
+		printf(", '%s'", possibleValues[i]);
 	}
 	printf(".\n");
 }
 
 bool XsdTypeUtil::readDirType(TiXmlElement *pElem, std::string &resultDir) {
-	static const std::string attributeNames[] = {"path"};
-	static const bool        required[]       = {true};
-	static const std::string defaultValues[]  = {""};
+	static const char* attributeNames[] = {"path"};
+	static const bool  required[]       = {true};
+	static const char* defaultValues[]  = {""};
 	const char** values;
 
 	XsdAttributeUtil dirUtil(pElem->Value(), attributeNames, 1, required, defaultValues);
@@ -134,7 +134,7 @@ bool XsdTypeUtil::readStrValueElement(TiXmlElement *pElem, std::string &result) 
 	return readStrValueElement(pElem, result, s_valueAttNames);
 }
 
-bool XsdTypeUtil::readStrValueElement(TiXmlElement *pElem, std::string &result, const std::string* attributeName) {
+bool XsdTypeUtil::readStrValueElement(TiXmlElement *pElem, std::string &result, const char** attributeName) {
 	const char** values;
 
 	XsdAttributeUtil valueUtil(pElem->Value(), attributeName, 1, s_valueAttReq, s_valueAttDef);
@@ -154,7 +154,7 @@ bool XsdTypeUtil::readIntValueElement(TiXmlElement *pElem, int &result) {
 		return false;
 	}
 	values = valueUtil.getAllAttributes();
-	if (!getInteger(values[0], result, s_valueAttNames[0].c_str(), pElem->Value())) {
+	if (!getInteger(values[0], result, s_valueAttNames[0], pElem->Value())) {
 		return false;
 	}
 	return true;
@@ -168,7 +168,7 @@ bool XsdTypeUtil::readPosIntValueElement(TiXmlElement *pElem, unsigned int &resu
 		return false;
 	}
 	values = valueUtil.getAllAttributes();
-	if (!getPositiveInt(values[0], result, s_valueAttNames[0].c_str(), pElem->Value())) {
+	if (!getPositiveInt(values[0], result, s_valueAttNames[0], pElem->Value())) {
 		return false;
 	}
 	return true;
@@ -178,7 +178,7 @@ bool XsdTypeUtil::readPosFloatValueElement(TiXmlElement *pElem, FLOAT &result) {
 	return readPosFloatValueElement(pElem, result, s_valueAttNames);
 }
 
-bool XsdTypeUtil::readPosFloatValueElement(TiXmlElement *pElem, FLOAT &result, const std::string* attributeName) {
+bool XsdTypeUtil::readPosFloatValueElement(TiXmlElement *pElem, FLOAT &result, const char** attributeName) {
 	const char** values;
 
 	XsdAttributeUtil valueUtil(pElem->Value(), attributeName, 1, s_valueAttReq, s_valueAttDef);
@@ -186,7 +186,7 @@ bool XsdTypeUtil::readPosFloatValueElement(TiXmlElement *pElem, FLOAT &result, c
 		return false;
 	}
 	values = valueUtil.getAllAttributes();
-	if (!getPositiveFloat(values[0], result, attributeName->c_str(), pElem->Value())) {
+	if (!getPositiveFloat(values[0], result, attributeName[0], pElem->Value())) {
 		return false;
 	}
 	return true;

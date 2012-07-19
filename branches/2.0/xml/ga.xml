@@ -42,6 +42,13 @@
 			</setup>
 		</geneticAlgorithm>
 	</action>
+	<constraints name="myConstraints">
+		<cube size="10"/>
+		<atomicDistances>
+			<min value="0.7" />
+			<max value="2.5" />
+		</atomicDistances>
+	</constraints>
 	<energy>
 		<external method="Gaussian">
 			<sharedDirectory path="path"/>
@@ -53,11 +60,4 @@
 			</header>
 		</external>
 	</energy>
-	<constraints name="myConstraints">
-		<cube size="10"/>
-		<atomicDistances>
-			<min value="0.7" />
-			<max value="2.5" />
-		</atomicDistances>
-	</constraints>
 </agml>

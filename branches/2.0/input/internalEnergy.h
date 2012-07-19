@@ -24,11 +24,11 @@ class InternalEnergy {
 		void save();
 
 	private:
-		static const std::string s_attributeNames[];
-		static const bool        s_required[];
-		static const std::string s_defaultValues[];
-		static const std::string s_methods[];
-		static const int         s_methodConstants[];
+		static const char* s_attributeNames[];
+		static const bool  s_required[];
+		static const char* s_defaultValues[];
+		static const char* s_methods[];
+		static const int   s_methodConstants[];
 };
 
 #endif

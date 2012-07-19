@@ -22,8 +22,21 @@
 			<xs:element name="results" type="resultsType" minOccurs="0"/>
 		</xs:sequence>
 		<xs:attribute name="version" type="xs:string" use="required"/>
+		<xs:attribute name="language" type="xs:string" default="en"/>
 	</xs:complexType>
 </xs:element>
+
+<xs:complexType name="constraintsType">
+	<xs:all>
+		<xs:element name="cube" minOccurs="0">
+			<xs:complexType>
+				<xs:attribute name="size" type="positiveDecimal"/>
+			</xs:complexType>
+		</xs:element>
+		<xs:element name="atomicDistances" type="atomicDistancesType" minOccurs="0"/>
+	</xs:all>
+	<xs:attribute name="name" type="xs:string" use="required"/>
+</xs:complexType>
 
 <xs:complexType name="energyType">
 	<xs:choice>
@@ -88,18 +101,23 @@
 	</xs:restriction>
 </xs:simpleType>
 
-
-<xs:complexType name="constraintsType">
+<xs:complexType name="resultsType">
 	<xs:all>
-		<xs:element name="cube" minOccurs="0">
+		<xs:element name="population" type="populationType" minOccurs="0"/>
+		<xs:element name="history" minOccurs="0">
 			<xs:complexType>
-				<xs:attribute name="size" type="positiveDecimal"/>
+				<xs:simpleContent>
+					<xs:extension base="xs:string">
+						<xs:attribute name="save" type="xs:boolean" default="true"/>
+					</xs:extension>
+				</xs:simpleContent>
 			</xs:complexType>
 		</xs:element>
-		<xs:element name="atomicDistances" type="atomicDistancesType" minOccurs="0"/>
 	</xs:all>
-	<xs:attribute name="name" type="xs:string" use="required"/>
+	<xs:attribute name="maxSize" type="positiveInteger" default="1"/>
+	<xs:attribute name="rmsDistance" type="nonNegativeDecimal"/>
 </xs:complexType>
+
 <xs:complexType name="atomicDistancesType">
 	<xs:sequence>
 		<xs:element name="min" minOccurs="0" maxOccurs="unbounded">

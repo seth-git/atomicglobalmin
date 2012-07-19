@@ -7,6 +7,7 @@
 #include "xsdAttributeUtil.h"
 #include "xsdElementUtil.h"
 #include "xsdTypeUtil.h"
+#include "../translation/strings.h"
 
 class Constraints {
 	public:
@@ -29,18 +30,19 @@ class Constraints {
 			cleanUp();
 		}
 
-		bool load(TiXmlElement *pElem);
-		void save();
+		bool load(TiXmlElement *pElem, const Strings* messages);
+		void save(const Strings* messages);
 	
 	private:
-		static const std::string  s_elementNames[];
 		static const unsigned int s_minOccurs[];
 		
-		static const std::string  s_distElementNames[];
 		static const unsigned int s_distMinOccurs[];
 		static const unsigned int s_distMaxOccurs[];
+		
+		static const bool         s_required[];
+		static const char*        s_defaultValues[];
 
-		bool addMinDist(TiXmlElement *pElem);
+		bool addMinDist(TiXmlElement *pElem, const Strings* messages);
 		
 		void cleanUp();
 };

@@ -9,6 +9,7 @@ bool XsdElementUtil::process (TiXmlHandle &handle)
 	const char *pName;
 	unsigned int i;
 	bool bMatch;
+	const Strings* messages = Strings::instance();
 
 	cleanUp();
 	switch(m_type) {
@@ -22,9 +23,9 @@ bool XsdElementUtil::process (TiXmlHandle &handle)
 				pName=pElem->Value();
 				bMatch = false;
 				for (i = 0; i < m_iElements; ++i) {
-					if (strncmp(m_elementNames[i].c_str(), pName, m_elementNames[i].length()+1) == 0) {
+					if (strcmp(m_elementNames[i], pName) == 0) {
 						if (m_allElements[i] != NULL) {
-							printf("More than one element '%s' can't be inside the '%s' element.\n", m_elementNames[i].c_str(), m_sParentElement);
+							printf(messages->m_sMaxOf1ElementExceeded.c_str(), m_elementNames[i], m_sParentElement, pElem->Row());
 							return false;
 						}
 						m_allElements[i] = pElem;
@@ -33,14 +34,14 @@ bool XsdElementUtil::process (TiXmlHandle &handle)
 					}
 				}
 				if (!bMatch) {
-					printf("Unrecognized element '%s' inside the '%s' element.\n", pName, m_sParentElement);
+					printf(messages->m_sUnrecognizedElement.c_str(), pName, m_sParentElement, pElem->Row());
 					return false;
 				}
 			}
 
 			for (i = 0; i < m_iElements; ++i) {
 				if (m_allElements[i] == NULL && m_minOccurs[i] == 1) {
-					printf("There must be one '%s' element inside the '%s' element.\n", m_elementNames[i].c_str(), m_sParentElement);
+					printf(messages->m_sElementNumNot1.c_str(), m_elementNames[i], m_sParentElement, handle.Element()->Row());
 					return false;
 				}
 			}
@@ -49,55 +50,56 @@ bool XsdElementUtil::process (TiXmlHandle &handle)
 		case XSD_CHOICE:
 			pElem = handle.FirstChild().Element();
 			if (!pElem) {
-				printChoiceError();
+				printChoiceError(handle.Element()->Row());
 				return false;
 			}
 			pName=pElem->Value();
 			bMatch = false;
 			for (i = 0; i < m_iElements; ++i) {
-				if (strncmp(m_elementNames[i].c_str(), pName, m_elementNames[i].length()+1) == 0) {
+				if (strcmp(m_elementNames[i], pName) == 0) {
 					bMatch = true;
 					m_pChoiceIndex = i;
 					break;
 				}
 			}
 			if (!bMatch) {
-				printChoiceError();
+				printChoiceError(pElem->Row());
 				return false;
 			}
 			m_pChoiceElement = pElem;
-			if (pElem->NextSiblingElement()) {
-				printf("The '%s' element must contain exactly one child element.\n", m_sParentElement);
+			pElem = pElem->NextSiblingElement();
+			if (pElem) {
+				printf(messages->m_sElementRequiresExactly1Child.c_str(), m_sParentElement, pElem->Row());
 				return false;
 			}
 			break;
 		case XSD_SEQUENCE:
-			m_sequenceElements = new vector<TiXmlElement*>[m_iElements];
+			m_sequenceElements = new std::vector<TiXmlElement*>[m_iElements];
 			
 			pElem = handle.FirstChild().Element();
 			i = 0;
 			while (pElem) {
 				pName=pElem->Value();
-				while (strncmp(m_elementNames[i].c_str(), pName, m_elementNames[i].length()+1) != 0) {
+				while (strcmp(m_elementNames[i], pName) != 0) {
 					if (m_sequenceElements[i].size() < m_minOccurs[i]) {
 						if (m_minOccurs[i] > 1) {
-							printf("There must be at least %u '%s' elements inside the '%s' element.\n", m_minOccurs[i], m_elementNames[i].c_str(), m_sParentElement);
+							printf(messages->m_sElementRequiresNChildren.c_str(), m_minOccurs[i], m_elementNames[i], m_sParentElement, pElem->Row());
 						} else if (m_minOccurs[i] > 0) {
-							printf("There must be at least one '%s' element inside the '%s' element.\n", m_elementNames[i].c_str(), m_sParentElement);
+							printf(messages->m_sElementRequires1ChildMin.c_str(), m_elementNames[i], m_sParentElement, pElem->Row());
 						}
 						printSequenceError();
 						return false;
 					}
 					++i;
 					if (i >= m_iElements) {
-						printf("Unrecognized or misplaced '%s' element inside the '%s' element.\n", pName, m_sParentElement);
+						printf(messages->m_sMisplacedElement.c_str(), pName, m_sParentElement, pElem->Row());
 						printSequenceError();
 						return false;
 					}
 				}
 
 				if (m_maxOccurs[i] != XSD_UNLIMITED && m_sequenceElements[i].size() == m_maxOccurs[i]) {
-					printf("There can't be more than %u '%s' element(s) inside the '%s' element.\n", m_maxOccurs[i], pName, m_sParentElement);
+					printf(messages->m_sMaxElementsExceeded.c_str(), m_maxOccurs[i], pName, m_sParentElement, pElem->Row());
 					return false;
 				}
 				m_sequenceElements[i].push_back(pElem);
@@ -109,25 +111,28 @@ bool XsdElementUtil::process (TiXmlHandle &handle)
 	return true;
 }
 
-void XsdElementUtil::printChoiceError() {
-	printf("The element '%s' must contain one of these elements: '%s'", m_sParentElement, m_elementNames[0].c_str());
+void XsdElementUtil::printChoiceError(int lineNumber) {
+	const Strings* messages = Strings::instance();
+	std::string choiceElements;
+	choiceElements.append("'").append(m_elementNames[0]).append("'");
 	for (unsigned int i = 1; i < m_iElements; ++i) {
-		printf(", '%s'", m_elementNames[i].c_str());
+		choiceElements.append(", '").append(m_elementNames[i]).append("'");
 	}
-	printf(".\n");
+	printf(messages->m_sChoiceError.c_str(), lineNumber, m_sParentElement, choiceElements.c_str());
 }
 
 void XsdElementUtil::printSequenceError() {
+	const Strings* messages = Strings::instance();
 	if (m_iElements > 1) {
-		printf("Elements inside the '%s' element must be listed in this order:\n", m_sParentElement);
+		printf(messages->m_sChoiceElementOrder.c_str(), m_sParentElement);
 		for (unsigned int i = 0; i < m_iElements; ++i) {
-			printf("%u. %s", i+1, m_elementNames[i].c_str());
+			printf("%u. %s", i+1, m_elementNames[i]);
 			if (m_minOccurs[i] == m_maxOccurs[i] && m_maxOccurs[i] != XSD_UNLIMITED) {
 				printf(" (%u)", m_minOccurs[i]);
 			} else {
 				printf(" (%u-", m_minOccurs[i]);
 				if (m_maxOccurs[i] == XSD_UNLIMITED) {
-					printf("unlimited)");
+					printf("%s)", messages->m_spUnlimited.c_str());
 				} else {
 					printf("%u)", m_maxOccurs[i]);
 				}
@@ -149,7 +154,7 @@ unsigned int XsdElementUtil::getChoiceElementIndex() {
 	return m_pChoiceIndex;
 }
 
-vector<TiXmlElement*>* XsdElementUtil::getSequenceElements() {
+std::vector<TiXmlElement*>* XsdElementUtil::getSequenceElements() {
 	return m_sequenceElements;
 }
 

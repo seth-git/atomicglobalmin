@@ -6,6 +6,8 @@
 // ----------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
+	if (!Strings::init())
+		return 0;
 	for (int i=1; i<argc; i++)
 	{
 		Input input;

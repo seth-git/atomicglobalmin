@@ -54,16 +54,16 @@
 		</atomicDistances>
 	</constraints>
 	<energy>
-		<external method="Gaussian">
-			<sharedDirectory path="path"/>
-			<resultsDirectory path="path" maxFiles="100" filePrefix="res"/>
-			<multiplicity value="2"/>
-			<charge value="0"/>
-			<header>
+                <external method="Gaussian">
+                        <sharedDirectory path="path"/>
+                        <resultsDirectory path="path" maxFiles="100" filePrefix="res"/>
+                        <multiplicity value="2"/>
+                        <charge value="0"/>
+                        <header>
 % mem=2000MB
 # B3LYP/6-311++G(d,p) scfcon=4 scfcyc=300 scf=direct
-			</header>
-		</external>
+                        </header>
+                </external>
 	</energy>
 	<results maxSize="20000">
 		<history save="false"/>

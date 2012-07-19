@@ -5,19 +5,20 @@
 #include <stdio.h>
 #include <string>
 #include "../tinyxml/tinyxml.h"
+#include "../translation/strings.h"
 
 class XsdAttributeUtil {
 	private:
-		const char* m_sParentElement;
-		const std::string* m_attributeNames;
+		const char*  m_sParentElement;
+		const char** m_attributeNames;
 		unsigned int m_iAttributes;
-		const bool* m_required;
-		const std::string* m_defaultValues;
+		const bool*  m_required;
+		const char** m_defaultValues;
 		const char** m_values;
 		
 	public:
-		XsdAttributeUtil(const char* parentElement, const std::string* attributeNames, unsigned int numAttributes,
-		                 const bool* required, const std::string* defaultValues)
+		XsdAttributeUtil(const char* parentElement, const char** attributeNames, unsigned int numAttributes,
+		                 const bool* required, const char** defaultValues)
 		{
 			m_sParentElement = parentElement;
 			m_attributeNames = attributeNames;

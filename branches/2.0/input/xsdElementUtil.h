@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 #include "../tinyxml/tinyxml.h"
-using namespace std;
+#include "../translation/strings.h"
 
 #define XSD_ALL              1
 #define XSD_CHOICE           2
@@ -18,7 +18,7 @@ class XsdElementUtil {
 	private:
 		const char* m_sParentElement;
 		int m_type;
-		const std::string* m_elementNames;
+		const char** m_elementNames;
 		unsigned int m_iElements;
 		const unsigned int* m_minOccurs;
 		const unsigned int* m_maxOccurs;
@@ -27,11 +27,11 @@ class XsdElementUtil {
 		unsigned int m_pChoiceIndex;
 		TiXmlElement** m_allElements;
 
-		vector<TiXmlElement*>* m_sequenceElements;
+		std::vector<TiXmlElement*>* m_sequenceElements;
 		
 	public:
 
-		XsdElementUtil(const char* parentElement, int type, const std::string* elementNames, unsigned int numElements,
+		XsdElementUtil(const char* parentElement, int type, const char** elementNames, unsigned int numElements,
 		               const unsigned int* minOccurs, const unsigned int* maxOccurs)
 		{
 			m_sParentElement = parentElement;
@@ -72,9 +72,9 @@ class XsdElementUtil {
 		TiXmlElement** getAllElements();
 		TiXmlElement* getChoiceElement();
 		unsigned int getChoiceElementIndex();
-		vector<TiXmlElement*>* getSequenceElements();
+		std::vector<TiXmlElement*>* getSequenceElements();
 	private:
-		void printChoiceError();
+		void printChoiceError(int lineNumber);
 		void printSequenceError();
 };
 

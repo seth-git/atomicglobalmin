@@ -90,7 +90,7 @@ all: ${OUTPUT}
 # Source files
 #****************************************************************************
 
-SRCS := tinyxml/tinyxml.cpp tinyxml/tinyxmlparser.cpp tinyxml/tinyxmlerror.cpp tinyxml/tinystr.cpp input/xsdTypeUtil.cpp input/xsdElementUtil.cpp input/xsdAttributeUtil.cpp input/internalEnergy.cpp input/externalEnergy.cpp input/constraints.cpp input/input.cpp main.cpp
+SRCS := tinyxml/tinyxml.cpp tinyxml/tinyxmlparser.cpp tinyxml/tinyxmlerror.cpp tinyxml/tinystr.cpp translation/strings.cpp input/xsdTypeUtil.cpp input/xsdElementUtil.cpp input/xsdAttributeUtil.cpp input/internalEnergy.cpp input/externalEnergy.cpp input/constraints.cpp input/input.cpp main.cpp
 
 # Add on the sources for libraries
 SRCS := ${SRCS}
@@ -128,12 +128,13 @@ depend:
 tinyxml.o: tinyxml/tinyxml.h tinyxml/tinystr.h
 tinyxmlparser.o: tinyxml/tinyxml.h tinyxml/tinystr.h
 tinyxmlerror.o: tinyxml/tinyxml.h tinyxml/tinystr.h
+strings.o: translation/strings.h
 xsdTypeUtil.o: tinyxml/tinyxml.h tinyxml/tinystr.h
 xsdElementUtil.o: tinyxml/tinyxml.h tinyxml/tinystr.h
 xsdAttributeUtil.o: tinyxml/tinyxml.h tinyxml/tinystr.h
-internalEnergy.o: tinyxml/tinyxml.h tinyxml/tinystr.h input/xsdAttributeUtil.h input/xsdTypeUtil.h
-externalEnergy.o: tinyxml/tinyxml.h tinyxml/tinystr.h input/xsdAttributeUtil.h input/xsdElementUtil.h input/xsdTypeUtil.h
-constraints.o: tinyxml/tinyxml.h tinyxml/tinystr.h input/xsdAttributeUtil.h input/xsdElementUtil.h input/xsdTypeUtil.h
-input.o: tinyxml/tinyxml.h tinyxml/tinystr.h input/xsdTypeUtil.h input/xsdElementUtil.h input/xsdAttributeUtil.h input/internalEnergy.h input/externalEnergy.h input/constraints.h
-main.o: main.h input.o internalEnergy.o externalEnergy.o constraints.o xsdElementUtil.o xsdAttributeUtil.o xsdTypeUtil.o
+internalEnergy.o: tinyxml/tinyxml.h tinyxml/tinystr.h translation/strings.h input/xsdAttributeUtil.h input/xsdTypeUtil.h
+externalEnergy.o: tinyxml/tinyxml.h tinyxml/tinystr.h translation/strings.h input/xsdAttributeUtil.h input/xsdElementUtil.h input/xsdTypeUtil.h
+constraints.o: tinyxml/tinyxml.h tinyxml/tinystr.h translation/strings.h input/xsdAttributeUtil.h input/xsdElementUtil.h input/xsdTypeUtil.h
+input.o: tinyxml/tinyxml.h tinyxml/tinystr.h translation/strings.h input/xsdTypeUtil.h input/xsdElementUtil.h input/xsdAttributeUtil.h input/internalEnergy.h input/externalEnergy.h input/constraints.h
+main.o: main.h strings.o input.o internalEnergy.o externalEnergy.o constraints.o xsdElementUtil.o xsdAttributeUtil.o xsdTypeUtil.o
 

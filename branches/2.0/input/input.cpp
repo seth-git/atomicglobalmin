@@ -2,67 +2,69 @@
 #include "input.h"
 
 void Input::cleanUp() {
-	if (m_pXMLDocument != NULL) {
-		delete m_pXMLDocument;
-		m_pXMLDocument= NULL;
-	}
 	m_iAction = -1;
 	m_constraints.clear();
 }
 
-const std::string  Input::s_agml = "agml";
+const char* Input::s_agml = "agml";
 
-const std::string  Input::s_attributeNames[]   = {"version", "xmlns",                                            "xmlns:xsi",                                 "xsi:schemaLocation"};
-const bool         Input::s_required[]         = {true     , false  ,                                            false      ,                                 false };
-const std::string  Input::s_defaultValues[]    = {""       , "http://sourceforge.net/projects/atomicglobalmin/", "http://www.w3.org/2001/XMLSchema-instance", "http://sourceforge.net/projects/atomicglobalmin/ agml.xsd"};
+const char* Input::s_attributeNames[]   = {"version", "language", "xmlns"                                           , "xmlns:xsi"                                , "xsi:schemaLocation"};
+const bool  Input::s_required[]         = {true     , false     , false                                             , false                                      , false };
+const char* Input::s_defaultValues[]    = {""       , "en"      , "http://sourceforge.net/projects/atomicglobalmin/", "http://www.w3.org/2001/XMLSchema-instance", "http://sourceforge.net/projects/atomicglobalmin/ agml.xsd"};
 
-const std::string  Input::s_elementNames[] = {"action", "constraints", "energy", "results"};
+//const char*      Input::s_elementNames[] = {"action", "constraints", "energy", "results"};
 const unsigned int Input::s_minOccurs[]    = {1       , 0            , 1       , 0        };
 const unsigned int Input::s_maxOccurs[]    = {1       , XSD_UNLIMITED, 1       , 1        };
 
-const std::string  Input::s_actionElementNames[] = {"simulatedAnnealing", "randomSearch", "particleSwarmOptimization", "geneticAlgorithm", "batch"};
-const std::string  Input::s_energyElementNames[] = {"internal", "external"};
+//const char* Input::s_actionElementNames[] = {"simulatedAnnealing", "randomSearch", "particleSwarmOptimization", "geneticAlgorithm", "batch"};
+//const char* Input::s_energyElementNames[] = {"internal", "external"};
 
 bool Input::load(const char* pFilename)
 {
-	vector<TiXmlElement*>* atgmlElements;
+	TiXmlDocument xmlDocument(pFilename);
+	std::vector<TiXmlElement*>* atgmlElements;
 	TiXmlHandle hRoot(0);
 	TiXmlHandle hChild(0);
 	TiXmlElement* pElem;
 	unsigned int i, j;
-
+	const Strings* messagesDL = Strings::instance();
+	
 	cleanUp();
-	printf("Opening %s...\n", pFilename);
-	m_pXMLDocument = new TiXmlDocument(pFilename);
-	if (!m_pXMLDocument->LoadFile() || m_pXMLDocument->Error()) {
-		if (strncmp(m_pXMLDocument->ErrorDesc(), "Failed to open file", 20) == 0)
-			printf("Error: %s\n", m_pXMLDocument->ErrorDesc());
+	printf(messagesDL->m_sReadingFile.c_str(), pFilename);
+	if (!xmlDocument.LoadFile() || xmlDocument.Error()) {
+		if (strncmp(xmlDocument.ErrorDesc(), "Failed to open file", 20) == 0)
+			printf(messagesDL->m_sError.c_str(), xmlDocument.ErrorDesc());
 		else
-			printf("Error on line %d and character %d: %s\n", m_pXMLDocument->ErrorRow(), m_pXMLDocument->ErrorCol(), m_pXMLDocument->ErrorDesc());
+			printf(messagesDL->m_sErrorOnLine.c_str(), xmlDocument.ErrorRow(), xmlDocument.ErrorCol(), xmlDocument.ErrorDesc());
 		return false;
 	}
-	TiXmlHandle hDoc(m_pXMLDocument);
+	TiXmlHandle hDoc(&xmlDocument);
 
 	pElem=hDoc.FirstChildElement().Element();
-	if (!pElem || !pElem->Value() || s_agml != pElem->Value()) {
-		printf("The %s element was not found.\n", s_agml.c_str());
+	if (!pElem || !pElem->Value() || strcmp(s_agml,pElem->Value()) != 0) {
+		printf(messagesDL->m_sElementNotFound.c_str(), s_agml);
 		return false;
 	}
 
 	const char** rootAttributeValues;
-	XsdAttributeUtil rootAttUtil(pElem->Value(), s_attributeNames, 4, s_required, s_defaultValues);
+	XsdAttributeUtil rootAttUtil(pElem->Value(), s_attributeNames, 5, s_required, s_defaultValues);
 	if (!rootAttUtil.process(pElem)) {
 		return false;
 	}
 	rootAttributeValues = rootAttUtil.getAllAttributes();
 	m_sVersion = rootAttributeValues[0];
+	m_sLanguageCode = rootAttributeValues[1];
+	m_messages = Strings::instance(m_sLanguageCode);
+	const char* elementNames[] = {m_messages->m_sxAction.c_str(), m_messages->m_sxConstraints.c_str(), m_messages->m_sxEnergy.c_str(), m_messages->m_sxResults.c_str()};
+	const char* actionElementNames[] = {m_messages->m_sxSimulatedAnnealing.c_str(), m_messages->m_sxRandomSearch.c_str(), m_messages->m_sxParticleSwarmOptimization.c_str(), m_messages->m_sxGeneticAlgorithm.c_str(), m_messages->m_sxBatch.c_str()};
+	const char* energyElementNames[] = {m_messages->m_sxInternal.c_str(), m_messages->m_sxExternal.c_str()};
 
 	if (pElem->NextSiblingElement()) {
-		printf("There can be only one root element.\n");
+		printf(messagesDL->m_sOneRootElement.c_str());
 		return false;
 	}
 
-	XsdElementUtil atmlUtil(s_agml.c_str(), XSD_SEQUENCE, s_elementNames, 4, s_minOccurs, s_maxOccurs);
+	XsdElementUtil atmlUtil(s_agml, XSD_SEQUENCE, elementNames, 4, s_minOccurs, s_maxOccurs);
 	hRoot=TiXmlHandle(pElem);
 	if (!atmlUtil.process(hRoot)) {
 		return false;
@@ -70,10 +72,10 @@ bool Input::load(const char* pFilename)
 	atgmlElements = atmlUtil.getSequenceElements();
 
 	pElem=atgmlElements[0][0];
-	if (!XsdAttributeUtil::hasNoAttributes(pElem, s_elementNames[0].c_str())) {
+	if (!XsdAttributeUtil::hasNoAttributes(pElem, elementNames[0])) {
 		return false;
 	}
-	XsdElementUtil actionUtil(s_elementNames[0].c_str(), XSD_CHOICE, s_actionElementNames, 5, NULL, NULL);
+	XsdElementUtil actionUtil(elementNames[0], XSD_CHOICE, actionElementNames, 5, NULL, NULL);
 	hChild=TiXmlHandle(pElem);
 	if (!actionUtil.process(hChild)) {
 		return false;
@@ -83,16 +85,16 @@ bool Input::load(const char* pFilename)
 
 	for (i = 0; i < atgmlElements[1].size(); ++i) {
 		m_constraints.push_back(Constraints());
-		m_constraints[i].load(atgmlElements[1][i]);
+		m_constraints[i].load(atgmlElements[1][i], m_messages);
 		for (j = 0; j < i; ++j) {
 			if (m_constraints[j].m_sName == m_constraints[i].m_sName) {
-				printf("Two elements '%s' have the same name '%s'.\n", s_elementNames[1].c_str(), m_constraints[i].m_sName.c_str());
+				printf(messagesDL->m_sTwoElementsWithSameName.c_str(), elementNames[1], m_constraints[i].m_sName.c_str());
 				return false;
 			}
 		}
 	}
 
-	XsdElementUtil energyUtil(s_elementNames[2].c_str(), XSD_CHOICE, s_energyElementNames, 2, NULL, NULL);
+	XsdElementUtil energyUtil(elementNames[2], XSD_CHOICE, energyElementNames, 2, NULL, NULL);
 	hChild=TiXmlHandle(atgmlElements[2][0]);
 	if (!energyUtil.process(hChild)) {
 		return false;
@@ -113,9 +115,10 @@ bool Input::load(const char* pFilename)
 
 void Input::save(const char* pFilename)
 {
-	if (m_pXMLDocument == NULL) {
-		return;
-	}
-	printf("Saving %s...\n", pFilename);
-	m_pXMLDocument->SaveFile(pFilename);
+	m_sLanguageCode = Strings::s_sDefaultLanguageCode;
+	m_messages = Strings::instance(m_sLanguageCode);
+//  These are commented out to prevent a compiler warning.  They are needed.
+//	const char* elementNames[] = {m_messages->m_sxAction.c_str(), m_messages->m_sxConstraints.c_str(), m_messages->m_sxEnergy.c_str(), m_messages->m_sxResults.c_str()};
+//	const char* actionElementNames[] = {m_messages->m_sxSimulatedAnnealing.c_str(), m_messages->m_sxRandomSearch.c_str(), m_messages->m_sxParticleSwarmOptimization.c_str(), m_messages->m_sxGeneticAlgorithm.c_str(), m_messages->m_sxBatch.c_str()};
+//	const char* energyElementNames[] = {m_messages->m_sxInternal.c_str(), m_messages->m_sxExternal.c_str()};
 }

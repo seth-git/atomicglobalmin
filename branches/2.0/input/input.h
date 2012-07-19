@@ -9,6 +9,7 @@
 #include "internalEnergy.h"
 #include "externalEnergy.h"
 #include "constraints.h"
+#include "../translation/strings.h"
 
 #define SIMULATED_ANNEALING              0
 #define RANDOM_SEARCH                    1
@@ -19,16 +20,18 @@
 class Input {
 	public:
 		std::string m_sVersion;
+		std::string m_sLanguageCode; // 2 characters long
 		int m_iAction; // a constant value and an index to s_actionElementNames
 		bool m_bExternalEnergy;
 		InternalEnergy m_internalEnergy;
 		ExternalEnergy m_externalEnergy;
-		vector<Constraints> m_constraints;
+		std::vector<Constraints> m_constraints;
 		
 		Input()
 		{
-			m_pXMLDocument = NULL;
 			m_iAction = -1;
+			m_sLanguageCode = Strings::s_sDefaultLanguageCode;
+			m_messages = Strings::instance();
 		}
 
 		~Input()
@@ -39,20 +42,16 @@ class Input {
 		bool load(const char* pFilename);
 		void save(const char* pFilename);
 	private:
-		TiXmlDocument*            m_pXMLDocument;
+		const Strings*            m_messages; // messages for m_sLanguageCode
 
-		static const std::string  s_agml;
+		static const char*        s_agml;
 		
-		static const std::string  s_attributeNames[];
+		static const char*        s_attributeNames[];
 		static const bool         s_required[];
-		static const std::string  s_defaultValues[];
+		static const char*        s_defaultValues[];
 		
-		static const std::string  s_elementNames[];
 		static const unsigned int s_minOccurs[];
 		static const unsigned int s_maxOccurs[];
-
-		static const std::string  s_actionElementNames[];
-		static const std::string  s_energyElementNames[];
 
 		void cleanUp();
 };

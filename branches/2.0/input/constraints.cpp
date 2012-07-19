@@ -1,12 +1,16 @@
 
 #include "constraints.h"
 
-const std::string  Constraints::s_elementNames[]     = {"cube", "atomicDistances"};
+//const char*      Constraints::s_elementNames[]     = {"cube", "atomicDistances"};
 const unsigned int Constraints::s_minOccurs[]        = {0     , 0                };
 
-const std::string  Constraints::s_distElementNames[] = {"min"        , "max"};
+//const char*      Constraints::s_distElementNames[] = {"min"        , "max"};
 const unsigned int Constraints::s_distMinOccurs[]    = {0            , 0    };
 const unsigned int Constraints::s_distMaxOccurs[]    = {XSD_UNLIMITED, 1    };
+
+//const char* Constraints::s_attributeNames[] = {"Value", "z1" , "z2"};
+const bool  Constraints::s_required[]         = {true   , false, false };
+const char* Constraints::s_defaultValues[]    = {""     , ""   , ""};
 
 void Constraints::cleanUp() {
 	unsigned int i;
@@ -31,15 +35,17 @@ void Constraints::cleanUp() {
 	}
 }
 
-bool Constraints::load(TiXmlElement *pElem)
+bool Constraints::load(TiXmlElement *pElem, const Strings* messages)
 {
-	XsdElementUtil constraintUtil(pElem->Value(), XSD_ALL, s_elementNames, 2, s_minOccurs, NULL);
+	const char* elementNames[] = {messages->m_sxCube.c_str(), messages->m_sxAtomicDistances.c_str()};
+	const char* distElementNames[] = {messages->m_sxMin.c_str(), messages->m_sxMax.c_str()};
+	XsdElementUtil constraintUtil(pElem->Value(), XSD_ALL, elementNames, 2, s_minOccurs, NULL);
 	TiXmlHandle handle(0);
 	TiXmlElement** constraintElements;
 
 	cleanUp();
-
-	static const std::string name = "name";
+	
+	const char* name = messages->m_sxName.c_str();
 	if (!XsdTypeUtil::readStrValueElement(pElem, m_sName, &name)) {
 		return false;
 	}
@@ -50,16 +56,16 @@ bool Constraints::load(TiXmlElement *pElem)
 	}
 	constraintElements = constraintUtil.getAllElements();
 
-	static const std::string size = "size";
 	if (constraintElements[0] != NULL) {
 		m_pfCubeLWH = new FLOAT;
+		const char* size = messages->m_sxSize.c_str();
 		XsdTypeUtil::readPosFloatValueElement(constraintElements[0], *m_pfCubeLWH, &size);
 	}
 
 	if (constraintElements[1] != NULL) {
-		XsdElementUtil distUtil(pElem->Value(), XSD_SEQUENCE, s_distElementNames, 2, s_distMinOccurs, s_distMaxOccurs);
+		XsdElementUtil distUtil(pElem->Value(), XSD_SEQUENCE, distElementNames, 2, s_distMinOccurs, s_distMaxOccurs);
 		TiXmlHandle handle(0);
-		vector<TiXmlElement*>* distElements;
+		std::vector<TiXmlElement*>* distElements;
 		unsigned int i;
 		
 		handle=TiXmlHandle(constraintElements[1]);
@@ -68,7 +74,7 @@ bool Constraints::load(TiXmlElement *pElem)
 		}
 		distElements = distUtil.getSequenceElements();
 		for (i = 0; i < distElements[0].size(); ++i) {
-			if (!addMinDist(distElements[0][i])) {
+			if (!addMinDist(distElements[0][i], messages)) {
 				return false;
 			}
 		}
@@ -83,14 +89,13 @@ bool Constraints::load(TiXmlElement *pElem)
 	return true;
 }
 
-bool Constraints::addMinDist(TiXmlElement *pElem)
+bool Constraints::addMinDist(TiXmlElement *pElem, const Strings* messages)
 {
-	static const std::string attributeNames[] = {"value", "z1" , "z2"};
-	static const bool        required[]       = {true   , false, false };
-	static const std::string defaultValues[]  = {""     , ""   , ""};
+	const char* attributeNames[] = {messages->m_sxValue.c_str(), messages->m_sxZ1.c_str() , messages->m_sxZ2.c_str()};
 	const char** values;
+	const Strings* messagesDL = Strings::instance();
 	
-	XsdAttributeUtil attUtil(pElem->Value(), attributeNames, 3, required, defaultValues);
+	XsdAttributeUtil attUtil(pElem->Value(), attributeNames, 3, s_required, s_defaultValues);
 	if (!attUtil.process(pElem)) {
 		return false;
 	}
@@ -98,17 +103,17 @@ bool Constraints::addMinDist(TiXmlElement *pElem)
 
 	if ((values[1] == NULL && values[2] != NULL) ||
 	    (values[1] != NULL && values[2] == NULL)) {
-		printf("In the element '%s', '%s' and '%s' must both be included or both must be excluded.\n", pElem->Value(), attributeNames[1].c_str(), attributeNames[2].c_str());
+		printf(messagesDL->m_sErrorZ1Z2.c_str(), pElem->Row(), pElem->Value(), attributeNames[1], attributeNames[2]);
 		return false;
 	}
 
 	if (values[1] == NULL) {
 		if (m_pfGeneralMinAtomicDistance != NULL) {
-			printf("Only one element '%s' can be a general minimum distance, not having '%s' and '%s'.\n", pElem->Value(), attributeNames[1].c_str(), attributeNames[2].c_str());
+			printf(messagesDL->m_sErrorOneGeneralMin.c_str(), pElem->Row(), pElem->Value(), attributeNames[1], attributeNames[2]);
 			return false;
 		}
 		m_pfGeneralMinAtomicDistance = new FLOAT;
-		XsdTypeUtil::getPositiveFloat(values[0], *m_pfGeneralMinAtomicDistance, attributeNames[0].c_str(), pElem->Value());
+		XsdTypeUtil::getPositiveFloat(values[0], *m_pfGeneralMinAtomicDistance, attributeNames[0], pElem->Value());
 	} else {
 		unsigned int i, j;
 		if (m_rgMinAtomicDistances == NULL) {
@@ -121,28 +126,25 @@ bool Constraints::addMinDist(TiXmlElement *pElem)
 				}
 			}
 		}
-		if (!XsdTypeUtil::getPositiveInt(values[1], i, attributeNames[1].c_str(), pElem->Value())) {
+		if (!XsdTypeUtil::getPositiveInt(values[1], i, attributeNames[1], pElem->Value())) {
 			return false;
 		}
 		if (i > MAX_ATOMIC_NUMBERS) {
-			printf("In a constraint, an atomic number '%s' in the element '%s' is %u, which is greater than the maximum of %u.\n",
-			       attributeNames[1].c_str(), pElem->Value(), i, MAX_ATOMIC_NUMBERS);
+			printf(messagesDL->m_sErrorAtomicNumOverMax.c_str(), pElem->Row(), attributeNames[1], pElem->Value(), i, MAX_ATOMIC_NUMBERS);
 			return false;
 		}
-		if (!XsdTypeUtil::getPositiveInt(values[2], j, attributeNames[2].c_str(), pElem->Value())) {
+		if (!XsdTypeUtil::getPositiveInt(values[2], j, attributeNames[2], pElem->Value())) {
 			return false;
 		}
 		if (j > MAX_ATOMIC_NUMBERS) {
-			printf("In a constraint, an atomic number '%s' in the element '%s' is %u, which is greater than the maximum of %u.\n",
-			       attributeNames[2].c_str(), pElem->Value(), j, MAX_ATOMIC_NUMBERS);
+			printf(messagesDL->m_sErrorAtomicNumOverMax.c_str(), pElem->Row(), attributeNames[2], pElem->Value(), j, MAX_ATOMIC_NUMBERS);
 			return false;
 		}
 		if (m_rgMinAtomicDistances[i][j] != -1) {
-			printf("In a constraint, the minimum distance('%s') between %s=%u and %s=%u has already been set.\n",
-			       pElem->Value(), attributeNames[1].c_str(), i, attributeNames[2].c_str(), j);
+			printf(messagesDL->m_sErrorDuplicateMinDist.c_str(), pElem->Row(), pElem->Value(), attributeNames[1], i, attributeNames[2], j);
 			return false;
 		}
-		if (!XsdTypeUtil::getPositiveFloat(values[0], m_rgMinAtomicDistances[i][j], attributeNames[0].c_str(), pElem->Value())) {
+		if (!XsdTypeUtil::getPositiveFloat(values[0], m_rgMinAtomicDistances[i][j], attributeNames[0], pElem->Value())) {
 			return false;
 		}
 		m_rgMinAtomicDistances[j][i] = m_rgMinAtomicDistances[i][j];
@@ -150,6 +152,10 @@ bool Constraints::addMinDist(TiXmlElement *pElem)
 	return true;
 }
 
-void Constraints::save()
+void Constraints::save(const Strings* messages)
 {
+//  These are commented out to prevent a compiler warning.  They are needed.
+//	const char* elementNames[] = {messages->m_sxCube.c_str(), messages->m_sxAtomicDistances.c_str()};
+//	const char* distElementNames[] = {messages->m_sxMin.c_str(), messages->m_sxMax.c_str()};
+//	const char* attributeNames[] = {messages->m_sxValue.c_str(), messages->m_sxZ1.c_str() , messages->m_sxZ2.c_str()};
 }
