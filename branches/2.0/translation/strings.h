@@ -74,9 +74,14 @@ public:
 	std::string m_sxMaster;
 	std::string m_sxOpt;
 	
+	std::string m_spADF;
 	std::string m_spGAMESS;
 	std::string m_spGAMESSUK;
 	std::string m_spGaussian;
+	std::string m_spFirefly;
+	std::string m_spJaguar;
+	std::string m_spMolpro;
+	std::string m_spORCA;
 	std::string m_spBest;
 	std::string m_spTrue;
 	std::string m_spFalse;

@@ -8,8 +8,8 @@ const bool         ExternalEnergy::s_required[]        = {true    , false };
 //const char*      ExternalEnergy::s_elementNames[]    = {"sharedDirectory", "localDirectory", "resultsDirectory", "charge", "multiplicity", "header", "footer", "mpi"};
 const unsigned int ExternalEnergy::s_minOccurs[]       = {1                , 0               , 0                 , 1       , 1             , 1       , 0       , 0    };
 
-//const char*      ExternalEnergy::s_methods[]         = {"GAMESS", "GAMESS-UK", "Gaussian"};
-const int          ExternalEnergy::s_methodConstants[] = {GAMESS,   GAMESS_UK,   GAUSSIAN};
+//const char*      ExternalEnergy::s_methods[]         = {"ADF", "GAMESS", "GAMESS-UK", "Gaussian", "Firefly", "Jaguar", "Molpro", "ORCA"};
+const int          ExternalEnergy::s_methodConstants[] = { ADF ,  GAMESS ,  GAMESS_UK,   GAUSSIAN ,  FIREFLY ,  JAGUAR ,  MOLPRO ,  ORCA};
 
 bool ExternalEnergy::load(TiXmlElement *pExternalElem, const Strings* messages)
 {
@@ -20,7 +20,8 @@ bool ExternalEnergy::load(TiXmlElement *pExternalElem, const Strings* messages)
 	const char* elementNames[] = {messages->m_sxSharedDirectory.c_str(), messages->m_sxLocalDirectory.c_str(),
 			messages->m_sxResultsDirectory.c_str(), messages->m_sxCharge.c_str(), messages->m_sxMultiplicity.c_str(),
 			messages->m_sxHeader.c_str(), messages->m_sxFooter.c_str(), messages->m_sxMpi.c_str()};
-	const char* methods[] = {messages->m_spGAMESS.c_str(), messages->m_spGAMESSUK.c_str(), messages->m_spGaussian.c_str()};
+	const char* methods[] = {messages->m_spADF.c_str(), messages->m_spGAMESS.c_str(), messages->m_spGAMESSUK.c_str(), messages->m_spGaussian.c_str(),
+			messages->m_spFirefly.c_str(), messages->m_spJaguar.c_str(), messages->m_spMolpro.c_str(), messages->m_spORCA.c_str()};
 	
 	XsdAttributeUtil attUtil(pExternalElem->Value(), attributeNames, 2, s_required, defaultValues);
 	if (!attUtil.process(pExternalElem)) {
@@ -28,7 +29,7 @@ bool ExternalEnergy::load(TiXmlElement *pExternalElem, const Strings* messages)
 	}
 	values = attUtil.getAllAttributes();
 	
-	if (!XsdTypeUtil::getEnumValue(attributeNames[0], values[0], m_iMethod, pExternalElem, methods, 3, s_methodConstants)) {
+	if (!XsdTypeUtil::getEnumValue(attributeNames[0], values[0], m_iMethod, pExternalElem, methods, 8, s_methodConstants)) {
 		return false;
 	}
 	
@@ -148,6 +149,7 @@ void ExternalEnergy::save(const Strings* messages)
 	const char* elementNames[] = {messages->m_sxSharedDirectory.c_str(), messages->m_sxLocalDirectory.c_str(),
 			messages->m_sxResultsDirectory.c_str(), messages->m_sxCharge.c_str(), messages->m_sxMultiplicity.c_str(),
 			messages->m_sxHeader.c_str(), messages->m_sxFooter.c_str(), messages->m_sxMpi.c_str()};
-	const char* methods[] = {messages->m_spGAMESS.c_str(), messages->m_spGAMESSUK.c_str(), messages->m_spGaussian.c_str()};
+	const char* methods[] = {messages->m_spADF.c_str(), messages->m_spGAMESS.c_str(), messages->m_spGAMESSUK.c_str(), messages->m_spGaussian.c_str(),
+			messages->m_spFirefly.c_str(), messages->m_spJaguar.c_str(), messages->m_spMolpro.c_str(), messages->m_spORCA.c_str()};
 	*/
 }

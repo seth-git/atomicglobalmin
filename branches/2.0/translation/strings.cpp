@@ -118,9 +118,14 @@ bool Strings::init (const char* languageCode)
 	m_sxMaster = stringMap["xMaster"];
 	m_sxOpt = stringMap["xOpt"];
 	
+	m_spADF = stringMap["pADF"];
 	m_spGAMESS = stringMap["pGAMESS"];
 	m_spGAMESSUK = stringMap["pGAMESSUK"];
 	m_spGaussian = stringMap["pGaussian"];
+	m_spFirefly = stringMap["pFirefly"];
+	m_spJaguar = stringMap["pJaguar"];
+	m_spMolpro = stringMap["pMolpro"];
+	m_spORCA = stringMap["pORCA"];
 	m_spBest = stringMap["pBest"];
 	m_spTrue = stringMap["pTrue"];
 	m_spFalse = stringMap["pFalse"];

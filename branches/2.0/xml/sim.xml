@@ -54,7 +54,7 @@
 		</atomicDistances>
 	</constraints>
 	<energy>
-                <external method="Gaussian">
+                <external method="ORCA">
                         <sharedDirectory path="path"/>
                         <resultsDirectory path="path" maxFiles="100" filePrefix="res"/>
                         <multiplicity value="2"/>

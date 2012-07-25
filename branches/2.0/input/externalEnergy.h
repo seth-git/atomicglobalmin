@@ -8,9 +8,14 @@
 #include "xsdAttributeUtil.h"
 #include "xsdTypeUtil.h"
 
-#define GAMESS                              1
-#define GAMESS_UK                           2
-#define GAUSSIAN                            3
+#define ADF                                 1
+#define GAMESS                              2
+#define GAMESS_UK                           3
+#define GAUSSIAN                            4
+#define FIREFLY                             5
+#define JAGUAR                              6
+#define MOLPRO                              7
+#define ORCA                                8
 
 class ExternalEnergy {
 	public:
