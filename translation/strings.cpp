@@ -58,6 +58,8 @@ bool Strings::init (const char* languageCode)
 			stringMap[name] = str;
 			if (name[0] != 'p' && name[0] != 'x')
 				stringMap[name].append("\n");
+			if (name[0] == 'x' && strchr(str, ' ') != NULL)
+				printf("The xml element or attribute '%s' has a value '%s' which contains spaces.  Please correct this.\n", name, str);
 		} else if (sscanf(fileLine, "input.%s", name) == 1) {
 			printf("Error reading string with key: '%s'.\n", name);
 			return false;
@@ -91,7 +93,6 @@ bool Strings::init (const char* languageCode)
 	m_sxBatch = stringMap["xBatch"];
 	m_sxInternal = stringMap["xInternal"];
 	m_sxExternal = stringMap["xExternal"];
-	
 	m_sxCube = stringMap["xCube"];
 	m_sxAtomicDistances = stringMap["xAtomicDistances"];
 	m_sxMin = stringMap["xMin"];
@@ -101,13 +102,37 @@ bool Strings::init (const char* languageCode)
 	m_sxValue = stringMap["xValue"];
 	m_sxZ1 = stringMap["xZ1"];
 	m_sxZ2 = stringMap["xZ2"];
-
+	m_sxMethod = stringMap["xMethod"];
+	m_sxTransitionStateSearch = stringMap["xTransitionStateSearch"];
+	m_sxSharedDirectory = stringMap["xSharedDirectory"];
+	m_sxLocalDirectory = stringMap["xLocalDirectory"];
+	m_sxResultsDirectory = stringMap["xResultsDirectory"];
+	m_sxCharge = stringMap["xCharge"];
+	m_sxMultiplicity = stringMap["xMultiplicity"];
+	m_sxHeader = stringMap["xHeader"];
+	m_sxFooter = stringMap["xFooter"];
+	m_sxMpi = stringMap["xMpi"];
+	m_sxPath = stringMap["xPath"];
+	m_sxMaxFiles = stringMap["xMaxFiles"];
+	m_sxFilePrefix = stringMap["xFilePrefix"];
+	m_sxMaster = stringMap["xMaster"];
+	m_sxOpt = stringMap["xOpt"];
+	
+	m_spGAMESS = stringMap["pGAMESS"];
+	m_spGAMESSUK = stringMap["pGAMESSUK"];
+	m_spGaussian = stringMap["pGaussian"];
+	m_spBest = stringMap["pBest"];
+	m_spTrue = stringMap["pTrue"];
+	m_spFalse = stringMap["pFalse"];
+	m_spLennardJones = stringMap["pLennardJones"];
+	
 	m_sReadingFile = stringMap["ReadingFile"];
 	
 	m_sDuplicateAttributes = stringMap["DuplicateAttributes"];
 	m_sUnrecognizedAttribute = stringMap["UnrecognizedAttribute"];
 	m_sMissingAttribute = stringMap["MissingAttribute"];
 	m_sMustNotContainAttributes = stringMap["MustNotContainAttributes"];
+	m_sAvailableAttributes = stringMap["AvailableAttributes"];
 	
 	m_sMaxOf1ElementExceeded = stringMap["MaxOf1ElementExceeded"];
 	m_sUnrecognizedElement = stringMap["UnrecognizedElement"];
@@ -120,7 +145,15 @@ bool Strings::init (const char* languageCode)
 	m_sChoiceError = stringMap["ChoiceError"];
 	m_sChoiceElementOrder = stringMap["ChoiceElementOrder"];
 	m_spUnlimited = stringMap["pUnlimited"];
-
+	
+	m_sUnrecognizedAttributeValue = stringMap["UnrecognizedAttributeValue"];
+	m_sUnableToReadInteger = stringMap["UnableToReadInteger"];
+	m_sUnableToReadPositiveInteger = stringMap["UnableToReadPositiveInteger"];
+	m_sZeroNotAllowed = stringMap["ZeroNotAllowed"];
+	m_sUnableToReadPositiveFloat = stringMap["UnableToReadPositiveFloat"];
+	m_sNegativeNotAllowed = stringMap["NegativeNotAllowed"];
+	m_sUnableToReadElementText = stringMap["UnableToReadElementText"];
+	
 	m_sError = stringMap["Error"];
 	m_sErrorOnLine = stringMap["ErrorOnLine"];
 	m_sElementNotFound = stringMap["ElementNotFound"];
@@ -131,7 +164,6 @@ bool Strings::init (const char* languageCode)
 	m_sErrorOneGeneralMin = stringMap["ErrorOneGeneralMin"];
 	m_sErrorAtomicNumOverMax = stringMap["ErrorAtomicNumOverMax"];
 	m_sErrorDuplicateMinDist = stringMap["ErrorDuplicateMinDist"];
-
 	
 	m_bLoaded = true;
 	return true;

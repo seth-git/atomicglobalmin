@@ -57,6 +57,30 @@ public:
 	std::string m_sxValue;
 	std::string m_sxZ1;
 	std::string m_sxZ2;
+	
+	std::string m_sxMethod;
+	std::string m_sxTransitionStateSearch;
+	std::string m_sxSharedDirectory;
+	std::string m_sxLocalDirectory;
+	std::string m_sxResultsDirectory;
+	std::string m_sxCharge;
+	std::string m_sxMultiplicity;
+	std::string m_sxHeader;
+	std::string m_sxFooter;
+	std::string m_sxMpi;
+	std::string m_sxPath;
+	std::string m_sxMaxFiles;
+	std::string m_sxFilePrefix;
+	std::string m_sxMaster;
+	std::string m_sxOpt;
+	
+	std::string m_spGAMESS;
+	std::string m_spGAMESSUK;
+	std::string m_spGaussian;
+	std::string m_spBest;
+	std::string m_spTrue;
+	std::string m_spFalse;
+	std::string m_spLennardJones;
 
 	std::string m_sReadingFile;
 	
@@ -64,6 +88,7 @@ public:
 	std::string m_sUnrecognizedAttribute;
 	std::string m_sMissingAttribute;
 	std::string m_sMustNotContainAttributes;
+	std::string m_sAvailableAttributes;
 	
 	std::string m_sMaxOf1ElementExceeded;
 	std::string m_sUnrecognizedElement;
@@ -76,6 +101,14 @@ public:
 	std::string m_sChoiceError;
 	std::string m_sChoiceElementOrder;
 	std::string m_spUnlimited;
+	
+	std::string m_sUnrecognizedAttributeValue;
+	std::string m_sUnableToReadInteger;
+	std::string m_sUnableToReadPositiveInteger;
+	std::string m_sZeroNotAllowed;
+	std::string m_sUnableToReadPositiveFloat;
+	std::string m_sNegativeNotAllowed;
+	std::string m_sUnableToReadElementText;
 
 	std::string m_sError;
 	std::string m_sErrorOnLine;
