@@ -27,13 +27,11 @@ class ExternalEnergy {
 		std::string m_sFooter;
 		bool m_bMpiMaster;
 
-		bool load(TiXmlElement *pElem);
-		void save();
+		bool load(TiXmlElement *pElem, const Strings* messages);
+		void save(const Strings* messages);
 		
 	private:
-		static const char*        s_attributeNames[];
 		static const bool         s_required[];
-		static const char*        s_defaultValues[];
 
 		static const char*        s_elementNames[];
 		static const unsigned int s_minOccurs[];
@@ -41,16 +39,13 @@ class ExternalEnergy {
 		static const char*        s_methods[];
 		static const int          s_methodConstants[];
 		
-		static const char*        s_resAttributeNames[];
 		static const bool         s_resRequired[];
-		static const char*        s_resDefaultValues[];
 
-		static const char*        s_mpiAttributeNames[];
 		static const bool         s_mpiRequired[];
 		static const char*        s_mpiDefaultValues[];
 
-		bool readResultsDir(TiXmlElement *pElem);
-		bool readMpiMaster(TiXmlElement *pElem);
+		bool readResultsDir(TiXmlElement *pElem, const Strings* messages);
+		bool readMpiMaster(TiXmlElement *pElem, const Strings* messages);
 };
 
 #endif

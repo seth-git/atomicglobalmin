@@ -7,7 +7,7 @@ bool XsdAttributeUtil::process (TiXmlElement* pElem)
 	const char* pName;
 	unsigned int i;
 	bool bMatch;
-	const Strings* messages = Strings::instance();
+	const Strings* messagesDL = Strings::instance();
 	for (i = 0; i < m_iAttributes; ++i) {
 		m_values[i] = NULL;
 	}
@@ -19,7 +19,7 @@ bool XsdAttributeUtil::process (TiXmlElement* pElem)
 		for (i = 0; i < m_iAttributes; ++i) {
 			if (strcmp(m_attributeNames[i], pName) == 0) {
 				if (m_values[i] != NULL) {
-					printf(messages->m_sDuplicateAttributes.c_str(), m_attributeNames[i], pAttrib->Row(), m_sParentElement);
+					printf(messagesDL->m_sDuplicateAttributes.c_str(), m_attributeNames[i], pAttrib->Row(), m_sParentElement);
 					return false;
 				}
 				m_values[i] = pAttrib->Value();
@@ -28,7 +28,8 @@ bool XsdAttributeUtil::process (TiXmlElement* pElem)
 			}
 		}
 		if (!bMatch) {
-			printf(messages->m_sUnrecognizedAttribute.c_str(), pName, pAttrib->Row(), m_sParentElement);
+			printf(messagesDL->m_sUnrecognizedAttribute.c_str(), pName, pAttrib->Row(), m_sParentElement);
+			printAvailableAttributes();
 			return false;
 		}
 	}
@@ -38,12 +39,22 @@ bool XsdAttributeUtil::process (TiXmlElement* pElem)
 				m_values[i] = m_defaultValues[i];
 				continue;
 			} else if (m_required[i]) {
-				printf(messages->m_sMissingAttribute.c_str(), m_attributeNames[i], m_sParentElement, pElem->Row());
+				printf(messagesDL->m_sMissingAttribute.c_str(), m_attributeNames[i], m_sParentElement, pElem->Row());
 				return false;
 			}
 		}
 	}
 	return true;
+}
+
+void XsdAttributeUtil::printAvailableAttributes() {
+	const Strings* messagesDL = Strings::instance();
+	std::string availableAttributes;
+	availableAttributes.append("'").append(m_attributeNames[0]).append("'");
+	for (unsigned int i = 1; i < m_iAttributes; ++i) {
+		availableAttributes.append(", '").append(m_attributeNames[i]).append("'");
+	}
+	printf(messagesDL->m_sAvailableAttributes.c_str(), m_sParentElement, availableAttributes.c_str());
 }
 
 const char** XsdAttributeUtil::getAllAttributes()
@@ -53,8 +64,8 @@ const char** XsdAttributeUtil::getAllAttributes()
 
 bool XsdAttributeUtil::hasNoAttributes(TiXmlElement *pElem, const char* elementName) {
 	if (pElem->FirstAttribute()) {
-		const Strings* messages = Strings::instance();
-		printf(messages->m_sMustNotContainAttributes.c_str(), elementName, pElem->Row());
+		const Strings* messagesDL = Strings::instance();
+		printf(messagesDL->m_sMustNotContainAttributes.c_str(), elementName, pElem->Row());
 		return false;
 	}
 	return true;

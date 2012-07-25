@@ -44,6 +44,8 @@ class XsdAttributeUtil {
 		const char** getAllAttributes();
 		
 		static bool hasNoAttributes(TiXmlElement *pElem, const char* elementName);
+	private:
+		void printAvailableAttributes();
 };
 
 #endif

@@ -20,14 +20,11 @@ class InternalEnergy {
 			m_iMethod = LENNARD_JONES;
 		}
 
-		bool load(TiXmlElement *pElem);
-		void save();
+		bool load(TiXmlElement *pElem, const Strings* messages);
+		void save(const Strings* messages);
 
 	private:
-		static const char* s_attributeNames[];
 		static const bool  s_required[];
-		static const char* s_defaultValues[];
-		static const char* s_methods[];
 		static const int   s_methodConstants[];
 };
 

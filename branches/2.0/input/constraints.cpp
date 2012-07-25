@@ -80,7 +80,7 @@ bool Constraints::load(TiXmlElement *pElem, const Strings* messages)
 		}
 		for (i = 0; i < distElements[1].size(); ++i) { // Should be only one
 			m_pfGeneralMaxAtomicDistance = new FLOAT;
-			if (!XsdTypeUtil::readPosFloatValueElement(distElements[1][i], *m_pfGeneralMaxAtomicDistance)) {
+			if (!XsdTypeUtil::readPosFloatValueElement(distElements[1][i], *m_pfGeneralMaxAtomicDistance, messages)) {
 				return false;
 			}
 		}
@@ -100,20 +100,20 @@ bool Constraints::addMinDist(TiXmlElement *pElem, const Strings* messages)
 		return false;
 	}
 	values = attUtil.getAllAttributes();
-
+	
 	if ((values[1] == NULL && values[2] != NULL) ||
 	    (values[1] != NULL && values[2] == NULL)) {
 		printf(messagesDL->m_sErrorZ1Z2.c_str(), pElem->Row(), pElem->Value(), attributeNames[1], attributeNames[2]);
 		return false;
 	}
-
+	
 	if (values[1] == NULL) {
 		if (m_pfGeneralMinAtomicDistance != NULL) {
 			printf(messagesDL->m_sErrorOneGeneralMin.c_str(), pElem->Row(), pElem->Value(), attributeNames[1], attributeNames[2]);
 			return false;
 		}
 		m_pfGeneralMinAtomicDistance = new FLOAT;
-		XsdTypeUtil::getPositiveFloat(values[0], *m_pfGeneralMinAtomicDistance, attributeNames[0], pElem->Value());
+		XsdTypeUtil::getPositiveFloat(values[0], *m_pfGeneralMinAtomicDistance, attributeNames[0], pElem);
 	} else {
 		unsigned int i, j;
 		if (m_rgMinAtomicDistances == NULL) {
@@ -126,14 +126,14 @@ bool Constraints::addMinDist(TiXmlElement *pElem, const Strings* messages)
 				}
 			}
 		}
-		if (!XsdTypeUtil::getPositiveInt(values[1], i, attributeNames[1], pElem->Value())) {
+		if (!XsdTypeUtil::getPositiveInt(values[1], i, attributeNames[1], pElem)) {
 			return false;
 		}
 		if (i > MAX_ATOMIC_NUMBERS) {
 			printf(messagesDL->m_sErrorAtomicNumOverMax.c_str(), pElem->Row(), attributeNames[1], pElem->Value(), i, MAX_ATOMIC_NUMBERS);
 			return false;
 		}
-		if (!XsdTypeUtil::getPositiveInt(values[2], j, attributeNames[2], pElem->Value())) {
+		if (!XsdTypeUtil::getPositiveInt(values[2], j, attributeNames[2], pElem)) {
 			return false;
 		}
 		if (j > MAX_ATOMIC_NUMBERS) {
@@ -144,7 +144,7 @@ bool Constraints::addMinDist(TiXmlElement *pElem, const Strings* messages)
 			printf(messagesDL->m_sErrorDuplicateMinDist.c_str(), pElem->Row(), pElem->Value(), attributeNames[1], i, attributeNames[2], j);
 			return false;
 		}
-		if (!XsdTypeUtil::getPositiveFloat(values[0], m_rgMinAtomicDistances[i][j], attributeNames[0], pElem->Value())) {
+		if (!XsdTypeUtil::getPositiveFloat(values[0], m_rgMinAtomicDistances[i][j], attributeNames[0], pElem)) {
 			return false;
 		}
 		m_rgMinAtomicDistances[j][i] = m_rgMinAtomicDistances[i][j];

@@ -101,11 +101,11 @@ bool Input::load(const char* pFilename)
 	}
 	m_bExternalEnergy = (bool)energyUtil.getChoiceElementIndex();
 	if (m_bExternalEnergy) {
-		if (!m_externalEnergy.load(energyUtil.getChoiceElement())) {
+		if (!m_externalEnergy.load(energyUtil.getChoiceElement(), m_messages)) {
 			return false;
 		}
 	} else {
-		if (!m_internalEnergy.load(energyUtil.getChoiceElement())) {
+		if (!m_internalEnergy.load(energyUtil.getChoiceElement(), m_messages)) {
 			return false;
 		}
 	}
