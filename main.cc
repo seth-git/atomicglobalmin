@@ -1566,9 +1566,8 @@ int master(int rank)
 					for (j = 0; j < (signed int)bestNMoleculeSetsTemp.size(); ++j)
 						if (bestNMoleculeSetsTemp[j]->isFragmented(input.m_fMaxAtomDistance)) {
 							cout << messages->m_sSeedFileContainsFragmented << endl;
-							cout << messages->m_sStructureIsFragmented1 << (j+1)
-							     << " " << messages->m_sStructureIsFragmented2 << " \"" << seedFileName
-							     << "\" " << messages->m_sStructureIsFragmented3 << endl << endl;
+							printf(messages->m_sStructureIsFragmented.c_str(), j+1, seedFileName.c_str());
+							cout << endl << endl;
 							throw messages->m_sSeedFileContainsFragmented.c_str();
 						}
 					for (j = 0; j < (signed int)bestNMoleculeSetsTemp.size(); ++j) {
