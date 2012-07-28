@@ -568,9 +568,9 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 	if ((m_pSelectedEnergyProgram->m_iNumOutputFileTypes == 0) || (m_sPathToEnergyFiles.length() == 0))
 		m_sSaveLogFilesInDirectory = "";
 	else
-		m_sSaveLogFilesInDirectory = m_sPathToEnergyFiles + "/bestSavedStructures";
+		m_sSaveLogFilesInDirectory = m_sPathToEnergyFiles + "/" + m_messages->m_sBestSavedStructures;
 	
-	m_sNodesFile = m_sPathToEnergyFiles + "/nodes.txt";
+	m_sNodesFile = m_sPathToEnergyFiles + "/" + m_messages->m_sNodesFile;
 	if (bReadNodesFile && (m_pSelectedEnergyProgram->m_sPathToExecutable.length() > 0))
 		if (!readNodesFile())
 			return false;
@@ -786,7 +786,7 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			if ((m_iLinearSructures > 0) || (m_iPlanarStructures > 0) ||
 			    (m_i3DStructures > 0) || (m_i3DStructuresWithMaxDist > 0) ||
 			    (m_i3DNonFragStructuresWithMaxDist == 0)) {
-				cout << "When searching for non-fragmented structures, the entire population must be initialized as non-fragmented." << endl;
+				cout << m_messagesDL->m_sPopulationMustBeNonFragmented << endl;
 				return false;
 			}
 		
@@ -1134,10 +1134,10 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		
 		if ((m_fEndCoordInertia != 0) || (m_fEndAngleInertia != 0) || (m_iReachEndInertiaAtIteration != 0))
 			if ((m_fEndCoordInertia == 0) || (m_fEndAngleInertia == 0) || (m_iReachEndInertiaAtIteration == 0)) {
-				cout << "Please either specify values for all these parameters or none of them:" << endl;
-				cout << "\tParameter: " << m_messages->m_sEndCoordInertia << endl;
-				cout << "\tParameter: " << m_messages->m_sReachEndInertiaAtIteration << endl;
-				cout << "\tParameter: " << m_messages->m_sEndAngleInertia << endl;
+				cout << m_messagesDL->m_sPleaseSpecifyAllOrNoneOfThese << endl;
+				cout << "\t" << m_messagesDL->m_sParameter << ": " << m_messages->m_sEndCoordInertia << endl;
+				cout << "\t" << m_messagesDL->m_sParameter << ": " << m_messages->m_sReachEndInertiaAtIteration << endl;
+				cout << "\t" << m_messagesDL->m_sParameter << ": " << m_messages->m_sEndAngleInertia << endl;
 				return false;
 			}
 				
@@ -1196,7 +1196,7 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
-                m_bStartingVisibilityAuto = (strncmp(temp.c_str(),"auto",4) == 0);
+		m_bStartingVisibilityAuto = (temp == m_messages->m_sAuto);
 		if (m_bStartingVisibilityAuto) {
 			m_fStartVisibilityDistance = -1;
 			m_fVisibilityDistance = 0;
@@ -1261,10 +1261,10 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		       (m_fSwitchToAttractionWhenDiversityIs > 0)) ||
 		      ((m_fSwitchToRepulsionWhenDiversityIs <= 0) && (m_iSwitchToRepulsionWhenNoProgress <= 0) &&
 		       (m_fSwitchToAttractionWhenDiversityIs <= 0)))) {
-			cout << "Please either specify values for all these parameters or none of them:" << endl;
-			cout << "\tParameter: " << m_messages->m_sSwitchToRepulsionWhenDiversityIs << endl;
-			cout << "\tParameter: " << m_messages->m_sSwitchToRepulsionWhenNoProgress << endl;
-			cout << "\tParameter: " << m_messages->m_sSwitchToAttractionWhenDiversityIs << endl;
+			cout << m_messagesDL->m_sPleaseSpecifyAllOrNoneOfThese << endl;
+			cout << "\t" << m_messagesDL->m_sParameter << ": " << m_messages->m_sSwitchToRepulsionWhenDiversityIs << endl;
+			cout << "\t" << m_messagesDL->m_sParameter << ": " << m_messages->m_sSwitchToRepulsionWhenNoProgress << endl;
+			cout << "\t" << m_messagesDL->m_sParameter << ": " << m_messages->m_sSwitchToAttractionWhenDiversityIs << endl;
 			return false;
 		}
 		
@@ -1418,8 +1418,10 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 	
 	if (m_fSwitchToRepulsionWhenDiversityIs > 0) {
 		if (m_fSwitchToRepulsionWhenDiversityIs > m_fSwitchToAttractionWhenDiversityIs) {
-			cout << "The parameter: '" << m_messages->m_sSwitchToRepulsionWhenDiversityIs << "'" << endl;
-			cout << "can not be bigger than the parameter: '" << m_messages->m_sSwitchToAttractionWhenDiversityIs << "'" << endl;
+			printf(m_messagesDL->m_sRepulsionAttractionError1.c_str(), m_messages->m_sSwitchToRepulsionWhenDiversityIs.c_str());
+			cout << endl;
+			printf(m_messagesDL->m_sRepulsionAttractionError2.c_str(), m_messages->m_sSwitchToAttractionWhenDiversityIs.c_str());
+			cout << endl;
 			return false;
 		}
 	}
@@ -1530,7 +1532,7 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		if (length == 0)
 			break;
 		if ((m_pSelectedEnergyProgram->m_iProgramID == GAUSSIAN) && (length > 80)) {
-			cout << "A line in the Gaussian energy file header is longer than 80 characters, please fix this:" << endl
+			cout << m_messagesDL->m_sGaussianHeaderLineLongerThan80 << endl
 			     << fileLine << endl;
 			return false;
 		}
@@ -1564,7 +1566,7 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		if (length == 0)
 			break;
 		if ((m_pSelectedEnergyProgram->m_iProgramID == GAUSSIAN) && (length > 80)) {
-			cout << "A line in the Gaussian energy file footer is longer than 80 characters, please fix this:" << endl
+			cout << m_messagesDL->m_sGaussianFooterLineLongerThan80 << endl
 			     << fileLine << endl;
 			return false;
 		}
@@ -1573,19 +1575,19 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 	}
 	if (m_bUseLocalOptimization && (m_pSelectedEnergyProgram->m_iProgramID == GAUSSIAN)) {
 		if (m_sEnergyFileHeader.find("opt") == string::npos) {
-			cout << "You have local optimization turned on, but you haven't specified 'opt' in the energy file header.  Please do this." << endl;
+			cout << m_messagesDL->m_sSpecifyOptForGaussianOptimization << endl;
 			return false;
 		}
 	}
 	if (m_bPerformBasinHopping && (m_pSelectedEnergyProgram->m_iProgramID == GAUSSIAN)) {
 		if (m_sEnergyFileHeader.find("opt") == string::npos) {
-			cout << "When performing basin hopping with Gaussian, please specify 'opt' in the energy file header." << endl;
+			cout << m_messagesDL->m_sSpecifyOptWithBasinHopping << endl;
 			return false;
 		}
 	}
 	if ((m_pSelectedEnergyProgram->m_iProgramID == GAUSSIAN) && (m_sEnergyFileFooter.length() > 0)) {
 		if (m_sEnergyFileFooter.find("--link1--\n") != 0) {
-			cout << "When specifying an energy file footer with Gaussian, make sure that '--link1--' is on the first line." << endl;
+			cout << m_messagesDL->m_sUseLink1InGaussianFooter << endl;
 			return false;
 		}
 	}
@@ -1734,7 +1736,8 @@ bool Input::readNodesFile()
 	
 	if (!infile)
 	{
-		cout << "Can't open the file: " << m_sNodesFile << endl;
+		printf(m_messagesDL->m_sUnableToReadFile.c_str(), m_sNodesFile.c_str());
+		cout << endl;
 		return false;
 	}
 	
@@ -1752,7 +1755,7 @@ bool Input::readNodesFile()
 	}
 	infile.close();
 	if (m_srgNodeNames.size() < 1) {
-		cout << "Please specify at least one node in the nodes file." << endl;
+		cout << m_messagesDL->m_sPleaseSpecifyOneNode << endl;
 		return false;
 	} else
 		return true;
@@ -1994,7 +1997,8 @@ void Input::printInputParamsToFile(ofstream &outFile)
 	vector<MoleculeSet*> bestIndividualMoleculeSets;
 	bool success;
 
-	cout << "Reading input parameters from file: " << m_sOutputFileName << endl;
+	printf(m_messagesDL->m_sReadingParamsFormInput.c_str(), m_sOutputFileName.c_str());
+	cout << endl;
 	success = outputFile.open(m_sOutputFileName, false, false, moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets);
 	outputFile.m_bResumeFileRead = false;
 	outputFile.m_bOptimizationFileRead = m_bOptimizationFileRead;
@@ -2003,7 +2007,8 @@ void Input::printInputParamsToFile(ofstream &outFile)
 		outputFile.printToFile(outFile);
 	else
 	{
-		cout << "Unable to read file: " << m_sOutputFileName << endl;
+		printf(m_messagesDL->m_sUnableToReadFile.c_str(), m_sOutputFileName.c_str());
+		cout << endl;
 		printToFile(outFile);
 	}
 }
@@ -2021,7 +2026,8 @@ void Input::writeResumeFile(string &fileName, vector<MoleculeSet*> &moleculeSets
 	// Create the resume file just in case we need to stop the program
 	ofstream resumeFile(fileName.c_str(), ios::out);
 	if (!resumeFile.is_open()) {
-		cout << "Unable to write the temporary resume file: " << fileName << endl;
+		printf(m_messagesDL->m_sUnableToWriteTemporaryResume.c_str(), fileName.c_str());
+		cout << endl;
 		return;
 	}
 	if (resumeOrOptimizationFile) {

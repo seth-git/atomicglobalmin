@@ -110,6 +110,7 @@ bool Strings::init (const char* languageCode)
 	m_sIndividualBestUpdateDist = stringMap["IndividualBestUpdateDist"];
 	m_sEnforceMinDistOnCopy = stringMap["EnforceMinDistOnCopy"];
 	m_sStartVisibilityDistance = stringMap["StartVisibilityDistance"];
+	m_sAuto = stringMap["Auto"];
 	m_sVisibilityDistanceIncrease = stringMap["VisibilityDistanceIncrease"];
 	m_sUseLocalOptimization = stringMap["UseLocalOptimization"];
 	m_sSimInputVersionLine = stringMap["SimInputVersionLine"];
@@ -296,9 +297,7 @@ bool Strings::init (const char* languageCode)
 	m_sSeedFileIncompatible2 = stringMap["SeedFileIncompatible2"];
 	m_sSeedFileIncompatible = stringMap["SeedFileIncompatible"];
 	m_sSeedFileContainsFragmented = stringMap["SeedFileContainsFragmented"];
-	m_sStructureIsFragmented1 = stringMap["StructureIsFragmented1"];
-	m_sStructureIsFragmented2 = stringMap["StructureIsFragmented2"];
-	m_sStructureIsFragmented3 = stringMap["StructureIsFragmented3"];
+	m_sStructureIsFragmented = stringMap["StructureIsFragmented"];
 	m_sFailedToInit3dNonFragStructure1 = stringMap["FailedToInit3dNonFragStructure1"];
 	m_sFailedToInit3dNonFragStructure2 = stringMap["FailedToInit3dNonFragStructure2"];
 	m_sFailedToInit3dNonFragStructure = stringMap["FailedToInit3dNonFragStructure"];
@@ -313,6 +312,56 @@ bool Strings::init (const char* languageCode)
 	m_sTimeBeforeWallTime1 = stringMap["TimeBeforeWallTime1"];
 	m_sTimeBeforeWallTime2 = stringMap["TimeBeforeWallTime2"];
 	m_sUnidentifiedElementSymbol = stringMap["UnidentifiedElementSymbol"];
+	
+	m_sMultipleOptionsError = stringMap["MultipleOptionsError"];
+	m_sNotResumeOrOptFile = stringMap["NotResumeOrOptFile"];
+	m_sBest = stringMap["Best"];
+	m_sStructuresFromIteration = stringMap["StructuresFromIteration"];
+	m_sPopulationOf = stringMap["PopulationOf"];
+	m_sStructureNumber = stringMap["StructureNumber"];
+	m_sOutputWrittenTo = stringMap["OutputWrittenTo"];
+	m_sEnterNumStructuresToOptimizeAt1Time = stringMap["EnterNumStructuresToOptimizeAt1Time"];
+	m_sCreatingOptimizationFile = stringMap["CreatingOptimizationFile"];
+	m_sDirectoryDoesntExistCreateIt = stringMap["DirectoryDoesntExistCreateIt"];
+	m_sCreatedDirectory = stringMap["CreatedDirectory"];
+	m_sErrorCreatingDirectory = stringMap["ErrorCreatingDirectory"];
+	m_sDirectoryNotCreated = stringMap["DirectoryNotCreated"];
+	m_sAnswerYesOrNo = stringMap["AnswerYesOrNo"];
+	m_sNumStructuresInFile = stringMap["NumStructuresInFile"];
+	m_sEnterNumInputFiles = stringMap["EnterNumInputFiles"];
+	m_sAll = stringMap["All"];
+	m_sFilesNotCreated = stringMap["FilesNotCreated"];
+	m_sCreateingNInputFiles = stringMap["CreateingNInputFiles"];
+	m_sDone = stringMap["Done"];
+	m_sEnterNumStructuresToTransfer = stringMap["EnterNumStructuresToTransfer"];
+	m_sChangingNumSavedOptimizedStructures = stringMap["ChangingNumSavedOptimizedStructures"];
+	m_sCreatedOptFile = stringMap["CreatedOptFile"];
+	m_sPleaseCleanDirectory = stringMap["PleaseCleanDirectory"];
+	m_sPleaseNoResOrOptFile = stringMap["PleaseNoResOrOptFile"];
+	m_sFileIsNotOptFile = stringMap["FileIsNotOptFile"];
+	m_sAddFromThisResFile = stringMap["AddFromThisResFile"];
+	m_sEnterResumeFile = stringMap["EnterResumeFile"];
+	m_sNotAResumeFile = stringMap["NotAResumeFile"];
+	m_sNoStructuresLeftToTransfer = stringMap["NoStructuresLeftToTransfer"];
+	m_sTransferedNStructuresToOptFile = stringMap["TransferedNStructuresToOptFile"];
+	m_sUnrecognizedArgOrOption = stringMap["UnrecognizedArgOrOption"];
+	
+	m_sBestSavedStructures = stringMap["BestSavedStructures"];
+	m_sNodesFile = stringMap["NodesFile"];
+	m_sPopulationMustBeNonFragmented = stringMap["PopulationMustBeNonFragmented"];
+	m_sPleaseSpecifyAllOrNoneOfThese = stringMap["PleaseSpecifyAllOrNoneOfThese"];
+	m_sParameter = stringMap["Parameter"];
+	m_sRepulsionAttractionError1 = stringMap["RepulsionAttractionError1"];
+	m_sRepulsionAttractionError2 = stringMap["RepulsionAttractionError2"];
+	m_sGaussianHeaderLineLongerThan80 = stringMap["GaussianHeaderLineLongerThan80"];
+	m_sGaussianFooterLineLongerThan80 = stringMap["GaussianFooterLineLongerThan80"];
+	m_sSpecifyOptForGaussianOptimization = stringMap["SpecifyOptForGaussianOptimization"];
+	m_sSpecifyOptWithBasinHopping = stringMap["SpecifyOptWithBasinHopping"];
+	m_sUseLink1InGaussianFooter = stringMap["UseLink1InGaussianFooter"];
+	m_sUnableToReadFile = stringMap["UnableToReadFile"];
+	m_sPleaseSpecifyOneNode = stringMap["PleaseSpecifyOneNode"];
+	m_sReadingParamsFormInput = stringMap["ReadingParamsFormInput"];
+	m_sUnableToWriteTemporaryResume = stringMap["UnableToWriteTemporaryResume"];
 	
 	m_bLoaded = true;
 	return true;
@@ -335,8 +384,8 @@ void printOption(const char* option, unsigned int optionLength, const char* desc
 	char* word;
 	
 	count = 0;
-	printf(" -%s", option);
-	count += 2 + strlen(option);
+	printf(" %s", option);
+	count += 1 + strlen(option);
 	if (count+1 > optionLength) {
 		optionLength = count + 1;
 	}
@@ -368,11 +417,11 @@ void Strings::printOptions()
 	const unsigned int optionLength = 12;
 	cout << m_sUsage << endl;
 	cout << m_sDesc << endl << endl;
-	printOption("i", optionLength, m_sHOptionI.c_str());
-	printOption("m", optionLength, m_sHOptionM.c_str());
-	printOption("s", optionLength, m_sHOptionS.c_str());
-	printOption("test", optionLength, m_sHOptionTest.c_str());
-	printOption("walltime", optionLength, m_sHOptionWalltime.c_str());
+	printOption(m_sOptionI.c_str(), optionLength, m_sHOptionI.c_str());
+	printOption(m_sOptionM.c_str(), optionLength, m_sHOptionM.c_str());
+	printOption(m_sOptionS.c_str(), optionLength, m_sHOptionS.c_str());
+	printOption(m_sOptionTest.c_str(), optionLength, m_sHOptionTest.c_str());
+	printOption(m_sOptionWalltime.c_str(), optionLength, m_sHOptionWalltime.c_str());
 	cout << endl;
 }
 
@@ -381,15 +430,15 @@ void Strings::printHelperOptions()
 	const unsigned int optionLength = 10;
 	cout << m_sHelpUsage << endl;
 	cout << m_sHelpDesc << endl << endl;
-	printOption("a", optionLength, m_sHOptionHelpA.c_str());
-	printOption("b", optionLength, m_sHOptionHelpB.c_str());
-	printOption("c", optionLength, m_sHOptionHelpC.c_str());
-	printOption("m", optionLength, m_sHOptionHelpM.c_str());
-	printOption("o", optionLength, m_sHOptionHelpO.c_str());
-	printOption("or", optionLength, m_sHOptionHelpOR.c_str());
-	printOption("p", optionLength, m_sHOptionHelpP.c_str());
-	printOption("t", optionLength, m_sHOptionHelpT.c_str());
-	printOption("u", optionLength, m_sHOptionHelpU.c_str());
+	printOption(m_sOptionHelpA.c_str(), optionLength, m_sHOptionHelpA.c_str());
+	printOption(m_sOptionHelpB.c_str(), optionLength, m_sHOptionHelpB.c_str());
+	printOption(m_sOptionHelpC.c_str(), optionLength, m_sHOptionHelpC.c_str());
+	printOption(m_sOptionHelpM.c_str(), optionLength, m_sHOptionHelpM.c_str());
+	printOption(m_sOptionHelpO.c_str(), optionLength, m_sHOptionHelpO.c_str());
+	printOption(m_sOptionHelpOR.c_str(), optionLength, m_sHOptionHelpOR.c_str());
+	printOption(m_sOptionHelpP.c_str(), optionLength, m_sHOptionHelpP.c_str());
+	printOption(m_sOptionHelpT.c_str(), optionLength, m_sHOptionHelpT.c_str());
+	printOption(m_sOptionHelpU.c_str(), optionLength, m_sHOptionHelpU.c_str());
 	cout << endl;
 }
 

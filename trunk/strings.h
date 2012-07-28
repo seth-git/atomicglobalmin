@@ -78,6 +78,7 @@ public:
 	string m_sIndividualBestUpdateDist;
 	string m_sEnforceMinDistOnCopy;
 	string m_sStartVisibilityDistance;
+	string m_sAuto;
 	string m_sVisibilityDistanceIncrease;
 	string m_sUseLocalOptimization;
 	string m_sSimInputVersionLine;
@@ -264,9 +265,7 @@ public:
 	string m_sSeedFileIncompatible2;
 	string m_sSeedFileIncompatible;
 	string m_sSeedFileContainsFragmented;
-	string m_sStructureIsFragmented1;
-	string m_sStructureIsFragmented2;
-	string m_sStructureIsFragmented3;
+	string m_sStructureIsFragmented;
 	string m_sFailedToInit3dNonFragStructure1;
 	string m_sFailedToInit3dNonFragStructure2;
 	string m_sFailedToInit3dNonFragStructure;
@@ -281,6 +280,56 @@ public:
 	string m_sTimeBeforeWallTime1;
 	string m_sTimeBeforeWallTime2;
 	string m_sUnidentifiedElementSymbol;
+	
+	string m_sMultipleOptionsError;
+	string m_sNotResumeOrOptFile;
+	string m_sBest;
+	string m_sStructuresFromIteration;
+	string m_sPopulationOf;
+	string m_sStructureNumber;
+	string m_sOutputWrittenTo;
+	string m_sEnterNumStructuresToOptimizeAt1Time;
+	string m_sCreatingOptimizationFile;
+	string m_sDirectoryDoesntExistCreateIt;
+	string m_sCreatedDirectory;
+	string m_sErrorCreatingDirectory;
+	string m_sDirectoryNotCreated;
+	string m_sAnswerYesOrNo;
+	string m_sNumStructuresInFile;
+	string m_sEnterNumInputFiles;
+	string m_sAll;
+	string m_sFilesNotCreated;
+	string m_sCreateingNInputFiles;
+	string m_sDone;
+	string m_sEnterNumStructuresToTransfer;
+	string m_sChangingNumSavedOptimizedStructures;
+	string m_sCreatedOptFile;
+	string m_sPleaseCleanDirectory;
+	string m_sPleaseNoResOrOptFile;
+	string m_sFileIsNotOptFile;
+	string m_sAddFromThisResFile;
+	string m_sEnterResumeFile;
+	string m_sNotAResumeFile;
+	string m_sNoStructuresLeftToTransfer;
+	string m_sTransferedNStructuresToOptFile;
+	string m_sUnrecognizedArgOrOption;
+	
+	string m_sBestSavedStructures;
+	string m_sNodesFile;
+	string m_sPopulationMustBeNonFragmented;
+	string m_sPleaseSpecifyAllOrNoneOfThese;
+	string m_sParameter;
+	string m_sRepulsionAttractionError1;
+	string m_sRepulsionAttractionError2;
+	string m_sGaussianHeaderLineLongerThan80;
+	string m_sGaussianFooterLineLongerThan80;
+	string m_sSpecifyOptForGaussianOptimization;
+	string m_sSpecifyOptWithBasinHopping;
+	string m_sUseLink1InGaussianFooter;
+	string m_sUnableToReadFile;
+	string m_sPleaseSpecifyOneNode;
+	string m_sReadingParamsFormInput;
+	string m_sUnableToWriteTemporaryResume;
 
 private:
 	static map<string,Strings> s_instances;
