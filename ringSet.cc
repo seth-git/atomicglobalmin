@@ -46,8 +46,9 @@ void RingSet::addRing(vector<int> &ringAtomIndices)
 
 void RingSet::print(Atom *atoms)
 {
+	const Strings* messages = Strings::instance();
 	for (int i = 0; i < (signed int)m_rings.size(); ++i) {
-		cout << "Ring " << (i+1) << ": ";
+		cout << messages->m_sRing << " " << (i+1) << ": ";
 		m_rings[i]->print(atoms);
 	}
 }

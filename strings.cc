@@ -16,12 +16,12 @@ bool Strings::init()
 	return s_instances[s_sDefaultLanguageCode].init(s_sDefaultLanguageCode.c_str());
 }
 
-Strings* Strings::instance()
+const Strings* Strings::instance()
 {
 	return &s_instances[s_sDefaultLanguageCode];
 }
 
-Strings* Strings::instance(string languageCode)
+const Strings* Strings::instance(string languageCode)
 {
 	if (!s_instances[languageCode].m_bLoaded)
 		if (!s_instances[languageCode].init(languageCode.c_str()))
@@ -56,6 +56,9 @@ bool Strings::init (const char* languageCode)
 				duplicates = true;
 			}
 			stringMap[name] = str;
+			if (name[0] == 'n') {
+				stringMap[name].append("\n");
+			}
 		}
 	}
 	infile.close();
@@ -311,7 +314,6 @@ bool Strings::init (const char* languageCode)
 	m_sCouldntCreateScratchDirectory = stringMap["CouldntCreateScratchDirectory"];
 	m_sTimeBeforeWallTime1 = stringMap["TimeBeforeWallTime1"];
 	m_sTimeBeforeWallTime2 = stringMap["TimeBeforeWallTime2"];
-	m_sUnidentifiedElementSymbol = stringMap["UnidentifiedElementSymbol"];
 	
 	m_sMultipleOptionsError = stringMap["MultipleOptionsError"];
 	m_sNotResumeOrOptFile = stringMap["NotResumeOrOptFile"];
@@ -362,11 +364,32 @@ bool Strings::init (const char* languageCode)
 	m_sPleaseSpecifyOneNode = stringMap["PleaseSpecifyOneNode"];
 	m_sReadingParamsFormInput = stringMap["ReadingParamsFormInput"];
 	m_sUnableToWriteTemporaryResume = stringMap["UnableToWriteTemporaryResume"];
+	m_sLineMissingInInputFile = stringMap["LineMissingInInputFile"];
+	m_sLineShouldBeBlank = stringMap["LineShouldBeBlank"];
+	m_sErrorReadingParameter = stringMap["ErrorReadingParameter"];
+	m_sUnidentifiedElementSymbol = stringMap["UnidentifiedElementSymbol"];
+	
+	m_snMoleculeNumber = stringMap["nMoleculeNumber"];
+	m_snPleaseAddBondInfo = stringMap["nPleaseAddBondInfo"];
+	m_snBondInfoFormat = stringMap["nBondInfoFormat"];
+	m_snNotConnected1 = stringMap["nNotConnected1"];
+	m_snNotConnected2 = stringMap["nNotConnected2"];
+	m_snNotConnected3 = stringMap["nNotConnected3"];
+	m_snBondHeader = stringMap["nBondHeader"];
+	m_snBondLine = stringMap["nBondLine"];
+	m_sSingleBond = stringMap["SingleBond"];
+	m_sDoubleBond = stringMap["DoubleBond"];
+	m_sTripleBond = stringMap["TripleBond"];
+	m_snBondTotals = stringMap["nBondTotals"];
+	m_snNoRingsFound = stringMap["nNoRingsFound"];
+	m_snFoundNRings = stringMap["nFoundNRings"];
+	m_sRing = stringMap["Ring"];
+	m_snCheckBonding1 = stringMap["nCheckBonding1"];
+	m_snCheckBonding2 = stringMap["nCheckBonding2"];
 	
 	m_bLoaded = true;
 	return true;
 }
-
 
 void printPadding(unsigned int characters) {
 	for (unsigned int i = 0; i < characters; ++i) {
@@ -412,7 +435,7 @@ void printOption(const char* option, unsigned int optionLength, const char* desc
 	printf("\n");
 }
 
-void Strings::printOptions()
+void Strings::printOptions() const
 {
 	const unsigned int optionLength = 12;
 	cout << m_sUsage << endl;
@@ -425,7 +448,7 @@ void Strings::printOptions()
 	cout << endl;
 }
 
-void Strings::printHelperOptions()
+void Strings::printHelperOptions() const
 {
 	const unsigned int optionLength = 10;
 	cout << m_sHelpUsage << endl;
@@ -440,5 +463,13 @@ void Strings::printHelperOptions()
 	printOption(m_sOptionHelpT.c_str(), optionLength, m_sHOptionHelpT.c_str());
 	printOption(m_sOptionHelpU.c_str(), optionLength, m_sHOptionHelpU.c_str());
 	cout << endl;
+}
+
+const char *Strings::getYesNoParam(bool yesNoParam) const
+{
+	if (yesNoParam)
+		return m_sYes.c_str();
+	else
+		return m_sNo.c_str();
 }
 

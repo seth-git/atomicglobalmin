@@ -28,15 +28,17 @@ class Strings
 {
 public:
 	static bool init();
-	static Strings* instance();
-	static Strings* instance(string languageCode);
+	static const Strings* instance();
+	static const Strings* instance(string languageCode);
 	static const string s_sDefaultLanguageCode;
 	
 	Strings () { m_bLoaded = false; }
 	bool init(const char* languageCode);
 
-	void printOptions();
-	void printHelperOptions();
+	void printOptions() const;
+	void printHelperOptions() const;
+	
+	const char *getYesNoParam(bool yesNoParam) const;
 
 	string m_sLanguageCode;
 
@@ -279,7 +281,6 @@ public:
 	string m_sCouldntCreateScratchDirectory;
 	string m_sTimeBeforeWallTime1;
 	string m_sTimeBeforeWallTime2;
-	string m_sUnidentifiedElementSymbol;
 	
 	string m_sMultipleOptionsError;
 	string m_sNotResumeOrOptFile;
@@ -330,6 +331,29 @@ public:
 	string m_sPleaseSpecifyOneNode;
 	string m_sReadingParamsFormInput;
 	string m_sUnableToWriteTemporaryResume;
+	string m_sLineMissingInInputFile;
+	string m_sLineShouldBeBlank;
+	string m_sErrorReadingParameter;
+	string m_sUnidentifiedElementSymbol;
+	
+	string m_snMoleculeNumber;
+	string m_snPleaseAddBondInfo;
+	string m_snBondInfoFormat;
+	string m_snNotConnected1;
+	string m_snNotConnected2;
+	string m_snNotConnected3;
+	string m_snBondHeader;
+	string m_snBondLine;
+	string m_sSingleBond;
+	string m_sDoubleBond;
+	string m_sTripleBond;
+	string m_snBondTotals;
+	string m_snNoRingsFound;
+	string m_snFoundNRings;
+	string m_sRing;
+	string m_snCheckBonding1;
+	string m_snCheckBonding2;
+
 
 private:
 	static map<string,Strings> s_instances;
