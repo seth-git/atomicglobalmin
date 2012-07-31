@@ -1,6 +1,6 @@
 #pso.make a makefile
-CXXFLAGS=-g -Wall
-CFLAGS=-g
+CXXFLAGS=-g -Wall -Wno-format-security
+CFLAGS=-g -Wno-format-security
 
 pso: helper unit main.cc main.h myMpi.cc myMpi.h energy.o strings.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o typedef.h
 	mpiCC $(CXXFLAGS) -o pso main.cc myMpi.cc energy.o strings.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o

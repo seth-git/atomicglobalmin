@@ -16,6 +16,7 @@
 #include <cmath>
 #include <vector>
 #include "ring.h"
+#include "strings.h"
 
 using namespace std;
 

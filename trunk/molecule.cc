@@ -147,9 +147,9 @@ bool Molecule::findBonds()
 			if ((Bond::singleMinDist[m_atoms[i].m_iAtomicNumber][m_atoms[j].m_iAtomicNumber] == 0) &&
 			    (Bond::doubleMinDist[m_atoms[i].m_iAtomicNumber][m_atoms[j].m_iAtomicNumber] == 0) &&
 			    (Bond::tripleMinDist[m_atoms[i].m_iAtomicNumber][m_atoms[j].m_iAtomicNumber] == 0)) {
-				cout << "Please add bond information for atoms of atomic number " << m_atoms[i].m_iAtomicNumber
-                                     << " and " << m_atoms[j].m_iAtomicNumber << " to the file: bondLengths.txt" << endl;
-				cout << "The format is: atomic symbol,atomic symbol,bond type (s for single, d for double, t for triple),minimum distance-maximum distance in angstroms." << endl;
+				const Strings* messages = Strings::instance();
+				printf(messages->m_snPleaseAddBondInfo.c_str(), m_atoms[i].m_iAtomicNumber, m_atoms[j].m_iAtomicNumber);
+				printf(messages->m_snBondInfoFormat.c_str());
 				return false;
 			}
 			diffX = m_atoms[i].m_globalPoint.x - m_atoms[j].m_globalPoint.x;
@@ -219,10 +219,11 @@ bool Molecule::checkConnectivity()
 	if (!isCompletelyConnected(NULL, NULL)) {
 		printBondInfo();
 		cout << endl;
-		cout << "This molecule does not have a path along bonds from one atom to every other atom." << endl;
-		cout << "Either this molecule is really more than one molecule, or bonds have not been identified correctly." << endl;
-		cout << "If bonds have not been identified correctly, update the bond length criteria in the file: bondLengths.txt." << endl;
-		cout << "The format is: atomic symbol,atomic symbol,bond type (s for single, d for double, t for triple),minimum distance-maximum distance in angstroms." << endl;
+		const Strings* messages = Strings::instance();
+		printf(messages->m_snNotConnected1.c_str());
+		printf(messages->m_snNotConnected2.c_str());
+		printf(messages->m_snNotConnected3.c_str());
+		printf(messages->m_snBondInfoFormat.c_str());
 		return false;
 	}
 	return true;
@@ -320,35 +321,33 @@ void Molecule::findRings(vector<int> *path)
 	}
 }
 
-const char *Molecule::printYesNoParam(bool yesNoParam)
-{
-        if (yesNoParam)
-                return "yes";
-        else
-                return "no";
-}
-
 void Molecule::printBondInfo()
 {
 	int iSingleBonds = 0;
 	int iDoubleBonds = 0;
 	int iTripleBonds = 0;
 	int iRingBonds = 0;
+	const Strings* messages = Strings::instance();
+	const char* bondType;
 	
-	cout << "Bond #   Atom 1   Atom 2   Atom 1 Symbol   Atom 2 Symbol   Bond Type   On Ring   Rotatable Bond" << endl;
+	printf(messages->m_snBondHeader.c_str());
 	for (int i = 0; i < (signed int)m_bonds.size(); ++i) {
-		printf("%6d   %6d   %6d   %13s   %13s   ", (i+1),
-		       (m_bonds[i]->m_iAtom1+1), (m_bonds[i]->m_iAtom2+1),
-		       Atom::s_rgAtomcSymbols[m_atoms[m_bonds[i]->m_iAtom1].m_iAtomicNumber].c_str(),
-		       Atom::s_rgAtomcSymbols[m_atoms[m_bonds[i]->m_iAtom2].m_iAtomicNumber].c_str());
 		if (m_bonds[i]->m_bSingle)
-			printf("%9s   ", "single");
+			bondType = messages->m_sSingleBond.c_str();
 		else if (m_bonds[i]->m_bDouble)
-			printf("%9s   ", "double");
+			bondType = messages->m_sDoubleBond.c_str();
 		else
-			printf("%9s   ", "triple");
-		printf("%7s   ", printYesNoParam(m_bonds[i]->m_bOnRing));
-		printf("%14s\n", printYesNoParam(m_bonds[i]->m_bRotatable));
+			bondType = messages->m_sTripleBond.c_str();
+		printf(messages->m_snBondLine.c_str()
+		      ,i+1
+		      ,m_bonds[i]->m_iAtom1+1
+		      ,m_bonds[i]->m_iAtom2+1
+		      ,Atom::s_rgAtomcSymbols[m_atoms[m_bonds[i]->m_iAtom1].m_iAtomicNumber].c_str()
+		      ,Atom::s_rgAtomcSymbols[m_atoms[m_bonds[i]->m_iAtom2].m_iAtomicNumber].c_str()
+		      ,bondType
+		      ,messages->getYesNoParam(m_bonds[i]->m_bOnRing)
+		      ,messages->getYesNoParam(m_bonds[i]->m_bRotatable)
+		);
 	}
 	for (int i = 0; i < (signed int)m_bonds.size(); ++i) {
 		if (m_bonds[i]->m_bSingle)
@@ -360,13 +359,13 @@ void Molecule::printBondInfo()
 		if (m_bonds[i]->m_bOnRing)
 			++iRingBonds;
 	}
-	cout << "Total Bonds: " << m_bonds.size() << ", Single Bonds: " << iSingleBonds << ", Double Bonds: " << iDoubleBonds
-	     << ", Triple Bonds: " << iTripleBonds << ", Ring Bonds: " << iRingBonds << ", Rotatable Bonds: " << m_rotatableBonds.size() << endl << endl; 
+	printf(messages->m_snBondTotals.c_str(), m_bonds.size(), iSingleBonds, iDoubleBonds, iTripleBonds, iRingBonds, m_rotatableBonds.size());
+	cout << endl;
 	
 	if (m_ringSet.m_rings.size() == 0)
-		cout << "No Rings found." << endl;
+		printf(messages->m_snNoRingsFound.c_str());
 	else {
-		cout << "Found " << m_ringSet.m_rings.size() << " ring(s):" << endl;
+		printf(messages->m_snFoundNRings.c_str(), m_ringSet.m_rings.size());
 		m_ringSet.print(m_atoms);
 		cout << endl;
 	}

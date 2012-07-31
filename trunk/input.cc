@@ -360,10 +360,7 @@ bool Input::getYesNoParam(const char *fileLine, const string& parameterNameStrin
 // Returns: yes or no
 const char *Input::printYesNoParam(bool yesNoParam)
 {
-	if (yesNoParam)
-		return m_messages->m_sYes.c_str();
-	else
-		return m_messages->m_sNo.c_str();
+	return m_messages->getYesNoParam(yesNoParam);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -446,14 +443,16 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 	lineNumber = 1;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	
 	if (getStringParam(fileLine, language, m_sLanguageCode)) {
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 	} else {
@@ -513,24 +512,28 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (strlen(fileLine) != 0)
 	{
-		cout << "Line " << lineNumber << " should be blank in the input file." << endl;
+		printf(m_messagesDL->m_sLineShouldBeBlank.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (!getStringParam(fileLine, m_messages->m_sEnergyFunction, temp))
 	{
-		printf("Error reading the parameter '%1$s' on line %2$d in the input file.\n", m_messages->m_sEnergyFunction.c_str(), lineNumber);
+		printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sEnergyFunction.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
     
@@ -554,13 +557,14 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (!getStringParam(fileLine, m_messages->m_sPathToEnergyFiles, m_sPathToEnergyFiles))
 	{
-		cout << "Error reading the parameter '" << m_messages->m_sPathToEnergyFiles << "' on line "
-		     << lineNumber << " in the input file." << endl;
+		printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sPathToEnergyFiles.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	checkDirectoryOrFileName(m_sPathToEnergyFiles);
@@ -578,13 +582,14 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (!getStringParam(fileLine, m_messages->m_sPathToScratch, m_sPathToScratch))
 	{
-		cout << "Error reading the parameter '" << m_messages->m_sPathToScratch << "' on line "
-		     << lineNumber << " in the input file." << endl;
+		printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sPathToScratch.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	checkDirectoryOrFileName(m_sPathToScratch);
@@ -592,13 +597,14 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (!getFloatParam(fileLine, m_messages->m_sBoxLength, m_boxDimensions.x))
 	{
-		cout << "Error reading the parameter '" << m_messages->m_sBoxLength << "' on line "
-		     << lineNumber << " in the input file." << endl;
+		printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sBoxLength.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	m_boxDimensions.y = m_boxDimensions.x;
@@ -608,78 +614,84 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (!getIntParam(fileLine, m_messages->m_sLinearSructures, m_iLinearSructures))
 	{
-		cout << "Error reading the parameter '" << m_messages->m_sLinearSructures << "' on line " << lineNumber << 
-			" in the input file." << endl;
+		printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sLinearSructures.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (!getFloatParam(fileLine, m_messages->m_sLinearBoxHeight, m_fLinearBoxHeight))
 	{
-		cout << "Error reading the parameter '" << m_messages->m_sLinearBoxHeight << "' on line "
-		     << lineNumber << " in the input file." << endl;
+		printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sLinearBoxHeight.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (!getIntParam(fileLine, m_messages->m_sPlanarStructures, m_iPlanarStructures))
 	{
-		cout << "Error reading the parameter '" << m_messages->m_sPlanarStructures << "' on line " << lineNumber << 
-			" in the input file." << endl;
+		printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sPlanarStructures.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (!getIntParam(fileLine, m_messages->m_s3DStructures, m_i3DStructures))
 	{
-		cout << "Error reading the parameter '" << m_messages->m_s3DStructures << "' on line " << lineNumber << 
-			" in the input file." << endl;
+		printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_s3DStructures.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
     
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (!getIntParam(fileLine, m_messages->m_s3DStructuresWithMaxDist, m_i3DStructuresWithMaxDist))
 	{
-		cout << "Error reading the parameter '" << m_messages->m_s3DStructuresWithMaxDist << "' on line " << lineNumber << 
-			" in the input file." << endl;
+		printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_s3DStructuresWithMaxDist.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
     
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (!getIntParam(fileLine, m_messages->m_s3DNonFragStructuresWithMaxDist, m_i3DNonFragStructuresWithMaxDist))
 	{
-		cout << "Error reading the parameter '" << m_messages->m_s3DNonFragStructuresWithMaxDist << "' on line " << lineNumber << 
-			" in the input file." << endl;
+		printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_s3DNonFragStructuresWithMaxDist.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	
@@ -695,26 +707,28 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (!getFloatParam(fileLine, m_messages->m_sMinGeneralAtomDistance, m_fGeneralMinAtomDistance))
 	{
-		cout << "Error reading the parameter '" << m_messages->m_sMinGeneralAtomDistance << "' on line "
-		     << lineNumber << " in the input file." << endl;
+		printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sMinGeneralAtomDistance.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (strncmp(fileLine,m_messages->m_sMinAtomDistance.c_str(),m_messages->m_sMinAtomDistance.length()) != 0)
 	{
-		cout << "Error reading the parameter '" << m_messages->m_sMinAtomDistance << "' on line "
-		     << lineNumber << " in the input file." << endl;
+		printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sMinAtomDistance.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	
@@ -725,7 +739,8 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (strncmp(fileLine,m_messages->m_sMaxAtomDistance.c_str(),m_messages->m_sMaxAtomDistance.length()) == 0)
@@ -737,8 +752,8 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 	
 	if (!getFloatParam(fileLine, m_messages->m_sMaxAtomDistance, m_fMaxAtomDistance))
 	{
-		cout << "Error reading the parameter '" << m_messages->m_sMaxAtomDistance << "' on line "
-		     << lineNumber << " in the input file." << endl;
+		printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sMaxAtomDistance.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 
@@ -746,12 +761,14 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (strlen(fileLine) != 0)
 	{
-		cout << "Line " << lineNumber << " should be blank in the input file." << endl;
+		printf(m_messagesDL->m_sLineShouldBeBlank.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	
@@ -759,12 +776,13 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getStringParam(fileLine, m_messages->m_sSimulatedAnnealingParameters, temp))
 		{
-			cout << "Error reading '" << m_messages->m_sParticleSwarmParameters << ":' on line "
+			cout << "Error reading '" << m_messages->m_sSimulatedAnnealingParameters << ":' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -772,13 +790,14 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getYesNoParam(fileLine, m_messages->m_sPerformNonFragSearch, m_bPerformNonFragSearch))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sPerformNonFragSearch << "' on line " << lineNumber << 
-				" in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sPerformNonFragSearch.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 	
@@ -793,26 +812,28 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getYesNoParam(fileLine, m_messages->m_sPerformBasinHopping, m_bPerformBasinHopping))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sPerformBasinHopping << "' on line " << lineNumber << 
-				" in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sPerformBasinHopping.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getYesNoParam(fileLine, m_messages->m_sTransitionStateSearch, m_bTransitionStateSearch))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sTransitionStateSearch << "' on line " << lineNumber << 
-				" in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sTransitionStateSearch.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 	
@@ -824,13 +845,14 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getStringParam(fileLine, m_messages->m_sStartingTemperature, temp))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sStartingTemperature << "' on line " << lineNumber << 
-				" in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sStartingTemperature.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (temp.find("%") != string::npos) { // if we found a % sign
@@ -844,13 +866,14 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getFloatParam(fileLine, m_messages->m_sBoltzmanConstant, m_fBoltzmanConstant))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sBoltzmanConstant << "' on line " << lineNumber << 
-				" in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sBoltzmanConstant.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (version == "1.0")
@@ -859,13 +882,14 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getIntParam(fileLine, m_messages->m_sNumIterationsBeforeDecreasingTemp, m_iNumIterationsBeforeDecreasingTemp))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sNumIterationsBeforeDecreasingTemp << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sNumIterationsBeforeDecreasingTemp.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (m_iNumIterationsBeforeDecreasingTemp < 1)
@@ -882,13 +906,14 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getFloatParam(fileLine, m_messages->m_sAcceptanceRatio, m_fAcceptanceRatio))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sAcceptanceRatio << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sAcceptanceRatio.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		m_fAcceptanceRatio /= 100;
@@ -896,39 +921,42 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getFloatParam(fileLine, m_messages->m_sQuenchingFactor, m_fQuenchingFactor))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sQuenchingFactor << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sQuenchingFactor.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getFloatParam(fileLine, m_messages->m_sMinTemperatureToStop, m_fMinTemperatureToStop))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sMinTemperatureToStop << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sMinTemperatureToStop.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getFloatParam(fileLine, m_messages->m_sMinAcceptedTransitions, m_fMinAcceptedTransitions))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sMinAcceptedTransitions << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sMinAcceptedTransitions.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		m_fMinAcceptedTransitions /= 100;
@@ -936,26 +964,28 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getIntParam(fileLine, m_messages->m_sMaxIterations, m_iMaxIterations))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sMaxIterations << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sMaxIterations.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 	
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getFloatParam(fileLine, m_messages->m_sNumPerterbations, m_fNumPerterbations))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sNumPerterbations << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sNumPerterbations.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!m_bResumeFileRead && !m_bOptimizationFileRead)
@@ -964,39 +994,42 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getFloatParam(fileLine, m_messages->m_sStartCoordinatePerturbation, m_fStartCoordinatePerturbation))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sStartCoordinatePerturbation << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sStartCoordinatePerturbation.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getFloatParam(fileLine, m_messages->m_sMinCoordinatePerturbation, m_fMinCoordinatePerturbation))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sMinCoordinatePerturbation << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sMinCoordinatePerturbation.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getFloatParam(fileLine, m_messages->m_sStartAnglePerturbation, m_fStartAnglePerturbation))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sStartAnglePerturbation << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sStartAnglePerturbation.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		m_fStartAnglePerturbation *= DEG_TO_RAD;
@@ -1004,13 +1037,14 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getFloatParam(fileLine, m_messages->m_sMinAnglePerturbation, m_fMinAnglePerturbation))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sMinAnglePerturbation << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sMinAnglePerturbation.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		m_fMinAnglePerturbation *= DEG_TO_RAD;
@@ -1018,7 +1052,8 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getStringParam(fileLine, m_messages->m_sParticleSwarmParameters, temp))
@@ -1031,104 +1066,112 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getFloatParam(fileLine, m_messages->m_sStartCoordInertia, m_fStartCoordInertia))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sStartCoordInertia << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sStartCoordInertia.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getFloatParam(fileLine, m_messages->m_sEndCoordInertia, m_fEndCoordInertia))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sEndCoordInertia << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sEndCoordInertia.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getIntParam(fileLine, m_messages->m_sReachEndInertiaAtIteration, m_iReachEndInertiaAtIteration))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sReachEndInertiaAtIteration << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sReachEndInertiaAtIteration.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getFloatParam(fileLine, m_messages->m_sCoordIndividualMinimumAttraction, m_fCoordIndividualMinimumAttraction))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sCoordIndividualMinimumAttraction << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sCoordIndividualMinimumAttraction.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getFloatParam(fileLine, m_messages->m_sCoordPopulationMinimumAttraction, m_fCoordPopulationMinimumAttraction))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sCoordPopulationMinimumAttraction << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sCoordPopulationMinimumAttraction.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getFloatParam(fileLine, m_messages->m_sCoordMaximumVelocity, m_fCoordMaximumVelocity))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sCoordMaximumVelocity << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sCoordMaximumVelocity.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getFloatParam(fileLine, m_messages->m_sStartAngleInertia, m_fStartAngleInertia))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sStartAngleInertia << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sStartAngleInertia.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getFloatParam(fileLine, m_messages->m_sEndAngleInertia, m_fEndAngleInertia))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sEndAngleInertia << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sEndAngleInertia.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		
@@ -1145,13 +1188,14 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getFloatParam(fileLine, m_messages->m_sAngleIndividualMinimumAttraction, m_fAngleIndividualMinimumAttraction))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sAngleIndividualMinimumAttraction << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sAngleIndividualMinimumAttraction.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		m_fAngleIndividualMinimumAttraction *= DEG_TO_RAD;
@@ -1159,13 +1203,14 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getFloatParam(fileLine, m_messages->m_sAnglePopulationMinimumAttraction, m_fAnglePopulationMinimumAttraction))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sAnglePopulationMinimumAttraction << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sAnglePopulationMinimumAttraction.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		m_fAnglePopulationMinimumAttraction *= DEG_TO_RAD;
@@ -1173,13 +1218,14 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getFloatParam(fileLine, m_messages->m_sAngleMaximumVelocity, m_fAngleMaximumVelocity))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sAngleMaximumVelocity << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sAngleMaximumVelocity.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		m_fAngleMaximumVelocity *= DEG_TO_RAD;
@@ -1187,13 +1233,14 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getStringParam(fileLine, m_messages->m_sStartVisibilityDistance, temp))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sStartVisibilityDistance << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sStartVisibilityDistance.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		m_bStartingVisibilityAuto = (temp == m_messages->m_sAuto);
@@ -1208,52 +1255,56 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getFloatParam(fileLine, m_messages->m_sVisibilityDistanceIncrease, m_fVisibilityDistanceIncrease))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sVisibilityDistanceIncrease << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sVisibilityDistanceIncrease.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getFloatParam(fileLine, m_messages->m_sSwitchToRepulsionWhenDiversityIs, m_fSwitchToRepulsionWhenDiversityIs))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sSwitchToRepulsionWhenDiversityIs << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sSwitchToRepulsionWhenDiversityIs.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getIntParam(fileLine, m_messages->m_sSwitchToRepulsionWhenNoProgress, m_iSwitchToRepulsionWhenNoProgress))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sSwitchToRepulsionWhenNoProgress << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sSwitchToRepulsionWhenNoProgress.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getFloatParam(fileLine, m_messages->m_sSwitchToAttractionWhenDiversityIs, m_fSwitchToAttractionWhenDiversityIs))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sSwitchToAttractionWhenDiversityIs << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sSwitchToAttractionWhenDiversityIs.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 
@@ -1271,64 +1322,69 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getFloatParam(fileLine, m_messages->m_sIndividualBestUpdateDist, m_fIndividualBestUpdateDist))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sIndividualBestUpdateDist << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sIndividualBestUpdateDist.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getIntParam(fileLine, m_messages->m_sMaxIterations, m_iMaxIterations))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sMaxIterations << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sMaxIterations.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getYesNoParam(fileLine, m_messages->m_sEnforceMinDistOnCopy, m_bEnforceMinDistOnCopy))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sEnforceMinDistOnCopy << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sEnforceMinDistOnCopy.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getYesNoParam(fileLine, m_messages->m_sUseLocalOptimization, m_bUseLocalOptimization))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sUseLocalOptimization << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sUseLocalOptimization.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 	} else if (m_iAlgorithmToDo == GENETIC_ALGORITHM) {
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getStringParam(fileLine, m_messages->m_sGeneticAlgorithmParameters, temp))
 		{
-			cout << "Error reading '" << m_messages->m_sParticleSwarmParameters << ":' on line "
+			cout << "Error reading '" << m_messages->m_sGeneticAlgorithmParameters << ":' on line "
 			     << lineNumber << " in the input file." << endl;
 			return false;
 		}
@@ -1336,26 +1392,28 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getYesNoParam(fileLine, m_messages->m_sUseLocalOptimization, m_bUseLocalOptimization))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sUseLocalOptimization << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sUseLocalOptimization.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 	
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getIntParam(fileLine, m_messages->m_sMaxIterations, m_iMaxIterations))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sMaxIterations << "' on line "
-			     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sMaxIterations.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 	}
@@ -1364,51 +1422,56 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (strlen(fileLine) != 0)
 	{
-		cout << "Line " << lineNumber << " should be blank in the input file." << endl;
+		printf(m_messagesDL->m_sLineShouldBeBlank.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (!getIntParam(fileLine, m_messages->m_sNumberOfBestStructuresToSave, m_iNumberOfBestStructuresToSave))
 	{
-		cout << "Error reading the parameter '" << m_messages->m_sNumberOfBestStructuresToSave << "' on line "
-		     << lineNumber << " in the input file." << endl;
+		printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sNumberOfBestStructuresToSave.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (!getFloatParam(fileLine, m_messages->m_sMinDistnaceBetweenSameMoleculeSets, m_fMinDistnaceBetweenSameMoleculeSets))
 	{
-		cout << "Error reading the parameter '" << m_messages->m_sMinDistnaceBetweenSameMoleculeSets << "' on line "
-		     << lineNumber << " in the input file." << endl;
+		printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sMinDistnaceBetweenSameMoleculeSets.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (!getIntParam(fileLine, m_messages->m_sNumberOfLogFilesToSave, m_iNumberOfLogFilesToSave))
 	{
-		cout << "Error reading the parameter '" << m_messages->m_sNumberOfLogFilesToSave << "' on line "
-		     << lineNumber << " in the input file." << endl;
+		printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sNumberOfLogFilesToSave.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (m_pSelectedEnergyProgram->m_iNumOutputFileTypes == 0)
@@ -1429,39 +1492,42 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (!getStringParam(fileLine, m_messages->m_sOutputFileName, m_sOutputFileName))
 	{
-		cout << "Error reading the parameter '" << m_messages->m_sOutputFileName << "' on line "
-		     << lineNumber << " in the input file." << endl;
+		printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sOutputFileName.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (!getStringParam(fileLine, m_messages->m_sResumeFileName, m_sResumeFileName))
 	{
-		cout << "Error reading the parameter '" << m_messages->m_sResumeFileName << "' on line "
-		     << lineNumber << " in the input file." << endl;
+		printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sResumeFileName.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (!getIntParam(fileLine, m_messages->m_sResumeFileNumIterations, m_iResumeFileNumIterations))
 	{
-		cout << "Error reading the parameter '" << m_messages->m_sResumeFileNumIterations << "' on line "
-		     << lineNumber << " in the input file." << endl;
+		printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sResumeFileNumIterations.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (m_iResumeFileNumIterations <= 0)
@@ -1470,52 +1536,56 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (!getIntParam(fileLine, m_messages->m_sPrintSummaryInfoEveryNIterations, m_iPrintSummaryInfoEveryNIterations))
 	{
-		cout << "Error reading the parameter '" << m_messages->m_sPrintSummaryInfoEveryNIterations << "' on line "
-		     << lineNumber << " in the input file." << endl;
+		printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sPrintSummaryInfoEveryNIterations.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (!getIntParam(fileLine, m_messages->m_sCharge, m_iCharge))
 	{
-		cout << "Error reading the parameter '" << m_messages->m_sCharge << "' on line " << lineNumber << 
-			" in the input file." << endl;
+		printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sCharge.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (!getIntParam(fileLine, m_messages->m_sMultiplicity, m_iMultiplicity))
 	{
-		cout << "Error reading the parameter '" << m_messages->m_sMultiplicity << "' on line " << lineNumber << 
-			" in the input file." << endl;
+		printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sMultiplicity.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (!getStringParam(fileLine, m_messages->m_sEnergyFileHeader, temp))
 	{
-		cout << "Error reading the parameter '" << m_messages->m_sEnergyFileHeader << "' on line "
-		     << lineNumber << " in the input file." << endl;
+		printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sEnergyFileHeader.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	
@@ -1525,7 +1595,8 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		length = strlen(fileLine);
@@ -1543,13 +1614,14 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (!getStringParam(fileLine, m_messages->m_sEnergyFileFooter, temp))
 	{
-		cout << "Error reading the parameter '" << m_messages->m_sEnergyFileFooter << "' on line "
-		     << lineNumber << " in the input file." << endl;
+		printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sEnergyFileFooter.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	
@@ -1559,7 +1631,8 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		length = strlen(fileLine);
@@ -1606,13 +1679,14 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (!getIntParam(fileLine, m_messages->m_sNumStructureTypes, m_iNumStructureTypes))
 	{
-		cout << "Error reading the parameter '" << m_messages->m_sNumStructureTypes << "' on line " << lineNumber << 
-			" in the input file." << endl;
+		printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sNumStructureTypes.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	
@@ -1626,12 +1700,14 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 	++lineNumber;
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
-		cout << "Line " << lineNumber << " is missing in the input file." << endl;
+		printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	if (strlen(fileLine) != 0)
 	{
-		cout << "Line " << lineNumber << " should be blank in the input file." << endl;
+		printf(m_messagesDL->m_sLineShouldBeBlank.c_str(), lineNumber);
+		cout << endl;
 		return false;
 	}
 	
@@ -1640,26 +1716,28 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getIntParam(fileLine, m_messages->m_sNumStructuresOfEachType, m_iNumStructuresOfEachType[i]))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sNumStructuresOfEachType << "' on line "
-	                     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sNumStructuresOfEachType.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		
 		++lineNumber;
 		if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 		{
-			cout << "Line " << lineNumber << " is missing in the input file." << endl;
+			printf(m_messagesDL->m_sLineMissingInInputFile.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		if (!getStringParam(fileLine, m_messages->m_sStructureFormatOfThisType, m_sStructureFormats[i]))
 		{
-			cout << "Error reading the parameter '" << m_messages->m_sStructureFormatOfThisType << "' on line "
-	                     << lineNumber << " in the input file." << endl;
+			printf(m_messagesDL->m_sErrorReadingParameter.c_str(), m_messages->m_sStructureFormatOfThisType.c_str(), lineNumber);
+			cout << endl;
 			return false;
 		}
 		
@@ -2559,7 +2637,7 @@ bool Input::printBondInfo()
 	
 	j = 0;
 	for (i = 0; i < m_iNumStructureTypes; ++i) {
-		cout << "Molecule No.: " << (i+1) << endl;
+		printf(m_messagesDL->m_snMoleculeNumber.c_str(), (i+1));
 		if (!molecules[j].findBonds())
 			return false;
 		if (!molecules[j].checkConnectivity())
@@ -2567,9 +2645,9 @@ bool Input::printBondInfo()
 		molecules[j].printBondInfo();
 		j += m_iNumStructuresOfEachType[i];
 	}
-	cout << "Please check that bonds are in the correct locations." << endl;
-	cout << "If they are not, update the bond length criteria in the file: bondLengths.txt." << endl;
-	cout << "The format is: atomic symbol,atomic symbol,bond type (s for single, d for double, t for triple),minimum distance-maximum distance in angstroms." << endl;
+	printf(m_messagesDL->m_snCheckBonding1.c_str());
+	printf(m_messagesDL->m_snCheckBonding2.c_str());
+	printf(m_messagesDL->m_snBondInfoFormat.c_str());
 	return true;
 }
 
