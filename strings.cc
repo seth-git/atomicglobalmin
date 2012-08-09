@@ -8,7 +8,7 @@
 
 #include "strings.h"
 
-const string Strings::s_sDefaultLanguageCode = "ez";
+const string Strings::s_sDefaultLanguageCode = "en";
 map<string,Strings> Strings::s_instances;
 
 bool Strings::init()
