@@ -52,6 +52,12 @@ int main(int argc, char *argv[])
 	recognizedOptions.push_back(messages->m_sOptionHelpM.c_str());
 	argumentsPerOption.push_back(4);
 	optionMessages.push_back(messages->m_sOptionHelpMMessage.c_str());
+	recognizedOptions.push_back(messages->m_sOptionHelpTR.c_str());
+	argumentsPerOption.push_back(1);
+	optionMessages.push_back(messages->m_sOptionHelpTRMessage.c_str());
+	recognizedOptions.push_back(messages->m_sOptionHelpRT.c_str());
+	argumentsPerOption.push_back(1);
+	optionMessages.push_back(messages->m_sOptionHelpRTMessage.c_str());
 	recognizedOptions.push_back(messages->m_sOptionHelpU.c_str());
 	argumentsPerOption.push_back(1);
 	optionMessages.push_back(messages->m_sOptionHelpUMessage.c_str());
@@ -270,7 +276,7 @@ int main(int argc, char *argv[])
 			if (moleculeSetsToUse->size() > 100) {
 				printf(messages->m_sNumStructuresInFile.c_str(), moleculeSetsToUse->size());
 				cout << endl;
-				printf(messages->m_sEnterNumInputFiles.c_str(), input.m_pSelectedEnergyProgram->m_sName.c_str(), messages->m_sAll.c_str());
+				printf(messages->m_sEnterNumInputFiles.c_str(), input.m_pSelectedEnergyProgram->getName(), messages->m_sAll.c_str());
 				printf(" ");
 				cin >> answer;
 				if (answer == messages->m_sAll)
@@ -489,6 +495,34 @@ int main(int argc, char *argv[])
 			moleculeSetsTemp.clear();
 			bestNMoleculeSetsTemp.clear();
 			bestIndividualMoleculeSetsTemp.clear();
+		} else if (ArgumentParser::optionPresent(messages->m_sOptionHelpTR.c_str()) || ArgumentParser::optionPresent(messages->m_sOptionHelpRT.c_str())) { // # Translate
+			if (ArgumentParser::getNumOptions() > 1) {
+				printf(messages->m_sMultipleOptionsError.c_str(), messages->m_sOptionHelpT.c_str());
+				cout << endl;
+				throw "";
+			}
+			if (ArgumentParser::optionPresent(messages->m_sOptionHelpTR.c_str()))
+				ArgumentParser::getOptionArguments(messages->m_sOptionHelpTR.c_str(), numOptionArguments, &optionArguments);
+			else
+				ArgumentParser::getOptionArguments(messages->m_sOptionHelpRT.c_str(), numOptionArguments, &optionArguments);
+			inputFileName = optionArguments[0];
+			cout << messages->m_sReadingFile << ": " << inputFileName << endl;
+			if (!input.open(inputFileName, true, false, moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets))
+				throw "";
+			if (input.m_sLanguageCode != Strings::s_sDefaultLanguageCode) {
+				input.m_sLanguageCode = Strings::s_sDefaultLanguageCode;
+				input.save(moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets);
+			}
+			// Clean up
+			for (i = 0; i < (signed int)moleculeSets.size(); ++i)
+				delete moleculeSets[i];
+			for (i = 0; i < (signed int)bestNMoleculeSets.size(); ++i)
+				delete bestNMoleculeSets[i];
+			for (i = 0; i < (signed int)bestIndividualMoleculeSets.size(); ++i)
+				delete bestIndividualMoleculeSets[i];
+			moleculeSets.clear();
+			bestNMoleculeSets.clear();
+			bestIndividualMoleculeSets.clear();
 		} else if (ArgumentParser::optionPresent(messages->m_sOptionHelpU.c_str())) { // # Update output file from individual output files (used with .pso -i option)
 			if (ArgumentParser::getNumOptions() > 1) {
 				printf(messages->m_sMultipleOptionsError.c_str(), messages->m_sOptionHelpU.c_str());

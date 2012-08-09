@@ -539,17 +539,19 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
     
  	m_pSelectedEnergyProgram = NULL;	
 	for (i = 0; i < (int)EnergyProgram::s_energyPrograms.size(); ++i)
-		if (temp == EnergyProgram::s_energyPrograms[i]->m_sName)
+		if (temp == EnergyProgram::s_energyPrograms[i]->getName(m_messages))
 			m_pSelectedEnergyProgram = EnergyProgram::s_energyPrograms[i];
+	
 	if (m_pSelectedEnergyProgram == NULL) {
-		cout << "Energy function not recognized on line " << lineNumber << ": '" << temp << "'" << endl;
-		cout << "Valid energy functions are: ";
+		printf(m_messagesDL->m_snEnergyProgramNotRecognized.c_str(), lineNumber, temp.c_str());
+		printf(m_messagesDL->m_sValidEnergyPrograms.c_str());
+		cout << " ";
 		for (i = 0; i < (int)EnergyProgram::s_energyPrograms.size(); ++i) {
 			if (i >= 1)
 				cout << ", ";
-			cout << EnergyProgram::s_energyPrograms[i]->m_sName;
+			cout << EnergyProgram::s_energyPrograms[i]->getName(m_messages);
 		}
-		cout << endl;
+		cout << "." << endl;
 		
 		return false;
 	}
@@ -1741,7 +1743,7 @@ bool Input::readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile
 			return false;
 		}
 		
-		if (m_sStructureFormats[i] == "Cartesian")
+		if (m_sStructureFormats[i] == m_messages->m_sCartesian)
 		{
 			while (1)
 			{
@@ -1857,28 +1859,42 @@ bool Input::containsFileExtension(const char *fileName, const char *extension)
 }
 
 /////////////////////////////////////////////////////////////////////
-// Purpose: This function saves the SIP file.
-// Parameters: fileName - the file name
+// Purpose: This function saves the input file.
+// Parameters: moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets - the associated sets of chemical structures
 // Returns: true if the file was saved successfully and false otherwise
-bool Input::save(const char *fileName)
+bool Input::save(vector<MoleculeSet*> &moleculeSets, vector<MoleculeSet*> &bestNMoleculeSets, vector<MoleculeSet*> &bestIndividualMoleculeSets)
 {
-/*	if (strcmp(fileName,m_sInputFileName) != 0)
-		AssignStringParam(&m_pszInputFileName,fileName);
-	return Save();*/
-	return true;
-}
-
-/////////////////////////////////////////////////////////////////////
-// Purpose: This function saves the SIP file.
-// Parameters: none
-// Returns: true if the file was saved successfully and false otherwise
-bool Input::save(void)
-{
-/*	ofstream fout("output.txt", ios::out);
-
-	PrintToFile(fout);
-
-	fout.close();*/
+	string command;
+	string* fileName;
+	string tempFileName;
+	
+	if (!hasBeenInitialized())
+		return false;
+	if (!m_bResumeFileRead && !m_bOptimizationFileRead) {
+		cout << m_messagesDL->m_sWritingFile << ": " << m_sInputFileName << endl;
+		ofstream fout(m_sInputFileName.c_str(), ios::out);
+		if (!fout.is_open()) {
+			printf(m_messagesDL->m_sUnableToWriteTemporaryResume.c_str(), m_sInputFileName.c_str());
+			cout << endl;
+			return false;
+		}
+		printToFile(fout);
+		fout.close();
+		return true;
+	} else if (m_bResumeFileRead) {
+		fileName = &m_sResumeFileName;
+	} else {
+		fileName = &m_sInputFileName;
+	}
+	cout << m_messagesDL->m_sWritingFile << ": " << *fileName << endl;
+	tempFileName.append(*fileName).append(".temp");
+	writeResumeFile(tempFileName, moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets,
+			m_tElapsedSeconds, m_bResumeFileRead);
+	command.append("mv ").append(tempFileName).append(" ").append(*fileName);
+	if (system(command.c_str())) {
+		cout << m_messagesDL->m_sErrorUpdatingOptimization << ": " << command << endl;
+		return false;
+	}
 	return true;
 }
 
@@ -1925,7 +1941,7 @@ void Input::printToFile(ofstream &outFile)
 			outFile << m_messages->m_sGAInputVersionLine << " " << INPUT_FILE_VERSION << endl << endl;
 	}
 	
-	outFile << m_messages->m_sEnergyFunction << ": " << m_pSelectedEnergyProgram->m_sName << endl;
+	outFile << m_messages->m_sEnergyFunction << ": " << m_pSelectedEnergyProgram->getName(m_messages) << endl;
 	outFile << m_messages->m_sPathToEnergyFiles << ": " << m_sPathToEnergyFiles << endl;
 	outFile << m_messages->m_sPathToScratch << ": " << m_sPathToScratch << endl;
 	
@@ -2055,7 +2071,7 @@ void Input::printToFile(ofstream &outFile)
 	for (i = 0; i < m_iNumStructureTypes; ++i)
 	{
 		outFile << endl << m_messages->m_sNumStructuresOfEachType << ": " << m_iNumStructuresOfEachType[i] << endl;
-		outFile << m_messages->m_sStructureFormatOfThisType << ": " << m_sStructureFormats[i] << endl;
+		outFile << m_messages->m_sStructureFormatOfThisType << ": " << m_messages->m_sCartesian << endl;
 		for (j = 0; j < (int)m_cartesianPoints[i].size(); ++j)
 		{
 			outFile << m_atomicNumbers[i][j] << " ";
@@ -2803,8 +2819,8 @@ bool Input::setupForIndependentRun(vector<string> &inputFiles, vector<MoleculeSe
 			snprintf(commandLine, sizeof(commandLine), "mkdir %s", inputFileDirectory.c_str());
 			success = system(commandLine) != -1;
 			if (!success) {
-				cout << "Unable to create directory: " << inputFileDirectory << endl;
-				throw "";
+				printf(m_messagesDL->m_snUnableToCreateDirectory.c_str(), inputFileDirectory.c_str());
+				throw m_messagesDL->m_snUnableToCreateDirectory.c_str();
 			}
 			bSetupPreviouslyDone = false;
 		} else {
@@ -2860,12 +2876,12 @@ bool Input::setupForIndependentRun(vector<string> &inputFiles, vector<MoleculeSe
 					snprintf(commandLine, sizeof(commandLine), "mkdir %s", m_sPathToEnergyFiles.c_str());
 					success = system(commandLine) != -1;
 					if (!success) {
-						cout << "Unable to create directory: " << m_sPathToEnergyFiles << endl;
+						printf(m_messagesDL->m_snUnableToCreateDirectory.c_str(), m_sPathToEnergyFiles.c_str());
 						throw "";
 					}
 				}
 				if (m_pSelectedEnergyProgram->m_sPathToExecutable.length() > 0) {
-					m_sNodesFile = m_sPathToEnergyFiles + "/nodes.txt";
+					m_sNodesFile = m_sPathToEnergyFiles + "/" + m_messages->m_sNodesFile;
 					ofstream nodesFile(m_sNodesFile.c_str(), ios::out);
 					nodesFile << m_srgNodeNames[i];
 					nodesFile.close();
@@ -2916,7 +2932,7 @@ bool Input::setupForIndependentRun(vector<string> &inputFiles, vector<MoleculeSe
 	m_i3DNonFragStructuresWithMaxDist = savedi3DNonFragStructuresWithMaxDist;
 	m_iTotalPopulationSize = savediTotalPopulationSize;
 	m_sPathToEnergyFiles = savedPathToEnergyFiles;
-	m_sNodesFile = m_sPathToEnergyFiles + "/nodes.txt";
+	m_sNodesFile = m_sPathToEnergyFiles + "/" + m_messages->m_sNodesFile;
 	
 	return success;
 }
@@ -3091,27 +3107,30 @@ bool Input::compileIndependentRunData(bool printOutput)
 	vector<FLOAT> coordinatePert[m_iTotalPopulationSize];
 	vector<FLOAT> anglePert[m_iTotalPopulationSize];
 	vector<FLOAT> acceptedPerterbations[m_iTotalPopulationSize];
+	string frozenString;
+	frozenString.append(m_messages->m_sFreezingSeededMoleculesFor).append(" %d ").append(m_messages->m_sIterations);
+	
 	
 	// Read the individual output files
 	last_iteration = 1073741824; // a big number
 	for (i = 0; i < m_iTotalPopulationSize; ++i) {
 		snprintf(outputFileName, sizeof(outputFileName), "%s/%s_%d.out", outputFileDirectory.c_str(), outputFileWithoutPath.c_str(), (i+1));
 		if (printOutput)
-			cout << "Reading: " << outputFileName << endl;
+			cout << m_messagesDL->m_sReadingFile << ": " << outputFileName << endl;
 		fin.open(outputFileName, ifstream::in);
 		if (!fin.is_open())
 		{
-			cout << "Unable to read the output file: " << outputFileName << endl;
+			cout << m_messagesDL->m_sCantWriteToFile << ": " << outputFileName << endl;
 			return false;
 		}
 //		bestEnergies.push_back(vector<FLOAT>);
 		while (fin.getline(fileLine, sizeof(fileLine)))
 		{
-			if (strncmp(fileLine, "Using seeded population from", 28) == 0) {
+			if (strncmp(fileLine, m_messages->m_sSeedingPopulationFromFile.c_str(), m_messages->m_sSeedingPopulationFromFile.length()+1) == 0) {
 				seedFiles = (fileLine+29);
 				seedFiles.replace(seedFiles.length()-3,3,""); // remove the "..."
 			}
-			if (sscanf(fileLine, "Assigning frozen status to the coordinates of seeded atoms for %d iterations...", &m_iFreezeUntilIteration) == 1) {
+			if (sscanf(fileLine, frozenString.c_str(), &m_iFreezeUntilIteration) == 1) {
 			}
 
 			if (m_bTransitionStateSearch) {

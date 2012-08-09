@@ -20,6 +20,7 @@
 #include <vector>
 #include <stdio.h>
 #include <stdlib.h>
+#include "strings.h"
 
 using namespace std;
 
@@ -27,7 +28,6 @@ using namespace std;
 class EnergyProgram
 {
 public:
-	string m_sName;
 	bool m_bUsesMPI;
 	bool m_bUsesCclib; // See: http://sourceforge.net/apps/mediawiki/cclib/index.php?title=Main_Page
 	string m_sPathToExecutable;
@@ -37,8 +37,10 @@ public:
 	string m_sOutputFileTypeExtensions[MAX_OUTPUT_FILE_TYPES];
 	bool m_bOutputFileTypeRequired[MAX_OUTPUT_FILE_TYPES];
 	
-	EnergyProgram (const char* name, bool useMPI, bool bUsesCclib, const char* pathToExecutable, int programID, const char* inputFileExtension);
+	EnergyProgram (bool useMPI, bool bUsesCclib, const char* pathToExecutable, int programID, const char* inputFileExtension);
 	EnergyProgram (void);
+	const char* getName(const Strings* messages);
+	const char* getName();
 	void copy(EnergyProgram &energyProgram);
 	string toString();
 	bool set(vector<char*> parameters);

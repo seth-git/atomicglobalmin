@@ -81,7 +81,7 @@ bool Mpi::calculateEnergies (int energyCalculationType, vector<MoleculeSet*> &po
 		s_percentageOfSuccessfulCalculations = 1.0;
 		return true;
 	} else {
-		cout << "The energy program '" << pEnergyProgram->m_sName << "' needs to be implemented in myMpi.cc and energy.cc." << endl;
+		cout << "The energy program '" << pEnergyProgram->getName() << "' needs to be implemented in myMpi.cc and energy.cc." << endl;
 		return false;
 	}
 	return false;

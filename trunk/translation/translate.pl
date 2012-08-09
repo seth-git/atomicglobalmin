@@ -77,7 +77,7 @@ sub createArb
 	print OUT_FILE "});\n";
 	print "Done!\n";
 	print "Use google translate to create an input_code.arb file from $arbFile, where \"code\" is the two digit language code of your desired language.\n";
-	print "Create input_code.arb by uploading $arbFile to http://www.google.com/url?source=transpromo&rs=rsmf&q=http://translate.google.com/toolkit\%3Fhl\%3Den\n";
+	print "Create input_code.arb by uploading $arbFile to http://translate.google.com/toolkit/list\n";
 	print "After logging in and uploading your file, select 'Download' under the 'Share' menu.\n";
 	print "Save input_code.arb to this directory, then run this program again and select option 2.\n";
 	print "\n";

@@ -39,6 +39,9 @@ public:
 	void printHelperOptions() const;
 	
 	const char *getYesNoParam(bool yesNoParam) const;
+	
+	static const std::string trim(const std::string& pString);
+	static const std::string trim(const char* pCharArr);
 
 	string m_sLanguageCode;
 
@@ -117,6 +120,7 @@ public:
 	string m_sNumStructureTypes;
 	string m_sNumStructuresOfEachType;
 	string m_sStructureFormatOfThisType;
+	string m_sCartesian;
 	string m_sPrintSummaryInfoEveryNIterations;
 	string m_sEnergyFileHeader;
 	string m_sEnergyFileFooter;
@@ -126,6 +130,7 @@ public:
 	string m_sStructuresToOptimizeAtATime;
 
 	string m_sReadingFile;
+	string m_sWritingFile;
 	string m_sInitializingPopulation;
 	string m_sRunningSimulatingAnnealing;
 	string m_sRunningParticleSwarmOptimization;
@@ -179,8 +184,19 @@ public:
 	string m_sOptionHelpPMessage;
 	string m_sOptionHelpT;
 	string m_sOptionHelpTMessage;
+	string m_sOptionHelpTR;
+	string m_sOptionHelpTRMessage;
+	string m_sOptionHelpRT;
+	string m_sOptionHelpRTMessage;
 	string m_sOptionHelpU;
 	string m_sOptionHelpUMessage;
+	
+	string m_sGaussian;
+	string m_sGaussianWithCclib;
+	string m_sGAMESS;
+	string m_sLennardJones;
+	string m_snEnergyProgramNotRecognized;
+	string m_sValidEnergyPrograms;
 
 	string m_sUsage;
 	string m_sDesc;
@@ -199,6 +215,7 @@ public:
 	string m_sHOptionHelpO;
 	string m_sHOptionHelpOR;
 	string m_sHOptionHelpP;
+	string m_sHOptionHelpTR;
 	string m_sHOptionHelpT;
 	string m_sHOptionHelpU;
 
@@ -252,6 +269,7 @@ public:
 	string m_sExiting;
 	string m_sCreatingDirectory;
 	string m_sCouldntCreateDirectory;
+	string m_snUnableToCreateDirectory;
 	string m_sRunComplete;
 	string m_sLastArgMustBeInput;
 	string m_sCantUseIMOptionsTogether;
@@ -314,6 +332,7 @@ public:
 	string m_sNoStructuresLeftToTransfer;
 	string m_sTransferedNStructuresToOptFile;
 	string m_sUnrecognizedArgOrOption;
+	string m_snOptionTakesNArgs;
 	
 	string m_sBestSavedStructures;
 	string m_sNodesFile;
@@ -353,7 +372,6 @@ public:
 	string m_sRing;
 	string m_snCheckBonding1;
 	string m_snCheckBonding2;
-
 
 private:
 	static map<string,Strings> s_instances;
