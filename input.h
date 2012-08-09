@@ -186,8 +186,7 @@ public:
 	~Input ();
 	bool readFile(ifstream &infile, bool setMinDistances, bool bReadNodesFile);
 	bool hasBeenInitialized() { return (m_sInputFileName != ""); } // returns true if a file has been successfully read
-	bool save(const char *outputFileName);
-	bool save();
+	bool save(vector<MoleculeSet*> &moleculeSets, vector<MoleculeSet*> &bestNMoleculeSets, vector<MoleculeSet*> &bestIndividualMoleculeSets);
 	void printToFile(ofstream &outFile);
 	void printInputParamsToFile(ofstream &outFile);
 	void writeResumeFile(string &fileName, vector<MoleculeSet*> &moleculeSets,

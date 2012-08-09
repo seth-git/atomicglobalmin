@@ -8,7 +8,7 @@
 
 #include "strings.h"
 
-const string Strings::s_sDefaultLanguageCode = "en";
+const string Strings::s_sDefaultLanguageCode = "ez";
 map<string,Strings> Strings::s_instances;
 
 bool Strings::init()
@@ -39,7 +39,7 @@ bool Strings::init (const char* languageCode)
 	char name[MAX_LINE_LENGTH];
 	char str[MAX_LINE_LENGTH];
 	map<string,string> stringMap;
-	bool duplicates = false;
+	bool twoStringsWithSameKey = false;
 
 	m_bLoaded = false;
 
@@ -48,14 +48,14 @@ bool Strings::init (const char* languageCode)
 		cout << "Can't open the file: " << fileName << endl;
 		return false;
 	}
-
+	
 	while (infile.getline(fileLine, MAX_LINE_LENGTH)) {
 		if (sscanf(fileLine, "input.%s = %[^\t\n]", name, str) == 2) {
 			if (stringMap[name].length() > 0) {
 				cout << "Error: Found two strings with the same key: '" << name << "'." << endl;
-				duplicates = true;
+				twoStringsWithSameKey = true;
 			}
-			stringMap[name] = str;
+			stringMap[name] = trim(str);
 			if (name[0] == 'n') {
 				stringMap[name].append("\n");
 			}
@@ -63,16 +63,18 @@ bool Strings::init (const char* languageCode)
 	}
 	infile.close();
 
+	bool supressWarnings = true;
 	map<string,string> valueMap;
 	map<string,string>::iterator iter;   
-	for (iter = stringMap.begin(); iter != stringMap.end(); iter++ ) {
-		if (valueMap[iter->second].length() > 0 && iter->first.find("Option") == string::npos) {
-			cout << "Error: Found two strings with the same value: '" << iter->second << "'." << endl;
-			duplicates = true;
+	if (!supressWarnings) {
+		for (iter = stringMap.begin(); iter != stringMap.end(); iter++ ) {
+			if (valueMap[iter->second].length() > 0 && iter->first.find("Option") == string::npos) {
+				cout << "Warning: Found two strings with the same value: '" << iter->second << "'." << endl;
+			}
+			valueMap[iter->second] = iter->first;
 		}
-		valueMap[iter->second] = iter->first;
 	}
-	if (duplicates)
+	if (twoStringsWithSameKey)
 		return false;
 
 	m_sSimulatedAnnealingParameters = stringMap["SimulatedAnnealingParameters"];
@@ -150,6 +152,7 @@ bool Strings::init (const char* languageCode)
 	m_sNumStructureTypes = stringMap["NumStructureTypes"];
 	m_sNumStructuresOfEachType = stringMap["NumStructuresOfEachType"];
 	m_sStructureFormatOfThisType = stringMap["StructureFormatOfThisType"];
+	m_sCartesian = stringMap["Cartesian"];
 	m_sPrintSummaryInfoEveryNIterations = stringMap["PrintSummaryInfoEveryNIterations"];
 	m_sEnergyFileHeader = stringMap["EnergyFileHeader"];
 	m_sEnergyFileFooter = stringMap["EnergyFileFooter"];
@@ -159,6 +162,7 @@ bool Strings::init (const char* languageCode)
 	m_sStructuresToOptimizeAtATime = stringMap["StructuresToOptimizeAtATime"];
 
 	m_sReadingFile = stringMap["ReadingFile"];
+	m_sWritingFile = stringMap["WritingFile"];
 	m_sInitializingPopulation = stringMap["InitializingPopulation"];
 	m_sRunningSimulatingAnnealing = stringMap["RunningSimulatingAnnealing"];
 	m_sRunningParticleSwarmOptimization = stringMap["RunningParticleSwarmOptimization"];
@@ -212,8 +216,19 @@ bool Strings::init (const char* languageCode)
 	m_sOptionHelpPMessage = stringMap["OptionHelpPMessage"];
 	m_sOptionHelpT = stringMap["OptionHelpT"];
 	m_sOptionHelpTMessage = stringMap["OptionHelpTMessage"];
+	m_sOptionHelpTR = stringMap["OptionHelpTR"];
+	m_sOptionHelpTRMessage = stringMap["OptionHelpTRMessage"];
+	m_sOptionHelpRT = stringMap["OptionHelpRT"];
+	m_sOptionHelpRTMessage = stringMap["OptionHelpRTMessage"];
 	m_sOptionHelpU = stringMap["OptionHelpU"];
 	m_sOptionHelpUMessage = stringMap["OptionHelpUMessage"];
+	
+	m_sGaussian = stringMap["Gaussian"];
+	m_sGaussianWithCclib = stringMap["GaussianWithCclib"];
+	m_sGAMESS = stringMap["GAMESS"];
+	m_sLennardJones = stringMap["LennardJones"];
+	m_snEnergyProgramNotRecognized = stringMap["nEnergyProgramNotRecognized"];
+	m_sValidEnergyPrograms = stringMap["ValidEnergyPrograms"];
 
 	m_sUsage = stringMap["Usage"];
 	m_sDesc = stringMap["Desc"];
@@ -232,6 +247,7 @@ bool Strings::init (const char* languageCode)
 	m_sHOptionHelpO = stringMap["HOptionHelpO"];
 	m_sHOptionHelpOR = stringMap["HOptionHelpOR"];
 	m_sHOptionHelpP = stringMap["HOptionHelpP"];
+	m_sHOptionHelpTR = stringMap["HOptionHelpTR"];
 	m_sHOptionHelpT = stringMap["HOptionHelpT"];
 	m_sHOptionHelpU = stringMap["HOptionHelpU"];
 
@@ -285,6 +301,7 @@ bool Strings::init (const char* languageCode)
 	m_sExiting = stringMap["Exiting"];
 	m_sCreatingDirectory = stringMap["CreatingDirectory"];
 	m_sCouldntCreateDirectory = stringMap["CouldntCreateDirectory"];
+	m_snUnableToCreateDirectory = stringMap["nUnableToCreateDirectory"];
 	m_sRunComplete = stringMap["RunComplete"];
 	m_sLastArgMustBeInput = stringMap["LastArgMustBeInput"];
 	m_sCantUseIMOptionsTogether = stringMap["CantUseIMOptionsTogether"];
@@ -347,6 +364,7 @@ bool Strings::init (const char* languageCode)
 	m_sNoStructuresLeftToTransfer = stringMap["NoStructuresLeftToTransfer"];
 	m_sTransferedNStructuresToOptFile = stringMap["TransferedNStructuresToOptFile"];
 	m_sUnrecognizedArgOrOption = stringMap["UnrecognizedArgOrOption"];
+	m_snOptionTakesNArgs = stringMap["nOptionTakesNArgs"];
 	
 	m_sBestSavedStructures = stringMap["BestSavedStructures"];
 	m_sNodesFile = stringMap["NodesFile"];
@@ -460,6 +478,7 @@ void Strings::printHelperOptions() const
 	printOption(m_sOptionHelpO.c_str(), optionLength, m_sHOptionHelpO.c_str());
 	printOption(m_sOptionHelpOR.c_str(), optionLength, m_sHOptionHelpOR.c_str());
 	printOption(m_sOptionHelpP.c_str(), optionLength, m_sHOptionHelpP.c_str());
+	printOption(m_sOptionHelpTR.c_str(), optionLength, m_sHOptionHelpTR.c_str());
 	printOption(m_sOptionHelpT.c_str(), optionLength, m_sHOptionHelpT.c_str());
 	printOption(m_sOptionHelpU.c_str(), optionLength, m_sHOptionHelpU.c_str());
 	cout << endl;
@@ -473,3 +492,25 @@ const char *Strings::getYesNoParam(bool yesNoParam) const
 		return m_sNo.c_str();
 }
 
+
+const std::string Strings::trim(const std::string& pString)
+{
+	static const std::string& pWhitespace = " \t";
+    const size_t beginStr = pString.find_first_not_of(pWhitespace);
+    if (beginStr == std::string::npos)
+    {
+        // no content
+        return "";
+    }
+
+    const size_t endStr = pString.find_last_not_of(pWhitespace);
+    const size_t range = endStr - beginStr + 1;
+
+    return pString.substr(beginStr, range);
+}
+
+const std::string Strings::trim(const char* pCharArr)
+{
+	const std::string& pString = pCharArr;
+	return trim(pString);
+}

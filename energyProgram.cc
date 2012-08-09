@@ -11,23 +11,24 @@
 vector<EnergyProgram*> EnergyProgram::s_energyPrograms;
 const char* EnergyProgram::cclibPythonScript = "/Full/path/to/cclib-1.0/atomicGlobalMin.py";
 
-void EnergyProgram::init(void) {
-	s_energyPrograms.push_back(new EnergyProgram("Gaussian", true, false, "/Full/path/to/gaussian", GAUSSIAN, "com"));
+void EnergyProgram::init() {
+	cleanUp();
+	s_energyPrograms.push_back(new EnergyProgram(true, false, "/Full/path/to/gaussian", GAUSSIAN, "com"));
 	addOutputFileType("log", true);
 	addOutputFileType("chk", false);
 	
-	s_energyPrograms.push_back(new EnergyProgram("Gaussian with cclib", true, true, "/Full/path/to/gaussian", GAUSSIAN_WITH_CCLIB, "com"));
+	s_energyPrograms.push_back(new EnergyProgram(true, true, "/Full/path/to/gaussian", GAUSSIAN_WITH_CCLIB, "com"));
 	addOutputFileType("log", true);
 	addOutputFileType("chk", false);
 	
-	s_energyPrograms.push_back(new EnergyProgram("GAMESS-US", true, true, "/Full/path/to/gamess", GAMESS_US, "gamin"));
+	// US GAMESS
+	s_energyPrograms.push_back(new EnergyProgram(true, true, "/Full/path/to/gamess", GAMESS_US, "gamin"));
 	addOutputFileType("gamout", true);
 	
-	s_energyPrograms.push_back(new EnergyProgram("Lennard Jones", false, false, "", LENNARD_JONES, ""));
+	s_energyPrograms.push_back(new EnergyProgram(false, false, "", LENNARD_JONES, ""));
 }
 
-EnergyProgram::EnergyProgram(const char* name, bool useMPI, bool bUsesCclib, const char* pathToExecutable, int programID, const char* inputFileExtension) {
-	m_sName = name;
+EnergyProgram::EnergyProgram(bool useMPI, bool bUsesCclib, const char* pathToExecutable, int programID, const char* inputFileExtension) {
 	m_bUsesMPI = useMPI;
 	m_bUsesCclib = bUsesCclib;
 	m_sPathToExecutable = pathToExecutable;
@@ -40,6 +41,25 @@ EnergyProgram::EnergyProgram(void) {
 	m_bUsesMPI = false;
 	m_iProgramID = -1;
 	m_iNumOutputFileTypes = 0;
+}
+
+const char* EnergyProgram::getName(const Strings* messages) {
+	switch (m_iProgramID) {
+	case GAUSSIAN:
+		return messages->m_sGaussian.c_str();
+	case GAUSSIAN_WITH_CCLIB:
+		return messages->m_sGaussianWithCclib.c_str();
+	case GAMESS_US:
+		return messages->m_sGAMESS.c_str();
+	case LENNARD_JONES:
+		return messages->m_sLennardJones.c_str();
+	default:
+		return "Unknown";
+	}
+}
+
+const char* EnergyProgram::getName() {
+	return getName(Strings::instance());
 }
 
 void EnergyProgram::addOutputFileType(const char* fileExtension, bool required) {
@@ -61,7 +81,6 @@ void EnergyProgram::cleanUp() {
 }
 
 void EnergyProgram::copy(EnergyProgram &energyProgram) {
-	m_sName = energyProgram.m_sName;
 	m_bUsesMPI = energyProgram.m_bUsesMPI;
 	m_bUsesCclib = energyProgram.m_bUsesCclib;
 	m_sPathToExecutable = energyProgram.m_sPathToExecutable;
@@ -76,8 +95,7 @@ void EnergyProgram::copy(EnergyProgram &energyProgram) {
 
 string EnergyProgram::toString() {
 	char prefix[1000];
-	snprintf(prefix, sizeof(prefix), "%s|%d|%s|%d|%s|%d", 
-	         m_sName.c_str(),
+	snprintf(prefix, sizeof(prefix), "%d|%s|%d|%s|%d", 
 	         m_bUsesMPI,
 	         m_sPathToExecutable.c_str(),
 	         m_iProgramID,
@@ -94,18 +112,17 @@ string EnergyProgram::toString() {
 
 bool EnergyProgram::set(vector<char*> parameters) {
 	int i, j;
-	if (parameters.size() < 6)
+	if (parameters.size() < 5)
 		return false;
-	m_sName = parameters[0];
-	m_bUsesMPI = parameters[1];
-	m_sPathToExecutable = parameters[2];
-	m_iProgramID = atoi(parameters[3]);
-	m_sInputFileExtension = parameters[4];
-	m_iNumOutputFileTypes = atoi(parameters[5]);
+	m_bUsesMPI = parameters[0];
+	m_sPathToExecutable = parameters[1];
+	m_iProgramID = atoi(parameters[2]);
+	m_sInputFileExtension = parameters[3];
+	m_iNumOutputFileTypes = atoi(parameters[4]);
 	if ((signed int)parameters.size() < getNumParameters())
 		return false;
 	for (i = 0; i < m_iNumOutputFileTypes; ++i) {
-		j = 6 + (i*2);
+		j = 5 + (i*2);
 		m_sOutputFileTypeExtensions[i] = parameters[j];
 		m_bOutputFileTypeRequired[i] = atoi(parameters[j+1]);
 	}
