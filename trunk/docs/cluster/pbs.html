@@ -10,7 +10,9 @@
     <table class="itemLayoutTable"><tr><td>
     <a href="../index.html?show=cluster">Menu</a>
     <a href="mpi.html" style="float:right">Next</a>
-    <br/><br/>
+    <br/>
+    <div class="content">
+    <br/>
 
 Submitting the program to the PBS scheduler requires creating a script file. An example script file called "examplePBSScript" is in the main "pso" directory.  Make a copy of this script with the cp command and modify it as follows.
     <br/>
@@ -40,6 +42,7 @@ Once you have created your script file and your input file and checked them twic
 Note: Though this application was generally designed to run one quantum calculation per processor, it does have some built in functionality to run single quantum calculations on multiple processors.  Though I have not done this in a few years, you may talk to your system administrator and get help doing this if desired.  The pso application reads the "nodes.txt" file and formerly started one energy calculation for each node/line in the file.  Using mpirun instead of mpiexec can be helpful in this case.  If you specify multiple processors per node and if you want one Gaussian job to use all of the processors on a node, you may need to place this line in your Gaussian header (pso input file): "% nprocshared=number_of_processors_you_want".
 
     <br/><br/>
+    </div>
     <a href="../index.html?show=algorithms">Menu</a>
     <a href="mpi.html" style="float:right">Next</a>
     </td></tr></table>
