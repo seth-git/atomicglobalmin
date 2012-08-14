@@ -1824,9 +1824,13 @@ int main(int argc, char *argv[])
 		
 		if (!initCommandLineArguments(argc, argv))
 			throw "Failed to read command line args.";
+		const Strings* messages = Strings::instance();
+		if (ArgumentParser::optionPresent(messages->m_sOptionI.c_str()) && Strings::s_sDefaultLanguageCode != "en") {
+			cout << "The -i option is not yet implemented with non-English languages." << endl;
+			throw "";
+		}
 		if (!setWallTime())
 			throw "Failed to set wall time";
-		const Strings* messages = Strings::instance();
 		if ((myrank == 0) || ArgumentParser::optionPresent(messages->m_sOptionI.c_str()))
 			master(myrank);
 		else {
