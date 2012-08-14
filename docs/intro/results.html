@@ -12,9 +12,12 @@
     <br/><br/>
     <a href="running.html">Previous</a>
     <a href="bond.html" style="float:right">Next</a>
-    <br/><br/>
+    <br/>
+    <div class="content">
+    <br/>
 After normal termination of a run, the program writes the best structure found to the output file.  To open the output file, type "vim LJ7_PSO.out".  When you are done, type ":q" and then the enter key. To obtain preliminary results from the resume file, open the resume file using the vim command.  The top portion of the resume file contains parameters. Following these are chemical structures in the current population.  Following these are the list of best structures found during the entire run.  To search for this list, type "/Best" and then the enter key. When you are done viewing the list, type ":q" and then the enter key.  The program can also export the structures from the resume or optimization file to a temporary file in a readable format.  Note: the coordinates of units/molecules should never be read directly from a resume or optimization file as these require translation and rotation.  To perform translation and rotation of the list of best structures into a readable format, type "./helper -t LJ7_PSO.res temp.txt".  This also works for optimization files.  Also note that the output files from your quantum chemistry program are saved.
     <br/><br/>
+    </div>
     <a href="../index.html">Menu</a>
     <br/><br/>
     <a href="running.html">Previous</a>

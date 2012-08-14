@@ -12,7 +12,9 @@
     <br/><br/>
     <a href="pbs.html">Previous</a>
     <a href="../index.html?show=cluster" style="float:right">Next</a>
-    <br/><br/>
+    <br/>
+    <div class="content">
+    <br/>
 When calculating energies for a large population of candidate structures, the program allows options to improve efficiency.  By default, each processor will calculate the same number of quantum jobs.  If for example, you have a population of 64 structures and 16 processors, each processor will calculate energies for exactly 4 structures. This means that by default, there is no communication between processors, except at the start of each new batch of calculations.
     <br/><br/>
 
@@ -28,6 +30,7 @@ Also when using the -i option, the program has a method for periodically merging
 When using the -i option and you must resume an unfinished run, do not change the input file to a resume file.  Since each population member has its own resume file, the program is smart enough to find each of these resume files and restart the run.  While the ./helper -u method does create a master resume file, this is only used to store the list of best structures and/or create an optimization file.
 
     <br/><br/>
+    </div>
     <a href="../index.html?show=cluster">Menu</a>
     <br/><br/>
     <a href="pbs.html">Previous</a>
