@@ -49,7 +49,7 @@ At each step, simulated annealing makes a number of random perturbations.  Each 
 where &#916;E is the change in energy in atomic units (hartrees), k is the Boltzmann constant in units of hartrees per kelvin (line 25), and T is the temperature in units of kelvin (line 24).  At the start of a run, the temperature and the probability of accepting a bad perturbation are very high. The temperature T, the number of perturbations P, the coordinate perturbation amount C, and the angle perturbation amount A decrease as follows:
     <br/><br/>
 
-     &#160;&#160;&#160;&#160;T = T x quenching factor (line 23)<br/>
+     &#160;&#160;&#160;&#160;T = T x quenching factor (line 28)<br/>
      &#160;&#160;&#160;&#160;P = P x SquareRoot(quenching factor)<br/>
      &#160;&#160;&#160;&#160;C = C x SquareRoot(quenching factor)<br/>
      &#160;&#160;&#160;&#160;A = A x SquareRoot(quenching factor)
