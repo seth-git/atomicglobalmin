@@ -2177,7 +2177,7 @@ void Input::writeResumeFile(string &fileName, vector<MoleculeSet*> &moleculeSets
 	resumeFile << m_messages->m_sFreezeUntilIteration << ": " << m_iFreezeUntilIteration << endl;
 	
 	resumeFile << "Run Complete: " << printYesNoParam(m_bRunComplete) << endl;
-	resumeFile << "Number of times the energy was calculated: " << m_iNumEnergyEvaluations << endl;
+	resumeFile << m_messages->m_sEnergyCalculations << ": " << m_iNumEnergyEvaluations << endl;
 	m_tElapsedSeconds = elapsedSeconds;
 	resumeFile << "Elapsed seconds: " << m_tElapsedSeconds << endl;
 	
@@ -2570,13 +2570,13 @@ bool Input::open(string &fileName, bool setMinDistances, bool bReadNodesFile, ve
 	if (!infile.getline(fileLine, MAX_LINE_LENGTH))
 	{
 		cout << "The line that's supposed to have this parameter is missing: "
-		     << "Number of times the energy was calculated" << endl;
+		     << m_messages->m_sEnergyCalculations << endl;
 		infile.close();
 		return false;
 	}
-	if (sscanf(fileLine, "Number of times the energy was calculated: %d", &m_iNumEnergyEvaluations) != 1)
+	if (sscanf(fileLine, "Number of energy value calculations: %d", &m_iNumEnergyEvaluations) != 1)
 	{
-		cout << "Error reading the parameter '" << "Number of times the energy was calculated"
+		cout << "Error reading the parameter '" << "Number of energy value calculations"
 		     << "' in the input file." << endl;
 		cout << "Line with the error: " << fileLine << endl;
 		infile.close();
@@ -3183,11 +3183,11 @@ bool Input::compileIndependentRunData(bool printOutput)
 		fout << "Initializing the population..." << endl;
 	}
 	if (m_bPerformBasinHopping && (m_fQuenchingFactor == 1.0)) {
-		fout << "Performing Basin Hopping..." << endl;
+		fout << m_messages->m_sPerformingBasinHopping << "..." << endl;
 	} else if (m_bTransitionStateSearch) {
 		fout << "Searching for Transition States..." << endl;
 	} else {
-		fout << "Simulating Annealing..." << endl;
+		fout << m_messages->m_sPerformingSimulatingAnnealing << "..." << endl;
 	}
 	bool foundFreezIteration = false;
 	for (i = 0; i < last_iteration; ++i) {

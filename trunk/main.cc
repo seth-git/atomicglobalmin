@@ -74,7 +74,7 @@ void simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 				input.printToFile(fout);
 			}
 			fout << endl << endl;
-			fout << messages->m_sProgramOutput << ": " << endl;
+			fout << messages->m_sProgramOutput << ":" << endl;
 			if (seedFiles.length() > 0) {
 				cout << messages->m_sSeedingPopulationFromFile << " " << seedFiles << "..." << endl;
 				fout << messages->m_sSeedingPopulationFromFile << " " << seedFiles << "..." << endl;

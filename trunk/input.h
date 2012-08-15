@@ -36,8 +36,8 @@ using std::setw;
 using std::time;
 using std::ostringstream;
 
-#define PROGRAM_VERSION "1.5.0"
-#define INPUT_FILE_VERSION "1.5"
+#define PROGRAM_VERSION "1.6.0"
+#define INPUT_FILE_VERSION "1.6"
 #define SIMULATED_ANNEALING 1
 #define PARTICLE_SWARM_OPTIMIZATION 2
 #define GENETIC_ALGORITHM 3
