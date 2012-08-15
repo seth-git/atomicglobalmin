@@ -7,6 +7,7 @@
 	}
         .content {
 		font-weight: normal;
+		font-size:14pt;
         }
 	body.mainBody {
 		font-size:12pt;
@@ -30,9 +31,6 @@
 	}
 	table.itemLayoutTable td {
 		text-align:left;
-	}
-	.textObjects {
-		font-size:14pt;
 	}
 	.toggleObjects {
 		display: none;
@@ -72,7 +70,7 @@
 		body.mainBody {
 			font-size:10pt;
 		}
-		#outlineCell a {
+		#outlineCell a, #outlineCell li {
 			font-weight: bold;
 			text-decoration: none;
 			color: black;
