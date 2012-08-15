@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Atomic Global Minimum Locator: Input parameters common to all algorithms</title>
+    <link href="../styles/styles.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body class="mainBody">
+    <h1>Atomic Global Minimum Locator: Input parameters common to all algorithms</h1>
+    <br/>
+    <table class="itemLayoutTable"><tr><td>
+    <a href="../index.html?show=algorithms">Menu</a>
+    <a href="output.html" style="float:right">Next</a>
+    <br/>
+    <div class="content">
+    <br/>
+
+Parameters common to all algorithms appear at the top and bottom of each input file.  An example of the parameters at the top of an input file for (H<span class="sub">2</span>O)<span class="sub">3</span>OH<span class="sup">-</span> are as follows:
+    <br/>
+<pre>
+1   Particle Swarm Optimization Input File Version 1.5.0
+2   
+3   Energy function to use: Gaussian
+4   Path to energy files: /path/to/quantum/input/and/output/files/
+5   Path to scratch directory (optional): /my/scratch/directory/
+6   Search cube length, width, and height: 7.0
+7   Number of linear structures: 0
+8   Initialize linear structures in a box with the above cube length and a height and width of: 1.2
+9  Number of planar structures: 0
+10  Number of fragmented 3D structures: 0
+11  Number of partially non-fragmented 3D structures: 0
+12  Number of completely non-fragmented 3D structures: 64
+13  General minimum atom distance (used if no value specified below): 0.7
+14  Specific minimum atom distances (angstroms):
+15  1 1 0.9
+16  1 8 0.8
+17  8 8 1.2
+18  Maximum inter-atomic distance (angstroms): 3.0
+</pre>
+
+The header on line 1 specifies the type of algorithm (particle swarm optimization, simulated annealing, etc.).  The phrases "Input File", "Resume File", and "Optimization File" indicate the file's purpose.  The header also contains a version number.  If you attempt to run an input file that belongs to an older version of the program, you may have to change or insert lines in the input file before it will run.  The program will specify when lines are missing or need to be changed.  The path to the energy files on line 4 is the directory where the input and output files for your quantum chemistry package are stored.  If using a cluster of Linux computers, this should be a directory accessible to all nodes.  The scratch directory (line 5) is where all scratch files are written.  When using Gaussian, always specify a scratch directory.  If running on a cluster, the scratch directory can be on a local hard drive to decrease network traffic.  Output files are copied from the scratch directory back to the energy files directory (line 4).
+    <br/><br/>
+
+When specifying the number of each structure type to initialize (lines 7-12), keep in mind that atoms are placed in groups each of which is moved and rotated as a "unit" or molecule.  Each "unit" contains one or more atoms.  Line 8 indicates that linear structures are initialized so that all atoms are in a 3D box that is 1.2 x 1.2 x 7.0.  Planar structures are initialized so that centers of mass of each "unit" are on the same plane.  The fragmented, partially non-fragmented, and completely non-fragmented structures are described informally here.  For a more precise discussion, see reference 3 above.  Fragmented structures contain "units" in random locations within the search cube. Partially non-fragmented structures are created such that every atom is within the maximum distance of at least one other atom.  These are called "partially" non-fragmented because two units may be isolated from the rest of the units (further than the maximum distance).  With completely non-fragmented structures, no two units can be isolated from other units.  For example, if you started at some unit and could only travel to other units within the maximum distance of that unit, you could travel to any unit.
+    <br/><br/>
+
+The program allows one maximum distance between atoms (in this case 3 angstroms), and multiple minimum distances between different types of atoms.  In this case the minimum distance is 0.9 between two hydrogens, 0.8 between hydrogen and oxygen, and 1.2 between two oxygen atoms.
+    <br/><br/>
+
+An example of the parameters at the end of the input file are given below:
+    <br/>
+<pre>
+42  Save this many of the best "different" structures: 1000
+43  Consider 2 structures "different" if their RMS distance is greater or equal to (angstroms): 0.7
+44  Save this many quantum output files from the list of best structures: 50
+45  Output file name: /path/to/pso/files/OH3H2O_PSO.out
+46  Resume file name (optional): /path/to/pso/files/OH3H2O_PSO.res
+47  Write resume file after every set of this number of iterations (optional): 1
+48  Print summary information after each set of this many iterations: 1
+49  Charge: -1
+50  Multiplicity: 1
+51  Energy file header:
+52  % chk=mychk
+53  # B3LYP/6-311++G** opt=(calcfc) scfcon=6 scfcyc=300 optcyc=20 scf=direct
+54  
+55  Energy file footer (optional):
+56  --link1--
+57  % chk=mychk
+58  # B3LYP/6-311++G** freq=noraman scfcon=6 scfcyc=300 optcyc=100
+59  geom=check guess=read
+60  
+61  Number of unit types: 2
+62  
+63  Number of units of this type: 3
+64  Format of this unit type: Cartesian
+65  1 0.757540797781 0.0 0.587079636589
+66  1 -0.757540797781 0.0 0.587079636589
+67  8 0.0 0.0 0.0
+68  
+69  Number of units of this type: 1
+70  Format of this unit type: Cartesian
+71  1 0.0 0.0 1.064890
+72  8 0.0 0.0 0.0
+</pre>
+
+Line 42 specifies the size of the list of best structures that are saved during the course of the entire run.  This list is updated after every iteration.  Line 43 specifies that each structure in the list of best structures is different from every other structure in the list by a certain RMS distance (see reference 3 above).  Line 44 is the number of chemical structures for which the quantum chemistry package output files will be saved.  These output files are saved in a folder called bestSavedStructures located inside the directory where energy files are stored (specified on line 4 of the input file).  Lines 45-53 should be self explanatory.  When using Gaussian, the program will automatically rename the checkpoint file for each structure in the population of candidate structures, so that there aren't naming conflicts.  The energy file footer (lines 55-59) is placed at the end of the quantum package input file.  In this case, the footer specifies that a frequency calculation be performed.  Note that the energy file header and footer are not used when energies are calculated using the Lennard Jones potential.
+    <br/><br/>
+
+Lines 61-72 are an example of how to specify groups of atoms, molecules, or "units".  The above consists of three water molecules and one hydroxide ion. Lines 65-67 specifies the coordinates of water with two hydrogen atoms and one oxygen atom.  Lines 71-72 specify coordinates for hydroxide.  If you are dealing with single atoms that are moved separately form other components in the system, one atom can be specified for each "unit".  The "format of this unit type" can only be "Cartesian ".  At some point in the future, I may allow other types of input such as "Z-matrix."
+
+
+
+    <br/><br/>
+    </div>
+    <a href="../index.html?show=algorithms">Menu</a>
+    <a href="output.html" style="float:right">Next</a>
+    </td></tr></table>
+  </body>
+</html>
+

@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Atomic Global Minimum Locator: Getting Started</title>
+    <link href="../styles/styles.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body class="mainBody">
+    <h1>Atomic Global Minimum Locator: Getting Started</h1>
+    <br/>
+    <table class="itemLayoutTable"><tr><td>
+    <a href="../index.html">Menu</a>
+    <a href="files.html" style="float:right">Next</a>
+    <br/>
+    <div class="content">
+    <br/>
+
+While this program does not have a graphical user interface, it has a command line interface that is very simple to use with some instruction.  Here are a few useful links:
+    <br/><br/>
+
+    &#160;&#160;&#160;&#160;&#160;Transfer files between Linux and Windows: <a href="http://www.winscp.com/">http://www.winscp.com/</a><br/>
+    &#160;&#160;&#160;&#160;&#160;Log into Linux from Windows: <a href="http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html">http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html</a><br/>
+    &#160;&#160;&#160;&#160;&#160;Learn Unix/Linux: <a href="http://librenix.com/?inode=4052">http://librenix.com/?inode=4052</a><br/>
+    &#160;&#160;&#160;&#160;&#160;Edit Linux files: <a href="http://www.oregonwebradio.net/backup_fedora/tutorials/vim_li/quickstart.html">http://www.oregonwebradio.net/backup_fedora/tutorials/vim_li/quickstart.html</a>
+    <br/><br/>
+
+You will need to compile the C++ source code on a Linux computer or cluster.  While Windows is not supported, you may easily transfer results to and from your Windows computer.  Steps for installing this program are below:
+    <br/><br/>
+
+1. Download the program file: pso1.5.0.tar.gz<br/>
+2. Install g++ and MPI compilers<br/>
+3. Compile the program
+    <br/><br/>
+
+Step 1: Download the <a href="http://sourceforge.net/projects/atomicglobalmin/files/pso1.5.0.zip/download?_test=goal">pso1.5.0.tar.gz</a> file.  If you want to run the program on a remote Linux cluster, first download the program onto your local computer and then transfer the program to the Linux cluster.  If you use Windows, you can transfer the program to the Linux cluster using the WinSCP program (see above link).  If you are using Ubuntu or a Mac, open a terminal.  To open a terminal on Ubuntu, click on 'Applications', 'Accessories', 'Terminal'.  On a mac, navigate to your Applications folder, open Utilities, and double click on Terminal. Then, type these commands, pressing 'Enter' or 'Return' after each command:
+    <br/><br/>
+
+    &#160;&#160;&#160;&#160;&#160;cd /directory/where/you/put/pso1.5.0.tar.gz<br/>
+    &#160;&#160;&#160;&#160;&#160;scp  pso1.5.0.tar.gz your_user_name@your.linux.cluster:pso1.5.0.tar.gz
+    <br/><br/>
+
+Step 2: If using a University Linux cluster, the g++ and MPI compilers should already be installed, so you can likely skip this step. If using a local Linux box, g++ should already be installed, but you will have to install the MPI compiler.  On Ubuntu Linux, you may install this by clicking on 'System' and 'Administration', then 'Synaptic Package Manager' and searching for mpi.  I installed the mpi-default-bin and mpi-default-dev packages.
+    <br/><br/>
+
+Step 3: If you are running the program on a remote Linux cluster, you will need to log into the cluster with ssh.  To do this on Windows, use the putty program (see the above link).  To log in at the command line on Ubuntu or a Mac, type the following at the command line:
+    <br/><br/>
+
+    &#160;&#160;&#160;&#160;&#160;ssh your_user_name@your.linux.cluster
+    <br/><br/>
+
+Once logged in, navigate to the directory where you placed the program.  Change directories by typing: 'cd some_directory'.  To get out of the current directory type: 'cd ..'   .  To list files and directories in the current directory, type 'ls' or 'ls -al' (the later is a long list format).  When you have navigated to your program directory, type the following to decompress the program:
+    <br/><br/>
+
+    &#160;&#160;&#160;&#160;&#160;gunzip pso1.5.0.tar.gz<br/>
+    &#160;&#160;&#160;&#160;&#160;tar -xf pso1.5.0.tar
+    <br/><br/>
+
+Then, navigate into the directory:
+    <br/><br/>
+
+    &#160;&#160;&#160;&#160;&#160;cd pso
+    <br/><br/>
+
+Then compile the program by typing:
+    <br/><br/>
+
+    &#160;&#160;&#160;&#160;&#160;make
+    <br/><br/>
+
+You may see warning messages.  If so, this is OK.  If you see error messages, this is NOT OK, and it likely means you do not have the right compilers installed (see step 2).
+    <br/><br/>
+
+When you have successfully compiled the program, two executables will be created: pso and helper. The pso executable is an MPI application, while helper is not.  The helper application contains additional utilities.  A list of the options available with the pso and helper executables can be obtained by typing "./pso" or "./helper" respectively.
+    <br/><br/>
+
+If using the program with ADF, GAMESS, GAMESS-UK, Firefly, Jaguar, Molpro, or ORCA, please see configuration instructions in <a href="configuring.html">section F</a>.
+
+    <br/><br/>
+    </div>
+    <a href="../index.html">Menu</a>
+    <a href="files.html" style="float:right">Next</a>
+    </td></tr></table>
+  </body>
+</html>
+
