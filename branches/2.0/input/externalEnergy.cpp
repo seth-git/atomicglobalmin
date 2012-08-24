@@ -23,7 +23,7 @@ bool ExternalEnergy::load(TiXmlElement *pExternalElem, const Strings* messages)
 	const char* methods[] = {messages->m_spADF.c_str(), messages->m_spGAMESS.c_str(), messages->m_spGAMESSUK.c_str(), messages->m_spGaussian.c_str(),
 			messages->m_spFirefly.c_str(), messages->m_spJaguar.c_str(), messages->m_spMolpro.c_str(), messages->m_spORCA.c_str()};
 	
-	XsdAttributeUtil attUtil(pExternalElem->Value(), attributeNames, 2, s_required, defaultValues);
+	XsdAttributeUtil attUtil(pExternalElem->Value(), attributeNames, s_required, defaultValues);
 	if (!attUtil.process(pExternalElem)) {
 		return false;
 	}
@@ -37,7 +37,7 @@ bool ExternalEnergy::load(TiXmlElement *pExternalElem, const Strings* messages)
 		return false;
 	}
 	
-	XsdElementUtil extUtil(pExternalElem->Value(), XSD_ALL, elementNames, 8, s_minOccurs, NULL);
+	XsdElementUtil extUtil(pExternalElem->Value(), XSD_ALL, elementNames, s_minOccurs);
 	TiXmlHandle handle(0);
 	TiXmlElement** extElements;
 	
@@ -109,7 +109,7 @@ bool ExternalEnergy::readResultsDir(TiXmlElement *pElem, const Strings* messages
 
 	const char** values;
 	
-	XsdAttributeUtil resultsDirUtil(pElem->Value(), resAttributeNames, 3, s_resRequired, resDefaultValues);
+	XsdAttributeUtil resultsDirUtil(pElem->Value(), resAttributeNames, s_resRequired, resDefaultValues);
 	if (!resultsDirUtil.process(pElem)) {
 		return false;
 	}
@@ -130,7 +130,7 @@ bool ExternalEnergy::readMpiMaster(TiXmlElement *pElem, const Strings* messages)
 	const char* mpiAttributeNames[] = {messages->m_sxMaster.c_str()};
 	const char** values;
 	
-	XsdAttributeUtil util(pElem->Value(), mpiAttributeNames, 1, s_mpiRequired, s_mpiDefaultValues);
+	XsdAttributeUtil util(pElem->Value(), mpiAttributeNames, s_mpiRequired, s_mpiDefaultValues);
 	if (!util.process(pElem)) {
 		return false;
 	}

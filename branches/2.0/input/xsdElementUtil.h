@@ -17,7 +17,7 @@
 class XsdElementUtil {
 	private:
 		const char* m_sParentElement;
-		int m_type;
+		unsigned int m_type;
 		const char** m_elementNames;
 		unsigned int m_iElements;
 		const unsigned int* m_minOccurs;
@@ -31,41 +31,40 @@ class XsdElementUtil {
 		
 	public:
 
-		XsdElementUtil(const char* parentElement, int type, const char** elementNames, unsigned int numElements,
-		               const unsigned int* minOccurs, const unsigned int* maxOccurs)
+		template <std::size_t iElements, std::size_t iMinOccurs, std::size_t iMaxOccurs>
+		XsdElementUtil(const char* parentElement, int type, const char* (&elementNames)[iElements],
+		               const unsigned int (&minOccurs)[iMinOccurs], const unsigned int (&maxOccurs)[iMaxOccurs])
 		{
-			m_sParentElement = parentElement;
-			m_type = type;
-			m_elementNames = elementNames;
-			m_iElements = numElements;
+			if (iElements != iMinOccurs || iElements != iMaxOccurs) {
+				printf("Error: Inconsistent array sizes passed into the XsdElementUtil constructor for the parent element '%s'.\n", parentElement);
+				exit(0);
+			}
+			init(parentElement, type, elementNames);
 			m_minOccurs = minOccurs;
 			m_maxOccurs = maxOccurs;
+		}
 
-			m_pChoiceElement = NULL;
-			m_allElements = NULL;
-			m_sequenceElements = NULL;
+		template <std::size_t iElements, std::size_t iMinOccurs>
+		XsdElementUtil(const char* parentElement, int type, const char* (&elementNames)[iElements],
+		               const unsigned int (&minOccurs)[iMinOccurs])
+		{
+			if (iElements != iMinOccurs) {
+				printf("Error: Inconsistent array sizes passed into the XsdElementUtil constructor for the parent element '%s'.\n", parentElement);
+				exit(0);
+			}
+			init(parentElement, type, elementNames);
+			m_minOccurs = minOccurs;
+		}
+
+		template <std::size_t iElements>
+		XsdElementUtil(const char* parentElement, int type, const char* (&elementNames)[iElements])
+		{
+			init(parentElement, type, elementNames);
 		}
 
 		~XsdElementUtil()
 		{
 			cleanUp();
-		}
-
-		void cleanUp()
-		{
-			unsigned int i;
-			// We don't need to deallocate m_pChoiceElement
-			if (m_allElements != NULL) {
-				delete[] m_allElements;
-				m_allElements = NULL;
-			}
-			if (m_sequenceElements != NULL) {
-				for (i = 0; i < m_iElements; ++i) {
-					m_sequenceElements[i].clear();
-				}
-				delete[] m_sequenceElements;
-				m_sequenceElements = NULL;
-			}
 		}
 
 		bool process(TiXmlHandle &handle);
@@ -76,6 +75,38 @@ class XsdElementUtil {
 	private:
 		void printChoiceError(int lineNumber);
 		void printSequenceError();
+		
+		// This is needed because one constructor cannot call another or the destructor gets called too many times
+		template <std::size_t iElements>
+		void init(const char* parentElement, int type, const char* (&elementNames)[iElements])
+		{
+			m_sParentElement = parentElement;
+			m_type = type;
+			m_elementNames = elementNames;
+			m_iElements = iElements;
+			m_minOccurs = NULL;
+			m_maxOccurs = NULL;
+			
+			m_pChoiceElement = NULL;
+			m_allElements = NULL;
+			m_sequenceElements = NULL;
+		}
+
+		void cleanUp()
+		{
+			// We don't need to deallocate m_pChoiceElement
+			if (m_allElements != NULL) {
+				delete[] m_allElements;
+				m_allElements = NULL;
+			}
+			if (m_sequenceElements != NULL) {
+				for (unsigned int i = 0; i < m_iElements; ++i) {
+					m_sequenceElements[i].clear();
+				}
+				delete[] m_sequenceElements;
+				m_sequenceElements = NULL;
+			}
+		}
 };
 
 #endif

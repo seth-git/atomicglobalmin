@@ -91,6 +91,7 @@ public:
 	std::string m_spLennardJones;
 
 	std::string m_sReadingFile;
+	std::string m_sWritingFile;
 	
 	std::string m_sDuplicateAttributes;
 	std::string m_sUnrecognizedAttribute;

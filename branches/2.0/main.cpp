@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
 	{
 		Input input;
 		input.load(argv[i]);
-//		input.save("out.xml");
+		input.save("out.xml");
 	}
 	return 0;
 }

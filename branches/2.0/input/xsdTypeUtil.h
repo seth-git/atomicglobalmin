@@ -20,11 +20,11 @@ class XsdTypeUtil {
 		static bool getPositiveFloat(const char* value, FLOAT &result, const char* attributeName, TiXmlElement *pElem);
 		
 		static bool readStrValueElement(TiXmlElement *pElem, std::string &result, const Strings* messages);
-		static bool readStrValueElement(TiXmlElement *pElem, std::string &result, const char** attributeName);
+		static bool readStrValueElement(TiXmlElement *pElem, std::string &result, const char* attributeName);
 		static bool readIntValueElement(TiXmlElement *pElem, int &result, const Strings* messages);
 		static bool readPosIntValueElement(TiXmlElement *pElem, unsigned int &result, const Strings* messages);
 		static bool readPosFloatValueElement(TiXmlElement *pElem, FLOAT &result, const Strings* messages);
-		static bool readPosFloatValueElement(TiXmlElement *pElem, FLOAT &result, const char** attributeName);
+		static bool readPosFloatValueElement(TiXmlElement *pElem, FLOAT &result, const char* attributeName);
 		
 		static bool readElementText(TiXmlElement *pElem, std::string &result);
 	private:

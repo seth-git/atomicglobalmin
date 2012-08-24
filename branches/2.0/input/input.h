@@ -19,6 +19,7 @@
 
 class Input {
 	public:
+		std::string m_sFileName;
 		std::string m_sVersion;
 		std::string m_sLanguageCode; // 2 characters long
 		int m_iAction; // a constant value and an index to s_actionElementNames
@@ -41,6 +42,7 @@ class Input {
 
 		bool load(const char* pFilename);
 		void save(const char* pFilename);
+		void save();
 	private:
 		const Strings*            m_messages; // messages for m_sLanguageCode
 

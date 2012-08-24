@@ -144,6 +144,7 @@ bool Strings::init (const char* languageCode)
 	m_spLennardJones = stringMap["pLennardJones"];
 	
 	m_sReadingFile = stringMap["ReadingFile"];
+	m_sWritingFile = stringMap["WritingFile"];
 	
 	m_sDuplicateAttributes = stringMap["DuplicateAttributes"];
 	m_sUnrecognizedAttribute = stringMap["UnrecognizedAttribute"];

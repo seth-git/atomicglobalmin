@@ -15,7 +15,7 @@ bool InternalEnergy::load(TiXmlElement *pElem, const Strings* messages)
 	const char* methods[]         = {messages->m_spLennardJones.c_str()};
 	const char** values;
 
-	XsdAttributeUtil attUtil(pElem->Value(), attributeNames, 2, s_required, defaultValues);
+	XsdAttributeUtil attUtil(pElem->Value(), attributeNames, s_required, defaultValues);
 	if (!attUtil.process(pElem)) {
 		return false;
 	}

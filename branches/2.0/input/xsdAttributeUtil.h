@@ -17,25 +17,30 @@ class XsdAttributeUtil {
 		const char** m_values;
 		
 	public:
+		
 		/***********************************************************************************************
 		 * Purpose: This constructor collects information necessary to read attributes from an xml element.
 		 * Parameters: parentElement - name of the element
 		 *             attributeNames - array of strings containing the attribute names
-		 *             numAttributes - the number of attributes
 		 *             required - array containing the required status of each attribute
 		 *             defaultValues - array containing optional default attribute values
 		 */
-		XsdAttributeUtil(const char* parentElement, const char** attributeNames, size_t numAttributes,
-		                 const bool* required, const char** defaultValues) 
+		template <std::size_t iAttributes, std::size_t iRequired, std::size_t iDefaults>
+		XsdAttributeUtil(const char* parentElement, const char* (&attributeNames)[iAttributes],
+		                 const bool (&required)[iRequired], const char* (&defaultValues)[iDefaults])
 		{
+			if (iAttributes != iRequired || iAttributes != iDefaults) {
+				printf("Error: Inconsistent array sizes passed into the XsdAttributeUtil constructor for element '%s'.\n", parentElement);
+				exit(0);
+			}
 			m_sParentElement = parentElement;
 			m_attributeNames = attributeNames;
-			m_iAttributes = numAttributes;
+			m_iAttributes = iAttributes;
 			m_required = required;
 			m_defaultValues = defaultValues;
 			
-			if (numAttributes > 0) {
-				m_values = new const char*[numAttributes];
+			if (iAttributes > 0) {
+				m_values = new const char*[iAttributes];
 			} else {
 				m_values = NULL;
 			}

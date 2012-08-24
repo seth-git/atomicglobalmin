@@ -46,7 +46,7 @@ bool XsdTypeUtil::readDirType(TiXmlElement *pElem, std::string &resultDir, const
 	static const char* defaultValues[]  = {""};
 	const char** values;
 
-	XsdAttributeUtil dirUtil(pElem->Value(), attributeNames, 1, required, defaultValues);
+	XsdAttributeUtil dirUtil(pElem->Value(), attributeNames, required, defaultValues);
 	if (!dirUtil.process(pElem)) {
 		return false;
 	}
@@ -143,14 +143,14 @@ bool XsdTypeUtil::getPositiveFloat(const char* value, FLOAT &result, const char*
 }
 
 bool XsdTypeUtil::readStrValueElement(TiXmlElement *pElem, std::string &result, const Strings* messages) {
-	const char* valueAttNames[] = {messages->m_sxValue.c_str()};
-	return readStrValueElement(pElem, result, valueAttNames);
+	return readStrValueElement(pElem, result, messages->m_sxValue.c_str());
 }
 
-bool XsdTypeUtil::readStrValueElement(TiXmlElement *pElem, std::string &result, const char** attributeName) {
+bool XsdTypeUtil::readStrValueElement(TiXmlElement *pElem, std::string &result, const char* attributeName) {
+	const char* valueAttNames[] = {attributeName};
 	const char** values;
 
-	XsdAttributeUtil valueUtil(pElem->Value(), attributeName, 1, s_valueAttReq, s_valueAttDef);
+	XsdAttributeUtil valueUtil(pElem->Value(), valueAttNames, s_valueAttReq, s_valueAttDef);
 	if (!valueUtil.process(pElem)) {
 		return false;
 	}
@@ -163,7 +163,7 @@ bool XsdTypeUtil::readIntValueElement(TiXmlElement *pElem, int &result, const St
 	const char* valueAttNames[] = {messages->m_sxValue.c_str()};
 	const char** values;
 
-	XsdAttributeUtil valueUtil(pElem->Value(), valueAttNames, 1, s_valueAttReq, s_valueAttDef);
+	XsdAttributeUtil valueUtil(pElem->Value(), valueAttNames, s_valueAttReq, s_valueAttDef);
 	if (!valueUtil.process(pElem)) {
 		return false;
 	}
@@ -178,7 +178,7 @@ bool XsdTypeUtil::readPosIntValueElement(TiXmlElement *pElem, unsigned int &resu
 	const char* valueAttNames[] = {messages->m_sxValue.c_str()};
 	const char** values;
 
-	XsdAttributeUtil valueUtil(pElem->Value(), valueAttNames, 1, s_valueAttReq, s_valueAttDef);
+	XsdAttributeUtil valueUtil(pElem->Value(), valueAttNames, s_valueAttReq, s_valueAttDef);
 	if (!valueUtil.process(pElem)) {
 		return false;
 	}
@@ -190,19 +190,19 @@ bool XsdTypeUtil::readPosIntValueElement(TiXmlElement *pElem, unsigned int &resu
 }
 
 bool XsdTypeUtil::readPosFloatValueElement(TiXmlElement *pElem, FLOAT &result, const Strings* messages) {
-	const char* valueAttNames[] = {messages->m_sxValue.c_str()};
-	return readPosFloatValueElement(pElem, result, valueAttNames);
+	return readPosFloatValueElement(pElem, result, messages->m_sxValue.c_str());
 }
 
-bool XsdTypeUtil::readPosFloatValueElement(TiXmlElement *pElem, FLOAT &result, const char** attributeName) {
+bool XsdTypeUtil::readPosFloatValueElement(TiXmlElement *pElem, FLOAT &result, const char* attributeName) {
+	const char* attributeNames[] = {attributeName};
 	const char** values;
 
-	XsdAttributeUtil valueUtil(pElem->Value(), attributeName, 1, s_valueAttReq, s_valueAttDef);
+	XsdAttributeUtil valueUtil(pElem->Value(), attributeNames, s_valueAttReq, s_valueAttDef);
 	if (!valueUtil.process(pElem)) {
 		return false;
 	}
 	values = valueUtil.getAllAttributes();
-	if (!getPositiveFloat(values[0], result, attributeName[0], pElem)) {
+	if (!getPositiveFloat(values[0], result, attributeName, pElem)) {
 		return false;
 	}
 	return true;

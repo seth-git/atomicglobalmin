@@ -107,6 +107,9 @@ bool XsdElementUtil::process (TiXmlHandle &handle)
 				pElem = pElem->NextSiblingElement();
 			}
 			break;
+		default:
+			printf("Unrecognized type %u in XsdElementUtil::process for parent element '%s'.\n", m_type, m_sParentElement);
+			return false;
 	}
 	return true;
 }

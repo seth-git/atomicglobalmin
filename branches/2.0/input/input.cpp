@@ -39,6 +39,7 @@ bool Input::load(const char* pFilename)
 		return false;
 	}
 	TiXmlHandle hDoc(&xmlDocument);
+	m_sFileName = pFilename;
 
 	pElem=hDoc.FirstChildElement().Element();
 	if (!pElem || !pElem->Value() || strcmp(s_agml,pElem->Value()) != 0) {
@@ -47,7 +48,7 @@ bool Input::load(const char* pFilename)
 	}
 
 	const char** rootAttributeValues;
-	XsdAttributeUtil rootAttUtil(pElem->Value(), s_attributeNames, 5, s_required, s_defaultValues);
+	XsdAttributeUtil rootAttUtil(pElem->Value(), s_attributeNames, s_required, s_defaultValues);
 	if (!rootAttUtil.process(pElem)) {
 		return false;
 	}
@@ -64,7 +65,7 @@ bool Input::load(const char* pFilename)
 		return false;
 	}
 
-	XsdElementUtil atmlUtil(s_agml, XSD_SEQUENCE, elementNames, 4, s_minOccurs, s_maxOccurs);
+	XsdElementUtil atmlUtil(s_agml, XSD_SEQUENCE, elementNames, s_minOccurs, s_maxOccurs);
 	hRoot=TiXmlHandle(pElem);
 	if (!atmlUtil.process(hRoot)) {
 		return false;
@@ -75,7 +76,7 @@ bool Input::load(const char* pFilename)
 	if (!XsdAttributeUtil::hasNoAttributes(pElem)) {
 		return false;
 	}
-	XsdElementUtil actionUtil(elementNames[0], XSD_CHOICE, actionElementNames, 5, NULL, NULL);
+	XsdElementUtil actionUtil(elementNames[0], XSD_CHOICE, actionElementNames);
 	hChild=TiXmlHandle(pElem);
 	if (!actionUtil.process(hChild)) {
 		return false;
@@ -94,7 +95,7 @@ bool Input::load(const char* pFilename)
 		}
 	}
 
-	XsdElementUtil energyUtil(elementNames[2], XSD_CHOICE, energyElementNames, 2, NULL, NULL);
+	XsdElementUtil energyUtil(elementNames[2], XSD_CHOICE, energyElementNames);
 	hChild=TiXmlHandle(atgmlElements[2][0]);
 	if (!energyUtil.process(hChild)) {
 		return false;
@@ -115,9 +116,34 @@ bool Input::load(const char* pFilename)
 
 void Input::save(const char* pFilename)
 {
+	m_sFileName = pFilename;
+	save();
+}
+
+void Input::save()
+{
+	const Strings* messagesDL = Strings::instance();
 	m_sLanguageCode = Strings::s_sDefaultLanguageCode;
 	m_messages = Strings::instance(m_sLanguageCode);
-//  These are commented out to prevent a compiler warning.  They are needed.
+	
+	printf(messagesDL->m_sWritingFile.c_str(), m_sFileName.c_str());
+
+	TiXmlDocument doc;
+	TiXmlDeclaration* decl = new TiXmlDeclaration( "1.0", "", "" );
+	doc.LinkEndChild( decl );
+	
+	TiXmlElement* pElem = new TiXmlElement(s_agml);
+	doc.LinkEndChild(pElem);
+	
+	pElem->SetAttribute(s_attributeNames[0], m_sVersion.c_str());
+	pElem->SetAttribute(s_attributeNames[1], m_sLanguageCode.c_str());
+	pElem->SetAttribute(s_attributeNames[2], s_defaultValues[2]);
+	pElem->SetAttribute(s_attributeNames[3], s_defaultValues[3]);
+	pElem->SetAttribute(s_attributeNames[4], s_defaultValues[4]);
+	
+	doc.SaveFile(m_sFileName.c_str());
+
+//      These are commented out to prevent a compiler warning.  They are needed.
 //	const char* elementNames[] = {m_messages->m_sxAction.c_str(), m_messages->m_sxConstraints.c_str(), m_messages->m_sxEnergy.c_str(), m_messages->m_sxResults.c_str()};
 //	const char* actionElementNames[] = {m_messages->m_sxSimulatedAnnealing.c_str(), m_messages->m_sxRandomSearch.c_str(), m_messages->m_sxParticleSwarmOptimization.c_str(), m_messages->m_sxGeneticAlgorithm.c_str(), m_messages->m_sxBatch.c_str()};
 //	const char* energyElementNames[] = {m_messages->m_sxInternal.c_str(), m_messages->m_sxExternal.c_str()};

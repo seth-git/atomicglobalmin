@@ -39,14 +39,13 @@ bool Constraints::load(TiXmlElement *pElem, const Strings* messages)
 {
 	const char* elementNames[] = {messages->m_sxCube.c_str(), messages->m_sxAtomicDistances.c_str()};
 	const char* distElementNames[] = {messages->m_sxMin.c_str(), messages->m_sxMax.c_str()};
-	XsdElementUtil constraintUtil(pElem->Value(), XSD_ALL, elementNames, 2, s_minOccurs, NULL);
+	XsdElementUtil constraintUtil(pElem->Value(), XSD_ALL, elementNames, s_minOccurs);
 	TiXmlHandle handle(0);
 	TiXmlElement** constraintElements;
 
 	cleanUp();
 	
-	const char* name = messages->m_sxName.c_str();
-	if (!XsdTypeUtil::readStrValueElement(pElem, m_sName, &name)) {
+	if (!XsdTypeUtil::readStrValueElement(pElem, m_sName, messages->m_sxName.c_str())) {
 		return false;
 	}
 
@@ -58,12 +57,11 @@ bool Constraints::load(TiXmlElement *pElem, const Strings* messages)
 
 	if (constraintElements[0] != NULL) {
 		m_pfCubeLWH = new FLOAT;
-		const char* size = messages->m_sxSize.c_str();
-		XsdTypeUtil::readPosFloatValueElement(constraintElements[0], *m_pfCubeLWH, &size);
+		XsdTypeUtil::readPosFloatValueElement(constraintElements[0], *m_pfCubeLWH, messages->m_sxSize.c_str());
 	}
 
 	if (constraintElements[1] != NULL) {
-		XsdElementUtil distUtil(pElem->Value(), XSD_SEQUENCE, distElementNames, 2, s_distMinOccurs, s_distMaxOccurs);
+		XsdElementUtil distUtil(pElem->Value(), XSD_SEQUENCE, distElementNames, s_distMinOccurs, s_distMaxOccurs);
 		TiXmlHandle handle(0);
 		std::vector<TiXmlElement*>* distElements;
 		unsigned int i;
@@ -95,7 +93,7 @@ bool Constraints::addMinDist(TiXmlElement *pElem, const Strings* messages)
 	const char** values;
 	const Strings* messagesDL = Strings::instance();
 	
-	XsdAttributeUtil attUtil(pElem->Value(), attributeNames, 3, s_required, s_defaultValues);
+	XsdAttributeUtil attUtil(pElem->Value(), attributeNames, s_required, s_defaultValues);
 	if (!attUtil.process(pElem)) {
 		return false;
 	}
