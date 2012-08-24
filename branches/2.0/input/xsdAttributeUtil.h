@@ -25,14 +25,10 @@ class XsdAttributeUtil {
 		 *             required - array containing the required status of each attribute
 		 *             defaultValues - array containing optional default attribute values
 		 */
-		template <std::size_t iAttributes, std::size_t iRequired, std::size_t iDefaults>
+		template <std::size_t iAttributes>
 		XsdAttributeUtil(const char* parentElement, const char* (&attributeNames)[iAttributes],
-		                 const bool (&required)[iRequired], const char* (&defaultValues)[iDefaults])
+		                 const bool (&required)[iAttributes], const char* (&defaultValues)[iAttributes])
 		{
-			if (iAttributes != iRequired || iAttributes != iDefaults) {
-				printf("Error: Inconsistent array sizes passed into the XsdAttributeUtil constructor for element '%s'.\n", parentElement);
-				exit(0);
-			}
 			m_sParentElement = parentElement;
 			m_attributeNames = attributeNames;
 			m_iAttributes = iAttributes;

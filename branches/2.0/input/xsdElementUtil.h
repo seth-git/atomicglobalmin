@@ -31,27 +31,19 @@ class XsdElementUtil {
 		
 	public:
 
-		template <std::size_t iElements, std::size_t iMinOccurs, std::size_t iMaxOccurs>
+		template <std::size_t iElements>
 		XsdElementUtil(const char* parentElement, int type, const char* (&elementNames)[iElements],
-		               const unsigned int (&minOccurs)[iMinOccurs], const unsigned int (&maxOccurs)[iMaxOccurs])
+		               const unsigned int (&minOccurs)[iElements], const unsigned int (&maxOccurs)[iElements])
 		{
-			if (iElements != iMinOccurs || iElements != iMaxOccurs) {
-				printf("Error: Inconsistent array sizes passed into the XsdElementUtil constructor for the parent element '%s'.\n", parentElement);
-				exit(0);
-			}
 			init(parentElement, type, elementNames);
 			m_minOccurs = minOccurs;
 			m_maxOccurs = maxOccurs;
 		}
 
-		template <std::size_t iElements, std::size_t iMinOccurs>
+		template <std::size_t iElements>
 		XsdElementUtil(const char* parentElement, int type, const char* (&elementNames)[iElements],
-		               const unsigned int (&minOccurs)[iMinOccurs])
+		               const unsigned int (&minOccurs)[iElements])
 		{
-			if (iElements != iMinOccurs) {
-				printf("Error: Inconsistent array sizes passed into the XsdElementUtil constructor for the parent element '%s'.\n", parentElement);
-				exit(0);
-			}
 			init(parentElement, type, elementNames);
 			m_minOccurs = minOccurs;
 		}

@@ -143,7 +143,7 @@ void Input::save()
 	
 	doc.SaveFile(m_sFileName.c_str());
 
-//      These are commented out to prevent a compiler warning.  They are needed.
+//	These are commented out to prevent a compiler warning.  They are needed.
 //	const char* elementNames[] = {m_messages->m_sxAction.c_str(), m_messages->m_sxConstraints.c_str(), m_messages->m_sxEnergy.c_str(), m_messages->m_sxResults.c_str()};
 //	const char* actionElementNames[] = {m_messages->m_sxSimulatedAnnealing.c_str(), m_messages->m_sxRandomSearch.c_str(), m_messages->m_sxParticleSwarmOptimization.c_str(), m_messages->m_sxGeneticAlgorithm.c_str(), m_messages->m_sxBatch.c_str()};
 //	const char* energyElementNames[] = {m_messages->m_sxInternal.c_str(), m_messages->m_sxExternal.c_str()};
