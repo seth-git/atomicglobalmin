@@ -33,6 +33,9 @@ public:
 	
 	Strings () { m_bLoaded = false; }
 	bool init(const char* languageCode);
+	
+	static const std::string trim(const std::string& pString);
+	static const std::string trim(const char* pCharArr);
 
 	std::string m_sLanguageCode;
 

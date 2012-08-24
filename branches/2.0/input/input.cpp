@@ -72,7 +72,7 @@ bool Input::load(const char* pFilename)
 	atgmlElements = atmlUtil.getSequenceElements();
 
 	pElem=atgmlElements[0][0];
-	if (!XsdAttributeUtil::hasNoAttributes(pElem, elementNames[0])) {
+	if (!XsdAttributeUtil::hasNoAttributes(pElem)) {
 		return false;
 	}
 	XsdElementUtil actionUtil(elementNames[0], XSD_CHOICE, actionElementNames, 5, NULL, NULL);

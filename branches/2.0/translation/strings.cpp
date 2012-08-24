@@ -36,10 +36,12 @@ bool Strings::init (const char* languageCode)
 	ifstream infile(fileName);
 	const int MAX_LINE_LENGTH = 2000;
 	char fileLine[MAX_LINE_LENGTH];
-	char name[MAX_LINE_LENGTH];
-	char str[MAX_LINE_LENGTH];
+	char szKey[MAX_LINE_LENGTH];
+	char szValue[MAX_LINE_LENGTH];
+	std::string key, value;
 	std::map<std::string,std::string> stringMap;
-	bool duplicates = false;
+	bool error = false;
+	unsigned int line = 0;
 
 	m_bLoaded = false;
 
@@ -50,37 +52,47 @@ bool Strings::init (const char* languageCode)
 	}
 
 	while (infile.getline(fileLine, MAX_LINE_LENGTH)) {
-		if (sscanf(fileLine, "input.%s = %[^\t\n]", name, str) == 2) {
-			if (stringMap[name].length() > 0) {
-				printf("Error: Found two strings with the same key: '%s'.\n", name);
-				duplicates = true;
+		++line;
+		if (sscanf(fileLine, "input.%[^=]=%[^\n]", szKey, szValue) == 2) {
+			key = trim(szKey);
+			value = trim(szValue);
+			if (stringMap[key].length() > 0) {
+				printf("Error: Found two strings with the same key: '%s'.\n", key.c_str());
+				error = true;
 			}
-			stringMap[name] = str;
-			if (name[0] != 'p' && name[0] != 'x')
-				stringMap[name].append("\n");
-			if (name[0] == 'x' && strchr(str, ' ') != NULL)
-				printf("The xml element or attribute '%s' has a value '%s' which contains spaces.  Please correct this.\n", name, str);
-		} else if (sscanf(fileLine, "input.%s", name) == 1) {
-			printf("Error reading string with key: '%s'.\n", name);
-			return false;
+			stringMap[key] = value;
+			if (key.c_str()[0] != 'p' && key.c_str()[0] != 'x')
+				stringMap[key].append("\n");
+			if (key.c_str()[0] == 'x' && strchr(value.c_str(), ' ') != NULL) {
+				printf("Error: the xml element or attribute '%s' has a value '%s' which contains spaces on line %u.  Please correct this.\n", key.c_str(), value.c_str(), line);
+				error = true;
+			}
+			if (key.length() == 0) {
+				printf("Error: found a string with a blank key '%s' on line %u.\n", key.c_str(), line);
+				error = true;
+			}
+			if (value.length() == 0) {
+				printf("Error: found a blank string value on line %u having key '%s'.\n", line, key.c_str());
+				error = true;
+			}
+		} else if (sscanf(fileLine, "input.%s", szKey) == 1) {
+			printf("Error reading string with key: '%s' on line %u.\n", szKey, line);
+			error = true;
 		}
 	}
 	infile.close();
 
-	const bool bValidate = true;
-	if (bValidate) {
-		std::map<std::string,std::string> valueMap;
-		std::map<std::string,std::string>::iterator iter;   
-		for (iter = stringMap.begin(); iter != stringMap.end(); iter++ ) {
-			if (valueMap[iter->second].length() > 0 && iter->first.find("Option") == std::string::npos) {
-				printf("Error: Found two strings with the same value: '%s'.\n", iter->second.c_str());
-				duplicates = true;
-			}
-			valueMap[iter->second] = iter->first;
+	std::map<std::string,std::string> valueMap;
+	std::map<std::string,std::string>::iterator iter;   
+	for (iter = stringMap.begin(); iter != stringMap.end(); iter++ ) {
+		if (valueMap[iter->second].length() > 0 && iter->first.find("Option") == std::string::npos) {
+			printf("Error: Found two strings with the same value: '%s'.  String keys: '%s' and '%s'.\n", iter->second.c_str(), valueMap[iter->second].c_str(), iter->first.c_str());
+			error = true;
 		}
-		if (duplicates)
-			return false;
+		valueMap[iter->second] = iter->first;
 	}
+	if (error)
+		return false;
 
 	m_sxAction = stringMap["xAction"];
 	m_sxConstraints = stringMap["xConstraints"];
@@ -174,4 +186,24 @@ bool Strings::init (const char* languageCode)
 	return true;
 }
 
+const std::string Strings::trim(const std::string& pString)
+{
+	static const std::string& pWhitespace = " \t";
+    const size_t beginStr = pString.find_first_not_of(pWhitespace);
+    if (beginStr == std::string::npos)
+    {
+        // no content
+        return "";
+    }
 
+    const size_t endStr = pString.find_last_not_of(pWhitespace);
+    const size_t range = endStr - beginStr + 1;
+
+    return pString.substr(beginStr, range);
+}
+
+const std::string Strings::trim(const char* pCharArr)
+{
+	const std::string& pString = pCharArr;
+	return trim(pString);
+}

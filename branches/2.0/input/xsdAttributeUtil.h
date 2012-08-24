@@ -11,14 +11,22 @@ class XsdAttributeUtil {
 	private:
 		const char*  m_sParentElement;
 		const char** m_attributeNames;
-		unsigned int m_iAttributes;
+		size_t m_iAttributes;
 		const bool*  m_required;
 		const char** m_defaultValues;
 		const char** m_values;
 		
 	public:
-		XsdAttributeUtil(const char* parentElement, const char** attributeNames, unsigned int numAttributes,
-		                 const bool* required, const char** defaultValues)
+		/***********************************************************************************************
+		 * Purpose: This constructor collects information necessary to read attributes from an xml element.
+		 * Parameters: parentElement - name of the element
+		 *             attributeNames - array of strings containing the attribute names
+		 *             numAttributes - the number of attributes
+		 *             required - array containing the required status of each attribute
+		 *             defaultValues - array containing optional default attribute values
+		 */
+		XsdAttributeUtil(const char* parentElement, const char** attributeNames, size_t numAttributes,
+		                 const bool* required, const char** defaultValues) 
 		{
 			m_sParentElement = parentElement;
 			m_attributeNames = attributeNames;
@@ -40,11 +48,31 @@ class XsdAttributeUtil {
 			}
 		}
 		
+		/***********************************************************************************************
+		 * Purpose: Call this to read xml attributes from an element.
+		 * Parameters: pElem - the tiny xml element
+		 * Returns: true, if there were no errors
+		 */
 		bool process(TiXmlElement* pElem);
+		
+		/***********************************************************************************************
+		 * Purpose: Call this to get the attributes that were read.
+		 * Parameters: none
+		 * Returns: an array of strings containing attribute values
+		 */
 		const char** getAllAttributes();
 		
-		static bool hasNoAttributes(TiXmlElement *pElem, const char* elementName);
+		/***********************************************************************************************
+		 * Purpose: Call this to ensure there are no attributes on an element.
+		 * Parameters: pElem - the tiny xml element
+		 * Returns: true, if there were no errors
+		 */
+		static bool hasNoAttributes(TiXmlElement *pElem);
 	private:
+		/***********************************************************************************************
+		 * Purpose: This method is called if there are errors reading the attributes.  It displays
+		 *    the list of allowed attributes.
+		 */
 		void printAvailableAttributes();
 };
 

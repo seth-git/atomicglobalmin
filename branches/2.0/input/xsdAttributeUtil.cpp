@@ -8,15 +8,18 @@ bool XsdAttributeUtil::process (TiXmlElement* pElem)
 	unsigned int i;
 	bool bMatch;
 	const Strings* messagesDL = Strings::instance();
+	
 	for (i = 0; i < m_iAttributes; ++i) {
 		m_values[i] = NULL;
 	}
-
+	
 	for (pAttrib=pElem->FirstAttribute(); pAttrib; pAttrib=pAttrib->Next())
 	{
 		pName = pAttrib->Name();
 		bMatch = false;
 		for (i = 0; i < m_iAttributes; ++i) {
+			// Note: strncmp is not necessary on the next line because both strings are always null terminated.
+			// m_attributeNames[i] comes from a constant string or an std::string, and pName comes from a successfully parsed xml file.
 			if (strcmp(m_attributeNames[i], pName) == 0) {
 				if (m_values[i] != NULL) {
 					printf(messagesDL->m_sDuplicateAttributes.c_str(), m_attributeNames[i], pAttrib->Row(), m_sParentElement);
@@ -62,10 +65,10 @@ const char** XsdAttributeUtil::getAllAttributes()
 	return m_values;
 }
 
-bool XsdAttributeUtil::hasNoAttributes(TiXmlElement *pElem, const char* elementName) {
+bool XsdAttributeUtil::hasNoAttributes(TiXmlElement *pElem) {
 	if (pElem->FirstAttribute()) {
 		const Strings* messagesDL = Strings::instance();
-		printf(messagesDL->m_sMustNotContainAttributes.c_str(), elementName, pElem->Row());
+		printf(messagesDL->m_sMustNotContainAttributes.c_str(), pElem->Value(), pElem->Row());
 		return false;
 	}
 	return true;
