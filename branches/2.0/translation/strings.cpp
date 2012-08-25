@@ -145,6 +145,7 @@ bool Strings::init (const char* languageCode)
 	
 	m_sReadingFile = stringMap["ReadingFile"];
 	m_sWritingFile = stringMap["WritingFile"];
+	m_spAbbrTemporary = stringMap["pAbbrTemporary"];
 	
 	m_sDuplicateAttributes = stringMap["DuplicateAttributes"];
 	m_sUnrecognizedAttribute = stringMap["UnrecognizedAttribute"];
@@ -189,7 +190,7 @@ bool Strings::init (const char* languageCode)
 
 const std::string Strings::trim(const std::string& pString)
 {
-	static const std::string& pWhitespace = " \t";
+	static const std::string& pWhitespace = " \t\n\r";
     const size_t beginStr = pString.find_first_not_of(pWhitespace);
     if (beginStr == std::string::npos)
     {
@@ -207,4 +208,12 @@ const std::string Strings::trim(const char* pCharArr)
 {
 	const std::string& pString = pCharArr;
 	return trim(pString);
+}
+
+const char *Strings::getTrueFalseParam(bool boolValue) const
+{
+        if (boolValue)
+                return m_spTrue.c_str();
+        else
+                return m_spFalse.c_str();
 }

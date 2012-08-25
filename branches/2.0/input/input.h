@@ -34,18 +34,18 @@ class Input {
 			m_sLanguageCode = Strings::s_sDefaultLanguageCode;
 			m_messages = Strings::instance();
 		}
-
+		
 		~Input()
 		{
 			cleanUp();
 		}
-
+		
 		bool load(const char* pFilename);
-		void save(const char* pFilename);
-		void save();
+		bool save(const char* pFilename);
+		bool save();
 	private:
 		const Strings*            m_messages; // messages for m_sLanguageCode
-
+		
 		static const char*        s_agml;
 		
 		static const char*        s_attributeNames[];
@@ -54,7 +54,7 @@ class Input {
 		
 		static const unsigned int s_minOccurs[];
 		static const unsigned int s_maxOccurs[];
-
+		
 		void cleanUp();
 };
 

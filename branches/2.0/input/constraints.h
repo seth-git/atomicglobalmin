@@ -11,11 +11,12 @@
 
 class Constraints {
 	public:
+		std::string m_sName;
 		FLOAT* m_pfCubeLWH; // cube length, width, and height
 		FLOAT* m_pfGeneralMinAtomicDistance;
 		FLOAT* m_pfGeneralMaxAtomicDistance;
 		FLOAT** m_rgMinAtomicDistances;
-		std::string m_sName;
+		std::map<unsigned int, std::map<unsigned int,FLOAT> > m_mapMinAtomicDistances;
 
 		Constraints()
 		{
@@ -30,8 +31,8 @@ class Constraints {
 			cleanUp();
 		}
 
-		bool load(TiXmlElement *pElem, const Strings* messages);
-		void save(const Strings* messages);
+		bool load(TiXmlElement *pConstraintsElem, const Strings* messages);
+		void save(TiXmlElement *pConstraintsElem, const Strings* messages);
 	
 	private:
 		static const unsigned int s_minOccurs[];

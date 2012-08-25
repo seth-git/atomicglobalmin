@@ -214,6 +214,6 @@ bool XsdTypeUtil::readElementText(TiXmlElement *pElem, std::string &result) {
 		printf(messagesDL->m_sUnableToReadElementText.c_str(), pElem->Value(), pElem->Value(), pElem->Row());
 		return false;
 	}
-	result = pElem->GetText();
+	result = Strings::trim(pElem->GetText());
 	return true;
 }

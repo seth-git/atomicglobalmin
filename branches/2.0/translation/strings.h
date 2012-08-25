@@ -34,6 +34,8 @@ public:
 	Strings () { m_bLoaded = false; }
 	bool init(const char* languageCode);
 	
+	const char *getTrueFalseParam(bool boolValue) const;
+	
 	static const std::string trim(const std::string& pString);
 	static const std::string trim(const char* pCharArr);
 
@@ -92,6 +94,7 @@ public:
 
 	std::string m_sReadingFile;
 	std::string m_sWritingFile;
+	std::string m_spAbbrTemporary;
 	
 	std::string m_sDuplicateAttributes;
 	std::string m_sUnrecognizedAttribute;

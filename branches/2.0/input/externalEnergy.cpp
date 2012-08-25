@@ -142,14 +142,59 @@ bool ExternalEnergy::readMpiMaster(TiXmlElement *pElem, const Strings* messages)
 	return true;
 }
 
-void ExternalEnergy::save(const Strings* messages)
+void ExternalEnergy::save(TiXmlElement *pExternalElem, const Strings* messages)
 {
-/*	const char* attributeNames[] = {messages->m_sxMethod.c_str(), messages->m_sxTransitionStateSearch.c_str()};
-	const char* defaultValues[]   = {"", messages->m_sxFalse.c_str()};
-	const char* elementNames[] = {messages->m_sxSharedDirectory.c_str(), messages->m_sxLocalDirectory.c_str(),
-			messages->m_sxResultsDirectory.c_str(), messages->m_sxCharge.c_str(), messages->m_sxMultiplicity.c_str(),
-			messages->m_sxHeader.c_str(), messages->m_sxFooter.c_str(), messages->m_sxMpi.c_str()};
 	const char* methods[] = {messages->m_spADF.c_str(), messages->m_spGAMESS.c_str(), messages->m_spGAMESSUK.c_str(), messages->m_spGaussian.c_str(),
 			messages->m_spFirefly.c_str(), messages->m_spJaguar.c_str(), messages->m_spMolpro.c_str(), messages->m_spORCA.c_str()};
-	*/
+	pExternalElem->SetAttribute(messages->m_sxMethod.c_str(), methods[m_iMethod]);
+	if (m_bTransitionStateSearch)
+		pExternalElem->SetAttribute(messages->m_sxTransitionStateSearch.c_str(), messages->getTrueFalseParam(m_bTransitionStateSearch));
+	
+	TiXmlElement* sharedDir = new TiXmlElement(messages->m_sxSharedDirectory.c_str());  
+	pExternalElem->LinkEndChild(sharedDir);
+	sharedDir->SetAttribute(messages->m_sxPath.c_str(), m_sSharedDir.c_str());
+	
+	if (m_sLocalDir.length() > 0) {
+		TiXmlElement* localDir = new TiXmlElement(messages->m_sxLocalDirectory.c_str());  
+		pExternalElem->LinkEndChild(localDir);
+		localDir->SetAttribute(messages->m_sxPath.c_str(), m_sLocalDir.c_str());
+	}
+	
+	if (m_sResultsDir.length() > 0) {
+		TiXmlElement* resultsDir = new TiXmlElement(messages->m_sxResultsDirectory.c_str());  
+		pExternalElem->LinkEndChild(resultsDir);
+		resultsDir->SetAttribute(messages->m_sxPath.c_str(), m_sResultsDir.c_str());
+		if (m_iMaxResultsFiles != 1)
+			resultsDir->SetAttribute(messages->m_sxMaxFiles.c_str(), m_iMaxResultsFiles);
+		if (m_sResultsFilePrefix != messages->m_spBest)
+			resultsDir->SetAttribute(messages->m_sxFilePrefix.c_str(), m_sResultsFilePrefix.c_str());
+	}
+	
+	TiXmlElement* charge = new TiXmlElement(messages->m_sxCharge.c_str());  
+	pExternalElem->LinkEndChild(charge);
+	charge->SetAttribute(messages->m_sxValue.c_str(), m_iCharge);
+	
+	TiXmlElement* multiplicity = new TiXmlElement(messages->m_sxMultiplicity.c_str());  
+	pExternalElem->LinkEndChild(multiplicity);
+	multiplicity->SetAttribute(messages->m_sxValue.c_str(), m_iMultiplicity);
+	
+	TiXmlElement* header = new TiXmlElement(messages->m_sxHeader.c_str());
+	TiXmlText* text = new TiXmlText(m_sHeader.c_str());
+	text->SetCDATA(true); // helps protect formatting
+	header->LinkEndChild(text);
+	pExternalElem->LinkEndChild(header);
+	
+	if (m_sFooter.length() > 0) {
+		TiXmlElement* footer = new TiXmlElement(messages->m_sxFooter.c_str());
+		TiXmlText* text = new TiXmlText(m_sFooter.c_str());
+		text->SetCDATA(true); // helps protect formatting
+		footer->LinkEndChild(text);
+		pExternalElem->LinkEndChild(footer);
+	}
+	
+	if (m_bMpiMaster) {
+		TiXmlElement* mpi = new TiXmlElement(messages->m_sxMpi.c_str());
+		mpi->SetAttribute(messages->m_sxMaster.c_str(), messages->getTrueFalseParam(m_bMpiMaster));
+		pExternalElem->LinkEndChild(mpi);
+	}
 }

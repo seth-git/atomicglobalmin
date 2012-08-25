@@ -7,7 +7,7 @@
 #include "xsdAttributeUtil.h"
 #include "xsdTypeUtil.h"
 
-#define LENNARD_JONES              1
+#define LENNARD_JONES              0
 
 class InternalEnergy {
 	public:
@@ -20,8 +20,8 @@ class InternalEnergy {
 			m_iMethod = LENNARD_JONES;
 		}
 
-		bool load(TiXmlElement *pElem, const Strings* messages);
-		void save(const Strings* messages);
+		bool load(TiXmlElement *pInternalEnergyElem, const Strings* messages);
+		void save(TiXmlElement *pInternalEnergyElem, const Strings* messages);
 
 	private:
 		static const bool  s_required[];

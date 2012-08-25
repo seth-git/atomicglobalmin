@@ -63,6 +63,7 @@
 % mem=2000MB
 # B3LYP/6-311++G(d,p) scfcon=4 scfcyc=300 scf=direct
                         </header>
+			<mpi master="true"/>
                 </external>
 	</energy>
 	<results maxSize="20000">

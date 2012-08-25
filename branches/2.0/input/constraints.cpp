@@ -35,21 +35,21 @@ void Constraints::cleanUp() {
 	}
 }
 
-bool Constraints::load(TiXmlElement *pElem, const Strings* messages)
+bool Constraints::load(TiXmlElement *pConstraintsElem, const Strings* messages)
 {
 	const char* elementNames[] = {messages->m_sxCube.c_str(), messages->m_sxAtomicDistances.c_str()};
 	const char* distElementNames[] = {messages->m_sxMin.c_str(), messages->m_sxMax.c_str()};
-	XsdElementUtil constraintUtil(pElem->Value(), XSD_ALL, elementNames, s_minOccurs);
+	XsdElementUtil constraintUtil(pConstraintsElem->Value(), XSD_ALL, elementNames, s_minOccurs);
 	TiXmlHandle handle(0);
 	TiXmlElement** constraintElements;
 
 	cleanUp();
 	
-	if (!XsdTypeUtil::readStrValueElement(pElem, m_sName, messages->m_sxName.c_str())) {
+	if (!XsdTypeUtil::readStrValueElement(pConstraintsElem, m_sName, messages->m_sxName.c_str())) {
 		return false;
 	}
 
-	handle=TiXmlHandle(pElem);
+	handle=TiXmlHandle(pConstraintsElem);
 	if (!constraintUtil.process(handle)) {
 		return false;
 	}
@@ -61,7 +61,7 @@ bool Constraints::load(TiXmlElement *pElem, const Strings* messages)
 	}
 
 	if (constraintElements[1] != NULL) {
-		XsdElementUtil distUtil(pElem->Value(), XSD_SEQUENCE, distElementNames, s_distMinOccurs, s_distMaxOccurs);
+		XsdElementUtil distUtil(pConstraintsElem->Value(), XSD_SEQUENCE, distElementNames, s_distMinOccurs, s_distMaxOccurs);
 		TiXmlHandle handle(0);
 		std::vector<TiXmlElement*>* distElements;
 		unsigned int i;
@@ -146,14 +146,44 @@ bool Constraints::addMinDist(TiXmlElement *pElem, const Strings* messages)
 			return false;
 		}
 		m_rgMinAtomicDistances[j][i] = m_rgMinAtomicDistances[i][j];
+		m_mapMinAtomicDistances[i][j] = m_rgMinAtomicDistances[i][j];
 	}
 	return true;
 }
 
-void Constraints::save(const Strings* messages)
+void Constraints::save(TiXmlElement *pConstraintsElem, const Strings* messages)
 {
-//  These are commented out to prevent a compiler warning.  They are needed.
-//	const char* elementNames[] = {messages->m_sxCube.c_str(), messages->m_sxAtomicDistances.c_str()};
-//	const char* distElementNames[] = {messages->m_sxMin.c_str(), messages->m_sxMax.c_str()};
-//	const char* attributeNames[] = {messages->m_sxValue.c_str(), messages->m_sxZ1.c_str() , messages->m_sxZ2.c_str()};
+	pConstraintsElem->SetAttribute(messages->m_sxName.c_str(), m_sName.c_str());
+	if (m_pfCubeLWH) {
+		TiXmlElement* cube = new TiXmlElement(messages->m_sxCube.c_str());
+		cube->SetDoubleAttribute(messages->m_sxSize.c_str(), *m_pfCubeLWH);
+		pConstraintsElem->LinkEndChild(cube);
+	}
+	
+	if (m_pfGeneralMinAtomicDistance || m_pfGeneralMaxAtomicDistance || m_rgMinAtomicDistances) {
+		TiXmlElement* atomicDistances = new TiXmlElement(messages->m_sxAtomicDistances.c_str());
+		if (m_pfGeneralMinAtomicDistance) {
+			TiXmlElement* generalMin = new TiXmlElement(messages->m_sxMin.c_str());
+			generalMin->SetDoubleAttribute(messages->m_sxValue.c_str(), *m_pfGeneralMinAtomicDistance);
+			atomicDistances->LinkEndChild(generalMin);
+		}
+		if (m_rgMinAtomicDistances) {
+			TiXmlElement* min;
+		    for(std::map<unsigned int, std::map<unsigned int, FLOAT> >::iterator i = m_mapMinAtomicDistances.begin(); i != m_mapMinAtomicDistances.end(); i++)
+			    for(std::map<unsigned int, FLOAT>::iterator j = i->second.begin(); j != i->second.end(); j++)
+			    {
+					min = new TiXmlElement(messages->m_sxMin.c_str());
+					min->SetDoubleAttribute(messages->m_sxValue.c_str(), j->second);
+					min->SetAttribute(messages->m_sxZ1.c_str(), i->first);
+					min->SetAttribute(messages->m_sxZ2.c_str(), j->first);
+					atomicDistances->LinkEndChild(min);
+				}
+		}
+		if (m_pfGeneralMaxAtomicDistance) {
+			TiXmlElement* generalMax = new TiXmlElement(messages->m_sxMax.c_str());
+			generalMax->SetDoubleAttribute(messages->m_sxValue.c_str(), *m_pfGeneralMaxAtomicDistance);
+			atomicDistances->LinkEndChild(generalMax);
+		}
+		pConstraintsElem->LinkEndChild(atomicDistances);
+	}
 }

@@ -114,37 +114,67 @@ bool Input::load(const char* pFilename)
 	return true;
 }
 
-void Input::save(const char* pFilename)
+bool Input::save(const char* pFilename)
 {
 	m_sFileName = pFilename;
-	save();
+	return save();
 }
 
-void Input::save()
+bool Input::save()
 {
 	const Strings* messagesDL = Strings::instance();
+	m_messages = messagesDL;
 	m_sLanguageCode = Strings::s_sDefaultLanguageCode;
-	m_messages = Strings::instance(m_sLanguageCode);
-	
+
 	printf(messagesDL->m_sWritingFile.c_str(), m_sFileName.c_str());
 
 	TiXmlDocument doc;
 	TiXmlDeclaration* decl = new TiXmlDeclaration( "1.0", "", "" );
 	doc.LinkEndChild( decl );
 	
-	TiXmlElement* pElem = new TiXmlElement(s_agml);
-	doc.LinkEndChild(pElem);
+	TiXmlElement* agml = new TiXmlElement(s_agml);
+	doc.LinkEndChild(agml);
 	
-	pElem->SetAttribute(s_attributeNames[0], m_sVersion.c_str());
-	pElem->SetAttribute(s_attributeNames[1], m_sLanguageCode.c_str());
-	pElem->SetAttribute(s_attributeNames[2], s_defaultValues[2]);
-	pElem->SetAttribute(s_attributeNames[3], s_defaultValues[3]);
-	pElem->SetAttribute(s_attributeNames[4], s_defaultValues[4]);
+	agml->SetAttribute(s_attributeNames[0], m_sVersion.c_str());
+	agml->SetAttribute(s_attributeNames[1], m_sLanguageCode.c_str());
+	agml->SetAttribute(s_attributeNames[2], s_defaultValues[2]);
+	agml->SetAttribute(s_attributeNames[3], s_defaultValues[3]);
+	agml->SetAttribute(s_attributeNames[4], s_defaultValues[4]);
 	
-	doc.SaveFile(m_sFileName.c_str());
-
-//	These are commented out to prevent a compiler warning.  They are needed.
-//	const char* elementNames[] = {m_messages->m_sxAction.c_str(), m_messages->m_sxConstraints.c_str(), m_messages->m_sxEnergy.c_str(), m_messages->m_sxResults.c_str()};
-//	const char* actionElementNames[] = {m_messages->m_sxSimulatedAnnealing.c_str(), m_messages->m_sxRandomSearch.c_str(), m_messages->m_sxParticleSwarmOptimization.c_str(), m_messages->m_sxGeneticAlgorithm.c_str(), m_messages->m_sxBatch.c_str()};
-//	const char* energyElementNames[] = {m_messages->m_sxInternal.c_str(), m_messages->m_sxExternal.c_str()};
+	TiXmlElement* action = new TiXmlElement(m_messages->m_sxAction.c_str());
+	agml->LinkEndChild(action);
+	const char* actionElementNames[] = {m_messages->m_sxSimulatedAnnealing.c_str(), m_messages->m_sxRandomSearch.c_str(), m_messages->m_sxParticleSwarmOptimization.c_str(), m_messages->m_sxGeneticAlgorithm.c_str(), m_messages->m_sxBatch.c_str()};
+	TiXmlElement* actionChild = new TiXmlElement(actionElementNames[m_iAction]);
+	action->LinkEndChild(actionChild);
+	
+	TiXmlElement* constraints;
+	for (unsigned int i = 0; i < m_constraints.size(); ++i) {
+		constraints = new TiXmlElement(m_messages->m_sxConstraints.c_str());
+		agml->LinkEndChild(constraints);
+		m_constraints[i].save(constraints, m_messages);
+	}
+	
+	TiXmlElement* energy = new TiXmlElement(m_messages->m_sxEnergy.c_str());  
+	agml->LinkEndChild(energy);
+	if (m_bExternalEnergy) {
+		TiXmlElement* external = new TiXmlElement(m_messages->m_sxExternal.c_str());
+		m_externalEnergy.save(external, m_messages);
+		energy->LinkEndChild(external);
+	} else {
+		TiXmlElement* internal = new TiXmlElement(m_messages->m_sxInternal.c_str());
+		m_internalEnergy.save(internal, m_messages);
+		energy->LinkEndChild(internal);
+	}
+	
+	TiXmlElement* results = new TiXmlElement(m_messages->m_sxResults.c_str());  
+	agml->LinkEndChild(results);
+	
+	std::string temporaryFileName;
+	temporaryFileName.append(m_sFileName).append(".").append(messagesDL->m_spAbbrTemporary);
+	
+	if (!doc.SaveFile(temporaryFileName.c_str()))
+		return false;
+	std::string mvCommand;
+	mvCommand.append("mv ").append(temporaryFileName).append(" ").append(m_sFileName);
+	return !system(mvCommand.c_str());
 }

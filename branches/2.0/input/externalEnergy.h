@@ -8,14 +8,14 @@
 #include "xsdAttributeUtil.h"
 #include "xsdTypeUtil.h"
 
-#define ADF                                 1
-#define GAMESS                              2
-#define GAMESS_UK                           3
-#define GAUSSIAN                            4
-#define FIREFLY                             5
-#define JAGUAR                              6
-#define MOLPRO                              7
-#define ORCA                                8
+#define ADF                                 0
+#define GAMESS                              1
+#define GAMESS_UK                           2
+#define GAUSSIAN                            3
+#define FIREFLY                             4
+#define JAGUAR                              5
+#define MOLPRO                              6
+#define ORCA                                7
 
 class ExternalEnergy {
 	public:
@@ -31,9 +31,9 @@ class ExternalEnergy {
 		std::string m_sHeader;
 		std::string m_sFooter;
 		bool m_bMpiMaster;
-
-		bool load(TiXmlElement *pElem, const Strings* messages);
-		void save(const Strings* messages);
+		
+		bool load(TiXmlElement *pExternalElem, const Strings* messages);
+		void save(TiXmlElement *pExternalElem, const Strings* messages);
 		
 	private:
 		static const bool         s_required[];
