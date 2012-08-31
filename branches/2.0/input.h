@@ -4,12 +4,11 @@
 
 #include <stdio.h>
 #include <string>
-#include "xsdElementUtil.h"
-#include "xsdAttributeUtil.h"
 #include "internalEnergy.h"
 #include "externalEnergy.h"
 #include "constraints.h"
-#include "../translation/strings.h"
+#include "action.h"
+#include "simulatedAnnealing.h"
 
 #define SIMULATED_ANNEALING              0
 #define RANDOM_SEARCH                    1
@@ -22,7 +21,8 @@ class Input {
 		std::string m_sFileName;
 		std::string m_sVersion;
 		std::string m_sLanguageCode; // 2 characters long
-		int m_iAction; // a constant value and an index to s_actionElementNames
+		int m_iAction; // SIMULATED_ANNEALING, RANDOM_SEARCH, PARTICLE_SWARM_OPTIMIZATION, etc.
+		IAction *m_pAction;
 		bool m_bExternalEnergy;
 		InternalEnergy m_internalEnergy;
 		ExternalEnergy m_externalEnergy;
@@ -33,6 +33,7 @@ class Input {
 			m_iAction = -1;
 			m_sLanguageCode = Strings::s_sDefaultLanguageCode;
 			m_messages = Strings::instance();
+			m_pAction = NULL;
 		}
 		
 		~Input()

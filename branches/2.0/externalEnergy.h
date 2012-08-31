@@ -4,9 +4,9 @@
 
 #include <stdio.h>
 #include <string>
-#include "xsdElementUtil.h"
-#include "xsdAttributeUtil.h"
-#include "xsdTypeUtil.h"
+#include "xsd/xsdElementUtil.h"
+#include "xsd/xsdAttributeUtil.h"
+#include "xsd/xsdTypeUtil.h"
 
 #define ADF                                 0
 #define GAMESS                              1
@@ -33,7 +33,7 @@ class ExternalEnergy {
 		bool m_bMpiMaster;
 		
 		bool load(TiXmlElement *pExternalElem, const Strings* messages);
-		void save(TiXmlElement *pExternalElem, const Strings* messages);
+		bool save(TiXmlElement *pExternalElem, const Strings* messages);
 		
 	private:
 		static const bool         s_required[];

@@ -4,8 +4,8 @@
 
 #include <stdio.h>
 #include <string>
-#include "xsdAttributeUtil.h"
-#include "xsdTypeUtil.h"
+#include "xsd/xsdAttributeUtil.h"
+#include "xsd/xsdTypeUtil.h"
 
 #define LENNARD_JONES              0
 
@@ -21,7 +21,7 @@ class InternalEnergy {
 		}
 
 		bool load(TiXmlElement *pInternalEnergyElem, const Strings* messages);
-		void save(TiXmlElement *pInternalEnergyElem, const Strings* messages);
+		bool save(TiXmlElement *pInternalEnergyElem, const Strings* messages);
 
 	private:
 		static const bool  s_required[];

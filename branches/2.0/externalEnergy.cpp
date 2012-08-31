@@ -142,7 +142,7 @@ bool ExternalEnergy::readMpiMaster(TiXmlElement *pElem, const Strings* messages)
 	return true;
 }
 
-void ExternalEnergy::save(TiXmlElement *pExternalElem, const Strings* messages)
+bool ExternalEnergy::save(TiXmlElement *pExternalElem, const Strings* messages)
 {
 	const char* methods[] = {messages->m_spADF.c_str(), messages->m_spGAMESS.c_str(), messages->m_spGAMESSUK.c_str(), messages->m_spGaussian.c_str(),
 			messages->m_spFirefly.c_str(), messages->m_spJaguar.c_str(), messages->m_spMolpro.c_str(), messages->m_spORCA.c_str()};
@@ -197,4 +197,5 @@ void ExternalEnergy::save(TiXmlElement *pExternalElem, const Strings* messages)
 		mpi->SetAttribute(messages->m_sxMaster.c_str(), messages->getTrueFalseParam(m_bMpiMaster));
 		pExternalElem->LinkEndChild(mpi);
 	}
+	return true;
 }

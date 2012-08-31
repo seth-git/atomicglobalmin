@@ -32,10 +32,11 @@ bool InternalEnergy::load(TiXmlElement *pInternalEnergyElem, const Strings* mess
 	return true;
 }
 
-void InternalEnergy::save(TiXmlElement *pInternalEnergyElem, const Strings* messages)
+bool InternalEnergy::save(TiXmlElement *pInternalEnergyElem, const Strings* messages)
 {
 	const char* methods[] = {messages->m_spLennardJones.c_str()};
 	pInternalEnergyElem->SetAttribute(messages->m_sxMethod.c_str(), methods[m_iMethod]);
 	if (m_bLocalOptimization)
 		pInternalEnergyElem->SetAttribute(messages->m_sxOpt.c_str(), messages->m_spTrue.c_str());
+	return true;
 }

@@ -3,6 +3,9 @@
 
 void Input::cleanUp() {
 	m_iAction = -1;
+	if (m_pAction != NULL)
+		delete m_pAction;
+	m_pAction = NULL;
 	m_constraints.clear();
 }
 
@@ -83,6 +86,20 @@ bool Input::load(const char* pFilename)
 	}
 	pElem = actionUtil.getChoiceElement();
 	m_iAction = actionUtil.getChoiceElementIndex();
+	switch (m_iAction) {
+	case SIMULATED_ANNEALING:
+		m_pAction = new SimulatedAnnealing();
+		m_pAction->load(pElem, m_messages);
+		break;
+	case RANDOM_SEARCH:
+		break;
+	case PARTICLE_SWARM_OPTIMIZATION:
+		break;
+	case GENETIC_ALGORITHM:
+		break;
+	case BATCH:
+		break;
+	}
 
 	for (i = 0; i < atgmlElements[1].size(); ++i) {
 		m_constraints.push_back(Constraints());
@@ -143,27 +160,30 @@ bool Input::save()
 	
 	TiXmlElement* action = new TiXmlElement(m_messages->m_sxAction.c_str());
 	agml->LinkEndChild(action);
-	const char* actionElementNames[] = {m_messages->m_sxSimulatedAnnealing.c_str(), m_messages->m_sxRandomSearch.c_str(), m_messages->m_sxParticleSwarmOptimization.c_str(), m_messages->m_sxGeneticAlgorithm.c_str(), m_messages->m_sxBatch.c_str()};
-	TiXmlElement* actionChild = new TiXmlElement(actionElementNames[m_iAction]);
-	action->LinkEndChild(actionChild);
+	if (m_pAction != NULL)
+		if (!m_pAction->save(action, m_messages))
+			return false;
 	
 	TiXmlElement* constraints;
 	for (unsigned int i = 0; i < m_constraints.size(); ++i) {
 		constraints = new TiXmlElement(m_messages->m_sxConstraints.c_str());
 		agml->LinkEndChild(constraints);
-		m_constraints[i].save(constraints, m_messages);
+		if (!m_constraints[i].save(constraints, m_messages))
+			return false;
 	}
 	
 	TiXmlElement* energy = new TiXmlElement(m_messages->m_sxEnergy.c_str());  
 	agml->LinkEndChild(energy);
 	if (m_bExternalEnergy) {
 		TiXmlElement* external = new TiXmlElement(m_messages->m_sxExternal.c_str());
-		m_externalEnergy.save(external, m_messages);
 		energy->LinkEndChild(external);
+		if (!m_externalEnergy.save(external, m_messages))
+			return false;
 	} else {
 		TiXmlElement* internal = new TiXmlElement(m_messages->m_sxInternal.c_str());
-		m_internalEnergy.save(internal, m_messages);
 		energy->LinkEndChild(internal);
+		if (!m_internalEnergy.save(internal, m_messages))
+			return false;
 	}
 	
 	TiXmlElement* results = new TiXmlElement(m_messages->m_sxResults.c_str());  

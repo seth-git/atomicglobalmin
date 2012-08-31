@@ -151,7 +151,7 @@ bool Constraints::addMinDist(TiXmlElement *pElem, const Strings* messages)
 	return true;
 }
 
-void Constraints::save(TiXmlElement *pConstraintsElem, const Strings* messages)
+bool Constraints::save(TiXmlElement *pConstraintsElem, const Strings* messages)
 {
 	pConstraintsElem->SetAttribute(messages->m_sxName.c_str(), m_sName.c_str());
 	if (m_pfCubeLWH) {
@@ -186,4 +186,5 @@ void Constraints::save(TiXmlElement *pConstraintsElem, const Strings* messages)
 		}
 		pConstraintsElem->LinkEndChild(atomicDistances);
 	}
+	return true;
 }

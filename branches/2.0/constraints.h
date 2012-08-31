@@ -4,10 +4,10 @@
 
 #include <stdio.h>
 #include <string>
-#include "xsdAttributeUtil.h"
-#include "xsdElementUtil.h"
-#include "xsdTypeUtil.h"
-#include "../translation/strings.h"
+#include "xsd/xsdAttributeUtil.h"
+#include "xsd/xsdElementUtil.h"
+#include "xsd/xsdTypeUtil.h"
+#include "translation/strings.h"
 
 class Constraints {
 	public:
@@ -15,8 +15,7 @@ class Constraints {
 		FLOAT* m_pfCubeLWH; // cube length, width, and height
 		FLOAT* m_pfGeneralMinAtomicDistance;
 		FLOAT* m_pfGeneralMaxAtomicDistance;
-		FLOAT** m_rgMinAtomicDistances;
-		std::map<unsigned int, std::map<unsigned int,FLOAT> > m_mapMinAtomicDistances;
+		FLOAT** m_rgMinAtomicDistances; // 2D array, insert two atomic numbers, and get the minimum distance back (will be -1 if there is no value)
 
 		Constraints()
 		{
@@ -32,9 +31,11 @@ class Constraints {
 		}
 
 		bool load(TiXmlElement *pConstraintsElem, const Strings* messages);
-		void save(TiXmlElement *pConstraintsElem, const Strings* messages);
+		bool save(TiXmlElement *pConstraintsElem, const Strings* messages);
 	
 	private:
+		std::map<unsigned int, std::map<unsigned int,FLOAT> > m_mapMinAtomicDistances; // 2D map (similar to m_rgMinAtomicDistances, except this is used for faster writing of the constraints to a file)
+		
 		static const unsigned int s_minOccurs[];
 		
 		static const unsigned int s_distMinOccurs[];
