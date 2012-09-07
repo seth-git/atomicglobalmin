@@ -14,7 +14,7 @@ bool Init::initLinearMoleculeSet(MoleculeSet &moleculeSet, Point3D &boxDimension
 		cout << "Failed to initialize linear molecule set after " << INITIALIZATION_TRIES << " tries." << endl;
 		cout << "Initialization box size is probably too small: " << boxDimensions.x << "x"
 		                                                          << boxDimensions.y << "x"
-		                                                          << boxDimensions.z << "x" << endl;
+		                                                          << boxDimensions.z << endl;
 		return false;
 	}
 	
@@ -37,7 +37,7 @@ bool Init::initPlanarMoleculeSet(MoleculeSet &moleculeSet, Point3D &boxDimension
 		cout << "Failed to initialize planar molecule set after " << INITIALIZATION_TRIES << " tries." << endl;
 		cout << "Initialization box size is probably too small: " << boxDimensions.x << "x"
 		                                                          << boxDimensions.y << "x"
-		                                                          << boxDimensions.z << "x" << endl;
+		                                                          << boxDimensions.z << endl;
 		return false;
 	}
 
