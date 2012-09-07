@@ -259,7 +259,7 @@ bool Energy::createInputFile(MoleculeSet &moleculeSet, int populationMemberNumbe
 		createGamessInputFile(moleculeSet, populationMemberNumber, writeMetaData);
 		break;
 	default:
-		cout << "Please modify the createInputFile function in energy.cc for your energy program: " << s_energyProgram.getName() << endl;
+		cout << "Please modify the createInputFile function in energy.cc for your energy program: " << s_energyProgram.m_sName << endl;
 		exit(0);
 		break;
 	}
@@ -347,7 +347,7 @@ void Energy::readOutputFile(const char* outputFileName, FLOAT &energy, MoleculeS
 				readGaussianOutputFile(outputFileName, energy, pMoleculeSet, openedFile, readEnergy, obtainedGeometry, normalTerminationOfGaussian);
 				break;
 			default:
-				cout << "Please modify the readOutputFile function in energy.cc for your energy program: " << s_energyProgram.getName() << endl;
+				cout << "Please modify the readOutputFile function in energy.cc for your energy program: " << s_energyProgram.m_sName << endl;
 				exit(0);
 				break;
 		}
@@ -680,7 +680,7 @@ bool Energy::doEnergyCalculation(int populationMemberNumber)
 				throw "Unable to run GAMESS-US.";
 			break;
 		default:
-			cout << "Please modify the doEnergyCalculation function and indicate how '" << s_energyProgram.getName() << "' should be called." << endl;
+			cout << "Please modify the doEnergyCalculation function and indicate how '" << s_energyProgram.m_sName << "' should be called." << endl;
 			exit(0);
 		}
 		if (s_fullScratchDirectory.length() > 0) {

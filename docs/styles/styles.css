@@ -5,10 +5,6 @@
 	ol.letters {
 		list-style-type: upper-alpha;
 	}
-        .content {
-		font-weight: normal;
-		font-size:14pt;
-        }
 	body.mainBody {
 		font-size:12pt;
 		text-align:center;
@@ -31,6 +27,9 @@
 	}
 	table.itemLayoutTable td {
 		text-align:left;
+	}
+	.textObjects {
+		font-size:14pt;
 	}
 	.toggleObjects {
 		display: none;
@@ -58,24 +57,6 @@
 		background-repeat: no-repeat;
 		background-position: center 75px;
         }
-	@media print {
-		table.mainLayoutTable {
-			width:100%;
-			font-size:10pt;
-		}
-		.content {
-			width:100%;
-			font-size:10pt;
-		}
-		body.mainBody {
-			font-size:10pt;
-		}
-		#outlineCell a, #outlineCell li {
-			font-weight: bold;
-			text-decoration: none;
-			color: black;
-		}
-	}
 </style>
 
 
