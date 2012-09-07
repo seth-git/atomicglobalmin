@@ -1220,10 +1220,6 @@ void Molecule::performPSO(Molecule &populationBest, Molecule &individualBest, FL
                           FLOAT fAttractionRepulsion)
 {
 	FLOAT coordinateVelocity;
-	FLOAT angularVelocity;
-	angularVelocity = sqrt(m_PSOAngleVelocity.x * m_PSOAngleVelocity.x + 
-	                       m_PSOAngleVelocity.y * m_PSOAngleVelocity.y + 
-	                       m_PSOAngleVelocity.z * m_PSOAngleVelocity.z);
 	
 	m_PSOCenterOfMassVelocity.x = m_PSOCenterOfMassVelocity.x * coordInertia
 		+ fAttractionRepulsion * coordPopulationMinimumAttraction * randomFloat(0,1) *

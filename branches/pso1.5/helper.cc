@@ -18,77 +18,6 @@ void printHelpMenu()
 	infile.close();
 }
 
-int getChoiceInRange(int low, int high)
-{
-	string answerString;
-	int answerInt;
-	while (true) {
-		cin >> answerString;
-		answerInt = atoi(answerString.c_str());
-		if (low != -1)
-			if (answerInt < low) {
-				cout << "Please enter a number greater or equal to " << low << ", or press Ctrl-C to quit." << endl;
-				continue;
-			}
-		if (high != -1)
-			if (answerInt > high) {
-				cout << "Please enter a number less than or equal to " << high << ", or press Ctrl-C to quit." << endl;
-				continue;
-			}
-		return answerInt;
-	}
-}
-
-void enterSingleMolecule(Input &input, bool askNumber)
-{
-	char line[500];
-	vector<string> lines;
-	int atomic_number;
-	int answer;
-	Point3D point;
-	
-	cout << "Enter the cartesian coordinates of a molecule(or set of atoms) with one atom per line in the format below.  Enter 'done' when finished." << endl;
-	cout << "atomic_number x y z" << endl;
-
-	while (fgets(line, sizeof line, stdin) != NULL )
-	{
-		char *newline = strchr(line, '\n'); /* search for newline character */
-		if (newline != NULL)
-			*newline = '\0'; /* overwrite trailing newline */
-		if (strcmp(line, "done") == 0)
-			break;
-		if (strcmp(line, "") == 0)
-			continue;
-		if (sscanf(line, "%d %lf %lf %lf", &atomic_number, &point.x, &point.y, &point.z) != 4)
-			cout << "Error reading atom.  Please enter it again." << endl;
-		lines.push_back(line);
-	}
-	if (askNumber) {
-		cout << "How many of these molecules are there?" << endl;
-		answer = getChoiceInRange(1,-1);
-	}
-	++input.m_iNumStructureTypes;
-}
-
-void wizzard(void)
-{
-	Input input;
-	int answerInt;
-	cout << "Welcome to the pso input file creation wizzard!" << endl << endl;
-	cout << "You may press Ctrl-C at any time to stop the wizzard." << endl << endl;
-	cout << "Please choose from the following options:" << endl;
-	cout << "1. Perform a bond rotational search on a single molecule" << endl;
-	cout << "2. Perform a global minimum search via translation and rotation of molecules/atoms" << endl;
-	answerInt = getChoiceInRange(1,2);
-	switch (answerInt) {
-	case 1:
-		enterSingleMolecule(input, true);
-		break;
-	case 2:
-		break;
-	}
-}
-
 int main(int argc, char *argv[])
 {
 	vector<const char*> recognizedOptions;
@@ -177,9 +106,7 @@ int main(int argc, char *argv[])
 			printHelpMenu();
 			throw "";
 		}
-		if (ArgumentParser::optionPresent("-w")) { // # Run the wizzard
-			wizzard();
-		} else if (ArgumentParser::optionPresent("-t")) { // # Make an output file from a resume file that's readable
+		if (ArgumentParser::optionPresent("-t")) { // # Make an output file from a resume file that's readable
 			if (ArgumentParser::getNumOptions() > 1) {
 				cout << "No other options may be specified with the -t option." << endl;
 				throw "";
