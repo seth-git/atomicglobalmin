@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Atomic Global Minimum Locator: Seeding the starting population with structures from previous runs</title>
+    <link href="../styles/styles.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body class="mainBody">
+    <h1>Atomic Global Minimum Locator: Seeding the starting population with structures from previous runs</h1>
+    <br/>
+    <table class="itemLayoutTable"><tr><td>
+    <a href="../index.html?show=tips">Menu</a>
+    <br/><br/>
+    <a href="creating.html">Previous</a>
+    <a href="wall.html" style="float:right">Next</a>
+    <br/><br/>
+
+The results from one or more previous runs may be used to start a new run.  An example of how to do this is using the command:
+    <br/><br/>
+
+    &#160;&#160;&#160;&#160;&#160;./pso -s File1.res File2.res File3.res 200 File.inp
+    <br/><br/>
+
+This command starts a run based on input parameters in File.inp.  Before doing so, it moves chemical structures from the list of best structures in the seed files (File1.res, File2.res, and File3.res) and places them in the starting population ensuring that each structure in the starting population is different from every other structure by the RMS distance specified in File.inp.  Any number of seed files may be used.  If there are not enough structures in the seed files to create a population of the size specified in File.inp, the structure with the lowest energy value will be duplicated to achieve the right population size.
+    <br/><br/>
+
+If the seed files contain fewer of one type of unit or molecule, new molecules will be created and initialized with random positions and angles.  The number after the input file, in this case 200, is the number of iterations to perform freezing.  The coordinates of molecules or units read from the seed files will be frozen for this number of iterations, while the coordinates and angles of any randomly created molecules or units will be allowed to move.  Setting the number of iterations to perform freezing to zero turns freezing off.
+    <br/><br/>
+
+Note: when using multiple options, specify the -s option last, as the program will assume that every following argument is a seed file.
+
+    <br/><br/>
+    <a href="../index.html?show=tips">Menu</a>
+    <br/><br/>
+    <a href="creating.html">Previous</a>
+    <a href="wall.html" style="float:right">Next</a>
+    </td></tr></table>
+  </body>
+</html>
+

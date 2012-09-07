@@ -1,0 +1,49 @@
+﻿Usage: pso [OPTION]... INPUT_FILE
+This program performs searches for minima as specified in the INPUT_FILE.
+
+  -i                           This option is used with simulated annealing.
+                               Normally when a population of solutions is used,
+                               the iteration number for each member of the
+                               population stays the same, and all energy
+                               calculations for a particular iteration must be
+                               completed before going on to the next iteration.
+                               This option specifies that each member of the
+                               population acts as an independent run, meaning that 
+                               different iteration numbers are allowed for
+                               different members of the population.  This
+                               increases the search speed, since separate runs do
+                               not wait for one another.  Using this option causes
+                               each member of the population to have it's own
+                               resume and output file and list of best
+                               structures. Type './helper -h' and compare with
+                               the -u option.
+  -m                           This option specifies that one of the mpi
+                               processes acts as master, not performing any
+                               energy calculations, but assigning these to
+                               other mpi processes.  When this option is off,
+                               mpi processes will not communicate, but will
+                               evenly divide up the energy calculations.
+  -s                           This specifies that the starting population will
+                               be seeded with structures from previous runs.
+                               Specify one or more resume/optimiation files,
+                               followed by the number of iterations to perform
+                               freezing.
+  -test                        Using this option during a simulated annealing,
+                               particle swarm, or genetic algorithm run causes
+                               a file called test.log to be created inside the
+                               testfiles directory.  This log file contains
+                               geometries of one member of the population
+                               during the entire course of the run, and is
+                               meant to be viewed in Molden.  Since Molden can
+                               only read 2000 geometries from a log file, this
+                               program will produce additional log files if more
+                               than 2000 geometries are generated during a run.
+                               Make sure when using this option that enough hard
+                               drive space is available. This option requires
+                               no arguments.
+  -walltime                    This option specifies a maximum amount of time
+                               for the program to run.  Before the wall time
+                               is reached, the program will self terminate,
+                               cleaning up any files in the scratch directory.
+                               Specify hours, minutes, and seconds in the format
+                               HH:MM:SS. 
