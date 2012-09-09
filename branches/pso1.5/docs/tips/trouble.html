@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Atomic Global Minimum Locator: Trouble Shooting</title>
+    <link href="../styles/styles.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body class="mainBody">
+    <h1>Atomic Global Minimum Locator: Trouble Shooting</h1>
+    <br/>
+    <table class="itemLayoutTable"><tr><td>
+    <a href="../index.html?show=tips">Menu</a>
+    <br/><br/>
+    <a href="trans.html">Previous</a>
+    <br/>
+    <div class="content">
+    <br/>
+
+If you encounter unexpected behavior from the application, here are some things you can do.  First, check program documentation to ensure the software is not performing as designed.  Second, there are a few unit tests that you can run.  In particular, these can help check that the cclib package is installed correctly. To run the unit tests, navigate (cd) to the main program directory and type './unit'.  Third, turn on additional error messages by setting the PRINT_CATCH_MESSAGES constant to 'true' at the top of input.h. This may provide additional information to help identify the problem.  If you believe the problem is related to MPI, you can also turn on the PRINT_MPI_MESSAGES constant at the top of myMpi.h.  If you find a message that seems related to your unexpected behavior, search for the error in the code to learn more about what the application was doing when it generated the error.  If you find an genuine error, please submit a bug report with a list of steps for reproducing it.
+
+    <br/><br/>
+    </div>
+    <a href="../index.html?show=tips">Menu</a>
+    <br/><br/>
+    <a href="trans.html">Previous</a>
+    </td></tr></table>
+  </body>
+</html>
+

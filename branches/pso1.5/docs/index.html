@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Atomic Global Minimum Locator</title>
+    <link href="styles/styles.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="js/jquery-1.5.2.min.js"></script>
+    <script type="text/javascript">
+      function toggleAll(val) {
+	$('.toggleObjects').each(function(index) {
+          $(this).toggle(val);
+	});
+      }
+      function toggleCollapse(link) {
+        if ($(link).text()=='Show All') {
+          toggleAll(true);
+          $(link).text('Collapse All');
+        } else {
+          toggleAll(false);
+          $(link).text('Show All');
+        }
+      }
+      function getURLParameter(name) {
+        return decodeURI((RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,null])[1]);
+      }
+      $(document).ready(function() {
+        loadContent();
+      });
+      function loadContent() {
+         $('#tableContent').load('outline.html', function() {
+            $(this).children('ol').children('li').each(function(index) {
+               $(this).children('a').each(function(index) {
+                  id1 = $(this).attr('href').substring(1);
+                  $(this).attr('href', "#");
+                  $(this).attr('onClick', "$('#"+id1+"').toggle();");
+               });
+               $(this).children('ol').wrap('<div id="'+id1+'" class="content toggleObjects"/>');
+               $('#'+id1).prepend('<div id="replace"/>');
+               $('#replace').load(id1 + '/index.html').attr('id','');
+               $('#'+id1).children('ol').children('li').each(function(index) {
+                  $(this).children('a').each(function(index) {
+                     id2 = $(this).attr('href').substring(1);
+                     $(this).attr('href', id1 + "/" + id2 + ".html");
+                  });
+               });
+            });
+            initToggle();
+         });
+      }
+      function initToggle() {
+        var show = getURLParameter("show");
+        if (show == "null") {
+          show = 'intro';
+        }
+        if (show == 'formats') {
+          $('#algorithms').toggle(true);
+        }
+        $('#'+show).toggle(true);
+      }
+    </script>
+  </head>
+  <body class="mainBody isoprene background">
+    <h1>Atomic Global Minimum Locator</h1>
+    <br/>
+    <table class="mainLayoutTable">
+      <tr>
+        <td>
+          <a href="#" onClick="toggleCollapse(this);">Show All</a>
+          <div style="float:right">
+            <a href="print.html" target="_blank">Printer-friendly version</a>&#160;&#160;&#160;&#160;&#160;
+            <a href="http://sourceforge.net/projects/atomicglobalmin/">Sourceforge.net</a>
+          </div>
+          <div id="tableContent"></div>
+        </td>
+      </tr>
+    </table>
+    </div>
+  </body>
+</html>

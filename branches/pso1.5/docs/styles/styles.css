@@ -1,0 +1,81 @@
+<style type="text/css">
+	ol.numbers {
+		list-style-type: decimal;
+	}
+	ol.letters {
+		list-style-type: upper-alpha;
+	}
+        .content {
+		font-weight: normal;
+		font-size:14pt;
+        }
+	body.mainBody {
+		font-size:12pt;
+		text-align:center;
+		width: 100%;
+	}
+	table.mainLayoutTable {
+		font-size:14pt;
+		width:75%;
+		margin-left: auto;
+		margin-right: auto;
+	}
+	table.mainLayoutTable td {
+		text-align:left;
+	}
+	table.itemLayoutTable {
+		font-size:14pt;
+		width:75%;
+		margin-left: auto;
+		margin-right: auto;
+	}
+	table.itemLayoutTable td {
+		text-align:left;
+	}
+	.toggleObjects {
+		display: none;
+	}
+	.sup {
+		font-size:70%;
+		position:relative;
+		bottom: 0.5em;
+	}
+	.sub {
+		font-size:70%;
+		position:relative;
+		bottom:-0.5em;
+	}
+	.ital {
+		font-style: italic;
+	}
+	.bold {
+		font-weight: bold;
+	}
+	.isoprene {
+		background: url('../images/Isopren_Hydroxyalkyl_Peroxy_Radical-Water.gif');
+	}
+        .background {
+		background-repeat: no-repeat;
+		background-position: center 75px;
+        }
+	@media print {
+		table.mainLayoutTable {
+			width:100%;
+			font-size:10pt;
+		}
+		.content {
+			width:100%;
+			font-size:10pt;
+		}
+		body.mainBody {
+			font-size:10pt;
+		}
+		#outlineCell a, #outlineCell li {
+			font-weight: bold;
+			text-decoration: none;
+			color: black;
+		}
+	}
+</style>
+
+
