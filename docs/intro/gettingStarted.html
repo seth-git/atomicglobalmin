@@ -26,16 +26,16 @@ While this program does not have a graphical user interface, it has a command li
 You will need to compile the C++ source code on a Linux computer or cluster.  While Windows is not supported, you may easily transfer results to and from your Windows computer.  Steps for installing this program are below:
     <br/><br/>
 
-1. Download the program file: pso1.5.0.tar.gz<br/>
+1. Download the program file: pso1.5.2.tar.gz<br/>
 2. Install g++ and MPI compilers<br/>
 3. Compile the program
     <br/><br/>
 
-Step 1: Download the <a href="http://sourceforge.net/projects/atomicglobalmin/files/pso1.5.0.zip/download?_test=goal">pso1.5.0.tar.gz</a> file which is most stable.  There is also a <a href="http://sourceforge.net/projects/atomicglobalmin/files/pso1.6.1-Intl-beta.tar.gz/download?_test=goal">pso1.6.1-Intl-beta.tar.gz</a> beta version which has support for multiple languages (see <a href="language.html">Section G</a>).  If you want to run the program on a remote Linux cluster, first download the program onto your local computer and then transfer the program to the Linux cluster.  If you use Windows, you can transfer the program to the Linux cluster using the WinSCP program (see above link).  If you are using Ubuntu or a Mac, open a terminal.  To open a terminal on Ubuntu, click on 'Applications', 'Accessories', 'Terminal'.  On a mac, navigate to your Applications folder, open Utilities, and double click on Terminal. Then, type these commands, pressing 'Enter' or 'Return' after each command:
+Step 1: Download the <a href="http://sourceforge.net/projects/atomicglobalmin/files/pso1.5.2.tar.gz/download?_test=goal">pso1.5.2.tar.gz</a> file which is most stable.  There is also a <a href="http://sourceforge.net/projects/atomicglobalmin/files/pso1.6.2-Intl-beta.tar.gz/download?_test=goal">pso1.6.2-Intl-beta.tar.gz</a> beta version which has support for multiple languages (see <a href="language.html">Section G</a>).  If you want to run the program on a remote Linux cluster, first download the program onto your local computer and then transfer the program to the Linux cluster.  If you use Windows, you can transfer the program to the Linux cluster using the WinSCP program (see above link).  If you are using Ubuntu or a Mac, open a terminal.  To open a terminal on Ubuntu, click on 'Applications', 'Accessories', 'Terminal'.  On a mac, navigate to your Applications folder, open Utilities, and double click on Terminal. Then, type these commands, pressing 'Enter' or 'Return' after each command:
     <br/><br/>
 
-    &#160;&#160;&#160;&#160;&#160;cd /directory/where/you/put/pso1.5.0.tar.gz<br/>
-    &#160;&#160;&#160;&#160;&#160;scp  pso1.5.0.tar.gz your_user_name@your.linux.cluster:pso1.5.0.tar.gz
+    &#160;&#160;&#160;&#160;&#160;cd /directory/where/you/put/pso1.5.2.tar.gz<br/>
+    &#160;&#160;&#160;&#160;&#160;scp  pso1.5.2.tar.gz your_user_name@your.linux.cluster:pso1.5.2.tar.gz
     <br/><br/>
 
 Step 2: If using a University Linux cluster, the g++ and MPI compilers should already be installed, so you can likely skip this step. If using a local Linux box, g++ should already be installed, but you will have to install the MPI compiler.  On Ubuntu Linux, you may install this by clicking on 'System' and 'Administration', then 'Synaptic Package Manager' and searching for mpi.  I installed the mpi-default-bin and mpi-default-dev packages.
@@ -50,8 +50,8 @@ Step 3: If you are running the program on a remote Linux cluster, you will need 
 Once logged in, navigate to the directory where you placed the program.  Change directories by typing: 'cd some_directory'.  To get out of the current directory type: 'cd ..'   .  To list files and directories in the current directory, type 'ls' or 'ls -al' (the later is a long list format).  When you have navigated to your program directory, type the following to decompress the program:
     <br/><br/>
 
-    &#160;&#160;&#160;&#160;&#160;gunzip pso1.5.0.tar.gz<br/>
-    &#160;&#160;&#160;&#160;&#160;tar -xf pso1.5.0.tar
+    &#160;&#160;&#160;&#160;&#160;gunzip pso1.5.2.tar.gz<br/>
+    &#160;&#160;&#160;&#160;&#160;tar -xf pso1.5.2.tar
     <br/><br/>
 
 Then, navigate into the directory:
