@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Atomic Global Minimum Locator: Running and restarting the program</title>
+    <link href="../styles/styles.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body class="mainBody">
+    <h1>Atomic Global Minimum Locator: Running and restarting the program</h1>
+    <br/>
+    <table class="itemLayoutTable"><tr><td>
+    <a href="../index.html">Menu</a>
+    <br/><br/>
+    <a href="files.html">Previous</a>
+    <a href="results.html" style="float:right">Next</a>
+    <br/>
+    <div class="content">
+    <br/>
+Four example input files are LJ7_PSO.inp, LJ7_Sim.inp, LJ7_BH.inp, and LJ7_GA.inp, for PSO, simulated annealing, basin hopping, and the genetic algorithm respectively. To run PSO, type:
+    <br/><br/>
+
+    &#160;&#160;&#160;&#160;&#160;./pso LJ7_PSO.inp
+
+    <br/><br/>
+Other input files are run similarly.  The LJ7_PSO.inp input file searches for the gobal minimum of 7 noble gas atoms (He, Ne, Ar, etc.) using the Lennard Jones potential.  The global minimum for LJ7 has energy -16.505384.  To prematurely terminate a PSO or other type of run, press Ctrl-C. To restart the PSO run after it has been stopped, type "./pso LJ7_PSO.res". Restart other types of algorithms similarly.
+
+    <br/><br/>
+This type of search performs translation and rotation of rigid molecules in search of a global minimum.  It does not perform a bond rotational search.  This type of search must be performed separately as described in section E (although modifications to the program could combine a bond rotational search with a translational and rotational search).
+
+    <br/><br/>
+To create a geometry optimization file from the LJ7_PSO.res resume file, type:
+
+    <br/><br/>
+    &#160;&#160;&#160;&#160;&#160;./helper -o LJ7_PSO.res LJ7_PSO.opt 100 10
+
+    <br/><br/>
+This creates an optimization file called LJ7_PSO.opt and transfers 100 structures to it from LJ7_PSO.res.  To run the optimization file type:
+
+    <br/><br/>
+    &#160;&#160;&#160;&#160;&#160;./pso LJ7_PSO.opt
+
+    <br/><br/>
+After each set of 10 structures have been optimized, the program will update the LJ7_PSO.opt file until all structures have been optimized.
+
+    <br/><br/>
+Note that if you open an optimization file, it will say simulated annealing, particle swarm, or genetic algorithm at the top. This is because optimization files were originally designed to perform a geometry optimization on the list of best structures after a simulated annealing, particle swarm, or genetic algorithm run.  Now, they are more generally used to perform calculations on any list of chemical structures.  For example, this program uses optimization files to perform bond rotational searches.  Even though geometry optimization may or may not be used, the file type is still called an 'optimization' file.
+    <br/><br/>
+    </div>
+    <a href="../index.html">Menu</a>
+    <br/><br/>
+    <a href="files.html">Previous</a>
+    <a href="results.html" style="float:right">Next</a>
+    </td></tr></table>
+  </body>
+</html>
+
