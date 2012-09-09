@@ -1,0 +1,40 @@
+Genetic Algorithm Input File Version 1.6
+
+Energy function to use: Lennard Jones
+Path to energy files:
+Path to scratch directory (optional):
+Search cube length, width, and height: 5.5
+Number of linear structures: 0
+Initialize linear structures in a box with the above cube length and a height and width of: 1.2
+Number of planar structures: 0
+Number of fragmented 3D structures: 96
+Number of partially non-fragmented 3D structures: 96
+Number of completely non-fragmented 3D structures: 160
+General minimum atom distance (used if no value specified below): 0.7
+Specific minimum atom distances (angstroms):
+2 2 1.0
+Maximum inter-atomic distance (angstroms): 1.5
+
+Genetic Algorithm Parameters:
+Use energy value from local optimization: yes
+Maximum number of allowed iterations: 400
+
+Save this many of the best "different" structures: 1
+Consider 2 structures "different" if their RMS distance is greater or equal to (angstroms): 1.0
+Save this many quantum output files from the list of best structures: 0
+Output file name: LJ7_GA.out
+Resume file name (optional): LJ7_GA.res
+Write resume file after every set of this number of iterations (optional): 10
+Print summary information after each set of this many iterations: 10
+Charge: 0
+Multiplicity: 1
+Energy file header:
+
+Energy file footer (optional):
+
+Number of unit types: 1
+
+Number of units of this type: 7
+Format of this unit type: Cartesian
+2 0.0 0.0 0.0
+
