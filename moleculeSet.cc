@@ -281,7 +281,7 @@ bool MoleculeSet::initPositionsAndAngles(Point3D &boxDimensions, int numTries)
 			if (failedToInitialzeMolecule)
 				break;
 		}
-	} while ((count < numTries) && !failedToInitialzeMolecule);
+	} while ((count < numTries) && failedToInitialzeMolecule);
 	
 	delete[] moleculesInitialized;
 	delete[] atomsInitialized;
@@ -1030,9 +1030,13 @@ bool MoleculeSet::checkBoxConstraints(Point3D &boxDimensions, int iMolecule)
 	m_prgMolecules[iMolecule].getMinimumAndMaximumCoordinates(minCoordinates, maxCoordinates);
 	
 	if ((minCoordinates.x < 0) || (maxCoordinates.x > boxDimensions.x) ||
-	    (minCoordinates.y < 0) || (maxCoordinates.y > boxDimensions.y) ||
-	    (minCoordinates.z < 0) || (maxCoordinates.z > boxDimensions.z))
+	    (minCoordinates.y < 0) || (maxCoordinates.y > boxDimensions.y))
 	{
+		return false;
+	}
+	
+	// boxDimensions.z will be zero when initializing planar structures
+	if (boxDimensions.z > 0 && ((minCoordinates.z < 0) || (maxCoordinates.z > boxDimensions.z))) {
 		return false;
 	}
 	
