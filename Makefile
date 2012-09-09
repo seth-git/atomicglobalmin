@@ -1,21 +1,18 @@
 #pso.make a makefile
-CXXFLAGS=-g -Wall -Wno-format-security
-CFLAGS=-g -Wno-format-security
+CXXFLAGS=-g -Wall
+CFLAGS=-g
 
-pso: helper unit main.cc main.h myMpi.cc myMpi.h energy.o strings.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o typedef.h
-	mpiCC $(CXXFLAGS) -o pso main.cc myMpi.cc energy.o strings.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o
+pso: helper unit main.cc main.h myMpi.cc myMpi.h energy.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o typedef.h
+	mpiCC $(CXXFLAGS) -o pso main.cc myMpi.cc energy.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o
 
-helper: helper.o energy.o strings.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o typedef.h
-	g++ $(CXXFLAGS) -o helper helper.o energy.o strings.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o
+helper: helper.o energy.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o typedef.h
+	g++ $(CXXFLAGS) -o helper helper.o energy.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o
 
-unit: unit.o energy.o strings.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o typedef.h
-	g++ $(CXXFLAGS) -o unit unit.o energy.o strings.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o
+unit: unit.o energy.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o typedef.h
+	g++ $(CXXFLAGS) -o unit unit.o energy.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o
 
 energyProgram.o: energyProgram.h energyProgram.cc
 #	g++ -c energyProgram.cc
-#
-strings.o: strings.h strings.cc
-#	g++ -c strings.cc
 #
 input.o:  input.cc input.h typedef.h molecule.o moleculeSet.o energyProgram.o
 #	g++ -c input.cc

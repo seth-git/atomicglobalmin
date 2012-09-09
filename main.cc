@@ -9,7 +9,6 @@
 
 void simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector<MoleculeSet*> &bestNMoleculeSets, string &seedFiles, bool bIndependentRun)
 {
-	const Strings* messages = Strings::instance();
 	vector<MoleculeSet*> emptyMoleculeSets; // This is only created here so we have something to pass in for
 	                                        // bestIndividualMoleculeSets which is used in PSO, not simulated annealing.
 	vector<MoleculeSet*> optimizedMoleculeSets;
@@ -63,8 +62,8 @@ void simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 			
 			if (!fout.is_open())
 			{
-				cout << messages->m_sCantWriteToFile << ": " << input.m_sOutputFileName << endl;
-				throw messages->m_sCantOpenOutputFile.c_str();
+				cout << "Unable to open the output file: " << input.m_sOutputFileName << endl;
+				throw "Unable to open the output file.";
 			}
 			if (input.m_bResumeFileRead) {
 				input.m_bResumeFileRead = !input.m_bResumeFileRead;
@@ -74,27 +73,27 @@ void simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 				input.printToFile(fout);
 			}
 			fout << endl << endl;
-			fout << messages->m_sProgramOutput << ":" << endl;
+			fout << "Output from program:" << endl;
 			if (seedFiles.length() > 0) {
-				cout << messages->m_sSeedingPopulationFromFile << " " << seedFiles << "..." << endl;
-				fout << messages->m_sSeedingPopulationFromFile << " " << seedFiles << "..." << endl;
+				cout << "Using seeded population from " << seedFiles << "..." << endl;
+				fout << "Using seeded population from " << seedFiles << "..." << endl;
 				if (input.m_iFreezeUntilIteration > 0) {
-					cout << messages->m_sFreezingSeededMoleculesFor << " " << input.m_iFreezeUntilIteration << " " << messages->m_sIterations << "..." << endl;
-					fout << messages->m_sFreezingSeededMoleculesFor << " " << input.m_iFreezeUntilIteration << " " << messages->m_sIterations << "..." << endl;
+					cout << "Assigning frozen status to the coordinates of seeded atoms for " << input.m_iFreezeUntilIteration << " iterations..." << endl;
+					fout << "Assigning frozen status to the coordinates of seeded atoms for " << input.m_iFreezeUntilIteration << " iterations..." << endl;
 				} else {
 					for (i = 0; i < (signed int)moleculeSets.size(); ++i)
 						moleculeSets[i]->unFreezeAll(-1,-1);
 				}
 			} else {
-				cout << messages->m_sInitializingPopulation << "..." << endl;
-				fout << messages->m_sInitializingPopulation << "..." << endl;
+				cout << "Initializing the population..." << endl;
+				fout << "Initializing the population..." << endl;
 				if (!Init::initializePopulation(input, moleculeSets))
-					throw messages->m_sCantInitializePopulation.c_str();
+					throw "Unable to initialize the population.";
 			}
 			if (!Mpi::calculateEnergies(energyCalculationType, moleculeSets, optimizedMoleculeSets))
-				throw messages->m_sNotAllCalcFinished.c_str();
+				throw "Not all calculations finished.";
 			if (Mpi::s_timeToFinish)
-				throw messages->m_sTimeToFinishAndCleanUp.c_str();
+				throw "Time to finish, cleaning up.";
 			input.m_iNumEnergyEvaluations += (signed int)moleculeSets.size();
 			if (input.m_bTransitionStateSearch) {
 				if (optimizedMoleculeSets.size() > 0)
@@ -114,24 +113,24 @@ void simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 			iTotalAcceptedTransitions = 0;
 			iTotalTransitions = 0;
 			if (input.m_bPerformBasinHopping && (input.m_fQuenchingFactor == 1.0)) {
-				cout << messages->m_sPerformingBasinHopping << "..." << endl;
-				fout << messages->m_sPerformingBasinHopping << "..." << endl;
+				cout << "Performing Basin Hopping..." << endl;
+				fout << "Performing Basin Hopping..." << endl;
 			} else if (input.m_bTransitionStateSearch) {
-				cout << messages->m_sSearchingForTransitionStates << "..." << endl;
-				fout << messages->m_sSearchingForTransitionStates << "..." << endl;
+				cout << "Searching for Transition States..." << endl;
+				fout << "Searching for Transition States..." << endl;
 			} else {
-				cout << messages->m_sPerformingSimulatingAnnealing << "..." << endl;
-				fout << messages->m_sPerformingSimulatingAnnealing << "..." << endl;
+				cout << "Simulating Annealing..." << endl;
+				fout << "Simulating Annealing..." << endl;
 			}
 		} else {
 			seconds = time (NULL) - input.m_tElapsedSeconds;
 			fout.open (input.m_sOutputFileName.c_str(), ofstream::out | ofstream::app); // Append to the existing file
 			if (!fout.is_open())
 			{
-				cout << messages->m_sCantAppendToFile << ": " << input.m_sOutputFileName << endl;
-				throw messages->m_sCantOpenOutputFile.c_str();
+				cout << "Unable to open the output file: " << input.m_sOutputFileName << endl;
+				throw "Unable to open the output file.";
 			} else
-				fout << messages->m_sResumingProgram << "..." << endl;
+				fout << "Resuming after program execution was stopped..." << endl;
 			iTotalAcceptedTransitions = 0;
 			if (input.m_iIteration < input.m_iNumIterationsBeforeDecreasingTemp) {
 				iTotalTransitions = input.m_iIteration * moleculeSets.size();
@@ -152,9 +151,9 @@ void simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 			setTemperatureEvery = 20;
 		
 		if ((input.m_fStartingTemperature < 0) || (input.m_fDesiredAcceptedTransitions < 0)) {
-			cout << messages->m_sNonResumableFile << endl;
-			cout << messages->m_sUseInpFileInstead << endl;
-			throw messages->m_sNonResumableFile.c_str();
+			cout <<  "This resume file was created using the -i option.  It stores the list of best structures, but it can not be resumed." << endl;
+			cout << "To resume it, use the '.inp' file." << endl;
+			throw "This resume file was created using the -i option.  It stores the list of best structures, but it can not be resumed.";
 		}
 		
 		// Perform Simulated Annealing
@@ -199,9 +198,7 @@ void simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 				moleculeSetsTransformed.push_back(pMoleculeSet);
 			}
 			if (!Mpi::calculateEnergies(energyCalculationType, moleculeSetsTransformed, optimizedMoleculeSets))
-				throw messages->m_sNotAllCalcFinished.c_str();
-			if (Mpi::s_timeToFinish)
-				throw messages->m_sTimeToFinishAndCleanUp.c_str();
+				throw "Not all calculations finished.";
 			input.m_iNumEnergyEvaluations += moleculeSets.size();
 			
 			if (!input.m_bTransitionStateSearch && (input.m_fDesiredAcceptedTransitions > 0) &&
@@ -262,8 +259,8 @@ void simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 					numWithNegativeDeltaEnergy = 0;
 					if ((input.m_iIteration == (numIterationsToSetTemp+input.m_iFreezeUntilIteration)) ||
 					    (input.m_fStartingTemperature == 0)) {
-						fout << messages->m_sSettingTemperature << " " << Atom::printFloat(newTemp) << "..." << endl;
-						cout << messages->m_sSettingTemperature << " " << Atom::printFloat(newTemp) << "..." << endl;
+						fout << "Setting the temperature to " << Atom::printFloat(newTemp) << "..." << endl;
+						cout << "Setting the temperature to " << Atom::printFloat(newTemp) << "..." << endl;
 					}
 					input.m_fStartingTemperature = newTemp;
 				}
@@ -321,23 +318,23 @@ void simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 			
 			if (input.m_iIteration % input.m_iPrintSummaryInfoEveryNIterations == 0)
 			{
-				fout << messages->m_sAbbreviationIteration << ": " << input.m_iIteration;
+				fout << "It: " << input.m_iIteration;
 				if (input.m_bTransitionStateSearch)
-					fout << " " << messages->m_sAbbreviationNoTransitionStates << ": " << bestNMoleculeSets.size();
+					fout << " Number of Transition States Found: " << bestNMoleculeSets.size();
 				fout << setiosflags(ios::fixed) << setprecision(8);
 				if (bestNMoleculeSets.size() > 0)
-					fout << " " << messages->m_sAbbreviationBestEnergy << ": " << bestNMoleculeSets[0]->getEnergy();
+					fout << " Best Energy: " << bestNMoleculeSets[0]->getEnergy();
 				else
-					fout << " " << messages->m_sAbbreviationBestEnergy << ": -";
+					fout << " Best Energy: -";
 				if (!input.m_bTransitionStateSearch) {
 					fout << setiosflags(ios::fixed) << setprecision(1)
-					     << " " << messages->m_sAbbreviationTemperature << ": " << input.m_fStartingTemperature;
-					fout << " " << messages->m_sAbbreviationNumberOfPerterbations << ": " << iNumTransitions;
+					     << " Temp: " << input.m_fStartingTemperature;
+					fout << " Num Pert: " << iNumTransitions;
 					fout << setiosflags(ios::fixed) << setprecision(4)
-					     << " " << messages->m_sAbbreviationCoordinateAnglePerterbations << ": " << input.m_fStartCoordinatePerturbation << ", "
+					     << " Coord, Angle Pert: " << input.m_fStartCoordinatePerturbation << ", "
 					     << input.m_fStartAnglePerturbation * RAD_TO_DEG;
 					fout << setiosflags(ios::fixed) << setprecision(1)
-					     << " " << messages->m_sAbbreviationAcceptedPerterbationPercentage << ": " << (fAcceptanceRatio*100) << "%";
+					     << " Accepted Pert: " << (fAcceptanceRatio*100) << "%";
 				}
 				fout << endl;
 				// Note: if you modify the above print statement, also modify Input::compileIndependentRunData
@@ -345,23 +342,23 @@ void simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 //				fout << setiosflags(ios::fixed) << setprecision(1)
 //				     << " Converged: " << (Mpi::s_percentageOfSuccessfulCalculations * 100) << "%" << endl;
 				
-				cout << messages->m_sAbbreviationIteration << ": " << input.m_iIteration;
+				cout << "It: " << input.m_iIteration;
 				if (input.m_bTransitionStateSearch)
-					cout << " " << messages->m_sAbbreviationNoTransitionStates << ": " << bestNMoleculeSets.size();
+					cout << " # Transition States Found: " << bestNMoleculeSets.size();
 				cout << setiosflags(ios::fixed) << setprecision(8);
 				if (bestNMoleculeSets.size() > 0)
-					cout << " " << messages->m_sAbbreviationBestEnergy << ": " << bestNMoleculeSets[0]->getEnergy();
+					cout << " Best Energy: " << bestNMoleculeSets[0]->getEnergy();
 				else
-					cout << " " << messages->m_sAbbreviationBestEnergy << ": -";
+					cout << " Best Energy: -";
 				if (!input.m_bTransitionStateSearch) {
 					cout << setiosflags(ios::fixed) << setprecision(1)
-					     << " " << messages->m_sAbbreviationTemperature << ": " << input.m_fStartingTemperature;
-					cout << " " << messages->m_sAbbreviationNumberOfPerterbations << ": " << iNumTransitions;
+					     << " Temp: " << input.m_fStartingTemperature;
+					cout << " Num Pert: " << iNumTransitions;
 					cout << setiosflags(ios::fixed) << setprecision(4)
-					     << " " << messages->m_sAbbreviationCoordinateAnglePerterbations << ": " << input.m_fStartCoordinatePerturbation << ", "
+					     << " Coord, Angle Pert: " << input.m_fStartCoordinatePerturbation << ", "
 					     << input.m_fStartAnglePerturbation * RAD_TO_DEG;
 					cout << setiosflags(ios::fixed) << setprecision(1)
-					     << " " << messages->m_sAbbreviationAcceptedPerterbationPercentage << ": " << (fAcceptanceRatio*100) << "%";
+					     << " Accepted Pert: " << (fAcceptanceRatio*100) << "%";
 				}
 				cout << endl;
 //				cout << " Converged: " << (Mpi::s_percentageOfSuccessfulCalculations * 100) << "%" << endl;
@@ -370,8 +367,8 @@ void simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 			if (input.m_iFreezeUntilIteration == input.m_iIteration) {
 				for (i = 0; i < (signed int)moleculeSets.size(); ++i)
 					moleculeSets[i]->unFreezeAll(-1,-1);
-				cout << messages->m_sUnFreezingSeededMolecules << "..." << endl;
-				fout << messages->m_sUnFreezingSeededMolecules << "..." << endl;
+				cout << "Removing frozen status from the coordinates of seeded atoms..." << endl;
+				fout << "Removing frozen status from the coordinates of seeded atoms..." << endl;
 				if (input.m_fDesiredAcceptedTransitions > 0)
 					input.m_fStartingTemperature = 0;
 			}
@@ -392,8 +389,8 @@ void simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 					    (fAcceptanceRatio <= input.m_fAcceptanceRatio))
 					{
 						input.m_bDecreasingTemp = true;
-						fout << messages->m_sDecreasingTemp << "..." << endl;
-						cout << messages->m_sDecreasingTemp << "..." << endl;
+						fout << "Decreasing Temperature..." << endl;
+						cout << "Decreasing Temperature..." << endl;
 					}
 				}
 			}
@@ -410,22 +407,23 @@ void simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 				input.writeResumeFile(tempResumeFileName, moleculeSets, bestNMoleculeSets, emptyMoleculeSets,
 						      time (NULL) - seconds, true);
 				if (system(commandString)) {	
-					cout << messages->m_sErrorUpdatingResume << ": " << commandString << endl;
-					throw messages->m_sErrorUpdatingResume.c_str();
+					cout << "Error copying the temporary resume file(" << tempResumeFileName
+					     << ") to the real resume file." << endl;
+					throw "Error copying a temporary resume file to the real resume file.";
 				}
 			}
 			
 			if (input.m_bTestMode)
 				if (!input.printTestFileGeometry(input.m_iIteration, *moleculeSets[0]))
-					throw messages->m_sErrorPrintingTestFileGeometry.c_str();
+					throw "Couldn't print test file geometry";
 			if (Mpi::s_timeToFinish && !input.m_bRunComplete)
-				throw messages->m_sTimeToFinishAndCleanUp.c_str();
+				throw "Time to finish, cleaning up.";
 		} while (!input.m_bRunComplete);
 		
-		cout << messages->m_sEndTemperatureAndIteration1 << " " << input.m_iIteration << " " << messages->m_sEndTemperatureAndIteration2 << " " << input.m_fStartingTemperature << "." << endl;
+		cout << "Finished after " << input.m_iIteration << " iterations at a temperature of " << input.m_fStartingTemperature << "." << endl;
 		if ((input.m_pSelectedEnergyProgram->m_sPathToExecutable.length() == 0) && !input.m_bTransitionStateSearch) {
-			cout << messages->m_sOptimizingBestStructure << "..." << endl;
-			fout << messages->m_sOptimizingBestStructure << "..." << endl;
+			cout << "Optimizing best structure..." << endl;
+			fout << "Optimizing best structure..." << endl;
 			emptyMoleculeSets.push_back(bestNMoleculeSets[0]);
 			Mpi::calculateEnergies(OPTIMIZE_AND_READ, emptyMoleculeSets, optimizedMoleculeSets);
 		
@@ -435,12 +433,12 @@ void simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 			emptyMoleculeSets.clear();
 		}
 		
-		fout << endl << messages->m_sBestStructure << ":" << endl;
-		cout << endl << messages->m_sBestStructure << ":" << endl;
+		fout << endl << "Best structure:" << endl;
+		cout << endl << "Best structure:" << endl;
 		bestNMoleculeSets[0]->printToScreen();
 		bestNMoleculeSets[0]->print(fout);
-		cout << setiosflags(ios::fixed) << setprecision(8) << messages->m_sEnergy << ": " << bestNMoleculeSets[0]->getEnergy() << endl << endl;
-		fout << setiosflags(ios::fixed) << setprecision(8) << messages->m_sEnergy << ": " << bestNMoleculeSets[0]->getEnergy() << endl << endl;
+		cout << setiosflags(ios::fixed) << setprecision(8) << "Energy: " << bestNMoleculeSets[0]->getEnergy() << endl << endl;
+		fout << setiosflags(ios::fixed) << setprecision(8) << "Energy: " << bestNMoleculeSets[0]->getEnergy() << endl << endl;
 
 		seconds = time (NULL) - seconds;
 		days = seconds / (24*60*60);
@@ -449,15 +447,15 @@ void simulatedAnnealing(Input &input, vector<MoleculeSet*> &moleculeSets, vector
 		seconds = seconds - hours * (60*60);
 		minutes = seconds / 60;
 		seconds = seconds - minutes * 60;
-		fout << messages->m_sEnergyCalculations << ": " << input.m_iNumEnergyEvaluations << endl;
-		cout << messages->m_sEnergyCalculations << ": " << input.m_iNumEnergyEvaluations << endl;
-		fout << messages->m_sFinishTime1 << " " << days << " " << messages->m_sFinishTime2 << ", " << hours << " " << messages->m_sFinishTime3 << ", "
-		     << minutes << " " << messages->m_sFinishTime4 << ", " << seconds << " " << messages->m_sFinishTime5 << endl;
-		cout << messages->m_sFinishTime1 << " " << days << " " << messages->m_sFinishTime2 << ", " << hours << " " << messages->m_sFinishTime3 << ", "
-		     << minutes << " " << messages->m_sFinishTime4 << ", " << seconds << " " << messages->m_sFinishTime5 << endl;
+		fout << "Number of times the energy was calculated: " << input.m_iNumEnergyEvaluations << endl;
+		cout << "Number of times the energy was calculated: " << input.m_iNumEnergyEvaluations << endl;
+		fout << "Finished in " << days << " days, " << hours << " hours, "
+		     << minutes << " minutes, " << seconds << " seconds." << endl;
+		cout << "Finished in " << days << " days, " << hours << " hours, "
+		     << minutes << " minutes, " << seconds << " seconds." << endl;
 	} catch (const char* message) {
 		if (PRINT_CATCH_MESSAGES)
-			cerr << messages->m_sCaughtMessage << ": " << message << endl;
+			cerr << "Caught message: " << message << endl;
 	}
 	
    	// Clean up
@@ -489,7 +487,6 @@ FLOAT probabilitySum(vector<FLOAT> &deltaEnergies, FLOAT scalingFactor, FLOAT te
 void particleSwarmOptimization(Input &input, vector<MoleculeSet*> &moleculeSets, vector<MoleculeSet*> &bestNMoleculeSets,
                                vector<MoleculeSet*> &bestIndividualMoleculeSets, string &seedFiles)
 {
-	const Strings* messages = Strings::instance();
 	vector<MoleculeSet*> moleculeSetsMinDistEnforced; // a version of the population (moleculeSets) in which the min. distance constraint is enforced
 	vector<MoleculeSet*> localBestMoleculeSets;
 	vector<MoleculeSet*> optimizedMoleculeSets;
@@ -497,7 +494,6 @@ void particleSwarmOptimization(Input &input, vector<MoleculeSet*> &moleculeSets,
 	int i;
 	string tempResumeFileName = input.m_sResumeFileName + ".temp";
 	char commandString[500];
-	char line[500];
 	// Variables to keep track of how long this took
 	time_t seconds;
 	time_t minutes;
@@ -543,32 +539,32 @@ void particleSwarmOptimization(Input &input, vector<MoleculeSet*> &moleculeSets,
 			fout.open (input.m_sOutputFileName.c_str(), ofstream::out); // Erase the existing file, if there is one
 			if (!fout.is_open())
 			{
-				cout << messages->m_sCantWriteToFile << ": " << input.m_sOutputFileName << endl;
-				throw messages->m_sCantOpenOutputFile.c_str();
+				cout << "Unable to open the output file: " << input.m_sOutputFileName << endl;
+				throw "Unable to open the output file.";
 			} else {
 				input.printToFile(fout);
 				fout << endl << endl;
-				fout << messages->m_sProgramOutput << ":" << endl;
+				fout << "Output from program:" << endl;
 				if (seedFiles.length() > 0) {
-					cout << messages->m_sSeedingPopulationFromFile << " " << seedFiles << "..." << endl;
-					fout << messages->m_sSeedingPopulationFromFile << " " << seedFiles << "..." << endl;
+					cout << "Using seeded population from " << seedFiles << "..." << endl;
+					fout << "Using seeded population from " << seedFiles << "..." << endl;
 					if (input.m_iFreezeUntilIteration > 0) {
-						cout << messages->m_sFreezingSeededMoleculesFor << " " << input.m_iFreezeUntilIteration << " " << messages->m_sIterations << "..." << endl;
-						fout << messages->m_sFreezingSeededMoleculesFor << " " << input.m_iFreezeUntilIteration << " " << messages->m_sIterations << "..." << endl;
+						cout << "Assigning frozen status to the coordinates of seeded atoms for " << input.m_iFreezeUntilIteration << " iterations..." << endl;
+						fout << "Assigning frozen status to the coordinates of seeded atoms for " << input.m_iFreezeUntilIteration << " iterations..." << endl;
 					} else {
 						for (i = 0; i < (signed int)moleculeSets.size(); ++i)
 							moleculeSets[i]->unFreezeAll(input.m_fCoordMaximumVelocity,input.m_fAngleMaximumVelocity);
 					}
 				} else {
-					cout << messages->m_sInitializingPopulation << "..." << endl;
-					fout << messages->m_sInitializingPopulation << "..." << endl;
+					cout << "Initializing the population..." << endl;
+					fout << "Initializing the population..." << endl;
 					if (!Init::initializePopulation(input, moleculeSets))
-						throw messages->m_sCantInitializePopulation.c_str();
+						throw "Unable to initialize the popultion.";
 				}
 				if (!Mpi::calculateEnergies(energyCalculationType, moleculeSets, optimizedMoleculeSets))
-					throw messages->m_sNotAllCalcFinished;
+					throw "Not all calculations finished.";
 				if (Mpi::s_timeToFinish)
-					throw messages->m_sTimeToFinishAndCleanUp.c_str();
+					throw "Time to finish, cleaning up.";
 				input.m_iNumEnergyEvaluations += (signed int)moleculeSets.size();
 				Input::saveBestN(moleculeSets,bestNMoleculeSets,input.m_iNumberOfBestStructuresToSave,
 						input.m_fMinDistnaceBetweenSameMoleculeSets,input.m_iNumberOfLogFilesToSave,
@@ -584,17 +580,17 @@ void particleSwarmOptimization(Input &input, vector<MoleculeSet*> &moleculeSets,
 				bestIndividualMoleculeSets[i]->centerInBox(input.m_boxDimensions);
 			}
 			
-			cout << messages->m_sRunningParticleSwarmOptimization << "..." << endl;
-			fout << messages->m_sRunningParticleSwarmOptimization << "..." << endl;
+			cout << "Performing Particle Swarm Optimization..." << endl;
+			fout << "Performing Particle Swarm Optimization..." << endl;
 		} else {
 			seconds = time (NULL) - input.m_tElapsedSeconds;
 			fout.open (input.m_sOutputFileName.c_str(), ofstream::out | ofstream::app); // Append to the existing file
 			if (!fout.is_open())
 			{
-				cout << messages->m_sCantAppendToFile << ": " << input.m_sOutputFileName << endl;
-				throw messages->m_sCantOpenOutputFile.c_str();
-			} else 
-				fout << messages->m_sResumingProgram << "..." << endl;
+				cout << "Unable to open the output file: " << input.m_sOutputFileName << endl;
+				throw "Unable to open the output file.";
+			} else
+				fout << "Resuming after program execution was stopped..." << endl;
 	//		deleteEnergyFiles(moleculeSets, energyObjects, input.m_srgNodeNames.size(), input.m_bUsePrevWaveFunction);
 		}
 		
@@ -630,21 +626,18 @@ void particleSwarmOptimization(Input &input, vector<MoleculeSet*> &moleculeSets,
 				if ((input.m_fAttractionRepulsion > 0) &&
 				    (diversity <= input.m_fSwitchToRepulsionWhenDiversityIs) && (visibility > 0.75) &&
 				    (input.m_iNumIterationsBestEnergyHasntChanged >= input.m_iSwitchToRepulsionWhenNoProgress)) {
-					cout << messages->m_sSwitchingToRepulsion << "..." << endl;
-					fout << messages->m_sSwitchingToRepulsion << "..." << endl;
+					cout << "Switching to repulsion phase..." << endl;
+					fout << "Switching to repulsion phase..." << endl;
 					input.m_fAttractionRepulsion = -1;
-					printf(messages->m_sResettingVisibility.c_str(), input.m_fVisibilityDistance, input.m_fStartVisibilityDistance);
-					sprintf(line, messages->m_sResettingVisibility.c_str(), input.m_fVisibilityDistance, input.m_fStartVisibilityDistance);
-					fout << line;
-//					cout << setiosflags(ios::fixed) << setprecision(3) << messages->m_sResettingVisibility1 << " "
-//					     << input.m_fVisibilityDistance << " " << messages->m_sResettingVisibility2 << " " << input.m_fStartVisibilityDistance << endl;
-//					fout << setiosflags(ios::fixed) << setprecision(3) << messages->m_sResettingVisibility1 << " "
-//					     << input.m_fVisibilityDistance << " " << messages->m_sResettingVisibility2 << " " << input.m_fStartVisibilityDistance << endl;
+					cout << setiosflags(ios::fixed) << setprecision(3) << "Resetting visibility distance from "
+					     << input.m_fVisibilityDistance << " to " << input.m_fStartVisibilityDistance << endl;
+					fout << setiosflags(ios::fixed) << setprecision(3) << "Resetting visibility distance from "
+					     << input.m_fVisibilityDistance << " to " << input.m_fStartVisibilityDistance << endl;
 					input.m_fVisibilityDistance = input.m_fStartVisibilityDistance;
 				}
 				if ((input.m_fAttractionRepulsion < 0) && (diversity >= input.m_fSwitchToAttractionWhenDiversityIs)) {
-					cout << messages->m_sSwitchingToAttraction << "..." << endl;
-					fout << messages->m_sSwitchingToAttraction << "..." << endl;
+					cout << "Switching to attraction phase..." << endl;
+					fout << "Switching to attraction phase..." << endl;
 					input.m_fAttractionRepulsion = 1;
 					
 					// Reset the best solution seen by each particle to solutions in bestNMoleculeSets
@@ -698,7 +691,7 @@ void particleSwarmOptimization(Input &input, vector<MoleculeSet*> &moleculeSets,
 						moleculeSetsMinDistEnforced[i]->enforceMinDistConstraints(input.m_boxDimensions);
 					}
 					if (!Mpi::calculateEnergies(energyCalculationType, moleculeSetsMinDistEnforced, optimizedMoleculeSets))
-						throw messages->m_sNotAllCalcFinished.c_str();
+						throw "Not all calculations finished.";
 					for (i = 0; i < (signed int)moleculeSets.size(); ++i) {
 						moleculeSets[i]->setEnergy(moleculeSetsMinDistEnforced[i]->getEnergy());
 						if (moleculeSetsMinDistEnforced[i]->getEnergy() < bestIndividualMoleculeSets[i]->getEnergy()) {
@@ -711,7 +704,7 @@ void particleSwarmOptimization(Input &input, vector<MoleculeSet*> &moleculeSets,
 					}
 				} else {
 					if (!Mpi::calculateEnergies(energyCalculationType, moleculeSets, optimizedMoleculeSets))
-						throw messages->m_sNotAllCalcFinished.c_str();
+						throw "Not all calculations finished.";
 					for (i = 0; i < (signed int)moleculeSets.size(); ++i)
 						if (moleculeSets[i]->getEnergy() < bestIndividualMoleculeSets[i]->getEnergy()) {
 							if (!moleculeSets[i]->withinDistance(*localBestMoleculeSets[i],
@@ -766,38 +759,38 @@ void particleSwarmOptimization(Input &input, vector<MoleculeSet*> &moleculeSets,
 				else
 					input.m_iNumIterationsBestEnergyHasntChanged = 0;
 			}
-			  
-			fout << messages->m_sAbbreviationIteration << ": " << input.m_iIteration;
+			
+			fout << "It: " << input.m_iIteration;
 			fout << setiosflags(ios::fixed) << setprecision(8)
-			     << " " << messages->m_sAbbreviationBestEnergy << ": " << bestNMoleculeSets[0]->getEnergy() << setprecision(3)
-				 << " " << messages->m_sAbbreviationCoordinateVelocity << ": " << maxCoordinateVelocity << ", " << avgCoordinateVelocity
-				 << " " << messages->m_sAbbreviationAngleVelocity << ": " << (maxAngularVelocity * RAD_TO_DEG) << ", "
+			     << " Best Energy: " << bestNMoleculeSets[0]->getEnergy() << setprecision(3)
+				 << " Coord Vel Max,Avg: " << maxCoordinateVelocity << ", " << avgCoordinateVelocity
+				 << " Angle Vel Max,Avg: " << (maxAngularVelocity * RAD_TO_DEG) << ", "
 				 << (avgAngularVelocity * RAD_TO_DEG)
 			     << setiosflags(ios::fixed) << setprecision(3)
-			     << " " << messages->m_sAbbreviationDiversity << ": " << diversity
+			     << " Div: " << diversity
 			     << setiosflags(ios::fixed) << setprecision(1)
-			     << " " << messages->m_sAbbreviationVisibility << ": " << (visibility * 100) << "%" << endl;
+			     << " Vis: " << (visibility * 100) << "%" << endl;
 //			     << " Converged: " << (Mpi::s_percentageOfSuccessfulCalculations * 100) << "%" << endl;
 			if (input.m_iIteration % input.m_iPrintSummaryInfoEveryNIterations == 0)
 			{
-				cout << messages->m_sAbbreviationIteration << ": " << input.m_iIteration;
+				cout << "It: " << input.m_iIteration;
 				cout << setiosflags(ios::fixed) << setprecision(8)
-				     << " " << messages->m_sAbbreviationBestEnergy << ": " << bestNMoleculeSets[0]->getEnergy() << setprecision(3)
-				     << " " << messages->m_sAbbreviationCoordinateVelocity << ": " << avgCoordinateVelocity
-				     << " " << messages->m_sAbbreviationAngleVelocity << ": " << (maxAngularVelocity * RAD_TO_DEG) << ", "
-				     << (avgAngularVelocity * RAD_TO_DEG)
+				     << " Best Energy: " << bestNMoleculeSets[0]->getEnergy() << setprecision(3)
+				 << " Coord Vel Max,Avg: " << maxCoordinateVelocity << ", " << avgCoordinateVelocity
+				 << " Angle Vel Max,Avg: " << (maxAngularVelocity * RAD_TO_DEG) << ", "
+				 << (avgAngularVelocity * RAD_TO_DEG)
 				     << setiosflags(ios::fixed) << setprecision(3)
-				     << " " << messages->m_sAbbreviationDiversity << ": " << diversity
+				     << " Div: " << diversity
 				     << setiosflags(ios::fixed) << setprecision(1)
-				     << " " << messages->m_sAbbreviationVisibility << ": " << (visibility * 100) << "%" << endl;
+				     << " Vis: " << (visibility * 100) << "%" << endl;
 //				     << " Converged: " << (Mpi::s_percentageOfSuccessfulCalculations * 100) << "%" << endl;
 			}
 			
 			if (input.m_iFreezeUntilIteration == input.m_iIteration) {
 				for (i = 0; i < (signed int)moleculeSets.size(); ++i)
 					moleculeSets[i]->unFreezeAll(input.m_fCoordMaximumVelocity,input.m_fAngleMaximumVelocity);
-				cout << messages->m_sUnFreezingSeededMolecules << "..." << endl;
-				fout << messages->m_sUnFreezingSeededMolecules << "..." << endl;
+				cout << "Removing frozen status from the coordinates of seeded atoms..." << endl;
+				fout << "Removing frozen status from the coordinates of seeded atoms..." << endl;
 			}
 			
 			if (input.m_iIteration >= input.m_iMaxIterations)
@@ -808,8 +801,9 @@ void particleSwarmOptimization(Input &input, vector<MoleculeSet*> &moleculeSets,
 				input.writeResumeFile(tempResumeFileName, moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets, time (NULL) - seconds, true);
 				if (system(commandString))
 				{
-					cout << messages->m_sErrorUpdatingResume << ": " << commandString << endl;
-					throw messages->m_sErrorUpdatingResume.c_str();
+					cout << "Error copying the temporary resume file(" << tempResumeFileName
+					     << ") to the real resume file." << endl;
+					throw "Error copying a temporary resume file to the real resume file.";
 				}
 			}
 			
@@ -826,9 +820,9 @@ void particleSwarmOptimization(Input &input, vector<MoleculeSet*> &moleculeSets,
 						input.m_fStartVisibilityDistance = getVisibilityDistance(moleculeSets, particleDistanceMatrix, 0.0001) * 0.8;
 						input.m_fVisibilityDistance = input.m_fStartVisibilityDistance;
 						cout << setiosflags(ios::fixed) << setprecision(3)
-						     << messages->m_sSettingRMSVisibilityDist << ": " << input.m_fVisibilityDistance << endl;
+						     << "Setting RMS visibility distance to: " << input.m_fVisibilityDistance << endl;
 						fout << setiosflags(ios::fixed) << setprecision(3)
-						     << messages->m_sSettingRMSVisibilityDist << ": " << input.m_fVisibilityDistance << endl;
+						     << "Setting RMS visibility distance to: " << input.m_fVisibilityDistance << endl;
 					}
 				}
 			} else
@@ -836,17 +830,17 @@ void particleSwarmOptimization(Input &input, vector<MoleculeSet*> &moleculeSets,
 			
 			if (input.m_bTestMode)
 				if (!input.printTestFileGeometry(input.m_iIteration, *moleculeSets[iRandomMolecule]))
-					throw messages->m_sErrorPrintingTestFileGeometry.c_str();
+					throw "Couldn't print test file geometry";
 			if (Mpi::s_timeToFinish && !input.m_bRunComplete)
-				throw messages->m_sTimeToFinishAndCleanUp.c_str();
+				throw "Time to finish, cleaning up.";
 		} while (!input.m_bRunComplete);
 		
-		cout << messages->m_sEndTemperatureAndIteration1 << " " << input.m_iIteration << " " << messages->m_sIterations << "." << endl;
-		fout << messages->m_sEndTemperatureAndIteration1 << " " << input.m_iIteration << " " << messages->m_sIterations << "." << endl;
+		cout << "Finished after " << input.m_iIteration << " iterations." << endl;
+		fout << "Finished after " << input.m_iIteration << " iterations." << endl;
 		if (input.m_pSelectedEnergyProgram->m_sPathToExecutable.length() == 0) {
 			vector<MoleculeSet*> tempMoleculeSets;
-			cout << messages->m_sOptimizingBestStructure << "..." << endl;
-			fout << messages->m_sOptimizingBestStructure << "..." << endl;
+			cout << "Optimizing best structure..." << endl;
+			fout << "Optimizing best structure..." << endl;
 			tempMoleculeSets.push_back(bestNMoleculeSets[0]);
 			Mpi::calculateEnergies(OPTIMIZE_AND_READ, tempMoleculeSets, optimizedMoleculeSets);
 		
@@ -856,12 +850,12 @@ void particleSwarmOptimization(Input &input, vector<MoleculeSet*> &moleculeSets,
 			optimizedMoleculeSets.clear();
 		}
 		
-		fout << endl << messages->m_sBestStructure << ":" << endl;
-		cout << endl << messages->m_sBestStructure << ":" << endl;
+		fout << endl << "Best structure:" << endl;
+		cout << endl << "Best structure:" << endl;
 		bestNMoleculeSets[0]->printToScreen();
 		bestNMoleculeSets[0]->print(fout);
-		cout << setiosflags(ios::fixed) << setprecision(8) << messages->m_sEnergy << ": " << bestNMoleculeSets[0]->getEnergy() << endl << endl;
-		fout << setiosflags(ios::fixed) << setprecision(8) << messages->m_sEnergy << ": " << bestNMoleculeSets[0]->getEnergy() << endl << endl;
+		cout << setiosflags(ios::fixed) << setprecision(8) << "Energy: " << bestNMoleculeSets[0]->getEnergy() << endl << endl;
+		fout << setiosflags(ios::fixed) << setprecision(8) << "Energy: " << bestNMoleculeSets[0]->getEnergy() << endl << endl;
 
 		seconds = time (NULL) - seconds;
 		days = seconds / (24*60*60);
@@ -870,15 +864,15 @@ void particleSwarmOptimization(Input &input, vector<MoleculeSet*> &moleculeSets,
 		seconds = seconds - hours * (60*60);
 		minutes = seconds / 60;
 		seconds = seconds - minutes * 60;
-		fout << messages->m_sEnergyCalculations << ": " << input.m_iNumEnergyEvaluations << endl;
-		cout << messages->m_sEnergyCalculations << ": " << input.m_iNumEnergyEvaluations << endl;
-		fout << messages->m_sFinishTime1 << " " << days << " " << messages->m_sFinishTime2 << ", " << hours << " " << messages->m_sFinishTime3 << ", "
-		     << minutes << " " << messages->m_sFinishTime4 << ", " << seconds << " " << messages->m_sFinishTime5 << endl;
-		cout << messages->m_sFinishTime1 << " " << days << " " << messages->m_sFinishTime2 << ", " << hours << " " << messages->m_sFinishTime3 << ", "
-		     << minutes << " " << messages->m_sFinishTime4 << ", " << seconds << " " << messages->m_sFinishTime5 << endl;
+		fout << "Number of times the energy was calculated: " << input.m_iNumEnergyEvaluations << endl;
+		cout << "Number of times the energy was calculated: " << input.m_iNumEnergyEvaluations << endl;
+		fout << "Finished in " << days << " days, " << hours << " hours, "
+		     << minutes << " minutes, " << seconds << " seconds." << endl;
+		cout << "Finished in " << days << " days, " << hours << " hours, "
+		     << minutes << " minutes, " << seconds << " seconds." << endl;
 	} catch (const char* message) {
 		if (PRINT_CATCH_MESSAGES)
-			cerr << messages->m_sCaughtMessage << ": " << message << endl;
+			cerr << "Caught message: " << message << endl;
 	}
 
 	if (particleDistanceMatrix != NULL) {
@@ -1044,7 +1038,6 @@ FLOAT calculateDiversity(int populationSize, FLOAT **distanceMatrix, FLOAT cubeD
 
 void gega(Input &input, vector<MoleculeSet*> &population, vector<MoleculeSet*> &bestNMoleculeSets, string &seedFiles)
 {
-	const Strings* messages = Strings::instance();
 	vector<MoleculeSet*> emptyMoleculeSets; // This is only created here so we have something to pass in for
 	                                        // bestIndividualMoleculeSets which is used in PSO.
 	vector<MoleculeSet*> matingPool;
@@ -1078,49 +1071,49 @@ void gega(Input &input, vector<MoleculeSet*> &population, vector<MoleculeSet*> &
 			fout.open (input.m_sOutputFileName.c_str(), ofstream::out); // Erase the existing file, if there is one
 			if (!fout.is_open())
 			{
-				cout << messages->m_sCantWriteToFile << ": " << input.m_sOutputFileName << endl;
-				throw messages->m_sCantOpenOutputFile.c_str();
+				cout << "Unable to open the output file: " << input.m_sOutputFileName << endl;
+				throw "Unable to open the output file.";
 			} else {
 				input.printToFile(fout);
 				fout << endl << endl;
-				fout << messages->m_sProgramOutput << ":" << endl;
+				fout << "Output from program:" << endl;
 				if (seedFiles.length() > 0) {
-					cout << messages->m_sSeedingPopulationFromFile << " " << seedFiles << "..." << endl;
-					fout << messages->m_sSeedingPopulationFromFile << " " << seedFiles << "..." << endl;
+					cout << "Using seeded population from " << seedFiles << "..." << endl;
+					fout << "Using seeded population from " << seedFiles << "..." << endl;
 					if (input.m_iFreezeUntilIteration > 0) {
-						cout << messages->m_sFreezingNotImplementedWGA << "..." << endl;
-						fout << messages->m_sFreezingNotImplementedWGA << "..." << endl;
+						cout << "Warning: Freezing is not implemented with the genetic algorithm..." << endl;
+						fout << "Warning: Freezing is not implemented with the genetic algorithm..." << endl;
 						input.m_iFreezeUntilIteration = 0;
 					}
 					for (i = 0; i < (signed int)population.size(); ++i)
 						population[i]->unFreezeAll(-1,-1);
 				} else {
-					cout << messages->m_sInitializingPopulation << "..." << endl;
-					fout << messages->m_sInitializingPopulation << "..." << endl;
+					cout << "Initializing the population..." << endl;
+					fout << "Initializing the population..." << endl;
 					if (!Init::initializePopulation(input, population))
-						throw messages->m_sCantInitializePopulation.c_str();
+						throw "Unable to initialize the population.";
 				}
 				if (!Mpi::calculateEnergies(energyCalculationType, population, optimizedMoleculeSets))
-					throw messages->m_sNotAllCalcFinished.c_str();
+					throw "Not all calculations finished.";
 				if (Mpi::s_timeToFinish)
-					throw messages->m_sTimeToFinishAndCleanUp.c_str();
+					throw "Time to finish, cleaning up.";
 				input.m_iNumEnergyEvaluations += (signed int)population.size();
 				Input::saveBestN(population,bestNMoleculeSets,input.m_iNumberOfBestStructuresToSave,
 						input.m_fMinDistnaceBetweenSameMoleculeSets,input.m_iNumberOfLogFilesToSave,
 						input.m_sSaveLogFilesInDirectory.c_str());
 			}
 			
-			cout << messages->m_sRunningGeneticAlgorithm << "..." << endl;
-			fout << messages->m_sRunningGeneticAlgorithm << "..." << endl;
+			cout << "Performing Genetic Algorithm..." << endl;
+			fout << "Performing Genetic Algorithm..." << endl;
 		} else {
 			seconds = time (NULL) - input.m_tElapsedSeconds;
 			fout.open (input.m_sOutputFileName.c_str(), ofstream::out | ofstream::app); // Append to the existing file
 			if (!fout.is_open())
 			{
-				cout << messages->m_sCantAppendToFile << ": " << input.m_sOutputFileName << endl;
-				throw messages->m_sCantOpenOutputFile.c_str();
+				cout << "Unable to open the output file: " << input.m_sOutputFileName << endl;
+				throw "Unable to open the output file.";
 			}
-			fout << messages->m_sResumingProgram << "..." << endl;
+			fout << "Resuming after program execution was stopped..." << endl;
 		}
 		
 		particleDistanceMatrix = new FLOAT*[population.size()];
@@ -1143,7 +1136,7 @@ void gega(Input &input, vector<MoleculeSet*> &population, vector<MoleculeSet*> &
 			
 			matingPool.clear();
 			if (!Mpi::calculateEnergies(energyCalculationType, offSpring, optimizedMoleculeSets))
-				throw messages->m_sNotAllCalcFinished.c_str();
+				throw "Not all calculations finished.";
 			input.m_iNumEnergyEvaluations += (signed int)offSpring.size();
 			
 			Input::saveBestN(offSpring, bestNMoleculeSets, input.m_iNumberOfBestStructuresToSave,
@@ -1154,23 +1147,23 @@ void gega(Input &input, vector<MoleculeSet*> &population, vector<MoleculeSet*> &
 			getPopulationDistanceMatrix(*pPopulationB, particleDistanceMatrix);
 			diversity = calculateDiversity((signed int)pPopulationB->size(),particleDistanceMatrix,fCubeDiagonal);
 			
-			fout << messages->m_sAbbreviationIteration << ": " << input.m_iIteration;
+			fout << "It: " << input.m_iIteration;
 			fout << setiosflags(ios::fixed) << setprecision(8)
-			     << " " << messages->m_sAbbreviationBestEnergy << ": " << bestNMoleculeSets[0]->getEnergy()
-			     << " " << messages->m_sAbbreviationDiversity << ": " << diversity << endl;
+			     << " Best Energy: " << bestNMoleculeSets[0]->getEnergy()
+			     << " Diversity: " << diversity << endl;
 			if (input.m_iIteration % input.m_iPrintSummaryInfoEveryNIterations == 0)
 			{
-				cout << messages->m_sAbbreviationIteration << ": " << input.m_iIteration;
+				cout << "It: " << input.m_iIteration;
 				cout << setiosflags(ios::fixed) << setprecision(8)
-				     << " " << messages->m_sAbbreviationBestEnergy << ": " << bestNMoleculeSets[0]->getEnergy()
-				     << " " << messages->m_sAbbreviationDiversity << ": " << diversity << endl;
+				     << " Best Energy: " << bestNMoleculeSets[0]->getEnergy()
+				     << " Diversity: " << diversity << endl;
 			}
 			
 			if (input.m_iFreezeUntilIteration == input.m_iIteration) {
 				for (i = 0; i < (signed int)pPopulationB->size(); ++i)
 					(*pPopulationB)[i]->unFreezeAll(-1,-1);
-				cout << messages->m_sUnFreezingSeededMolecules << "..." << endl;
-				fout << messages->m_sUnFreezingSeededMolecules << "..." << endl;
+				cout << "Removing frozen status from the coordinates of seeded atoms..." << endl;
+				fout << "Removing frozen status from the coordinates of seeded atoms..." << endl;
 			}
 			
 			if (input.m_iIteration >= input.m_iMaxIterations)
@@ -1181,8 +1174,9 @@ void gega(Input &input, vector<MoleculeSet*> &population, vector<MoleculeSet*> &
 				input.writeResumeFile(tempResumeFileName, *pPopulationB, bestNMoleculeSets, emptyMoleculeSets, time (NULL) - seconds, true);
 				if (system(commandString))
 				{
-					cout << messages->m_sErrorUpdatingResume << ": " << commandString << endl;
-					throw messages->m_sErrorUpdatingResume.c_str();
+					cout << "Error copying the temporary resume file(" << tempResumeFileName
+					     << ") to the real resume file." << endl;
+					throw "Error copying a temporary resume file to the real resume file.";
 				}
 			}
 			
@@ -1196,17 +1190,17 @@ void gega(Input &input, vector<MoleculeSet*> &population, vector<MoleculeSet*> &
 			
 			if (input.m_bTestMode)
 				if (!input.printTestFileGeometry(input.m_iIteration, *bestNMoleculeSets[0]))
-					throw messages->m_sErrorPrintingTestFileGeometry.c_str();
+					throw "Couldn't print test file geometry";
 			if (Mpi::s_timeToFinish && !input.m_bRunComplete)
-				throw messages->m_sTimeToFinishAndCleanUp.c_str();
+				throw "Time to finish, cleaning up.";
 		} while (!input.m_bRunComplete);
 		
-		cout << messages->m_sEndTemperatureAndIteration1 << " " << input.m_iIteration << " " << messages->m_sIterations << "." << endl;
-		fout << messages->m_sEndTemperatureAndIteration1 << " " << input.m_iIteration << " " << messages->m_sIterations << "." << endl;
+		cout << "Finished after " << input.m_iIteration << " iterations." << endl;
+		fout << "Finished after " << input.m_iIteration << " iterations." << endl;
 		if (input.m_pSelectedEnergyProgram->m_sPathToExecutable.length() == 0) {
 			vector<MoleculeSet*> tempMoleculeSets;
-			cout << messages->m_sOptimizingBestStructure << "..." << endl;
-			fout << messages->m_sOptimizingBestStructure << "..." << endl;
+			cout << "Optimizing best structure..." << endl;
+			fout << "Optimizing best structure..." << endl;
 			tempMoleculeSets.push_back(bestNMoleculeSets[0]);
 			Mpi::calculateEnergies(OPTIMIZE_AND_READ, tempMoleculeSets, optimizedMoleculeSets);
 		
@@ -1216,13 +1210,13 @@ void gega(Input &input, vector<MoleculeSet*> &population, vector<MoleculeSet*> &
 			optimizedMoleculeSets.clear();
 		}
 		
-		fout << endl << messages->m_sBestStructure << ":" << endl;
-		cout << endl << messages->m_sBestStructure << ":" << endl;
+		fout << endl << "Best structure:" << endl;
+		cout << endl << "Best structure:" << endl;
 		bestNMoleculeSets[0]->printToScreen();
 		bestNMoleculeSets[0]->print(fout);
-		cout << setiosflags(ios::fixed) << setprecision(8) << messages->m_sEnergy << ": " << bestNMoleculeSets[0]->getEnergy() << endl << endl;
-		fout << setiosflags(ios::fixed) << setprecision(8) << messages->m_sEnergy << ": " << bestNMoleculeSets[0]->getEnergy() << endl << endl;
-
+		cout << setiosflags(ios::fixed) << setprecision(8) << "Energy: " << bestNMoleculeSets[0]->getEnergy() << endl << endl;
+		fout << setiosflags(ios::fixed) << setprecision(8) << "Energy: " << bestNMoleculeSets[0]->getEnergy() << endl << endl;
+	
 		seconds = time (NULL) - seconds;
 		days = seconds / (24*60*60);
 		seconds = seconds - days * (24*60*60);
@@ -1230,15 +1224,15 @@ void gega(Input &input, vector<MoleculeSet*> &population, vector<MoleculeSet*> &
 		seconds = seconds - hours * (60*60);
 		minutes = seconds / 60;
 		seconds = seconds - minutes * 60;
-		fout << messages->m_sEnergyCalculations << ": " << input.m_iNumEnergyEvaluations << endl;
-		cout << messages->m_sEnergyCalculations << ": " << input.m_iNumEnergyEvaluations << endl;
-		fout << messages->m_sFinishTime1 << " " << days << " " << messages->m_sFinishTime2 << ", " << hours << " " << messages->m_sFinishTime3 << ", "
-		     << minutes << " " << messages->m_sFinishTime4 << ", " << seconds << " " << messages->m_sFinishTime5 << endl;
-		cout << messages->m_sFinishTime1 << " " << days << " " << messages->m_sFinishTime2 << ", " << hours << " " << messages->m_sFinishTime3 << ", "
-		     << minutes << " " << messages->m_sFinishTime4 << ", " << seconds << " " << messages->m_sFinishTime5 << endl;
+		fout << "Number of times the energy was calculated: " << input.m_iNumEnergyEvaluations << endl;
+		cout << "Number of times the energy was calculated: " << input.m_iNumEnergyEvaluations << endl;
+		fout << "Finished in " << days << " days, " << hours << " hours, "
+		     << minutes << " minutes, " << seconds << " seconds." << endl;
+		cout << "Finished in " << days << " days, " << hours << " hours, "
+		     << minutes << " minutes, " << seconds << " seconds." << endl;
 	} catch (const char* message) {
 		if (PRINT_CATCH_MESSAGES)
-			cerr << messages->m_sCaughtMessage << ": " << message << endl;
+			cerr << "Caught message: " << message << endl;
 	}
 	
    	// Clean up
@@ -1266,7 +1260,6 @@ void gega(Input &input, vector<MoleculeSet*> &population, vector<MoleculeSet*> &
 
 void optimizeBestStructures(Input &input, vector<MoleculeSet*> &moleculeSets, vector<MoleculeSet*> &bestNMoleculeSets)
 {
-	const Strings* messages = Strings::instance();
 	vector<MoleculeSet*> population;
 	vector<MoleculeSet*> optimizedMoleculeSets;
 	vector<MoleculeSet*> tempMoleculeSets;
@@ -1297,10 +1290,10 @@ void optimizeBestStructures(Input &input, vector<MoleculeSet*> &moleculeSets, ve
 	
 	try {
 		if (moleculeSets.size() == 0) {
-			cout << messages->m_sNoStructuresRemaining << endl;
-			throw messages->m_sNoStructuresRemaining.c_str();
+			cout << "There are no structures left to optimize." << endl;
+			throw "There are no structures left to optimize.";
 		}
-		cout << messages->m_sPerformingCalculations << "..." << endl;
+		cout << "Optimizing Structures..." << endl;
 		while (moleculeSets.size() > 0) {
 			if (iStructuresToOptimizeAtATime > (signed int)moleculeSets.size())
 				iStructuresToOptimizeAtATime = moleculeSets.size();
@@ -1312,7 +1305,7 @@ void optimizeBestStructures(Input &input, vector<MoleculeSet*> &moleculeSets, ve
 				population.push_back(newMoleculeSet);
 			}
 			if (!Mpi::calculateEnergies(energyCalculationType, population, optimizedMoleculeSets))
-				throw messages->m_sNotAllCalcFinished.c_str();
+				throw "Not all calculations finished.";
 			input.m_iNumEnergyEvaluations += (signed int)population.size();
 			
 			// Update the list of optimized best structures
@@ -1341,17 +1334,18 @@ void optimizeBestStructures(Input &input, vector<MoleculeSet*> &moleculeSets, ve
 			input.writeResumeFile(tempResumeFileName, moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets,
 					      time (NULL) - seconds, false);
 			if (system(commandString)) {	
-				cout << messages->m_sErrorUpdatingOptimization << ": " << commandString << endl;
-				throw messages->m_sErrorUpdatingOptimization.c_str();
+				cout << "Error copying the temporary optimization file(" << tempResumeFileName
+				     << ") to the real optimization file." << endl;
+				throw "Error copying the temporary optimization file to the real optimization file.";
 			}
 		
 			// Write the output file
 			cout << setiosflags(ios::fixed) << setprecision(8);
-			cout << messages->m_sAbbreviationBestEnergy << ": " << bestNMoleculeSets[0]->getEnergy() << " " << messages->m_sAbbreviationBestStructures << ": " << bestNMoleculeSets.size() << " " << messages->m_sStructuresRemaining << ": " << moleculeSets.size() << endl;
+			cout << "Best Energy: " << bestNMoleculeSets[0]->getEnergy() << " Best Structures: " << bestNMoleculeSets.size() << " Structures left to optimize: " << moleculeSets.size() << endl;
 			if (Mpi::s_timeToFinish)
-				throw messages->m_sTimeToFinishAndCleanUp.c_str();
+				throw "Time to finish, cleaning up.";
 		}
-
+	
 		seconds = time (NULL) - seconds;
 		days = seconds / (24*60*60);
 		seconds = seconds - days * (24*60*60);
@@ -1359,12 +1353,12 @@ void optimizeBestStructures(Input &input, vector<MoleculeSet*> &moleculeSets, ve
 		seconds = seconds - hours * (60*60);
 		minutes = seconds / 60;
 		seconds = seconds - minutes * 60;
-		cout << messages->m_sEnergyCalculations << ": " << input.m_iNumEnergyEvaluations << endl;
-		cout << messages->m_sFinishTime1 << " " << days << " " << messages->m_sFinishTime2 << ", " << hours << " " << messages->m_sFinishTime3 << ", "
-		     << minutes << " " << messages->m_sFinishTime4 << ", " << seconds << " " << messages->m_sFinishTime5 << endl;
+		cout << "Number of times the energy was calculated: " << input.m_iNumEnergyEvaluations << endl;
+		cout << "Finished in " << days << " days, " << hours << " hours, "
+		     << minutes << " minutes, " << seconds << " seconds." << endl;
 	} catch (const char* message) {
 		if (PRINT_CATCH_MESSAGES)
-			cerr << messages->m_sCaughtMessage << ": " << message << endl;		
+			cerr << "Caught message: " << message << endl;
 	}
 	
 	// Clean up
@@ -1386,18 +1380,17 @@ void optimizeBestStructures(Input &input, vector<MoleculeSet*> &moleculeSets, ve
 
 bool setWallTime(void)
 {
-	const Strings* messages = Strings::instance();
 	int numOptionArguments;
 	char** optionArguments;
 	int hours, minutes, seconds;
 	
-	if (ArgumentParser::optionPresent(messages->m_sOptionWalltime.c_str())) {
+	if (ArgumentParser::optionPresent("-walltime")) {
 		int numPartsScanned;
 		
-		ArgumentParser::getOptionArguments(messages->m_sOptionWalltime.c_str() , numOptionArguments, &optionArguments);
+		ArgumentParser::getOptionArguments("-walltime", numOptionArguments, &optionArguments);
 		numPartsScanned = sscanf(optionArguments[0], "%d:%d:%d", &hours, &minutes, &seconds);
 		if (numPartsScanned != 3) {
-			cout << messages->m_sOptionWalltimeMessage << endl;
+			cout << "Please specify a wall time in the format HH:MM:SS." << endl;
 			return false;
 		}
 	} else {
@@ -1411,34 +1404,44 @@ bool setWallTime(void)
 	return true;
 }
 
+void printHelpMenu()
+{
+	ifstream infile("help.txt");
+	const int MAX_LINE_LENGTH = 500;
+	char fileLine[MAX_LINE_LENGTH];
+	while (infile.getline(fileLine, MAX_LINE_LENGTH))
+		cout << fileLine << endl;
+	cout << endl;
+	infile.close();
+}
+
 bool initCommandLineArguments(int argc, char *argv[])
 {
-	const Strings* messages = Strings::instance();
 	vector<const char*> recognizedOptions;
 	vector<int> argumentsPerOption;
 	vector<const char*> optionMessages;
 	
-	recognizedOptions.push_back(messages->m_sOptionH.c_str());
+	recognizedOptions.push_back("-h");
 	argumentsPerOption.push_back(0);
 	optionMessages.push_back("");
-	recognizedOptions.push_back(messages->m_sOptionH2.c_str());
+	recognizedOptions.push_back("--help");
 	argumentsPerOption.push_back(0);
 	optionMessages.push_back("");
-	recognizedOptions.push_back(messages->m_sOptionS.c_str());
+	recognizedOptions.push_back("-s");
 	argumentsPerOption.push_back(-1);
-	optionMessages.push_back(messages->m_sOptionSMessage.c_str());
-	recognizedOptions.push_back(messages->m_sOptionI.c_str());
+	optionMessages.push_back("When using the -s option, please specify one or more resume/optimiation files,\nfollowed by the number of iterations to perform freezing, followed by an input file.");
+	recognizedOptions.push_back("-i");
 	argumentsPerOption.push_back(0);
 	optionMessages.push_back("");
-	recognizedOptions.push_back(messages->m_sOptionM.c_str());
+	recognizedOptions.push_back("-m");
 	argumentsPerOption.push_back(0);
 	optionMessages.push_back("");
-	recognizedOptions.push_back(messages->m_sOptionTest.c_str());
+	recognizedOptions.push_back("-test");
 	argumentsPerOption.push_back(0);
 	optionMessages.push_back("");
-	recognizedOptions.push_back(messages->m_sOptionWalltime.c_str());
+	recognizedOptions.push_back("-walltime");
 	argumentsPerOption.push_back(1);
-	optionMessages.push_back(messages->m_sOptionWalltimeMessage.c_str());
+	optionMessages.push_back("Please specify a wall time in the format DD:HH:MM.");
 	
 	ArgumentParser::init(&recognizedOptions, &argumentsPerOption, &optionMessages);
 	if (!ArgumentParser::parse(argc, argv))
@@ -1448,7 +1451,6 @@ bool initCommandLineArguments(int argc, char *argv[])
 
 int master(int rank)
 {
-	const Strings* messages = Strings::instance();
 	int numOptionArguments;
 	char** optionArguments;
 	
@@ -1483,65 +1485,74 @@ int master(int rank)
 	struct dirent* dirp;
 	bool error = false;
 	int nMPIProcesses;
-	bool masterDistributingTasks = ArgumentParser::optionPresent(messages->m_sOptionM.c_str());
+	bool masterDistributingTasks = ArgumentParser::optionPresent("-m");
 	bool bIndependentRunSetupPreviouslyDone;
 	
 	MPI_Comm_size(MPI_COMM_WORLD, &nMPIProcesses);
 	
 	try {
-		if ((ArgumentParser::getNumOptions() == 0) || ArgumentParser::optionPresent(messages->m_sOptionH.c_str()) || ArgumentParser::optionPresent(messages->m_sOptionH2.c_str())) {
-			Strings::instance()->printOptions();
-			throw messages->m_sHelpMenu.c_str();
+		if ((ArgumentParser::getNumOptions() == 0) || ArgumentParser::optionPresent("-h") || ArgumentParser::optionPresent("--help")) {
+			printHelpMenu();
+			throw "Help menu";
 		}
 		if (rank == 0) {
 			inputFileName = ArgumentParser::s_argv[ArgumentParser::s_argc-1];
-			cout << messages->m_sReadingFile << ": " << inputFileName << endl;
+			cout << "Reading File: " << inputFileName << endl;
 			if (!input.open(inputFileName, true, true, moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets)) {
-				cout << messages->m_sLastArgMustBeInput << endl;
-				throw messages->m_sLastArgMustBeInput.c_str();
+				cout << "The last argument must be the input, resume, or optimization file." << endl;
+				throw "The last argument must be the input, resume, or optimization file.";
 			}
-			if (ArgumentParser::optionPresent(messages->m_sOptionI.c_str())) {
+			if (ArgumentParser::optionPresent("-i")) {
 				if (masterDistributingTasks) {
-					cout << messages->m_sCantUseIMOptionsTogether << endl;
-					throw messages->m_sCantUseIMOptionsTogether.c_str();
+					cout << "The -i and -m options may not be used together." << endl;
+					throw "The -i and -m options may not be used together.";
 				}
 				if (input.m_iAlgorithmToDo != SIMULATED_ANNEALING) {
-					cout << messages->m_sIOptOnlyForSimulatedAnnealing << endl;
-					throw messages->m_sIOptOnlyForSimulatedAnnealing.c_str();
+					cout << "The -i option only works with simulated annealing type algorithms." << endl;
+					throw "The -i option only works with simulated annealing type algorithms.";
 				}
 				if (input.m_bResumeFileRead || input.m_bOptimizationFileRead) {
-					cout << messages->m_sIOptOnlyWInput << endl;
-					throw messages->m_sIOptOnlyWInput.c_str();
+					cout << "The -i option only works with input files, and not with resume or optimization files." << endl;
+					throw "The -i option only works with input files, and not with resume or optimization files.";
 				}
 				if (nMPIProcesses != input.m_iTotalPopulationSize) {
-					cout << messages->m_sIOptPopSizeEqualNoMPIProcs1 << "(" << input.m_iTotalPopulationSize
-					     << ") " << messages->m_sIOptPopSizeEqualNoMPIProcs2 << "(" << nMPIProcesses << ")." << endl;
-					throw messages->m_sIOptPopSizeEqualNoMPIProcs.c_str();
+					cout << "When using the -i option, the population size(" << input.m_iTotalPopulationSize
+	                                            << ") must equal the number of MPI processes(" << nMPIProcesses << ")." << endl;
+					throw "When using the -i option, the population size must equal the number of MPI processes.";
 				}
 			}
 			answer = input.m_sPathToEnergyFiles + "/stop";
 			Mpi::setQuitFlag(answer);
 		}
-		if ((rank == 0) && ArgumentParser::optionPresent(messages->m_sOptionS.c_str())) { // # Do seeding
+		if ((rank == 0) && ArgumentParser::optionPresent("-s")) { // # Do seeding
 			MoleculeSet* pBestMoleculeSetSeeded = NULL;
 			int* iNumStructuresOfEachTypeBest = NULL;
 			try {
 				if (input.m_bResumeFileRead || input.m_bOptimizationFileRead) {
-					cout << messages->m_sOptionSMessage << endl;
-					throw messages->m_sOptionSMessage.c_str();
+					cout << "Seeding is only allowed when reading an input file. ";
+					if (input.m_bResumeFileRead)
+						cout << inputFileName << " is a resume file and not an input file." << endl;
+					else
+						cout << inputFileName << " is an optimization file and not an input file." << endl;
+					throw "Seeding is only allowed when reading an input file (not a resume or optimization file).";
 				}
-				ArgumentParser::getOptionArguments(messages->m_sOptionS.c_str(), numOptionArguments, &optionArguments);
+				ArgumentParser::getOptionArguments("-s", numOptionArguments, &optionArguments);
 				--numOptionArguments; // The last argument should be the input file
 				
 				if (numOptionArguments < 2) {
-					cout << messages->m_sOptionSMessage << endl;
-					throw messages->m_sOptionSMessage.c_str();
+					cout << "With the -s option, please specify at least one seed file and the number of iterations to perform freezing." << endl;
+					throw "With the -s option, please specify at least one seed file and the number of iterations to perform freezing.";
+				}
+				
+				if (input.m_bResumeFileRead || input.m_bOptimizationFileRead) {
+					cout << "When using the -s option, the last argument '" << inputFileName << "' must be an input file and not a resume or optimization file." << endl << endl;
+					throw "-s option error";
 				}
 				
 				input.m_iFreezeUntilIteration = atoi(optionArguments[numOptionArguments-1]);
 				if (input.m_iFreezeUntilIteration < 0) {
-					cout << messages->m_sFreezingIterationsCantBeNegative << endl;
-					throw messages->m_sFreezingIterationsCantBeNegative.c_str();
+					cout << "The number of iterations to perform freezing should come just before the input file and cannot be negative." << endl;
+					throw "The number of iterations to perform freezing should come just before the input file and cannot be negative.";
 				}
 				
 				numSeedFiles = numOptionArguments-1;
@@ -1550,25 +1561,27 @@ int master(int rank)
 					seedFiles += seedFileName;
 					if (i != (numSeedFiles-1))
 						seedFiles += ", ";
-					cout << messages->m_sReadingSeedFile << ": " << seedFileName << endl;
+					cout << "Reading Seed File: " << seedFileName << endl;
 					if (!inputSeeded.open(seedFileName, false, false, moleculeSetsTemp, bestNMoleculeSetsTemp, bestIndividualMoleculeSetsTemp))
-						throw messages->m_sCantReadFile.c_str();
+						throw "Couldn't open seed file.";
 					if (!(inputSeeded.m_bResumeFileRead || inputSeeded.m_bOptimizationFileRead)) {
-						cout << messages->m_sSeedFileNotInputFile << ": " << seedFileName << endl << endl;
-						throw messages->m_sSeedFileNotInputFile.c_str();
+						cout << "Error: this program was expecting the seed file \"" << seedFileName
+						     << "\" to be a resume or optimization file, but it's not." << endl << endl;
+						throw "A seed file is an input file.";
 					}
 					if (!input.seedCompatible(inputSeeded)) {
-						cout << messages->m_sSeedFileIncompatible1 << " " << seedFileName << " "
-						     << messages->m_sSeedFileIncompatible2 << " " << inputFileName << "." << endl;
-						throw messages->m_sSeedFileIncompatible.c_str();
+						cout << "The structures in the file " << seedFileName
+						     << " aren't compatible with the structures in the file " << inputFileName << "." << endl;
+						throw "Seed file incompatability.";
 					}
 					
 					for (j = 0; j < (signed int)bestNMoleculeSetsTemp.size(); ++j)
 						if (bestNMoleculeSetsTemp[j]->isFragmented(input.m_fMaxAtomDistance)) {
-							cout << messages->m_sSeedFileContainsFragmented << endl;
-							printf(messages->m_sStructureIsFragmented.c_str(), j+1, seedFileName.c_str());
-							cout << endl << endl;
-							throw messages->m_sSeedFileContainsFragmented.c_str();
+							cout << "Seed files must contain structures that are not fragmented (maximum distance between molecules is enforced)." << endl;
+							cout << "Structure #" << (j+1)
+							     << " in the list of best structures in \"" << seedFileName
+							     << "\" is fragmented." << endl << endl;
+							throw "Fragmentation seed error";
 						}
 					for (j = 0; j < (signed int)bestNMoleculeSetsTemp.size(); ++j) {
 						if ((pBestMoleculeSetSeeded == NULL) ||
@@ -1586,9 +1599,9 @@ int master(int rank)
 										inputSeeded.m_iNumStructuresOfEachType, input.m_iNumStructuresOfEachType,
 										input.m_cartesianPoints, input.m_atomicNumbers, input.m_boxDimensions,
 										input.m_fMaxAtomDistance, INITIALIZATION_TRIES)) {
-							cout << messages->m_sFailedToInit3dNonFragStructure1 << " " << INITIALIZATION_TRIES << " " << messages->m_sFailedToInit3dNonFragStructure2 << endl;
+							cout << "Failed to initialize 3D non-fragmented molecule set with maximum distance constraint after " << INITIALIZATION_TRIES << " tries." << endl;
 							delete pMoleculeSet;
-							throw messages->m_sFailedToInit3dNonFragStructure.c_str();
+							throw "Failed to initialize 3D non-fragmented molecule set with maximum distance constraint.";
 						}
 						moleculeSetsSeeded.push_back(pMoleculeSet);
 					}
@@ -1613,9 +1626,9 @@ int master(int rank)
 									iNumStructuresOfEachTypeBest, input.m_iNumStructuresOfEachType,
 									input.m_cartesianPoints, input.m_atomicNumbers, input.m_boxDimensions,
 									input.m_fMaxAtomDistance, INITIALIZATION_TRIES)) {
-						cout << messages->m_sFailedToInit3dNonFragStructure1 << " " << INITIALIZATION_TRIES << " " << messages->m_sFailedToInit3dNonFragStructure2 << endl;
+						cout << "Failed to initialize 3D non-fragmented molecule set with maximum distance constraint after " << INITIALIZATION_TRIES << " tries." << endl;
 						delete pMoleculeSet;
-						throw messages->m_sFailedToInit3dNonFragStructure.c_str();
+						throw "Failed to initialize 3D non-fragmented molecule set with maximum distance constraint.";
 					}
 					moleculeSets.push_back(pMoleculeSet);
 				}
@@ -1624,13 +1637,13 @@ int master(int rank)
 				if (input.m_iFreezeUntilIteration > 0)
 					for (i = 0; i < (signed int)moleculeSets.size(); ++i)
 						if (moleculeSets[i]->getNumberOfMoleculesFrozen() == moleculeSets[i]->getNumberOfMolecules()) {
-							cout << messages->m_sFreezingRequiresOneLessMolecule << endl;
-							throw messages->m_sFreezingRequiresOneLessMolecule.c_str();
+							cout << "Seed files must contain at least one fewer unit/structure/molecule of one type in order to perform freezing." << endl;
+							throw "Seed files must contain at least one fewer unit/structure/molecule of one type in order to perform freezing.";
 						}
 			} catch (const char* message) {
 				error = true;
 				if (PRINT_CATCH_MESSAGES)
-					cerr << messages->m_sCaughtMessage << ": " << message << endl;
+					cerr << "Caught message: " << message << endl;
 			}
 			// Clean up
 			for (i = 0; i < (signed int)moleculeSetsTemp.size(); ++i)
@@ -1649,7 +1662,7 @@ int master(int rank)
 			if (error)
 				throw "Inner throw";
 		}
-		if (ArgumentParser::optionPresent(messages->m_sOptionI.c_str())) {
+		if (ArgumentParser::optionPresent("-i")) {
 			if (rank == 0) {
 				vector<string> inputFileNames;
 				if (!input.setupForIndependentRun(inputFileNames, moleculeSets, bIndependentRunSetupPreviouslyDone))
@@ -1677,24 +1690,24 @@ int master(int rank)
 					throw "Failed to receive work tag in main.cc";
 				inputFileName = messageBuffer;
 			}
-			cout << messages->m_sReadingFile << ": " << inputFileName << endl;
+			cout << "Reading File: " << inputFileName << endl;
 			if (!input.open(inputFileName, true, true, moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets))
-				throw messages->m_sErrorOpeningInputWIOpt;
+				throw "Error opening input file with the -i option on.";
 		}
 		string temp;
 		if (input.m_bTransitionStateSearch && (input.m_pSelectedEnergyProgram->m_iProgramID == LENNARD_JONES)) {
-			cout << messages->m_sNoTransSearchWLennardJones << endl;
-			cout << messages->m_sNoTransFoundContinueAnyway << " ";
+			cout << "Transition state searches are not implemented with the Lennard Jones Potential." << endl;
+			cout << "You may perform the search, but no transition states will be found. Do you wish to continue? ";
 			cin >> temp;
-			if (temp != messages->m_sYes)
+			if (strncmp(temp.c_str(),"yes",3) != 0)
 				throw "";
 		}
 		if (!Energy::init(input, rank))
-			throw messages->m_sFailedToInitEnergyCalc.c_str();
-		if (ArgumentParser::optionPresent(messages->m_sOptionTest.c_str())) {
+			throw "Couldn't initialize energy calculations.";
+		if (ArgumentParser::optionPresent("-test")) {
 			if (input.m_bOptimizationFileRead) {
-				cout << messages->m_sNoTestWithOptFiles << endl;
-				throw messages->m_sNoTestWithOptFiles.c_str();
+				cout << "Test mode is not allowed with optimization files." << endl;
+				throw "Test mode is not allowed with optimization files.";
 			} else
 				input.m_bTestMode = true;
 		}
@@ -1707,34 +1720,30 @@ int master(int rank)
 			if (directory) { // If we were able to open the directory
 				i = 0;
 				while ((dirp = readdir(directory)) != NULL ) {
-					if ((0 == strcmp(".", dirp->d_name)) || (0 == strcmp( "..",dirp->d_name)))
+					if ((0 == strcmp( ".", dirp->d_name)) || (0 == strcmp( "..",dirp->d_name)))
 						continue;
 					++i;
 				}
 				answer = "";
 				if (i > 0) {
-					cout << messages->m_sBestNDirectoryNotEmpty1 << " " << input.m_sSaveLogFilesInDirectory << ". " << messages->m_sBestNDirectoryNotEmpty2;
+					cout << "There are files in " << input.m_sSaveLogFilesInDirectory << ".  Do you wish to delete these? ";
 					cin >> answer;
 				}
-				if ((i == 0) || (answer == messages->m_sYes)) {
-					cout << messages->m_sDeletingDirectory << ": " << input.m_sSaveLogFilesInDirectory << endl;
+				if ((i == 0) || (strncmp(answer.c_str(),"yes",3) == 0)) {
+					cout << "Deleting directory: " << input.m_sSaveLogFilesInDirectory << endl;
 					snprintf(commandLine, 500, "rm -rf %s", input.m_sSaveLogFilesInDirectory.c_str());
-					if (system(commandLine) != 0) {
-						cout << messages->m_sCouldntDeleteFilesInDir << endl;
-						throw messages->m_sCouldntDeleteFilesInDir.c_str();
-					}
+					if (system(commandLine) != 0)
+						throw "Couldn't delete log files directory.";
 				} else {
-					cout << messages->m_sDirectoryNotDeleted << ": " << input.m_sSaveLogFilesInDirectory << " " << messages->m_sExiting << "..." << endl;
-					throw messages->m_sDirectoryNotDeleted.c_str();
+					cout << "Directory " << input.m_sSaveLogFilesInDirectory << " was not deleted.  Exiting..." << endl;
+					throw "User didn't delete the log files directory.";
 				}
 				closedir(directory);
 			}
 			snprintf(commandLine, 500, "mkdir %s", input.m_sSaveLogFilesInDirectory.c_str());
-			cout << messages->m_sCreatingDirectory << ": " << input.m_sSaveLogFilesInDirectory << endl;
-			if (system(commandLine) != 0) {
-				cout << messages->m_sCouldntCreateDirectory << endl;
-				throw messages->m_sCouldntCreateDirectory.c_str();
-			}
+			cout << "Creating directory: " << input.m_sSaveLogFilesInDirectory << endl;
+			if (system(commandLine) != 0)
+				throw "Couldn't create log files directory.";
 		}
 		const char* argument = ArgumentParser::nextUnrecognized();
 		bool foundUnrecognizedOptions = false;
@@ -1748,28 +1757,28 @@ int master(int rank)
 			if (pos == string::npos) // If we didn't find it
 				pos = tempString.find(".opt");
 			if (pos == string::npos) { // If we didn't find it
-				cout << messages->m_sUnrecognizedArgumentOrOption << ": " << argument << endl;
+				cout << "Unrecognized argument or option: " << argument << endl;
 				foundUnrecognizedOptions = true;
 			}
 			argument = ArgumentParser::nextUnrecognized();
 		}
 		if (foundUnrecognizedOptions)
-			throw messages->m_sUnrecognizedArgumentOrOption.c_str();
-
+			throw "Unrecognized options";
+		
 		if (input.m_bOptimizationFileRead) {
 			if (!Mpi::masterSetup(input.m_iStructuresToOptimizeAtATime, false,masterDistributingTasks, rank))
-				throw messages->m_sCouldntCreateScratchDirectory.c_str();
+				throw "Couldn't create scratch directory";
 			optimizeBestStructures(input, moleculeSets, bestNMoleculeSets);
 			Mpi::end(rank);
 		} else {
-			if (!Mpi::masterSetup(input.m_iTotalPopulationSize, ArgumentParser::optionPresent(messages->m_sOptionI.c_str()), masterDistributingTasks, rank))
-				throw messages->m_sCouldntCreateScratchDirectory.c_str();
+			if (!Mpi::masterSetup(input.m_iTotalPopulationSize, ArgumentParser::optionPresent("-i"), masterDistributingTasks, rank))
+				throw "Couldn't create scratch directory";
 			if (input.m_bResumeFileRead && input.m_bRunComplete) {
-				cout << messages->m_sRunComplete << endl;
+				cout << "This run has already been completed." << endl;
 			} else {
 				switch (input.m_iAlgorithmToDo) {
 				case SIMULATED_ANNEALING:
-					simulatedAnnealing(input, moleculeSets, bestNMoleculeSets, seedFiles, ArgumentParser::optionPresent(messages->m_sOptionI.c_str()));
+					simulatedAnnealing(input, moleculeSets, bestNMoleculeSets, seedFiles, ArgumentParser::optionPresent("-i"));
 					break;
 				case PARTICLE_SWARM_OPTIMIZATION:
 					particleSwarmOptimization(input, moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets, seedFiles);
@@ -1781,9 +1790,9 @@ int master(int rank)
 			}
 			Mpi::end(rank);
 			if ((input.m_iAlgorithmToDo == SIMULATED_ANNEALING) && (rank == 0) &&
-			    ArgumentParser::optionPresent(messages->m_sOptionI.c_str()) && (input.m_bRunComplete || Mpi::s_timeToFinish)) {
+			    ArgumentParser::optionPresent("-i") && (input.m_bRunComplete || Mpi::s_timeToFinish)) {
 				inputFileName = ArgumentParser::s_argv[ArgumentParser::s_argc-1];
-				cout << messages->m_sReadingFile << ": " << inputFileName << endl;
+				cout << "Reading File: " << inputFileName << endl;
 				if (!input.open(inputFileName, true, false, moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets))
 					throw "Failed to reopen input file name before calling compileIndependentRunData.";
 				input.compileIndependentRunData(true);
@@ -1791,11 +1800,11 @@ int master(int rank)
 		}
 	} catch (const char* message) {
 		if (PRINT_CATCH_MESSAGES)
-			cerr << messages->m_sCaughtMessage << ": " << message << endl;
+			cerr << "Caught message: " << message << endl;
 		Mpi::end(rank);
 	}
 	if (Mpi::s_timeToFinish)
-		cout << messages->m_sTimeBeforeWallTime1 << " " << (Mpi::s_wallTime - time(NULL)) << " " << messages->m_sTimeBeforeWallTime2 << "..." << endl;
+		cout << "Quitting " << (Mpi::s_wallTime - time(NULL)) << " seconds before the wall time..." << endl;
 	for (i = 0; i < (signed int)moleculeSets.size(); ++i)
 		delete moleculeSets[i];
 	moleculeSets.clear();
@@ -1820,21 +1829,16 @@ int main(int argc, char *argv[])
 		/* Find out my identity in the default communicator */
 		MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 		if (!Init::initProgram(myrank))
-			throw "Failed to init program.";
+			throw "";
 		
 		if (!initCommandLineArguments(argc, argv))
-			throw "Failed to read command line args.";
-		const Strings* messages = Strings::instance();
-		if (ArgumentParser::optionPresent(messages->m_sOptionI.c_str()) && Strings::s_sDefaultLanguageCode != "en") {
-			cout << "The -i option is not yet implemented with non-English languages." << endl;
 			throw "";
-		}
 		if (!setWallTime())
-			throw "Failed to set wall time";
-		if ((myrank == 0) || ArgumentParser::optionPresent(messages->m_sOptionI.c_str()))
+			throw "";
+		if ((myrank == 0) || ArgumentParser::optionPresent("-i"))
 			master(myrank);
 		else {
-			Mpi::slave(myrank, ArgumentParser::optionPresent(messages->m_sOptionM.c_str()));
+			Mpi::slave(myrank, ArgumentParser::optionPresent("-m"));
 			Mpi::end(myrank);
 		}
 	} catch(const char* message) {

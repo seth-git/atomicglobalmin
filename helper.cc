@@ -6,9 +6,20 @@
 
 #include "helper.h"
 
+
+void printHelpMenu()
+{
+	ifstream infile("helperHelp.txt");
+	const int MAX_LINE_LENGTH = 500;
+	char fileLine[MAX_LINE_LENGTH];
+	while (infile.getline(fileLine, MAX_LINE_LENGTH))
+		cout << fileLine << endl;
+	cout << endl;
+	infile.close();
+}
+
 int main(int argc, char *argv[])
 {
-	const Strings* messages = Strings::instance();
 	vector<const char*> recognizedOptions;
 	vector<int> argumentsPerOption;
 	vector<const char*> optionMessages;
@@ -19,48 +30,45 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 	
-	recognizedOptions.push_back(messages->m_sOptionHelpH.c_str());
+	recognizedOptions.push_back("-h");
 	argumentsPerOption.push_back(0);
 	optionMessages.push_back("");
-	recognizedOptions.push_back(messages->m_sOptionHelpH2.c_str());
+	recognizedOptions.push_back("--help");
 	argumentsPerOption.push_back(0);
 	optionMessages.push_back("");
-	recognizedOptions.push_back(messages->m_sOptionHelpT.c_str());
+	recognizedOptions.push_back("-t");
 	argumentsPerOption.push_back(2);
-	optionMessages.push_back(messages->m_sOptionHelpTMessage.c_str());
-	recognizedOptions.push_back(messages->m_sOptionHelpC.c_str());
+	optionMessages.push_back("When using the -t option, please specify a resume or optimization file followed by an output file to which results will be written.");
+	recognizedOptions.push_back("-c");
 	argumentsPerOption.push_back(3);
-	optionMessages.push_back(messages->m_sOptionHelpCMessage.c_str());
-	recognizedOptions.push_back(messages->m_sOptionHelpP.c_str());
+	optionMessages.push_back("When using the -c option, please specify a resume or optimization file, followed by a directory where input files will be written, followed by a file prefix.");
+	recognizedOptions.push_back("-p");
 	argumentsPerOption.push_back(3);
-	optionMessages.push_back(messages->m_sOptionHelpPMessage.c_str());
-	recognizedOptions.push_back(messages->m_sOptionHelpO.c_str());
+	optionMessages.push_back("When using the -p option, please specify a resume or optimization file, followed by a directory where input files will be written, followed by a file prefix.");
+	recognizedOptions.push_back("-o");
 	argumentsPerOption.push_back(4);
-	optionMessages.push_back(messages->m_sOptionHelpOMessage.c_str());
-	recognizedOptions.push_back(messages->m_sOptionHelpA.c_str());
+	optionMessages.push_back("When using the -o option, please specify a resume file, followed by the optimization file to be created, followed by the number of structures to transfer, followed by the number of structures to optimize at a time.");
+	recognizedOptions.push_back("-a");
 	argumentsPerOption.push_back(2);
-	optionMessages.push_back(messages->m_sOptionHelpAMessage.c_str());
-	recognizedOptions.push_back(messages->m_sOptionHelpOR.c_str());
+	optionMessages.push_back("When using the -a option, please specify an optimization file, followed by the number of additional structures to transfer from the resume file.");
+	recognizedOptions.push_back("-or");
 	argumentsPerOption.push_back(3);
-	optionMessages.push_back(messages->m_sOptionHelpORMessage.c_str());
-	recognizedOptions.push_back(messages->m_sOptionHelpRO.c_str());
+	optionMessages.push_back("When using the -or option, please specify an input file, followed by the optimization file to be created, followed by the number of structures to optimize at a time.");
+	recognizedOptions.push_back("-ro");
 	argumentsPerOption.push_back(3);
-	optionMessages.push_back(messages->m_sOptionHelpROMessage.c_str());
-	recognizedOptions.push_back(messages->m_sOptionHelpB.c_str());
+	optionMessages.push_back("When using the -ro option, please specify an input file, followed by the optimization file to be created, followed by the number of structures to optimize at a time.");
+	recognizedOptions.push_back("-b");
 	argumentsPerOption.push_back(1);
 	optionMessages.push_back("");
-	recognizedOptions.push_back(messages->m_sOptionHelpM.c_str());
+	recognizedOptions.push_back("-m");
 	argumentsPerOption.push_back(4);
-	optionMessages.push_back(messages->m_sOptionHelpMMessage.c_str());
-	recognizedOptions.push_back(messages->m_sOptionHelpTR.c_str());
+	optionMessages.push_back("When using the -m option, please specify an input file, followed by the number of degrees to rotate bond angles, followed by an optimization file, followed by the number of structures to optimize at a time.");
+	recognizedOptions.push_back("-u");
 	argumentsPerOption.push_back(1);
-	optionMessages.push_back(messages->m_sOptionHelpTRMessage.c_str());
-	recognizedOptions.push_back(messages->m_sOptionHelpRT.c_str());
-	argumentsPerOption.push_back(1);
-	optionMessages.push_back(messages->m_sOptionHelpRTMessage.c_str());
-	recognizedOptions.push_back(messages->m_sOptionHelpU.c_str());
-	argumentsPerOption.push_back(1);
-	optionMessages.push_back(messages->m_sOptionHelpUMessage.c_str());
+	optionMessages.push_back("When using the -u option, please specify an input file.");
+//	recognizedOptions.push_back("-w");
+//	argumentsPerOption.push_back(0);
+//	optionMessages.push_back("");
 	
 	ArgumentParser::init(&recognizedOptions, &argumentsPerOption, &optionMessages);
 	if (!ArgumentParser::parse(argc, argv))
@@ -94,53 +102,52 @@ int main(int argc, char *argv[])
 	int numFiles;
 	
 	try {
-		if ((ArgumentParser::getNumOptions() == 0) || ArgumentParser::optionPresent(messages->m_sOptionHelpH.c_str()) || ArgumentParser::optionPresent(messages->m_sOptionHelpH2.c_str())) {
-			Strings::instance()->printHelperOptions();
+		if ((ArgumentParser::getNumOptions() == 0) || ArgumentParser::optionPresent("-h") || ArgumentParser::optionPresent("--help")) {
+			printHelpMenu();
 			throw "";
 		}
-		if (ArgumentParser::optionPresent(messages->m_sOptionHelpT.c_str())) { // # Make an output file from a resume file that's readable
+		if (ArgumentParser::optionPresent("-t")) { // # Make an output file from a resume file that's readable
 			if (ArgumentParser::getNumOptions() > 1) {
-				printf(messages->m_sMultipleOptionsError.c_str(), messages->m_sOptionHelpT.c_str());
-				cout << endl;
+				cout << "No other options may be specified with the -t option." << endl;
 				throw "";
 			}
-			ArgumentParser::getOptionArguments(messages->m_sOptionHelpT.c_str(), numOptionArguments, &optionArguments);
+			ArgumentParser::getOptionArguments("-t", numOptionArguments, &optionArguments);
 			inputFileName = optionArguments[0];
 			tempOutputFileName = optionArguments[1];
-			cout << messages->m_sReadingFile << ": " << inputFileName << endl;
+			cout << "Reading File: " << inputFileName << endl;
 			if (!input.open(inputFileName, true, false, moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets))
 				throw "";
 			if (!(input.m_bResumeFileRead || input.m_bOptimizationFileRead)) {
-				cout << messages->m_sNotResumeOrOptFile << endl;
+				cout << "The input file you have specified is not a resume or an optimization file." << endl;
 				throw "";
 			} else {
 				fout.open(tempOutputFileName.c_str(), ofstream::out); // Erase the existing file, if there is one
 				if (!fout.is_open())
 				{
-					cout << messages->m_sCantOpenOutputFile << ": " << tempOutputFileName << endl;
+					cout << "Unable to open the output file: " << tempOutputFileName << endl;
 					throw "";
 				}
 				input.printInputParamsToFile(fout);
-				fout << endl << endl << messages->m_sBest << " " << bestNMoleculeSets.size() << " " << messages->m_sStructuresFromIteration << " "
-				     << input.m_iIteration << ":" << endl;
+				fout << endl << endl << "Best " << bestNMoleculeSets.size() << " structures from iteration "
+				<< input.m_iIteration << ":" << endl;
 				for (i = 0; i < (signed int)bestNMoleculeSets.size(); ++i)
 				{
-					fout << messages->m_sStructureNumber << (i+1) << ": " << endl;
+					fout << "Structure #" << (i+1) << ": " << endl;
 					bestNMoleculeSets[i]->print(fout);
-					fout << setiosflags(ios::fixed) << setprecision(8) << messages->m_sEnergy << ": "
+					fout << setiosflags(ios::fixed) << setprecision(8) << "Energy: "
 					<< bestNMoleculeSets[i]->getEnergy() << endl << endl;
 				}
-				fout << endl << endl << messages->m_sPopulationOf << " " << moleculeSets.size() << " " << messages->m_sStructuresFromIteration << " "
-				     << input.m_iIteration << ":" << endl;
+				fout << endl << endl << "Population of " << moleculeSets.size() << " structures from iteration "
+				<< input.m_iIteration << ":" << endl;
 				for (i = 0; i < (signed int)moleculeSets.size(); ++i)
 				{
-					fout << messages->m_sStructureNumber << (i+1) << ": " << endl;
+					fout << "Structure #" << (i+1) << ": " << endl;
 					moleculeSets[i]->print(fout);
-					fout << setiosflags(ios::fixed) << setprecision(8) << messages->m_sEnergy << ": "
+					fout << setiosflags(ios::fixed) << setprecision(8) << "Energy: "
 					<< moleculeSets[i]->getEnergy() << endl << endl;
 				}
 				fout.close();
-				cout << messages->m_sOutputWrittenTo << ": " << tempOutputFileName << endl;
+				cout << "Output written to: " << tempOutputFileName << endl;
 			}
 			// Clean up
 			for (i = 0; i < (signed int)moleculeSets.size(); ++i)
@@ -152,15 +159,14 @@ int main(int argc, char *argv[])
 			moleculeSets.clear();
 			bestNMoleculeSets.clear();
 			bestIndividualMoleculeSets.clear();
-		} else if (ArgumentParser::optionPresent(messages->m_sOptionHelpB.c_str())) { // # Check to make sure bonds were recognized correctly
+		} else if (ArgumentParser::optionPresent("-b")) { // # Check to make sure bonds were recognized correctly
 			if (ArgumentParser::getNumOptions() > 1) {
-				printf(messages->m_sMultipleOptionsError.c_str(), messages->m_sOptionHelpB.c_str());
-				cout << endl;
+				cout << "No other options may be specified with the -b option." << endl;
 				throw "";
 			}
-			ArgumentParser::getOptionArguments(messages->m_sOptionHelpB.c_str(), numOptionArguments, &optionArguments);
+			ArgumentParser::getOptionArguments("-b", numOptionArguments, &optionArguments);
 			inputFileName = optionArguments[0];
-			cout << messages->m_sReadingFile << ": " << inputFileName << endl;
+			cout << "Reading File: " << inputFileName << endl;
 			if (!input.open(inputFileName, true, false, moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets))
 				throw "";
 			input.printBondInfo();
@@ -174,17 +180,16 @@ int main(int argc, char *argv[])
 			moleculeSets.clear();
 			bestNMoleculeSets.clear();
 			bestIndividualMoleculeSets.clear();
-		} else if (ArgumentParser::optionPresent(messages->m_sOptionHelpM.c_str())) { // # Check to make sure bonds were recognized correctly
+		} else if (ArgumentParser::optionPresent("-m")) { // # Check to make sure bonds were recognized correctly
 			if (ArgumentParser::getNumOptions() > 1) {
-				printf(messages->m_sMultipleOptionsError.c_str(), messages->m_sOptionHelpM.c_str());
-				cout << endl;
+				cout << "No other options may be specified with the -m option." << endl;
 				throw "";
 			}
-			ArgumentParser::getOptionArguments(messages->m_sOptionHelpM.c_str(), numOptionArguments, &optionArguments);
+			ArgumentParser::getOptionArguments("-m", numOptionArguments, &optionArguments);
 			inputFileName = optionArguments[0];
 			FLOAT angle = atof(optionArguments[1])/180*PIE;
 			tempOutputFileName = optionArguments[2];
-			cout << messages->m_sReadingFile << ": " << inputFileName << endl;
+			cout << "Reading File: " << inputFileName << endl;
 			if (!input.open(inputFileName, true, false, moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets))
 				throw "";
 			for (i = 0; i < (signed int)moleculeSets.size(); ++i)
@@ -194,11 +199,10 @@ int main(int argc, char *argv[])
 				sscanf(optionArguments[3], "%d", &input.m_iStructuresToOptimizeAtATime);
 				if ((input.m_iStructuresToOptimizeAtATime <= 0) ||
 				(input.m_iStructuresToOptimizeAtATime > (signed int)moleculeSets.size())) {
-					printf(messages->m_sEnterNumStructuresToOptimizeAt1Time.c_str(), moleculeSets.size());
-					cout << endl << endl;
+					cout << "Please specify a valid number of structures to optimize at a time (between 1 and "
+					<< moleculeSets.size() << ")." << endl << endl;
 				}
-				printf(messages->m_sCreatingOptimizationFile.c_str(), tempOutputFileName.c_str());
-				cout << endl;
+				cout << "Creating optimization file: " << tempOutputFileName << endl;
 				input.writeResumeFile(tempOutputFileName, moleculeSets, emptyMoleculeSets,
 					emptyMoleculeSets, 0, false);
 				input.printBondInfo();
@@ -213,58 +217,47 @@ int main(int argc, char *argv[])
 			moleculeSets.clear();
 			bestNMoleculeSets.clear();
 			bestIndividualMoleculeSets.clear();
-		} else if (ArgumentParser::optionPresent(messages->m_sOptionHelpC.c_str()) || ArgumentParser::optionPresent(messages->m_sOptionHelpP.c_str())) { // # Check to make sure bonds were recognized correctly
-			bool cOption = ArgumentParser::optionPresent(messages->m_sOptionHelpC.c_str());
+		} else if (ArgumentParser::optionPresent("-c") || ArgumentParser::optionPresent("-p")) { // # Check to make sure bonds were recognized correctly
+			bool cOption = ArgumentParser::optionPresent("-c");
 			if (ArgumentParser::getNumOptions() > 1) {
 				if (cOption)
-					printf(messages->m_sMultipleOptionsError.c_str(), messages->m_sOptionHelpC.c_str());
+					cout << "No other options may be specified with the -c option." << endl;
 				else
-					printf(messages->m_sMultipleOptionsError.c_str(), messages->m_sOptionHelpP.c_str());
-				cout << endl;
+					cout << "No other options may be specified with the -p option." << endl;
 				throw "";
 			}
 			if (cOption)
-				ArgumentParser::getOptionArguments(messages->m_sOptionHelpC.c_str(), numOptionArguments, &optionArguments);
+				ArgumentParser::getOptionArguments("-c", numOptionArguments, &optionArguments);
 			else
-				ArgumentParser::getOptionArguments(messages->m_sOptionHelpP.c_str(), numOptionArguments, &optionArguments);
+				ArgumentParser::getOptionArguments("-p", numOptionArguments, &optionArguments);
 			vector<MoleculeSet*> *moleculeSetsToUse;
 			inputFileName = optionArguments[0];
 			outputDirectory = optionArguments[1];
 			Input::checkDirectoryOrFileName(outputDirectory);
 			if (stat(outputDirectory.c_str(), &fileStatistics) != 0) { // If the file doesn't exist
-				while (true) {
-					printf(messages->m_sDirectoryDoesntExistCreateIt.c_str(), outputDirectory.c_str());
-					printf(" ");
-					cin >> answer;
-					if (messages->m_sYes == answer) {
-						snprintf(commandLine, 500, "mkdir %s", outputDirectory.c_str());
-						if (system(commandLine) == 0) {
-							printf(messages->m_sCreatedDirectory.c_str(), outputDirectory.c_str());
-							cout << endl;
-							break;
-						} else {
-							printf(messages->m_sErrorCreatingDirectory.c_str(), outputDirectory.c_str());
-							cout << endl;
-							throw "";
-						}
-					} else if (messages->m_sNo == answer) {
-						cout << messages->m_sDirectoryNotCreated << endl << endl;
+				cout << "The directory " << outputDirectory << " does not exist.  Do you wish to create it? ";
+				cin >> answer;
+				if (strncmp(answer.c_str(),"yes",3) != 0) {
+					cout << "Directory not created..." << endl << endl;
+					throw "";
+				} else {
+					snprintf(commandLine, 500, "mkdir %s", outputDirectory.c_str());
+					if (system(commandLine) == 0)
+						cout << "Created directory: " << outputDirectory << endl;
+					else 
 						throw "";
-					} else {
-						printf(messages->m_sAnswerYesOrNo.c_str(), messages->m_sYes.c_str(), messages->m_sNo.c_str());
-						cout << endl << endl;
-					}
 				}
 			}
-			
+	
+	
 			comPrefix = optionArguments[2];
-			cout << messages->m_sReadingFile << ": " << inputFileName << endl;
+			cout << "Reading File: " << inputFileName << endl;
 			if (!input.open(inputFileName, true, false, moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets))
 				throw "";
 			if (!Energy::init(input, 0))
 				throw "";
 			if (!(input.m_bResumeFileRead || input.m_bOptimizationFileRead)) {
-				cout << messages->m_sNotResumeOrOptFile << endl;
+				cout << "The input file you have specified is not a resume or an optimization file." << endl;
 				throw "";
 			}
 			
@@ -274,28 +267,26 @@ int main(int argc, char *argv[])
 				moleculeSetsToUse = &moleculeSets;
 			
 			if (moleculeSetsToUse->size() > 100) {
-				printf(messages->m_sNumStructuresInFile.c_str(), moleculeSetsToUse->size());
-				cout << endl;
-				printf(messages->m_sEnterNumInputFiles.c_str(), input.m_pSelectedEnergyProgram->getName(), messages->m_sAll.c_str());
-				printf(" ");
+				cout << "There are " << moleculeSetsToUse->size() << " structures in this file." << endl;
+				cout << "Enter the number of structures you wish to create " << input.m_pSelectedEnergyProgram->m_sName << " input files for or type 'all': ";
 				cin >> answer;
-				if (answer == messages->m_sAll)
+				if (strncmp(answer.c_str(),"all",3) == 0)
 					numFiles = moleculeSetsToUse->size();
 				else
 					numFiles = atoi(answer.c_str());
 				if (numFiles <= 0) {
-					cout << messages->m_sFilesNotCreated.c_str() << endl << endl;
+					cout << "Files not created..." << endl << endl;
 					throw "";
 				}
 			} else
 				numFiles = moleculeSetsToUse->size();
-			printf(messages->m_sCreateingNInputFiles.c_str(), numFiles);
-			cout << endl;
+	
+			cout << "Creating " << numFiles << " input files..." << endl;
 			for (i = 0; i < numFiles; ++i) {
 				(*moleculeSetsToUse)[i]->setInputEnergyFile(outputDirectory.c_str(), comPrefix.c_str(), i+1, input.m_pSelectedEnergyProgram->m_sInputFileExtension.c_str());
 				Energy::createInputFile(*(*moleculeSetsToUse)[i], i+1, false, true);
 			}
-			cout << messages->m_sDone << endl;
+			cout << "Done!" << endl;
 			// Clean up
 			for (i = 0; i < (signed int)moleculeSets.size(); ++i)
 				delete moleculeSets[i];
@@ -306,41 +297,39 @@ int main(int argc, char *argv[])
 			moleculeSets.clear();
 			bestNMoleculeSets.clear();
 			bestIndividualMoleculeSets.clear();
-		} else if (ArgumentParser::optionPresent(messages->m_sOptionHelpO.c_str())) { // # Create an optimization file
+		} else if (ArgumentParser::optionPresent("-o")) { // # Create an optimization file
 			if (ArgumentParser::getNumOptions() > 1) {
-				printf(messages->m_sMultipleOptionsError.c_str(), messages->m_sOptionHelpO.c_str());
-				cout << endl;
+				cout << "No other options may be specified with the -o option." << endl;
 				throw "";
 			}
-			ArgumentParser::getOptionArguments(messages->m_sOptionHelpO.c_str(), numOptionArguments, &optionArguments);
+			ArgumentParser::getOptionArguments("-o", numOptionArguments, &optionArguments);
 			int numToTransfer;
 			inputFileName = optionArguments[0];
 			tempOutputFileName = optionArguments[1];
-			cout << messages->m_sReadingFile << ": " << inputFileName << endl;
+			cout << "Reading File: " << inputFileName << endl;
 			if (!input.open(inputFileName, true, false, moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets))
 				throw "";
 			if (!input.m_bResumeFileRead && !input.m_bOptimizationFileRead) {
-				cout << messages->m_sNotResumeOrOptFile << endl << endl;
+				cout << "The input file you have specified is not a resume or an optimization file." << endl << endl;
 				throw "";
 			}
 			sscanf(optionArguments[2], "%d", &numToTransfer);
 			if ((numToTransfer <= 0) ||
 			(numToTransfer > (signed int)bestNMoleculeSets.size())) {
-				printf(messages->m_sEnterNumStructuresToTransfer.c_str(), bestNMoleculeSets.size());
-				cout << endl << endl;
+				cout << "Please specify a valid number of structures to transfer (between 1 and "
+				<< bestNMoleculeSets.size() << ")." << endl << endl;
 				throw "";
 			}
-			if (input.m_iNumberOfLogFilesToSave < numToTransfer && input.m_pSelectedEnergyProgram->m_iProgramID != LENNARD_JONES) {
-				printf(messages->m_sChangingNumSavedOptimizedStructures.c_str(), numToTransfer);
-				cout << endl;
+			if (input.m_iNumberOfLogFilesToSave < numToTransfer) {
+				cout << "Changing the number of saved optimized structures to " << numToTransfer << "." << endl;
 				input.m_iNumberOfBestStructuresToSave = numToTransfer;
 				input.m_iNumberOfLogFilesToSave = numToTransfer;
 			}
 			sscanf(optionArguments[3], "%d", &input.m_iStructuresToOptimizeAtATime);
 			if ((input.m_iStructuresToOptimizeAtATime <= 0) ||
-			    (input.m_iStructuresToOptimizeAtATime > (signed int)bestNMoleculeSets.size())) {
-				printf(messages->m_sEnterNumStructuresToOptimizeAt1Time.c_str(), bestNMoleculeSets.size());
-				cout << endl << endl;
+			(input.m_iStructuresToOptimizeAtATime > (signed int)bestNMoleculeSets.size())) {
+				cout << "Please specify a valid number of structures to optimize at a time (between 1 and "
+				<< bestNMoleculeSets.size() << ")." << endl << endl;
 				throw "";
 			}
 			while (numToTransfer < (signed int)bestNMoleculeSets.size()) {
@@ -350,12 +339,9 @@ int main(int argc, char *argv[])
 			input.m_iNumEnergyEvaluations = 0;
 			input.writeResumeFile(tempOutputFileName, bestNMoleculeSets, emptyMoleculeSets,
 					emptyMoleculeSets, 0, false);
-			printf(messages->m_sCreatedOptFile.c_str(), tempOutputFileName.c_str());
-			cout << endl;
-			if (input.m_iNumberOfLogFilesToSave > 0) {
-				printf(messages->m_sPleaseCleanDirectory.c_str(), input.m_sSaveLogFilesInDirectory.c_str());
-				cout << endl;
-			}
+			cout << "Created Optimization File: " << tempOutputFileName << endl;
+			if (input.m_iNumberOfLogFilesToSave > 0)
+				cout << "Please move or delete any files in the directory: " << input.m_sSaveLogFilesInDirectory << endl;
 			// Clean up
 			for (i = 0; i < (signed int)moleculeSets.size(); ++i)
 				delete moleculeSets[i];
@@ -363,27 +349,26 @@ int main(int argc, char *argv[])
 				delete bestNMoleculeSets[i];
 			moleculeSets.clear();
 			bestNMoleculeSets.clear();
-		} else if (ArgumentParser::optionPresent(messages->m_sOptionHelpOR.c_str()) || ArgumentParser::optionPresent(messages->m_sOptionHelpRO.c_str())) { // # Create an optimization file with random structures
-			bool order1 = ArgumentParser::optionPresent(messages->m_sOptionHelpOR.c_str());
+		} else if (ArgumentParser::optionPresent("-or") || ArgumentParser::optionPresent("-ro")) { // # Create an optimization file with random structures
+			bool order1 = ArgumentParser::optionPresent("-or");
 			if (ArgumentParser::getNumOptions() > 1) {
 				if (order1)
-					printf(messages->m_sMultipleOptionsError.c_str(), messages->m_sOptionHelpOR.c_str());
+					cout << "No other options may be specified with the -or option." << endl;
 				else
-					printf(messages->m_sMultipleOptionsError.c_str(), messages->m_sOptionHelpRO.c_str());
-				cout << endl;
+					cout << "No other options may be specified with the -ro option." << endl;
 				throw "";
 			}
 			if (order1)
-				ArgumentParser::getOptionArguments(messages->m_sOptionHelpOR.c_str(), numOptionArguments, &optionArguments);
+				ArgumentParser::getOptionArguments("-or", numOptionArguments, &optionArguments);
 			else
-				ArgumentParser::getOptionArguments(messages->m_sOptionHelpRO.c_str(), numOptionArguments, &optionArguments);
+				ArgumentParser::getOptionArguments("-ro", numOptionArguments, &optionArguments);
 			inputFileName = optionArguments[0];
 			tempOutputFileName = optionArguments[1];
-			cout << messages->m_sReadingFile << ": " << inputFileName << endl;
+			cout << "Reading File: " << inputFileName << endl;
 			if (!input.open(inputFileName, true, false, moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets))
 				throw "";
 			if (input.m_bResumeFileRead || input.m_bOptimizationFileRead) {
-				cout << messages->m_sPleaseNoResOrOptFile << endl << endl;
+				cout << "The input file you have specified is a resume or optimization file, and not an input file. Please specify an input file." << endl << endl;
 				throw "";
 			}
 			if (Init::initializePopulation(input, moleculeSets)) {
@@ -392,71 +377,60 @@ int main(int argc, char *argv[])
 				sscanf(optionArguments[2], "%d", &input.m_iStructuresToOptimizeAtATime);
 				if ((input.m_iStructuresToOptimizeAtATime <= 0) ||
 				(input.m_iStructuresToOptimizeAtATime > (signed int)moleculeSets.size())) {
-					printf(messages->m_sEnterNumStructuresToOptimizeAt1Time.c_str(), moleculeSets.size());
-					cout << endl << endl;
+					cout << "Please specify a valid number of structures to optimize at a time (between 1 and "
+					<< moleculeSets.size() << ")." << endl << endl;
 				} else {
 					input.m_iNumEnergyEvaluations = 0;
 					input.writeResumeFile(tempOutputFileName, moleculeSets, emptyMoleculeSets,
 						emptyMoleculeSets, 0, false);
-					printf(messages->m_sCreatedOptFile.c_str(), tempOutputFileName.c_str());
-					cout << endl;
+					cout << "Created Optimization File: " << tempOutputFileName << endl;
 				}
 			}
 			// Clean up
 			for (i = 0; i < (signed int)moleculeSets.size(); ++i)
 				delete moleculeSets[i];
 			moleculeSets.clear();
-		} else if (ArgumentParser::optionPresent(messages->m_sOptionHelpA.c_str())) { // # Create an optimization file
+		} else if (ArgumentParser::optionPresent("-a")) { // # Create an optimization file
 			if (ArgumentParser::getNumOptions() > 1) {
-				printf(messages->m_sMultipleOptionsError.c_str(), messages->m_sOptionHelpA.c_str());
-				cout << endl;
+				cout << "No other options may be specified with the -a option." << endl;
 				throw "";
 			}
-			ArgumentParser::getOptionArguments(messages->m_sOptionHelpA.c_str(), numOptionArguments, &optionArguments);
+			ArgumentParser::getOptionArguments("-a", numOptionArguments, &optionArguments);
 			int numToTransfer;
 			inputFileName = optionArguments[0];
 			sscanf(optionArguments[1], "%d", &numToTransfer);
-			cout << messages->m_sReadingFile << ": " << inputFileName << endl;
+			cout << "Reading File: " << inputFileName << endl;
 			if (!input.open(inputFileName, true, false, moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets))
 				throw "";
 			if (!input.m_bOptimizationFileRead) {
-				cout << messages->m_sFileIsNotOptFile << endl << endl;
+				cout << "The input file you have specified is not an optimization file." << endl << endl;
 				throw "";
 			}
-			while (true) {
-				printf(messages->m_sAddFromThisResFile.c_str(), input.m_sResumeFileName.c_str());
-				printf(" ");
-				cin >> answer;
-				if (answer == messages->m_sYes) {
-					resumeFileName = input.m_sResumeFileName;
-					break;
-				} else if (answer == messages->m_sNo) {
-					cout << messages->m_sEnterResumeFile << " ";
-					cin >> resumeFileName;
-					break;
-				} else {
-					printf(messages->m_sAnswerYesOrNo.c_str(), messages->m_sYes.c_str(), messages->m_sNo.c_str());
-					cout << endl << endl;
-				}
+			cout << "Do you want to add structure(s) from this resume file: " << input.m_sResumeFileName << "? ";
+			cin >> answer;
+			if (strncmp(answer.c_str(),"yes",3) == 0)
+				resumeFileName = input.m_sResumeFileName;
+			else {
+				cout << "Enter the resume file you wish to move structures from: ";
+				cin >> resumeFileName;
 			}
 			if (!resume.open(resumeFileName, false, false, moleculeSetsTemp, bestNMoleculeSetsTemp, bestIndividualMoleculeSetsTemp))
 				throw "";
 			if (!resume.m_bResumeFileRead) {
-				printf(messages->m_sNotAResumeFile.c_str(), resumeFileName.c_str());
-				cout << endl << endl;
+				cout << "This is not a resume file: " << resumeFileName << endl << endl;
 				throw "";
 			}
 			
 			if ((bestNMoleculeSetsTemp.size() - (input.m_iNumEnergyEvaluations + moleculeSets.size())) == 0) {
-				printf(messages->m_sNoStructuresLeftToTransfer.c_str(), resumeFileName.c_str());
-				cout << endl << endl;
+				cout << "There are no structures left that can be transfered from " << resumeFileName << "." << endl << endl;
 				throw "";
 			}
 			
 			if ((numToTransfer <= 0) ||
 			(numToTransfer > (signed int)(bestNMoleculeSetsTemp.size() - (input.m_iNumEnergyEvaluations + moleculeSets.size())))) {
-				printf(messages->m_sEnterNumStructuresToTransfer.c_str(), (bestNMoleculeSetsTemp.size() - ((unsigned int)input.m_iNumEnergyEvaluations + moleculeSets.size())));
-				cout << endl << endl;
+				cout << "Please specify a valid number of structures to transfer (between 1 and "
+				<< (bestNMoleculeSetsTemp.size() - (input.m_iNumEnergyEvaluations + moleculeSets.size())) << ")."
+				<< endl << endl;
 				throw "";
 			}
 			
@@ -467,15 +441,13 @@ int main(int argc, char *argv[])
 				moleculeSets.push_back(pMoleculeSet);
 			}
 			if (input.m_iNumberOfLogFilesToSave < j) {
-				printf(messages->m_sChangingNumSavedOptimizedStructures.c_str(), j);
-				cout << endl;
+				cout << "Changing the number of saved optimized structures to " << j << "." << endl;
 				input.m_iNumberOfBestStructuresToSave = j;
 				input.m_iNumberOfLogFilesToSave = j;
 			}
 			input.writeResumeFile(inputFileName, moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets,
 					input.m_tElapsedSeconds, false);
-			printf(messages->m_sTransferedNStructuresToOptFile.c_str(), numToTransfer, inputFileName.c_str());
-			cout << endl;
+			cout << "Transferred " << numToTransfer << " structures to the optimization file: " << inputFileName << endl;
 			// Clean up
 			for (i = 0; i < (signed int)moleculeSets.size(); ++i)
 				delete moleculeSets[i];
@@ -495,41 +467,12 @@ int main(int argc, char *argv[])
 			moleculeSetsTemp.clear();
 			bestNMoleculeSetsTemp.clear();
 			bestIndividualMoleculeSetsTemp.clear();
-		} else if (ArgumentParser::optionPresent(messages->m_sOptionHelpTR.c_str()) || ArgumentParser::optionPresent(messages->m_sOptionHelpRT.c_str())) { // # Translate
+		} else if (ArgumentParser::optionPresent("-u")) { // # Update output file from individual output files (used with .pso -i option)
 			if (ArgumentParser::getNumOptions() > 1) {
-				printf(messages->m_sMultipleOptionsError.c_str(), messages->m_sOptionHelpT.c_str());
-				cout << endl;
+				cout << "No other options may be specified with the -u option." << endl;
 				throw "";
 			}
-			if (ArgumentParser::optionPresent(messages->m_sOptionHelpTR.c_str()))
-				ArgumentParser::getOptionArguments(messages->m_sOptionHelpTR.c_str(), numOptionArguments, &optionArguments);
-			else
-				ArgumentParser::getOptionArguments(messages->m_sOptionHelpRT.c_str(), numOptionArguments, &optionArguments);
-			inputFileName = optionArguments[0];
-			cout << messages->m_sReadingFile << ": " << inputFileName << endl;
-			if (!input.open(inputFileName, true, false, moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets))
-				throw "";
-			if (input.m_sLanguageCode != Strings::s_sDefaultLanguageCode) {
-				input.m_sLanguageCode = Strings::s_sDefaultLanguageCode;
-				input.save(moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets);
-			}
-			// Clean up
-			for (i = 0; i < (signed int)moleculeSets.size(); ++i)
-				delete moleculeSets[i];
-			for (i = 0; i < (signed int)bestNMoleculeSets.size(); ++i)
-				delete bestNMoleculeSets[i];
-			for (i = 0; i < (signed int)bestIndividualMoleculeSets.size(); ++i)
-				delete bestIndividualMoleculeSets[i];
-			moleculeSets.clear();
-			bestNMoleculeSets.clear();
-			bestIndividualMoleculeSets.clear();
-		} else if (ArgumentParser::optionPresent(messages->m_sOptionHelpU.c_str())) { // # Update output file from individual output files (used with .pso -i option)
-			if (ArgumentParser::getNumOptions() > 1) {
-				printf(messages->m_sMultipleOptionsError.c_str(), messages->m_sOptionHelpU.c_str());
-				cout << endl;
-				throw "";
-			}
-			ArgumentParser::getOptionArguments(messages->m_sOptionHelpU.c_str(), numOptionArguments, &optionArguments);
+			ArgumentParser::getOptionArguments("-u", numOptionArguments, &optionArguments);
 			inputFileName = optionArguments[0];
 			if (!input.open(inputFileName, true, false, moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets))
 				throw "";
@@ -547,14 +490,13 @@ int main(int argc, char *argv[])
 		} else {
 			const char* argument = ArgumentParser::nextUnrecognized();
 			while (argument != NULL) {
-				printf(messages->m_sUnrecognizedArgOrOption.c_str(), argument);
-				cout << endl;
+				cout << "Unrecognized argument or option: " << argument << endl;
 				argument = ArgumentParser::nextUnrecognized();
 			}
 		}
 	} catch (const char* message) {
 		if (PRINT_CATCH_MESSAGES)
-			cerr << messages->m_sCaughtMessage << ": " << message << endl;
+			cerr << "Caught message: " << message << endl;
 	}
 	ArgumentParser::cleanUp();
 	EnergyProgram::cleanUp();

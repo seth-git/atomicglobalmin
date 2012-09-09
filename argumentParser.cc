@@ -61,10 +61,9 @@ bool ArgumentParser::parse(int argc, char *argv[])
 			optionWithArgs->m_numArguments = argc-1-i;
 		if (optionWithArgs->m_numArguments > 0) {
 			if (argc-1-i < optionWithArgs->m_numArguments) {
-				if ((message == NULL)  || (strlen(message) == 0)) {
-					const Strings* messages = Strings::instance();
-					printf(messages->m_snOptionTakesNArgs.c_str(), optionWithArgs->m_option, optionWithArgs->m_numArguments);
-				} else
+				if ((message == NULL)  || (strlen(message) == 0))
+					cout << "The " << optionWithArgs->m_option << " option takes " << optionWithArgs->m_numArguments << " argument(s)." << endl;
+				else
 					cout << message << endl;
 				delete optionWithArgs;
 				cleanUp();
