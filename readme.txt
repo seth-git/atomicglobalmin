@@ -21,6 +21,7 @@ Version 1.5.1
 	- Updated the documentation.  No program or code changes.
 
 Version 1.5.0
-	- This release includes implicit support for GAMESS, including an input file generation method, and some documentation updates.  This version also includes bug fixes 
-for the simulated annealing -i option.  In particular the program now will not restart completed runs, if the user accidentally tries to do this or if the user is performing multiple separate runs using the -i option and some but not all of the runs have completed.  Also when using the -i option, the program will now always update the main output file from the individual output files when the run completes or shortly before the wall time is reached.  This new version also includes general refactoring to ensure clean program termination.
+	- This release includes implicit support for GAMESS, including an input file generation method, and some documentation updates.  This version also includes bug fixes for the simulated annealing -i option.  In particular the program now will not restart completed runs, if the user accidentally tries to do this or if the user is performing multiple separate runs using the -i option and some but not all of the runs have completed.  Also when using the -i option, the program will now always update the main output file from the individual output files when the run completes or shortly before the wall time is reached.  This new version also includes general refactoring to ensure clean program termination.
+
+For release notes on older versions, see the subversion log.
 
