@@ -6,6 +6,10 @@
     <link href="styles/styles.css" rel="stylesheet" type="text/css" />
     <script type="text/javascript" src="js/jquery-1.5.2.min.js"></script>
     <script type="text/javascript">
+      $.ajaxSetup ({
+      // Disable caching of AJAX responses
+         cache: false
+      });
       $(document).ready(function() {
          var id1, id2;
          $('#contentCell').load('outline.html', function() {

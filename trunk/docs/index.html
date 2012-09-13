@@ -23,6 +23,10 @@
       function getURLParameter(name) {
         return decodeURI((RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,null])[1]);
       }
+      $.ajaxSetup ({
+      // Disable caching of AJAX responses
+         cache: false
+      });
       $(document).ready(function() {
         loadContent();
       });
