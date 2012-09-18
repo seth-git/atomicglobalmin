@@ -1,15 +1,29 @@
 
 #include "simulatedAnnealing.h"
 
-bool SimulatedAnnealing::load(TiXmlElement *pSimElem, const Strings* messages)
+bool SimulatedAnnealing::loadSetup(TiXmlElement *pSetupElem, const Strings* messages)
+{
+		
+	return true;
+}
+
+bool SimulatedAnnealing::loadResume(TiXmlElement *pResumeElem, const Strings* messages)
 {
 	return true;
 }
 
-bool SimulatedAnnealing::save(TiXmlElement *pActionElem, const Strings* messages)
+bool SimulatedAnnealing::saveSetup(TiXmlElement *pSimElem, const Strings* messages)
 {
-	TiXmlElement* pSimElem = new TiXmlElement(messages->m_sxSimulatedAnnealing.c_str());
-	pActionElem->LinkEndChild(pSimElem);
+	TiXmlElement* setup = new TiXmlElement(messages->m_sxSetup.c_str());
+	pSimElem->LinkEndChild(setup);
+	
+	return true;
+}
+
+bool SimulatedAnnealing::saveResume(TiXmlElement *pSimElem, const Strings* messages)
+{
+	TiXmlElement* resume = new TiXmlElement(messages->m_sxResume.c_str());
+	pSimElem->LinkEndChild(resume);
 	
 	return true;
 }

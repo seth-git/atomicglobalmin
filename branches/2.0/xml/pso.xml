@@ -3,73 +3,76 @@
       xmlns="http://sourceforge.net/projects/atomicglobalmin/"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation= "http://sourceforge.net/projects/atomicglobalmin/ agml.xsd">
-	<action>
-		<particleSwarmOptimization constraints="myConstraints">
-			<setup>
-				<populationTemplate constraints="myConstraints">
-					<moleculeSetTemplate>
-						<moleculeTemplate>
-							6   -2.646636   -1.062747   -0.826172
-							1   -2.119982   -2.001828   -0.710490
-							1   -3.641961   -1.101236   -1.253241
-							6   -2.111713    0.099834   -0.464456
-							1   -2.678377    1.017862   -0.603423
-							6   -0.750835    0.322832    0.142508
-							8   -0.067373   -1.001838    0.105605
-							6    0.095247    1.231857   -0.794368
-							1   -0.461842    2.164024   -0.930859
-							1    0.171239    0.736640   -1.769275
-							6   -0.831198    0.863314    1.563463
-							1   -1.313463    0.140349    2.223240
-							1    0.159542    1.102554    1.943679
-							1   -1.431320    1.776562    1.552151
-							8    0.761868   -1.229237    1.100385
-							8    1.355158    1.567601   -0.273791
-							1    1.981122    0.839765   -0.438313
-						</moleculeTemplate>
-						<moleculeTemplate number="2">
-							1 0.757540797781 0.0 0.587079636589
-							1 -0.757540797781 0.0 0.587079636589
-							8 0.0 0.0 0.0
-						</moleculeTemplate>
-					</moleculeSetTemplate>
-					<nonFragmented number="32"/>
-				</populationTemplate>
-				<velocities>
-					<coordinate>
-						<inertia value="0.95"/>
-						<ci value="0.15"/>
-						<cp value="0.15"/>
-						<vMax value="0.3"/>
-					</coordinate>
-					<angle>
-						<inertia value="0.95"/>
-						<ci value="15"/>
-						<cp value="15"/>
-						<vMax value="30"/>
-					</angle>
-				</velocities>
-				<visibility start="auto" increment="0.003"/>
-				<stop iteration="500"/>
-			</setup>
-		</particleSwarmOptimization>
-	</action>
-	<constraints name="myConstraints">
-		<cube size="10"/>
-		<atomicDistances>
-			<min value="0.7" />
-			<max value="2.5" />
-		</atomicDistances>
-	</constraints>
-	<energy>
-		<external method="Gaussian">
-			<sharedDirectory path="path"/>
-			<multiplicity value="2"/>
-			<charge value="0"/>
-			<header>
+	<particleSwarmOptimization constraints="search">
+		<setup>
+			<populationTemplate constraints="init">
+				<moleculeSetTemplate>
+					<moleculeTemplate>
+						6   -2.646636   -1.062747   -0.826172
+						1   -2.119982   -2.001828   -0.710490
+						1   -3.641961   -1.101236   -1.253241
+						6   -2.111713    0.099834   -0.464456
+						1   -2.678377    1.017862   -0.603423
+						6   -0.750835    0.322832    0.142508
+						8   -0.067373   -1.001838    0.105605
+						6    0.095247    1.231857   -0.794368
+						1   -0.461842    2.164024   -0.930859
+						1    0.171239    0.736640   -1.769275
+						6   -0.831198    0.863314    1.563463
+						1   -1.313463    0.140349    2.223240
+						1    0.159542    1.102554    1.943679
+						1   -1.431320    1.776562    1.552151
+						8    0.761868   -1.229237    1.100385
+						8    1.355158    1.567601   -0.273791
+						1    1.981122    0.839765   -0.438313
+					</moleculeTemplate>
+					<moleculeTemplate number="2">
+						1 0.757540797781 0.0 0.587079636589
+						1 -0.757540797781 0.0 0.587079636589
+						8 0.0 0.0 0.0
+					</moleculeTemplate>
+				</moleculeSetTemplate>
+				<threeD number="32"/>
+			</populationTemplate>
+			<velocities>
+				<coordinate>
+					<inertia value="0.95"/>
+					<ci value="0.15"/>
+					<cp value="0.15"/>
+					<vMax value="0.3"/>
+				</coordinate>
+				<angle>
+					<inertia value="0.95"/>
+					<ci value="15"/>
+					<cp value="15"/>
+					<vMax value="30"/>
+				</angle>
+			</velocities>
+			<visibility start="auto" increment="0.003"/>
+			<stop iteration="500"/>
+		</setup>
+		<constraints name="search">
+			<cube size="10"/>
+			<atomicDistances>
+				<min value="0.7" />
+				<max value="2.5" />
+			</atomicDistances>
+		</constraints>
+		<constraints name="init" base="search">
+			<atomicDistances>
+				<max value="2.5" />
+			</atomicDistances>
+		</constraints>
+		<energy>
+			<external method="Gaussian">
+				<sharedDirectory path="path"/>
+				<multiplicity value="2"/>
+				<charge value="0"/>
+				<header>
 % mem=2000MB
 # B3LYP/6-311++G(d,p) scfcon=4 scfcyc=300 scf=direct
-			</header>
-		</external>
-	</energy>
+				</header>
+			</external>
+		</energy>
+	</particleSwarmOptimization>
 </agml>

@@ -41,15 +41,16 @@ public:
 
 	std::string m_sLanguageCode;
 
-	std::string m_sxAction;
-	std::string m_sxConstraints;
-	std::string m_sxEnergy;
-	std::string m_sxResults;
 	std::string m_sxSimulatedAnnealing;
 	std::string m_sxRandomSearch;
 	std::string m_sxParticleSwarmOptimization;
 	std::string m_sxGeneticAlgorithm;
 	std::string m_sxBatch;
+	std::string m_sxSetup;
+	std::string m_sxConstraints;
+	std::string m_sxEnergy;
+	std::string m_sxResume;
+	std::string m_sxResults;
 	std::string m_sxInternal;
 	std::string m_sxExternal;
 
@@ -58,6 +59,7 @@ public:
 	std::string m_sxMin;
 	std::string m_sxMax;
 	std::string m_sxName;
+	std::string m_sxBase;
 	std::string m_sxSize;
 	std::string m_sxValue;
 	std::string m_sxZ1;
@@ -127,6 +129,8 @@ public:
 	std::string m_sElementNotFound;
 	std::string m_sOneRootElement;
 	std::string m_sTwoElementsWithSameName;
+	
+	std::string m_sConstraintNameMisMatch;
 
 	std::string m_sErrorZ1Z2;
 	std::string m_sErrorOneGeneralMin;

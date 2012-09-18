@@ -4,9 +4,6 @@
 
 #include <stdio.h>
 #include <string>
-#include "internalEnergy.h"
-#include "externalEnergy.h"
-#include "constraints.h"
 #include "action.h"
 #include "simulatedAnnealing.h"
 
@@ -22,11 +19,7 @@ class Input {
 		std::string m_sVersion;
 		std::string m_sLanguageCode; // 2 characters long
 		int m_iAction; // SIMULATED_ANNEALING, RANDOM_SEARCH, PARTICLE_SWARM_OPTIMIZATION, etc.
-		IAction *m_pAction;
-		bool m_bExternalEnergy;
-		InternalEnergy m_internalEnergy;
-		ExternalEnergy m_externalEnergy;
-		std::vector<Constraints> m_constraints;
+		Action *m_pAction;
 		
 		Input()
 		{
@@ -52,9 +45,6 @@ class Input {
 		static const char*        s_attributeNames[];
 		static const bool         s_required[];
 		static const char*        s_defaultValues[];
-		
-		static const unsigned int s_minOccurs[];
-		static const unsigned int s_maxOccurs[];
 		
 		void cleanUp();
 };

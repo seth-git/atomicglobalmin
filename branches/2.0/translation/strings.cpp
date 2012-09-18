@@ -93,16 +93,17 @@ bool Strings::init (const char* languageCode)
 	}
 	if (error)
 		return false;
-
-	m_sxAction = stringMap["xAction"];
-	m_sxConstraints = stringMap["xConstraints"];
-	m_sxEnergy = stringMap["xEnergy"];
-	m_sxResults = stringMap["xResults"];
+	
 	m_sxSimulatedAnnealing = stringMap["xSimulatedAnnealing"];
 	m_sxRandomSearch = stringMap["xRandomSearch"];
 	m_sxParticleSwarmOptimization = stringMap["xParticleSwarmOptimization"];
 	m_sxGeneticAlgorithm = stringMap["xGeneticAlgorithm"];
 	m_sxBatch = stringMap["xBatch"];
+	m_sxSetup = stringMap["xSetup"];
+	m_sxConstraints = stringMap["xConstraints"];
+	m_sxEnergy = stringMap["xEnergy"];
+	m_sxResume = stringMap["xResume"];
+	m_sxResults = stringMap["xResults"];
 	m_sxInternal = stringMap["xInternal"];
 	m_sxExternal = stringMap["xExternal"];
 	m_sxCube = stringMap["xCube"];
@@ -110,6 +111,7 @@ bool Strings::init (const char* languageCode)
 	m_sxMin = stringMap["xMin"];
 	m_sxMax = stringMap["xMax"];
 	m_sxName = stringMap["xName"];
+	m_sxBase = stringMap["xBase"];
 	m_sxSize = stringMap["xSize"];
 	m_sxValue = stringMap["xValue"];
 	m_sxZ1 = stringMap["xZ1"];
@@ -179,6 +181,8 @@ bool Strings::init (const char* languageCode)
 	m_sOneRootElement = stringMap["OneRootElement"];
 	m_sTwoElementsWithSameName = stringMap["TwoElementsWithSameName"];
 
+	m_sConstraintNameMisMatch = stringMap["ConstraintNameMisMatch"];
+	
 	m_sErrorZ1Z2 = stringMap["ErrorZ1Z2"];
 	m_sErrorOneGeneralMin = stringMap["ErrorOneGeneralMin"];
 	m_sErrorAtomicNumOverMax = stringMap["ErrorAtomicNumOverMax"];

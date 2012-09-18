@@ -5,26 +5,28 @@
            elementFormDefault="qualified">
 <xs:element name="agml">
 	<xs:complexType>
-		<xs:sequence>
-			<xs:element name="action">
-				<xs:complexType>
-					<xs:choice>
-						<xs:element name="simulatedAnnealing" type="simulatedAnnealingType"/>
-						<xs:element name="randomSearch" type="randomSearchType"/>
-						<xs:element name="particleSwarmOptimization" type="psoType"/>
-						<xs:element name="geneticAlgorithm" type="gaType"/>
-						<xs:element name="batch" type="batchType"/>
-					</xs:choice>
-				</xs:complexType>
-			</xs:element>
-			<xs:element name="constraints" type="constraintsType" minOccurs="0"/>
-			<xs:element name="energy" type="energyType"/>
-			<xs:element name="results" type="resultsType" minOccurs="0"/>
-		</xs:sequence>
+		<xs:choice>
+			<xs:element name="simulatedAnnealing" type="simulatedAnnealingType"/>
+			<xs:element name="randomSearch" type="randomSearchType"/>
+			<xs:element name="particleSwarmOptimization" type="psoType"/>
+			<xs:element name="geneticAlgorithm" type="gaType"/>
+			<xs:element name="batch" type="batchType"/>
+		</xs:choice>
 		<xs:attribute name="version" type="xs:string" use="required"/>
 		<xs:attribute name="language" type="xs:string" default="en"/>
 	</xs:complexType>
 </xs:element>
+
+<xs:complexType name="simulatedAnnealingType">
+	<xs:sequence>
+		<xs:element name="setup" type="simulatedAnnealingSetupType"/>
+		<xs:element name="constraints" type="constraintsType" minOccurs="0" maxOccurs="unbounded"/>
+		<xs:element name="energy" type="energyType"/>
+		<xs:element name="resume" type="simulatedAnnealingResumeType" minOccurs="0"/>
+		<xs:element name="results" type="resultsType" minOccurs="0"/>
+	</xs:sequence>
+	<xs:attribute name="constraints" type="xs:string"/>
+</xs:complexType>
 
 <xs:complexType name="constraintsType">
 	<xs:all>
@@ -36,6 +38,23 @@
 		<xs:element name="atomicDistances" type="atomicDistancesType" minOccurs="0"/>
 	</xs:all>
 	<xs:attribute name="name" type="xs:string" use="required"/>
+	<xs:attribute name="base" type="xs:string"/>
+</xs:complexType>
+<xs:complexType name="atomicDistancesType">
+	<xs:sequence>
+		<xs:element name="min" minOccurs="0" maxOccurs="unbounded">
+			<xs:complexType>
+				<xs:attribute name="value" type="positiveDecimal" use="required"/>
+				<xs:attribute name="z1" type="xs:string"/>
+				<xs:attribute name="z2" type="xs:string"/>
+			</xs:complexType>
+		</xs:element>
+		<xs:element name="max" minOccurs="0" maxOccurs="1">
+			<xs:complexType>
+				<xs:attribute name="value" type="positiveDecimal" use="required"/>
+			</xs:complexType>
+		</xs:element>
+	</xs:sequence>
 </xs:complexType>
 
 <xs:complexType name="energyType">
@@ -116,32 +135,6 @@
 	</xs:all>
 	<xs:attribute name="maxSize" type="positiveInteger" default="1"/>
 	<xs:attribute name="rmsDistance" type="nonNegativeDecimal"/>
-</xs:complexType>
-
-<xs:complexType name="atomicDistancesType">
-	<xs:sequence>
-		<xs:element name="min" minOccurs="0" maxOccurs="unbounded">
-			<xs:complexType>
-				<xs:attribute name="value" type="positiveDecimal" use="required"/>
-				<xs:attribute name="z1" type="xs:string"/>
-				<xs:attribute name="z2" type="xs:string"/>
-			</xs:complexType>
-		</xs:element>
-		<xs:element name="max" minOccurs="0" maxOccurs="1">
-			<xs:complexType>
-				<xs:attribute name="value" type="positiveDecimal" use="required"/>
-			</xs:complexType>
-		</xs:element>
-	</xs:sequence>
-</xs:complexType>
-
-<xs:complexType name="simulatedAnnealingType">
-	<xs:all>
-		<xs:element name="setup" type="simulatedAnnealingSetupType"/>
-		<xs:element name="resume" type="simulatedAnnealingResumeType" minOccurs="0"/>
-	</xs:all>
-	<xs:attribute name="nonFragmentedSearch" type="xs:boolean" default="true"/>
-	<xs:attribute name="constraints" type="xs:string"/>
 </xs:complexType>
 
 <xs:complexType name="simulatedAnnealingSetupType">
@@ -257,9 +250,7 @@
 		<xs:element name="moleculeSetTemplate" type="moleculeSetTemplateType" minOccurs="0"/>
 		<xs:element name="linear" type="initializationType" minOccurs="0"/>
 		<xs:element name="planar" type="initializationType" minOccurs="0"/>
-		<xs:element name="fragmented" type="initializationType" minOccurs="0"/>
-		<xs:element name="partiallyFragmented" type="initializationType" minOccurs="0"/>
-		<xs:element name="nonFragmented" type="initializationType" minOccurs="0"/>
+		<xs:element name="threeD" type="initializationType" minOccurs="0"/>
 		<xs:element name="bondRotationalSearch" minOccurs="0">
 			<xs:complexType>
 				<xs:attribute name="angle" type="positiveDecimal" use="required"/>
@@ -281,6 +272,7 @@
 </xs:complexType>
 <xs:complexType name="initializationType">
 	<xs:attribute name="number" type="positiveInteger" use="required"/>
+	<xs:attribute name="constraints" type="xs:string"/>
 </xs:complexType>
 <xs:complexType name="seedFileType">
 	<xs:attribute name="path" type="xs:string" use="required"/>
@@ -347,11 +339,15 @@
 	</xs:sequence>
 </xs:complexType>
 
+
 <xs:complexType name="randomSearchType">
-	<xs:all>
+	<xs:sequence>
 		<xs:element name="setup" type="randomSearchSetupType"/>
+		<xs:element name="constraints" type="constraintsType" minOccurs="0" maxOccurs="unbounded"/>
+		<xs:element name="energy" type="energyType"/>
 		<xs:element name="resume" type="randomSearchResumeType" minOccurs="0"/>
-	</xs:all>
+		<xs:element name="results" type="resultsType" minOccurs="0"/>
+	</xs:sequence>
 	<xs:attribute name="nonFragmentedSearch" type="xs:boolean" default="true"/>
 	<xs:attribute name="constraints" type="xs:string"/>
 </xs:complexType>
@@ -395,10 +391,13 @@
 
 
 <xs:complexType name="psoType">
-	<xs:all>
+	<xs:sequence>
 		<xs:element name="setup" type="psoSetupType"/>
+		<xs:element name="constraints" type="constraintsType" minOccurs="0" maxOccurs="unbounded"/>
+		<xs:element name="energy" type="energyType"/>
 		<xs:element name="resume" type="psoResumeType" minOccurs="0"/>
-	</xs:all>
+		<xs:element name="results" type="resultsType" minOccurs="0"/>
+	</xs:sequence>
 	<xs:attribute name="constraints" type="xs:string"/>
 </xs:complexType>
 <xs:complexType name="psoSetupType">
@@ -521,10 +520,13 @@
 </xs:complexType>
 
 <xs:complexType name="gaType">
-	<xs:all>
+	<xs:sequence>
 		<xs:element name="setup" type="gaSetupType"/>
+		<xs:element name="constraints" type="constraintsType" minOccurs="0" maxOccurs="unbounded"/>
+		<xs:element name="energy" type="energyType"/>
 		<xs:element name="resume" type="gaResumeType" minOccurs="0"/>
-	</xs:all>
+		<xs:element name="results" type="resultsType" minOccurs="0"/>
+	</xs:sequence>
 	<xs:attribute name="constraints" type="xs:string"/>
 </xs:complexType>
 <xs:complexType name="gaSetupType">
@@ -597,7 +599,7 @@
 
 
 <xs:complexType name="batchType">
-	<xs:all>
+	<xs:sequence>
 		<xs:element name="setup">
 			<xs:complexType>
 				<xs:all>
@@ -605,6 +607,8 @@
 				</xs:all>
 			</xs:complexType>
 		</xs:element>
+		<xs:element name="constraints" type="constraintsType" minOccurs="0" maxOccurs="unbounded"/>
+		<xs:element name="energy" type="energyType"/>
 		<xs:element name="resume" minOccurs="0">
 			<xs:complexType>
 				<xs:all>
@@ -622,7 +626,8 @@
 				</xs:all>
 			</xs:complexType>
 		</xs:element>
-	</xs:all>
+		<xs:element name="results" type="resultsType" minOccurs="0"/>
+	</xs:sequence>
 </xs:complexType>
 
 <!-- generic simple types -->
@@ -669,5 +674,4 @@
 		<xs:enumeration value="Cartesian"/>
 	</xs:restriction>
 </xs:simpleType>
-
 </xs:schema>
