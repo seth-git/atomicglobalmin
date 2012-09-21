@@ -582,11 +582,12 @@ void Molecule::setCenterAndAngles (FLOAT x, FLOAT y, FLOAT z, FLOAT angleX, FLOA
 	m_angles.z = angleZ;
 }
 
-void Molecule::initAtomIndexes(Atom **pAtoms, int &iAtom)
+void Molecule::initAtomIndexes(Atom const ** pAtoms, Atom** pAtomsEditable, int &iAtom)
 {
 	for (int i = 0; i < m_iNumberOfAtoms; ++i)
 	{
 		pAtoms[iAtom] = &m_atoms[i];
+		pAtomsEditable[iAtom] = &m_atoms[i];
 		m_atoms[i].m_iMoleculeSetIndex = iAtom;
 		++iAtom;
 	}
@@ -1111,7 +1112,7 @@ void Molecule::adjustToCenterOfMass()
 	}
 }
 
-void Molecule::initDistanceMatrix(int iNumAtomsInMoleculeSet, Atom **moleculeSetAtoms, FLOAT **moleculeSetDistanceMatrix)
+void Molecule::initDistanceMatrix(int iNumAtomsInMoleculeSet, Atom const ** moleculeSetAtoms, FLOAT **moleculeSetDistanceMatrix)
 {
 	int iAtom, jAtom;
 	FLOAT diffX, diffY, diffZ;
@@ -1132,7 +1133,7 @@ void Molecule::initDistanceMatrix(int iNumAtomsInMoleculeSet, Atom **moleculeSet
 		moleculeSetDistanceMatrix[m_atoms[iAtom].m_iMoleculeSetIndex][m_atoms[iAtom].m_iMoleculeSetIndex] = 0;
 }
 
-void Molecule::initDistanceMatrix(int iNumAtomsInMoleculeSet, Atom **moleculeSetAtoms, FLOAT **moleculeSetDistanceMatrix, bool atomsInitialized[])
+void Molecule::initDistanceMatrix(int iNumAtomsInMoleculeSet, Atom const ** moleculeSetAtoms, FLOAT **moleculeSetDistanceMatrix, bool atomsInitialized[])
 {
 	int iAtom, jAtom;
 	FLOAT diffX, diffY, diffZ;

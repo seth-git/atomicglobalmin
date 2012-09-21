@@ -25,6 +25,7 @@ void MoleculeSet::init(int id)
 	m_prgMolecules = NULL;
 	m_iNumberOfAtoms = 0;
 	m_atoms = NULL;
+	m_atomsEditable = NULL;
 	
 	m_atomDistances = NULL;
 	m_centerOfMass.x = 0;
@@ -62,6 +63,8 @@ void MoleculeSet::cleanUp()
 	m_iNumberOfMolecules = 0;
 	delete[] m_atoms;
 	m_atoms = NULL;
+	delete[] m_atomsEditable;
+	m_atomsEditable = NULL;
 	m_iNumberOfAtoms = 0;
 	
 	for (i = 0; i < (signed int)m_outputEnergyFiles.size(); ++i)
@@ -1632,6 +1635,13 @@ FLOAT MoleculeSet::getDistanceFromPoint(Point3D &point)
 	return distance;
 }
 
+void MoleculeSet::init()
+{
+	initAtomIndexes();
+	initAtomDistances();
+	sortAtomRanks();
+}
+
 void MoleculeSet::initAtomIndexes()
 {
 	int iMolecule, iAtom;
@@ -1642,7 +1652,8 @@ void MoleculeSet::initAtomIndexes()
 		m_iNumberOfAtoms += m_prgMolecules[iMolecule].getNumberOfAtoms();
 	
 	// Initialize Memory
-	m_atoms = new Atom*[m_iNumberOfAtoms];
+	m_atoms = new Atom const *[m_iNumberOfAtoms];
+	m_atomsEditable = new Atom *[m_iNumberOfAtoms];
 	m_atomDistances = new FLOAT*[m_iNumberOfAtoms];
 	m_prgAtomDistancesToCenterOfMass = new FLOAT[m_iNumberOfAtoms];
 	m_prgAtomToCenterRank = new int[m_iNumberOfAtoms];
@@ -1653,7 +1664,7 @@ void MoleculeSet::initAtomIndexes()
 	// Initialize Indexes
 	iAtom = 0;
 	for (iMolecule = 0; iMolecule < m_iNumberOfMolecules; ++iMolecule)
-		m_prgMolecules[iMolecule].initAtomIndexes(m_atoms, iAtom);
+		m_prgMolecules[iMolecule].initAtomIndexes(m_atoms, m_atomsEditable, iAtom);
 	if (iAtom != m_iNumberOfAtoms) {
 		cout << "We really have a problem" << endl;
 	}
@@ -1665,7 +1676,7 @@ void MoleculeSet::initAtomIndexes(int iChangedMolecule)
 	iAtom = 0;
 	for (iMolecule = 0; iMolecule < m_iNumberOfMolecules; ++iMolecule)
 		if (iChangedMolecule == iMolecule) {
-			m_prgMolecules[iMolecule].initAtomIndexes(m_atoms, iAtom);
+			m_prgMolecules[iMolecule].initAtomIndexes(m_atoms, m_atomsEditable, iAtom);
 			break;
 		} else
 			iAtom += m_prgMolecules[iMolecule].getNumberOfAtoms();
@@ -2366,9 +2377,9 @@ void MoleculeSet::performLennardJonesOptimization(FLOAT epsilon, FLOAT sigma)
 		alpha = minimizeLennardJonesAlpha(epsilon, sigma, s, 0, 0.0001);
 //		cout << setiosflags(ios::fixed) << setprecision(8) << "alpha = " << alpha << endl;
 		for (iAtom = 0; iAtom < m_iNumberOfAtoms; ++iAtom) {
-			m_atoms[iAtom]->m_globalPoint.x += alpha * s[iAtom].x;
-			m_atoms[iAtom]->m_globalPoint.y += alpha * s[iAtom].y;
-			m_atoms[iAtom]->m_globalPoint.z += alpha * s[iAtom].z;
+			m_atomsEditable[iAtom]->m_globalPoint.x += alpha * s[iAtom].x;
+			m_atomsEditable[iAtom]->m_globalPoint.y += alpha * s[iAtom].y;
+			m_atomsEditable[iAtom]->m_globalPoint.z += alpha * s[iAtom].z;
 		}
 		initAtomDistances();
 		computeLennardJonesGradient(epsilon, sigma, g);
@@ -2447,7 +2458,7 @@ void MoleculeSet::assignReadCoordinates(const Point3D cartesianPoints[], const i
 			cout << "Unexpected atomic number in .log file.  Are these atoms in the right order?" << endl;
 			return;
 		}
-		m_atoms[i]->m_globalPoint = cartesianPoints[i];
+		m_atomsEditable[i]->m_globalPoint = cartesianPoints[i];
 	}
 	
 	for (i = 0; i < m_iNumberOfMolecules; ++i)

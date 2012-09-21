@@ -150,12 +150,12 @@ bool Atom::initAtomicMasses(void)
 	return true;
 }
 
-FLOAT Atom::getMass()
+FLOAT Atom::getMass() const
 {
 	return s_rgAtomicMasses[m_iAtomicNumber];
 }
 
-void Atom::sortAtoms(int *rankArray, Atom **atomsArray, FLOAT *distanceArray, int lo, int hi)
+void Atom::sortAtoms(int *rankArray, Atom const** atomsArray, FLOAT *distanceArray, int lo, int hi)
 {
 	int left, right;
 	FLOAT fMedianDist;
@@ -210,7 +210,7 @@ int Atom::compareAtoms(int atom1AtomicNumber, FLOAT atom1Dist, int atom2AtomicNu
 }
 
 
-FLOAT Atom::getMinDistance(Atom &otherAtom)
+FLOAT Atom::getMinDistance(const Atom &otherAtom) const
 {
 	return getMinAtomicDistance(m_iAtomicNumber,otherAtom.m_iAtomicNumber);
 }

@@ -46,7 +46,7 @@ public:
 	~Atom();
 	static bool initAtomicMasses(void);
 	void copy(Atom &atom);
-	FLOAT getMass();
+	FLOAT getMass() const;
 	static const char *printFloat(FLOAT number);
 
 	////////////////////////////////////////////////////////////////////////////////
@@ -60,14 +60,14 @@ public:
 	//             lo - the lowest index in rankArray to be sorted (see classic quick sort algorithm)
 	//             hi - the highest index in rankArray to be sorted (see classic quick sort algorithm)
 	// Returns: nothing (results stored in rankArary)
-	static void sortAtoms(int *rankArray, Atom **allAtomsArray, FLOAT *distanceArray, int lo, int hi);
+	static void sortAtoms(int *rankArray, Atom const** allAtomsArray, FLOAT *distanceArray, int lo, int hi);
 	
 	static void initMinAtomicDistances(FLOAT fDefaultMinAtomicDistance);
 	static void setMinAtomicDistance(int atomicNumber1, int atomicNumber2, FLOAT distance);
 	static FLOAT getMinAtomicDistance(int atomicNumber1, int atomicNumber2);
 	static void outputMinDistances(ofstream &outFile);
 	
-	FLOAT getMinDistance(Atom &otherAtom);
+	FLOAT getMinDistance(const Atom &otherAtom) const;
 
 private:
 	////////////////////////////////////////////////////////////////////////////////

@@ -50,7 +50,8 @@ private:
 	int m_iNumberOfMolecules;
 	Molecule* m_prgMolecules;  // array of molecules
 	int m_iNumberOfAtoms;
-	Atom** m_atoms; // array of pointers to the atoms
+	Atom const ** m_atoms; // array of pointers to the atoms
+	Atom ** m_atomsEditable; // array of pointers to the atoms
 	
 	FLOAT** m_atomDistances; // 2D array of distances
 	Point3D m_centerOfMass;
@@ -79,10 +80,12 @@ public:
 	int getNumberOfMoleculesWithMultipleAtoms();
 	void setNumberOfMolecules(int iNumberOfMolecules);
 	Molecule* getMolecules();
+	Atom const ** getAtoms() { return m_atoms; }
 	int getNumberOfAtoms();
 
 	
 	// This function initializes m_iNumberOfAtoms and m_prgAtoms
+	void init();
 	void initAtomIndexes();
 	void initAtomIndexes(int iChangedMolecule);
 	FLOAT getEnergy() { return m_fEnergy; }
