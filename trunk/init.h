@@ -32,7 +32,6 @@ public:
 	
 	static bool initProgram(int mpiRank);
 
-private:
 	static bool initLinearMoleculeSet(MoleculeSet &moleculeSet, Point3D &boxDimensions);
 	
 	static bool initPlanarMoleculeSet(MoleculeSet &moleculeSet, Point3D &boxDimensions);

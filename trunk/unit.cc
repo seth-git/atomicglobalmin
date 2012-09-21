@@ -6,7 +6,7 @@
 
 #include "unit.h"
 
-string memoryTest()
+const char* memoryTest()
 {
 	MoleculeSet* pMoleculeSet;
 	
@@ -30,12 +30,12 @@ string memoryTest()
 	
 	cout << "Testing memory deletion of MoleculeSet objects passed!" << endl;
 	
-	return "";
+	return NULL;
 }
 
-string ccLibReadTest()
+const char* ccLibReadTest()
 {
-	string testName = "ccLibReadTest"; 
+	const char* testName = "ccLibReadTest"; 
 	string unitTestFile = unitTestFolder + "/benzenesulfonamide.gamout";
 	string unitTestFile2 = unitTestFolder + "/transitionState.log";
 	FLOAT energy;
@@ -122,7 +122,7 @@ string ccLibReadTest()
 	cout << "Is a transition state: " << moleculeSet.getIsTransitionState() << endl;
 	
 	cout << "Testing of cclib passed!" << endl;
-	return "";
+	return NULL;
 }
 
 const char* testRandomSeeding(void) {
@@ -219,49 +219,260 @@ const char* testRandomSeeding(void) {
 	}
 	
 	cout << "Testing of random number seeding succeeded!" << endl;
-	return "";
+	return NULL;
 }
 
-void addFailedTestName(string &failedUnitTests, string &failedTestName)
+void makeWater(Molecule &molecule)
 {
-	if (failedUnitTests.length() == 0)
-		failedUnitTests = failedTestName;
-	else
-		failedUnitTests += ", " + failedTestName;
+	vector<Point3D> points;
+	vector<int> atomicNumbers;
+	Point3D o, h1, h2;
+	o.x = 0;
+	o.y = 0;
+	o.z = 0;
+	h1.x = 0.757;
+	h1.y = 0.586;
+	h1.z = 0;
+	h2.x = -0.757;
+	h2.y = 0.586;
+	h2.z = 0;
+	
+	points.push_back(o);
+	atomicNumbers.push_back(8);
+	
+	points.push_back(h1);
+	atomicNumbers.push_back(1);
+	
+	points.push_back(h2);
+	atomicNumbers.push_back(1);
+
+	molecule.makeFromCartesian(points, atomicNumbers);
+	molecule.initRotationMatrix();
+	molecule.localToGlobal();
+}
+
+void makeWaterSet(MoleculeSet &moleculeSet, Molecule &water, unsigned int number) {
+	moleculeSet.setNumberOfMolecules(number);
+	Molecule* moleculeArray = moleculeSet.getMolecules();
+	for (unsigned int i = 0; i < (unsigned int)moleculeSet.getNumberOfMolecules(); ++i)
+		moleculeArray[i].copy(water);
+	moleculeSet.init();
+}
+
+void printPoint(const Point3D &point) {
+	cout << "(x,y,z) = (" << point.x << "," << point.y << "," << point.z << ")";
+}
+
+FLOAT** getDistanceMatrix(MoleculeSet &moleculeSet, bool globalOrLocal) {
+	unsigned int i, j;
+	Point3D diff;
+	FLOAT** matrix;
+	matrix = new FLOAT*[moleculeSet.getNumberOfAtoms()];
+	Atom const** atoms = moleculeSet.getAtoms();
+	
+	for (i = 0; i < (unsigned int)moleculeSet.getNumberOfAtoms(); ++i)
+		matrix[i] = new FLOAT[moleculeSet.getNumberOfAtoms()];
+	
+	if (globalOrLocal) {
+		for (i = 0; i < (unsigned int)moleculeSet.getNumberOfAtoms(); ++i)
+			for (j = 0; j < (unsigned int)moleculeSet.getNumberOfAtoms(); ++j) {
+				diff.x = atoms[i]->m_globalPoint.x - atoms[j]->m_globalPoint.x;
+				diff.y = atoms[i]->m_globalPoint.y - atoms[j]->m_globalPoint.y;
+				diff.z = atoms[i]->m_globalPoint.z - atoms[j]->m_globalPoint.z;
+				matrix[i][j] = sqrt(diff.x*diff.x + diff.y*diff.y + diff.z*diff.z);
+			}
+	} else {
+		for (i = 0; i < (unsigned int)moleculeSet.getNumberOfAtoms(); ++i)
+			for (j = 0; j < (unsigned int)moleculeSet.getNumberOfAtoms(); ++j) {
+				diff.x = atoms[i]->m_localPoint.x - atoms[j]->m_localPoint.x;
+				diff.y = atoms[i]->m_localPoint.y - atoms[j]->m_localPoint.y;
+				diff.z = atoms[i]->m_localPoint.z - atoms[j]->m_localPoint.z;
+				matrix[i][j] = sqrt(diff.x*diff.x + diff.y*diff.y + diff.z*diff.z);
+			}
+	}
+	
+	return matrix;
+}
+
+void deleteDistanceMatrix(FLOAT** matrix, unsigned int size) {
+	for (unsigned int i = 0; i < size; ++i)
+		delete[] matrix[i];
+	delete matrix;
+}
+
+bool minDistancesOK(MoleculeSet &moleculeSet, FLOAT generalMin, map<unsigned int, map<unsigned int,FLOAT> > &minAtomicDistances) {
+	Atom const** atoms = moleculeSet.getAtoms();
+	FLOAT** matrix = getDistanceMatrix(moleculeSet, true);
+	unsigned int size = (unsigned int) moleculeSet.getNumberOfAtoms();
+	unsigned int i, j;
+	for (i = 0; i < size; ++i)
+		for (j = 0; j < size; ++j)
+			if (i != j) {
+				if (matrix[i][j] < generalMin) {
+					cout << "Atoms "
+					     << Atom::s_rgAtomcSymbols[atoms[i]->m_iAtomicNumber] << (i+1) << " and "
+					     << Atom::s_rgAtomcSymbols[atoms[j]->m_iAtomicNumber] << (j+1)
+					     << " failed to meet the general minimum distance constraint of " << generalMin << endl;
+					return false;
+				}
+				if (matrix[i][j] < minAtomicDistances[atoms[i]->m_iAtomicNumber][atoms[j]->m_iAtomicNumber]) {
+					cout << "Atoms "
+					     << Atom::s_rgAtomcSymbols[atoms[i]->m_iAtomicNumber] << (i+1) << " and "
+					     << Atom::s_rgAtomcSymbols[atoms[j]->m_iAtomicNumber] << (j+1)
+					     << " failed to meet the specific minimum distance constraint of " << minAtomicDistances[atoms[i]->m_iAtomicNumber][atoms[j]->m_iAtomicNumber] << endl;
+					return false;
+				}
+			}
+	deleteDistanceMatrix(matrix, moleculeSet.getNumberOfAtoms());
+	return true;
+}
+
+void printDetailedInfo(MoleculeSet &moleculeSet, bool printBondLengths) {
+	Molecule* moleculeArray = moleculeSet.getMolecules();
+	const Atom* atomArray;
+	unsigned int i, j, k;
+	Point3D diff;
+	FLOAT lengthL, lengthG;
+	for (i = 0; i < (unsigned int)moleculeSet.getNumberOfMolecules(); ++i) {
+		cout << "center";
+		printPoint(moleculeArray[i].getCenter());
+		cout << ", angles in rad(x,y,z) = (" << moleculeArray[i].getAngleX() << "," << moleculeArray[i].getAngleY() << "," << moleculeArray[i].getAngleZ() << ")";
+		cout << endl;
+		atomArray = moleculeArray[i].getAtoms();
+		for (j = 0; j < (unsigned int)moleculeArray[i].getNumberOfAtoms(); ++j) {
+			cout << Atom::s_rgAtomcSymbols[atomArray[j].m_iAtomicNumber] << (atomArray[j].m_iMoleculeSetIndex+1) << ": local";
+			printPoint(atomArray[j].m_localPoint);
+			cout << ", global";
+			printPoint(atomArray[j].m_globalPoint);
+			cout << endl;
+		}
+		if (printBondLengths) {
+			for (j = 0; j < (unsigned int)moleculeArray[i].getNumberOfAtoms(); ++j) {
+				for (k = j+1; k < (unsigned int)moleculeArray[i].getNumberOfAtoms(); ++k) {
+					diff.x = atomArray[j].m_localPoint.x - atomArray[k].m_localPoint.x;
+					diff.y = atomArray[j].m_localPoint.y - atomArray[k].m_localPoint.y;
+					diff.z = atomArray[j].m_localPoint.z - atomArray[k].m_localPoint.z;
+					lengthL = sqrt(diff.x*diff.x + diff.y*diff.y + diff.z*diff.z);
+					diff.x = atomArray[j].m_globalPoint.x - atomArray[k].m_globalPoint.x;
+					diff.y = atomArray[j].m_globalPoint.y - atomArray[k].m_globalPoint.y;
+					diff.z = atomArray[j].m_globalPoint.z - atomArray[k].m_globalPoint.z;
+					lengthG = sqrt(diff.x*diff.x + diff.y*diff.y + diff.z*diff.z);
+					cout << "bond lengths between " << j+1 << " and " << k+1 << ": local = " << lengthL << ", global = " << lengthG << endl;
+				}
+			}
+		}
+	}
+}
+
+bool moleculeSetInsideCube(MoleculeSet &moleculeSet, Point3D &boxDimensions) {
+	Molecule* moleculeArray = moleculeSet.getMolecules();
+	
+	const Atom* atomArray;
+	unsigned int i, j;
+	for (i = 0; i < (unsigned int)moleculeSet.getNumberOfMolecules(); ++i) {
+		atomArray = moleculeArray[i].getAtoms();
+		for (j = 0; j < (unsigned int)moleculeArray[i].getNumberOfAtoms(); ++j) {
+			if (atomArray[j].m_globalPoint.x < 0)
+				return false;
+			if (atomArray[j].m_globalPoint.x > boxDimensions.x)
+				return false;
+			if (atomArray[j].m_globalPoint.y < 0)
+				return false;
+			if (atomArray[j].m_globalPoint.y > boxDimensions.y)
+				return false;
+			if (atomArray[j].m_globalPoint.z < 0)
+				return false;
+			if (atomArray[j].m_globalPoint.z > boxDimensions.z)
+				return false;
+		}
+	}
+	return true;
+}
+
+void setupMinDistances(FLOAT generalMin, map<unsigned int, map<unsigned int,FLOAT> > &minAtomicDistances) {
+	Atom::initMinAtomicDistances(generalMin);
+	for (map<unsigned int, map<unsigned int, FLOAT> >::iterator i = minAtomicDistances.begin(); i != minAtomicDistances.end(); i++)
+		for (map<unsigned int, FLOAT>::iterator j = i->second.begin(); j != i->second.end(); j++)
+			Atom::setMinAtomicDistance(i->first, j->first, j->second);
+}
+
+const char* testInitialization(void) {
+	static const char* testName = "testInitialization";
+	const char* failMessage = "Testing of initialization failed!";
+	
+	cout << endl;
+	cout << "Testing initialization..." << endl;
+	
+	FLOAT generalMin = 0.5;
+	map<unsigned int, map<unsigned int,FLOAT> > minAtomicDistances;
+	minAtomicDistances[1][1] = 0.7;
+	minAtomicDistances[1][8] = 0.9;
+	minAtomicDistances[8][8] = 1.2;
+	setupMinDistances(generalMin, minAtomicDistances);
+	Point3D box;
+	box.x = 10;
+	box.y = 10;
+	box.z = 10;
+	
+	Molecule water;
+	makeWater(water);
+	
+	MoleculeSet moleculeSet;
+	makeWaterSet(moleculeSet, water, 5);
+	
+	cout << "Initializing 5 3D water molecules...";
+	if (!Init::init3DMoleculeSet(moleculeSet, box)) {
+		cout << failMessage << endl;
+		cout << "\tReason: call to Init::init3DMoleculeSet returned false." << endl;
+		return testName;
+	}
+//	printDetailedInfo(moleculeSet, true);
+	
+	if (!moleculeSetInsideCube(moleculeSet, box)) {
+		cout << failMessage << endl;
+		cout << "\tReason: call to Init::init3DMoleculeSet did not place the molecule set inside the cube." << endl;
+		return testName;
+	}
+	
+	if (!minDistancesOK(moleculeSet, generalMin, minAtomicDistances)) {
+		cout << failMessage << endl;
+		cout << "\tReason: call to Init::init3DMoleculeSet did not place the molecule set observing the minimum distance constraints." << endl;
+		return testName;
+	}
+	cout << "  Success!" << endl;
+	
+	
+	cout << "Initialization test succeeded!" << endl;
+	return NULL;
+}
+
+void addFailedTestName(string &failedUnitTests, const char* failedTestName)
+{
+	if (failedUnitTests.length() > 0)
+		failedUnitTests.append(", ");
+	failedUnitTests.append(failedTestName);
 }
 
 int main(int argc, char *argv[])
 {
-	string failedUnitTests = "";
-	int totalTests = 0;
-	int passedTests = 0;
-	string failedTestName;
-
+	const char* (*tests[])() = {&memoryTest, &testRandomSeeding, &testInitialization, &ccLibReadTest};
+	string failedUnitTests;
+	unsigned int passedTests = 0;
+	const char* failedTestName;
+	const unsigned int totalTests = sizeof(tests)/sizeof(tests[0]);
+	
 	if (!Init::initProgram(0)) {
 		cout << "Failed to initialize program." << endl;
 		return 0;
 	}
-
-	++totalTests;
-	failedTestName = memoryTest();
-	if (failedTestName.length() == 0)
-		++passedTests;
-	else
-		addFailedTestName(failedUnitTests, failedTestName);
-
-	++totalTests;
-	failedTestName = testRandomSeeding();
-	if (failedTestName.length() == 0)
-		++passedTests;
-	else
-		addFailedTestName(failedUnitTests, failedTestName);
-
-	++totalTests;
-	failedTestName = ccLibReadTest();
-	if (failedTestName.length() == 0)
-		++passedTests;
-	else
-		addFailedTestName(failedUnitTests, failedTestName);
+	
+	for (unsigned int i = 0; i < totalTests; ++i) {
+		failedTestName = (*tests[i]) ();
+		if (failedTestName == NULL)
+			++passedTests;
+		else
+			addFailedTestName(failedUnitTests, failedTestName);
+	}
 	
 	cout << endl;
 	cout << "Tests run: " << totalTests << "  Tests passed: " << passedTests << "  Tests failed: " << (totalTests - passedTests) << endl;

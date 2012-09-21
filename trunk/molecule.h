@@ -74,9 +74,11 @@ public:
 
 	int getNumberOfAtoms() { return m_iNumberOfAtoms; }
 	
-	void initAtomIndexes(Atom **pAtoms, int &iAtom);
+	void initAtomIndexes(Atom const** pAtoms, Atom** pAtomsEditable, int &iAtom);
 
 	void setVelocities(Point3D &PSOCenterOfMassVelocity, Point3D &PSOAngleVelocity);
+	
+	const Atom* getAtoms() { return m_atoms; }
 	
 	/////////////////////////////////////////////////////////////////////
 	// Purpose: This function performs the following matrix multiplication:
@@ -187,12 +189,12 @@ public:
 	// This function initializes the distance matrix of the moleculeSet within which it is contained.
 	// The parameter atomsInitialized indicates which other atoms in the distance matrix have been initialized.
 	// According to atomsInitialized, the atoms in this molecule shouldn't have been initialized.
-	void initDistanceMatrix(int iNumAtomsInMoleculeSet, Atom **moleculeSetAtoms, FLOAT **moleculeSetDistanceMatrix);
+	void initDistanceMatrix(int iNumAtomsInMoleculeSet, Atom const** moleculeSetAtoms, FLOAT **moleculeSetDistanceMatrix);
 	
 	// This function initializes the distance matrix of the moleculeSet within which it is contained.
 	// The parameter atomsInitialized indicates which other atoms in the distance matrix have been initialized.
 	// According to atomsInitialized, the atoms in this molecule shouldn't have been initialized.
-	void initDistanceMatrix(int iNumAtomsInMoleculeSet, Atom **moleculeSetAtoms, FLOAT **moleculeSetDistanceMatrix, bool atomsInitialized[]);
+	void initDistanceMatrix(int iNumAtomsInMoleculeSet, Atom const** moleculeSetAtoms, FLOAT **moleculeSetDistanceMatrix, bool atomsInitialized[]);
 	
 	// This function returns false if atoms in the molecules are too close to one another.
 	bool checkMinDistances(Molecule &otherMolecule, FLOAT **distanceMatrix);
