@@ -21,18 +21,8 @@ class Input {
 		int m_iAction; // SIMULATED_ANNEALING, RANDOM_SEARCH, PARTICLE_SWARM_OPTIMIZATION, etc.
 		Action *m_pAction;
 		
-		Input()
-		{
-			m_iAction = -1;
-			m_sLanguageCode = Strings::s_sDefaultLanguageCode;
-			m_messages = Strings::instance();
-			m_pAction = NULL;
-		}
-		
-		~Input()
-		{
-			cleanUp();
-		}
+		Input();
+		~Input();
 		
 		bool load(const char* pFilename);
 		bool save(const char* pFilename);

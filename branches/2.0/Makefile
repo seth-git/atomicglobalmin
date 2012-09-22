@@ -132,8 +132,8 @@ strings.o: translation/strings.h
 xsdTypeUtil.o: tinyxml/tinyxml.h tinyxml/tinystr.h
 xsdElementUtil.o: tinyxml/tinyxml.h tinyxml/tinystr.h
 xsdAttributeUtil.o: tinyxml/tinyxml.h tinyxml/tinystr.h
-action.o: action.h tinyxml/tinyxml.h tinyxml/tinystr.h translation/strings.h xsd/xsdTypeUtil.h xsd/xsdElementUtil.h xsd/xsdAttributeUtil.h
-simulatedAnnealing.o: action.h simulatedAnnealing.h tinyxml/tinyxml.h tinyxml/tinystr.h translation/strings.h xsd/xsdTypeUtil.h xsd/xsdElementUtil.h xsd/xsdAttributeUtil.h
+action.o: action.h input.h tinyxml/tinyxml.h tinyxml/tinystr.h translation/strings.h xsd/xsdTypeUtil.h xsd/xsdElementUtil.h xsd/xsdAttributeUtil.h
+simulatedAnnealing.o: simulatedAnnealing.h action.h input.h tinyxml/tinyxml.h tinyxml/tinystr.h translation/strings.h xsd/xsdTypeUtil.h xsd/xsdElementUtil.h xsd/xsdAttributeUtil.h
 internalEnergy.o: tinyxml/tinyxml.h tinyxml/tinystr.h translation/strings.h xsd/xsdAttributeUtil.h xsd/xsdTypeUtil.h
 externalEnergy.o: tinyxml/tinyxml.h tinyxml/tinystr.h translation/strings.h xsd/xsdAttributeUtil.h xsd/xsdElementUtil.h xsd/xsdTypeUtil.h
 constraints.o: tinyxml/tinyxml.h tinyxml/tinystr.h translation/strings.h xsd/xsdAttributeUtil.h xsd/xsdElementUtil.h xsd/xsdTypeUtil.h

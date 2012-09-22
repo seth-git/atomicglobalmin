@@ -6,11 +6,10 @@
 
 class SimulatedAnnealing : public Action {
 	public:
-		SimulatedAnnealing() {}
-		
+		SimulatedAnnealing(Input* input);
 		bool loadSetup(TiXmlElement *pSetupElem, const Strings* messages);
-		bool loadResume(TiXmlElement *pResumeElem, const Strings* messages);
 		bool saveSetup(TiXmlElement *pSetupElem, const Strings* messages);
+		bool loadResume(TiXmlElement *pResumeElem, const Strings* messages);
 		bool saveResume(TiXmlElement *pResumeElem, const Strings* messages);
 		bool run();
 };

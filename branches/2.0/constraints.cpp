@@ -235,17 +235,17 @@ void Constraints::copy(Constraints &other) {
 		m_pfCubeLWH = new FLOAT;
 		*m_pfCubeLWH = *other.m_pfCubeLWH;
 	}
-
+	
 	if (other.m_pfGeneralMinAtomicDistance != NULL) {
 		m_pfGeneralMinAtomicDistance = new FLOAT;
 		*m_pfGeneralMinAtomicDistance = *other.m_pfGeneralMinAtomicDistance;
 	}
-
+	
 	if (other.m_pfGeneralMaxAtomicDistance != NULL) {
 		m_pfGeneralMaxAtomicDistance = new FLOAT;
 		*m_pfGeneralMaxAtomicDistance = *other.m_pfGeneralMaxAtomicDistance;
 	}
-
+	
 	if (other.m_rgMinAtomicDistances) {
 		m_rgMinAtomicDistances = new MinDistArray[MIN_DIST_ARRAY_SIZE];
 		memcpy(m_rgMinAtomicDistances, other.m_rgMinAtomicDistances, sizeof(FLOAT) * MIN_DIST_ARRAY_SIZE * MIN_DIST_ARRAY_SIZE);

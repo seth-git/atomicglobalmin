@@ -1,6 +1,20 @@
 
 #include "input.h"
 
+		
+Input::Input()
+{
+	m_iAction = -1;
+	m_sLanguageCode = Strings::s_sDefaultLanguageCode;
+	m_messages = Strings::instance();
+	m_pAction = NULL;
+}
+
+Input::~Input()
+{
+	cleanUp();
+}
+
 void Input::cleanUp() {
 	m_iAction = -1;
 	if (m_pAction != NULL)
@@ -64,7 +78,7 @@ bool Input::load(const char* pFilename)
 	m_iAction = agmlUtil.getChoiceElementIndex();
 	switch (m_iAction) {
 	case SIMULATED_ANNEALING:
-		m_pAction = new SimulatedAnnealing();
+		m_pAction = new SimulatedAnnealing(this);
 		break;
 	case RANDOM_SEARCH:
 	case PARTICLE_SWARM_OPTIMIZATION:

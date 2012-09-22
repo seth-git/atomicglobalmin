@@ -9,6 +9,16 @@ const char*   Action::s_defaultValues[]  = {""};
 const unsigned int Action::s_minOccurs[]    = {1      , 0            , 1       , 0       , 0        };
 const unsigned int Action::s_maxOccurs[]    = {1      , XSD_UNLIMITED, 1       , 1       , 1        };
 
+Action::Action(Input* input)
+{
+	m_pInput = input;
+}
+
+Action::~Action()
+{
+	cleanUp();
+}
+
 void Action::cleanUp() {
 	for (unsigned int i = 0; i < m_constraints.size(); ++i) {
 		delete m_constraints[i];
@@ -16,7 +26,6 @@ void Action::cleanUp() {
 	m_constraints.clear();
 	m_pConstraints = NULL;
 }
-
 
 bool Action::load(TiXmlElement *pActionElem, const Strings* messages)
 {
