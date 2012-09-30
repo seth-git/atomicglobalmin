@@ -60,25 +60,25 @@ public:
 	
 	void setCenterAndAngles(FLOAT x, FLOAT y, FLOAT z, FLOAT angleX, FLOAT angleY, FLOAT angleZ);
 	
-	Point3D getCenter() { return m_centerOfMass; }
+	Point3D getCenter() const { return m_centerOfMass; }
 	void setCenter(Point3D centerOfMass) { m_centerOfMass = centerOfMass; }
 	
-	FLOAT getAngleX() { return m_angles.x; }
+	FLOAT getAngleX() const { return m_angles.x; }
 	void setAngleX(FLOAT angleInRad) { m_angles.x = angleInRad; }
 	
-	FLOAT getAngleY() { return m_angles.y; }
+	FLOAT getAngleY() const { return m_angles.y; }
 	void setAngleY(FLOAT angleInRad) { m_angles.y = angleInRad; }
 	
-	FLOAT getAngleZ() { return m_angles.z; }
+	FLOAT getAngleZ() const { return m_angles.z; }
 	void setAngleZ(FLOAT angleInRad) { m_angles.z = angleInRad; }
 
-	int getNumberOfAtoms() { return m_iNumberOfAtoms; }
+	int getNumberOfAtoms() const { return m_iNumberOfAtoms; }
 	
 	void initAtomIndexes(Atom const** pAtoms, Atom** pAtomsEditable, int &iAtom);
 
 	void setVelocities(Point3D &PSOCenterOfMassVelocity, Point3D &PSOAngleVelocity);
 	
-	const Atom* getAtoms() { return m_atoms; }
+	const Atom* getAtoms() const { return m_atoms; }
 	
 	/////////////////////////////////////////////////////////////////////
 	// Purpose: This function performs the following matrix multiplication:

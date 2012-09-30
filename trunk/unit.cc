@@ -222,47 +222,6 @@ const char* testRandomSeeding(void) {
 	return NULL;
 }
 
-void makeWater(Molecule &molecule)
-{
-	vector<Point3D> points;
-	vector<int> atomicNumbers;
-	Point3D o, h1, h2;
-	o.x = 0;
-	o.y = 0;
-	o.z = 0;
-	h1.x = 0.757;
-	h1.y = 0.586;
-	h1.z = 0;
-	h2.x = -0.757;
-	h2.y = 0.586;
-	h2.z = 0;
-	
-	points.push_back(o);
-	atomicNumbers.push_back(8);
-	
-	points.push_back(h1);
-	atomicNumbers.push_back(1);
-	
-	points.push_back(h2);
-	atomicNumbers.push_back(1);
-
-	molecule.makeFromCartesian(points, atomicNumbers);
-	molecule.initRotationMatrix();
-	molecule.localToGlobal();
-}
-
-void makeWaterSet(MoleculeSet &moleculeSet, Molecule &water, unsigned int number) {
-	moleculeSet.setNumberOfMolecules(number);
-	Molecule* moleculeArray = moleculeSet.getMolecules();
-	for (unsigned int i = 0; i < (unsigned int)moleculeSet.getNumberOfMolecules(); ++i)
-		moleculeArray[i].copy(water);
-	moleculeSet.init();
-}
-
-void printPoint(const Point3D &point) {
-	cout << "(x,y,z) = (" << point.x << "," << point.y << "," << point.z << ")";
-}
-
 FLOAT** getDistanceMatrix(MoleculeSet &moleculeSet, bool globalOrLocal) {
 	unsigned int i, j;
 	Point3D diff;
@@ -300,6 +259,41 @@ void deleteDistanceMatrix(FLOAT** matrix, unsigned int size) {
 	delete matrix;
 }
 
+bool distancesWithinTolerance(FLOAT distance1, FLOAT distance2, FLOAT tolerance) {
+	FLOAT diff = distance1 - distance2;
+	if (diff < 0)
+		diff = -diff;
+	return diff <= tolerance;
+}
+
+// This verifies that rotation and translation were performed correctly.
+// The correctness is verified by examining distances between atoms within molecules.
+// These should be the same before and after translation and rotation.
+bool transformationCheck(MoleculeSet &moleculeSet) {
+	const Molecule* molecules = moleculeSet.getMolecules();
+	FLOAT** matrixBefore = getDistanceMatrix(moleculeSet, false);
+	FLOAT** matrixAfter = getDistanceMatrix(moleculeSet, true);
+	unsigned int moleculeI;
+	unsigned int atomStart, atomEnd;
+	unsigned int i, j;
+	const FLOAT tolerance = 0.0001;
+	
+	atomStart = 0;
+	for (moleculeI = 0; moleculeI < (unsigned int)moleculeSet.getNumberOfMolecules(); ++moleculeI) {
+		atomEnd = atomStart + (unsigned int)molecules[moleculeI].getNumberOfAtoms();
+		for (i = atomStart; i < atomEnd; ++i)
+			for (j = atomStart; j < atomEnd; ++j)
+				if (i != j && !distancesWithinTolerance(matrixBefore[i][j], matrixAfter[i][j], tolerance))
+					return false;
+		atomStart = atomEnd;
+	}
+	
+	deleteDistanceMatrix(matrixBefore, moleculeSet.getNumberOfAtoms());
+	deleteDistanceMatrix(matrixAfter, moleculeSet.getNumberOfAtoms());
+	return true;
+}
+
+// This function verifies that minimum distance constraints have been enforced
 bool minDistancesOK(MoleculeSet &moleculeSet, FLOAT generalMin, map<unsigned int, map<unsigned int,FLOAT> > &minAtomicDistances) {
 	Atom const** atoms = moleculeSet.getAtoms();
 	FLOAT** matrix = getDistanceMatrix(moleculeSet, true);
@@ -327,8 +321,37 @@ bool minDistancesOK(MoleculeSet &moleculeSet, FLOAT generalMin, map<unsigned int
 	return true;
 }
 
-void printDetailedInfo(MoleculeSet &moleculeSet, bool printBondLengths) {
+bool moleculeSetInsideCube(MoleculeSet &moleculeSet, Point3D &boxDimensions) {
 	Molecule* moleculeArray = moleculeSet.getMolecules();
+	
+	const Atom* atomArray;
+	unsigned int i, j;
+	for (i = 0; i < (unsigned int)moleculeSet.getNumberOfMolecules(); ++i) {
+		atomArray = moleculeArray[i].getAtoms();
+		for (j = 0; j < (unsigned int)moleculeArray[i].getNumberOfAtoms(); ++j) {
+			if (atomArray[j].m_globalPoint.x < 0)
+				return false;
+			if (atomArray[j].m_globalPoint.x > boxDimensions.x)
+				return false;
+			if (atomArray[j].m_globalPoint.y < 0)
+				return false;
+			if (atomArray[j].m_globalPoint.y > boxDimensions.y)
+				return false;
+			if (atomArray[j].m_globalPoint.z < 0)
+				return false;
+			if (atomArray[j].m_globalPoint.z > boxDimensions.z)
+				return false;
+		}
+	}
+	return true;
+}
+
+void printPoint(const Point3D &point) {
+	cout << "(x,y,z) = (" << point.x << "," << point.y << "," << point.z << ")";
+}
+
+void printDetailedInfo(MoleculeSet &moleculeSet, bool printBondLengths) {
+	const Molecule* moleculeArray = moleculeSet.getMolecules();
 	const Atom* atomArray;
 	unsigned int i, j, k;
 	Point3D diff;
@@ -364,29 +387,41 @@ void printDetailedInfo(MoleculeSet &moleculeSet, bool printBondLengths) {
 	}
 }
 
-bool moleculeSetInsideCube(MoleculeSet &moleculeSet, Point3D &boxDimensions) {
-	Molecule* moleculeArray = moleculeSet.getMolecules();
+void makeWater(Molecule &molecule)
+{
+	vector<Point3D> points;
+	vector<int> atomicNumbers;
+	Point3D o, h1, h2;
+	o.x = 0;
+	o.y = 0;
+	o.z = 0;
+	h1.x = 0.757;
+	h1.y = 0.586;
+	h1.z = 0;
+	h2.x = -0.757;
+	h2.y = 0.586;
+	h2.z = 0;
 	
-	const Atom* atomArray;
-	unsigned int i, j;
-	for (i = 0; i < (unsigned int)moleculeSet.getNumberOfMolecules(); ++i) {
-		atomArray = moleculeArray[i].getAtoms();
-		for (j = 0; j < (unsigned int)moleculeArray[i].getNumberOfAtoms(); ++j) {
-			if (atomArray[j].m_globalPoint.x < 0)
-				return false;
-			if (atomArray[j].m_globalPoint.x > boxDimensions.x)
-				return false;
-			if (atomArray[j].m_globalPoint.y < 0)
-				return false;
-			if (atomArray[j].m_globalPoint.y > boxDimensions.y)
-				return false;
-			if (atomArray[j].m_globalPoint.z < 0)
-				return false;
-			if (atomArray[j].m_globalPoint.z > boxDimensions.z)
-				return false;
-		}
-	}
-	return true;
+	points.push_back(o);
+	atomicNumbers.push_back(8);
+	
+	points.push_back(h1);
+	atomicNumbers.push_back(1);
+	
+	points.push_back(h2);
+	atomicNumbers.push_back(1);
+
+	molecule.makeFromCartesian(points, atomicNumbers);
+	molecule.initRotationMatrix();
+	molecule.localToGlobal();
+}
+
+void makeWaterSet(MoleculeSet &moleculeSet, Molecule &water, unsigned int number) {
+	moleculeSet.setNumberOfMolecules(number);
+	Molecule* moleculeArray = moleculeSet.getMolecules();
+	for (unsigned int i = 0; i < (unsigned int)moleculeSet.getNumberOfMolecules(); ++i)
+		moleculeArray[i].copy(water);
+	moleculeSet.init();
 }
 
 void setupMinDistances(FLOAT generalMin, map<unsigned int, map<unsigned int,FLOAT> > &minAtomicDistances) {
@@ -396,9 +431,25 @@ void setupMinDistances(FLOAT generalMin, map<unsigned int, map<unsigned int,FLOA
 			Atom::setMinAtomicDistance(i->first, j->first, j->second);
 }
 
+const char* testInitializationResults(MoleculeSet &moleculeSet, Point3D &box, FLOAT generalMin, map<unsigned int, map<unsigned int,FLOAT> > &minAtomicDistances) {
+	if (!moleculeSetInsideCube(moleculeSet, box)) {
+		return "\tReason: the molecule set is not inside the cube.";
+	}
+	
+	if (!minDistancesOK(moleculeSet, generalMin, minAtomicDistances)) {
+		return"\tReason: call to Init::init3DMoleculeSet did not place the molecule set observing the minimum distance constraints.";
+	}
+	
+	if (!transformationCheck(moleculeSet)) {
+		return "\tReason: Rotation and translation of molecules performed in Init::init3DMoleculeSet produced differences in inter-molecular atomic distances.";
+	}
+	return NULL;
+}
+
 const char* testInitialization(void) {
 	static const char* testName = "testInitialization";
 	const char* failMessage = "Testing of initialization failed!";
+	const char* reasonMessage;
 	
 	cout << endl;
 	cout << "Testing initialization..." << endl;
@@ -409,6 +460,7 @@ const char* testInitialization(void) {
 	minAtomicDistances[1][8] = 0.9;
 	minAtomicDistances[8][8] = 1.2;
 	setupMinDistances(generalMin, minAtomicDistances);
+	FLOAT maxAtomDist = 2;
 	Point3D box;
 	box.x = 10;
 	box.y = 10;
@@ -418,29 +470,110 @@ const char* testInitialization(void) {
 	makeWater(water);
 	
 	MoleculeSet moleculeSet;
+	
+	cout << "Initializing 5 linear water molecules...";
 	makeWaterSet(moleculeSet, water, 5);
+	FLOAT linearLengthAndWidth = 2.5;
+	Point3D linearBox = box;
+	linearBox.y = linearLengthAndWidth;
+	linearBox.z = linearLengthAndWidth;
+	if (!Init::initLinearMoleculeSet(moleculeSet, linearBox)) {
+		cout << failMessage << endl;
+		cout << "\tReason: call to Init::initLinearMoleculeSet returned false." << endl;
+		return testName;
+	}
+	
+	// Init::initLinearMoleculeSet centers everything inside box
+	// Center everything inside linearBox, so we can test that it fits inside linearBox.
+	moleculeSet.centerInBox(linearBox);
+	
+	reasonMessage = testInitializationResults(moleculeSet, linearBox, generalMin, minAtomicDistances);
+	if (reasonMessage != NULL) {
+		cout << failMessage << endl;
+		cout << reasonMessage << endl;
+		return testName;
+	}
+	cout << "  Passed!" << endl;
+	
+	cout << "Initializing 5 planar water molecules...";
+	makeWaterSet(moleculeSet, water, 5);
+	Point3D planarBox = box;
+	planarBox.z = 0;
+	if (!Init::initPlanarMoleculeSet(moleculeSet, planarBox)) {
+		cout << failMessage << endl;
+		cout << "\tReason: call to Init::initPlanarMoleculeSet returned false." << endl;
+		return testName;
+	}
+
+	FLOAT boxCenter = box.z / 2;
+	FLOAT tolerance = 0.0001;
+	Point3D centerOfMass;
+	const Molecule* molecules = moleculeSet.getMolecules();
+	for (unsigned int i = 0; i < (unsigned int)moleculeSet.getNumberOfMolecules(); ++i) {
+		centerOfMass = molecules[i].getCenter();
+		if (!distancesWithinTolerance(centerOfMass.z, boxCenter, tolerance)) {
+			cout << failMessage << endl;
+			cout << "\tReason: call to Init::initPlanarMoleculeSet returned did not place the center of mass z coordinate close enough to the expected value of " << boxCenter
+			     << " (actual value: " << centerOfMass.z << ")." << endl;
+			return testName;
+		}
+	}
+
+	reasonMessage = testInitializationResults(moleculeSet, box, generalMin, minAtomicDistances);
+	if (reasonMessage != NULL) {
+		cout << failMessage << endl;
+		cout << reasonMessage << endl;
+		return testName;
+	}
+	cout << "  Passed!" << endl;
 	
 	cout << "Initializing 5 3D water molecules...";
+	makeWaterSet(moleculeSet, water, 5);
 	if (!Init::init3DMoleculeSet(moleculeSet, box)) {
 		cout << failMessage << endl;
 		cout << "\tReason: call to Init::init3DMoleculeSet returned false." << endl;
 		return testName;
 	}
-//	printDetailedInfo(moleculeSet, true);
 	
-	if (!moleculeSetInsideCube(moleculeSet, box)) {
+	reasonMessage = testInitializationResults(moleculeSet, box, generalMin, minAtomicDistances);
+	if (reasonMessage != NULL) {
+		cout << reasonMessage << endl;
 		cout << failMessage << endl;
-		cout << "\tReason: call to Init::init3DMoleculeSet did not place the molecule set inside the cube." << endl;
+		return testName;
+	}
+	cout << "  Passed!" << endl;
+	
+	cout << "Initializing 5 3D partially non-fragmented water molecules...";
+	makeWaterSet(moleculeSet, water, 5);
+	if (!Init::init3DMoleculeSetWithMaxDist(moleculeSet, box, maxAtomDist)) {
+		cout << failMessage << endl;
+		cout << "\tReason: call to Init::init3DMoleculeSetWithMaxDist returned false." << endl;
 		return testName;
 	}
 	
-	if (!minDistancesOK(moleculeSet, generalMin, minAtomicDistances)) {
+	reasonMessage = testInitializationResults(moleculeSet, box, generalMin, minAtomicDistances);
+	if (reasonMessage != NULL) {
+		cout << reasonMessage << endl;
 		cout << failMessage << endl;
-		cout << "\tReason: call to Init::init3DMoleculeSet did not place the molecule set observing the minimum distance constraints." << endl;
 		return testName;
 	}
-	cout << "  Success!" << endl;
+	cout << "  Passed!" << endl;
 	
+	cout << "Initializing 5 3D non-fragmented water molecules...";
+	makeWaterSet(moleculeSet, water, 5);
+	if (!Init::init3DNonFragMoleculeSetWithMaxDist(moleculeSet, box, maxAtomDist)) {
+		cout << failMessage << endl;
+		cout << "\tReason: call to Init::init3DNonFragMoleculeSetWithMaxDist returned false." << endl;
+		return testName;
+	}
+	
+	reasonMessage = testInitializationResults(moleculeSet, box, generalMin, minAtomicDistances);
+	if (reasonMessage != NULL) {
+		cout << reasonMessage << endl;
+		cout << failMessage << endl;
+		return testName;
+	}
+	cout << "  Passed!" << endl;
 	
 	cout << "Initialization test succeeded!" << endl;
 	return NULL;
