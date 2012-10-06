@@ -7,11 +7,11 @@
 #ifndef __UNIT_H_
 #define __UNIT_H_
 
-#include "input.h"
-#include "init.h"
-#include "argumentParser.h"
-#include "energy.h"
-#include "gega.h"
+#include "../input.h"
+#include "../init.h"
+#include "../argumentParser.h"
+#include "../energy.h"
+#include "../gega.h"
 
 #include <fstream>
 #include <string>

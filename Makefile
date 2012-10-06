@@ -8,8 +8,8 @@ pso: helper unit main.cc main.h myMpi.cc myMpi.h energy.o strings.o input.o ener
 helper: helper.o energy.o strings.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o typedef.h
 	g++ $(CXXFLAGS) -o helper helper.o energy.o strings.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o
 
-unit: unit.o energy.o strings.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o typedef.h
-	g++ $(CXXFLAGS) -o unit unit.o energy.o strings.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o
+unit: unitTests/unit.o energy.o strings.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o typedef.h
+	g++ $(CXXFLAGS) -o unit unitTests/unit.o energy.o strings.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o
 
 energyProgram.o: energyProgram.h energyProgram.cc
 #	g++ -c energyProgram.cc
@@ -50,7 +50,7 @@ gega.o: gega.cc gega.h moleculeSet.o input.o
 #       g++ -o gega.cc
 
 clean:  
-	rm pso helper unit *.o
+	rm pso helper unit *.o unitTests/*.o
 
 # END OF MAKE FILE
 
