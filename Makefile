@@ -8,8 +8,17 @@ pso: helper unit main.cc main.h myMpi.cc myMpi.h energy.o strings.o input.o ener
 helper: helper.o energy.o strings.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o typedef.h
 	g++ $(CXXFLAGS) -o helper helper.o energy.o strings.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o
 
-unit: unitTests/unit.o energy.o strings.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o typedef.h
-	g++ $(CXXFLAGS) -o unit unitTests/unit.o energy.o strings.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o
+unit: unitTests/unit.o unitTests/util.o energy.o strings.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o typedef.h
+	g++ $(CXXFLAGS) -o unit unitTests/util.cc unitTests/unit.cc energy.o strings.o input.o energyProgram.o init.o argumentParser.o ring.o ringSet.o bond.o atom.o molecule.o moleculeSet.o gega.o
+
+helper.o: helper.h helper.cc
+
+unitTests/unit.o: unitTests/unit.h unitTests/unit.cc unitTests/util.o
+#	g++ -c energyProgram.cc
+#
+unitTests/util.o: unitTests/util.h unitTests/util.cc
+#	g++ -c energyProgram.cc
+#
 
 energyProgram.o: energyProgram.h energyProgram.cc
 #	g++ -c energyProgram.cc

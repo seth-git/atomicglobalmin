@@ -2670,14 +2670,14 @@ bool Input::printBondInfo()
 bool Input::printTestFileHeader(int iterationNumber, MoleculeSet &startingGeometry)
 {
 	string logFileName;
-	string header = Input::s_program_directory+"/testfiles/header.txt";
-	string spacer1_1 = Input::s_program_directory+"/testfiles/spacer1.1.txt";
-	string spacer1_2 = Input::s_program_directory+"/testfiles/spacer1.2.txt";
+	string header = Input::s_program_directory+"/unitTests/testfiles/header.txt";
+	string spacer1_1 = Input::s_program_directory+"/unitTests/testfiles/spacer1.1.txt";
+	string spacer1_2 = Input::s_program_directory+"/unitTests/testfiles/spacer1.2.txt";
 	char temp[500];
 	
-	logFileName = Input::s_program_directory+"/testfiles/test";
+	logFileName = Input::s_program_directory+"/unitTests/testfiles/test";
 	if (iterationNumber == 0) {
-		snprintf(temp,sizeof(temp),"rm %s/testfiles/test*.log", Input::s_program_directory.c_str());
+		snprintf(temp,sizeof(temp),"rm %s/unitTests/testfiles/test*.log", Input::s_program_directory.c_str());
 		system(temp);
 	} else {
 		sprintf(temp, "%d", (iterationNumber / 2000) + 1);
@@ -2708,8 +2708,8 @@ bool Input::printTestFileGeometry(int iterationNumber, MoleculeSet &geometry)
 		printTestFileFooter();
 		return printTestFileHeader(iterationNumber, geometry);
 	} else {
-		string spacer2_1 = Input::s_program_directory+"/testfiles/spacer2.1.txt";
-		string spacer2_2 = Input::s_program_directory+"/testfiles/spacer2.2.txt";
+		string spacer2_1 = Input::s_program_directory+"/unitTests/testfiles/spacer2.1.txt";
+		string spacer2_2 = Input::s_program_directory+"/unitTests/testfiles/spacer2.2.txt";
 		
 		if (m_testFile == NULL)
 			return false;
@@ -2726,7 +2726,7 @@ bool Input::printTestFileGeometry(int iterationNumber, MoleculeSet &geometry)
 
 bool Input::printTestFileFooter()
 {
-	string footer = Input::s_program_directory+"/testfiles/footer.txt";
+	string footer = Input::s_program_directory+"/unitTests/testfiles/footer.txt";
 	
 	if (m_testFile == NULL)
 		return false;
