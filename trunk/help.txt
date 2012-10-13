@@ -31,7 +31,7 @@ This program performs searches for minima as specified in the INPUT_FILE.
   -test                        Using this option during a simulated annealing,
                                particle swarm, or genetic algorithm run causes
                                a file called test.log to be created inside the
-                               testfiles directory.  This log file contains
+                               unitTests/testfiles directory.  This log file contains
                                geometries of one member of the population
                                during the entire course of the run, and is
                                meant to be viewed in Molden.  Since Molden can
