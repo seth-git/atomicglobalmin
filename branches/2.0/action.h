@@ -11,6 +11,7 @@ class Input; // Forward declaration
 #include "internalEnergy.h"
 #include "externalEnergy.h"
 #include "constraints.h"
+#include "populationTemplate.h"
 
 class Action {
 	public:

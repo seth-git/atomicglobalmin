@@ -6,9 +6,22 @@ SimulatedAnnealing::SimulatedAnnealing(Input* input) : Action(input)
 {
 }
 
+//const char*      SimulatedAnnealing::s_elementNames[] = {"populationTemplate", "temperature", "annealingSchedule", "perturbations", "stop"};
+const unsigned int SimulatedAnnealing::s_minOccurs[]    = {1                   , 1            , 1                  , 1              , 1     };
+
 bool SimulatedAnnealing::loadSetup(TiXmlElement *pSetupElem, const Strings* messages)
 {
-		
+	const char* elementNames[] = {messages->m_sxPopulationTemplate.c_str(), messages->m_sxTemperature.c_str(), messages->m_sxAnnealingSchedule.c_str(), messages->m_sxPerturbations.c_str(), messages->m_sxStop.c_str()};
+	XsdElementUtil setupUtil(pSetupElem->Value(), XSD_ALL, elementNames, s_minOccurs);
+	TiXmlHandle hRoot(0);
+	hRoot=TiXmlHandle(pSetupElem);
+	if (!setupUtil.process(hRoot)) {
+		return false;
+	}
+	TiXmlElement** setupElements = setupUtil.getAllElements();
+	
+	m_populationTemplate.load(setupElements[0], messages);
+	
 	return true;
 }
 

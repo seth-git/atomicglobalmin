@@ -81,6 +81,27 @@ public:
 	std::string m_sxMaster;
 	std::string m_sxOpt;
 	
+	std::string m_sxPopulationTemplate;
+	std::string m_sxTemperature;
+	std::string m_sxAnnealingSchedule;
+	std::string m_sxPerturbations;
+	std::string m_sxStop;
+
+	std::string m_sxAcceptedPerterbations;
+	std::string m_sxDecreaseAfterIteration;
+	std::string m_sxQuenchingFactor;
+	std::string m_sxMaxTemperature;
+	std::string m_sxMaxAcceptedPerturbations;
+	std::string m_sxMinIterations;
+	std::string m_sxSaveFrequency;
+	
+	std::string m_sxMoleculeSetTemplate;
+	std::string m_sxLinear;
+	std::string m_sxPlanar;
+	std::string m_sxThreeD;
+	std::string m_sxBondRotationalSearch;
+	std::string m_sxSeed;
+	
 	std::string m_spADF;
 	std::string m_spGAMESS;
 	std::string m_spGAMESSUK;

@@ -132,6 +132,27 @@ bool Strings::init (const char* languageCode)
 	m_sxMaster = stringMap["xMaster"];
 	m_sxOpt = stringMap["xOpt"];
 	
+	m_sxPopulationTemplate = stringMap["xPopulationTemplate"];
+	m_sxTemperature = stringMap["xTemperature"];
+	m_sxAnnealingSchedule = stringMap["xAnnealingSchedule"];
+	m_sxPerturbations = stringMap["xPerturbations"];
+	m_sxStop = stringMap["xStop"];
+
+	m_sxAcceptedPerterbations = stringMap["xAcceptedPerterbations"];
+	m_sxDecreaseAfterIteration = stringMap["xDecreaseAfterIteration"];
+	m_sxQuenchingFactor = stringMap["xQuenchingFactor"];
+	m_sxMaxTemperature = stringMap["xMaxTemperature"];
+	m_sxMaxAcceptedPerturbations = stringMap["xMaxAcceptedPerturbations"];
+	m_sxMinIterations = stringMap["xMinIterations"];
+	m_sxSaveFrequency = stringMap["xSaveFrequency"];
+	
+	m_sxMoleculeSetTemplate = stringMap["xMoleculeSetTemplate"];
+	m_sxLinear = stringMap["xLinear"];
+	m_sxPlanar = stringMap["xPlanar"];
+	m_sxThreeD = stringMap["xThreeD"];
+	m_sxBondRotationalSearch = stringMap["xBondRotationalSearch"];
+	m_sxSeed = stringMap["xSeed"];
+	
 	m_spADF = stringMap["pADF"];
 	m_spGAMESS = stringMap["pGAMESS"];
 	m_spGAMESSUK = stringMap["pGAMESSUK"];
