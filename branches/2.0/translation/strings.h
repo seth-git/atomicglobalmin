@@ -102,6 +102,10 @@ public:
 	std::string m_sxBondRotationalSearch;
 	std::string m_sxSeed;
 	
+	std::string m_sxMoleculeTemplate;
+	std::string m_sxNumber;
+	std::string m_sxFormat;
+	
 	std::string m_spADF;
 	std::string m_spGAMESS;
 	std::string m_spGAMESSUK;
@@ -114,6 +118,7 @@ public:
 	std::string m_spTrue;
 	std::string m_spFalse;
 	std::string m_spLennardJones;
+	std::string m_spCartesian;
 
 	std::string m_sReadingFile;
 	std::string m_sWritingFile;
@@ -144,6 +149,10 @@ public:
 	std::string m_sUnableToReadPositiveFloat;
 	std::string m_sNegativeNotAllowed;
 	std::string m_sUnableToReadElementText;
+	std::string m_sErrorReadingAtomicNumber;
+	std::string m_sErrorReadingAtomicNumber2;
+	std::string m_sErrorAtomicNumOverMax;
+	std::string m_sErrorAtomicNumOverMax2;
 
 	std::string m_sError;
 	std::string m_sErrorOnLine;
@@ -155,8 +164,9 @@ public:
 
 	std::string m_sErrorZ1Z2;
 	std::string m_sErrorOneGeneralMin;
-	std::string m_sErrorAtomicNumOverMax;
 	std::string m_sErrorDuplicateMinDist;
+	
+	std::string m_sErrorEmptyMoleculeTemplate;
 	
 private:
 	static std::map<std::string,Strings> s_instances;

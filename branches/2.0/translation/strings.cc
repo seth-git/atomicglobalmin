@@ -153,6 +153,10 @@ bool Strings::init (const char* languageCode)
 	m_sxBondRotationalSearch = stringMap["xBondRotationalSearch"];
 	m_sxSeed = stringMap["xSeed"];
 	
+	m_sxMoleculeTemplate = stringMap["xMoleculeTemplate"];
+	m_sxNumber = stringMap["xNumber"];
+	m_sxFormat = stringMap["xFormat"];
+	
 	m_spADF = stringMap["pADF"];
 	m_spGAMESS = stringMap["pGAMESS"];
 	m_spGAMESSUK = stringMap["pGAMESSUK"];
@@ -165,6 +169,7 @@ bool Strings::init (const char* languageCode)
 	m_spTrue = stringMap["pTrue"];
 	m_spFalse = stringMap["pFalse"];
 	m_spLennardJones = stringMap["pLennardJones"];
+	m_spCartesian = stringMap["pCartesian"];
 	
 	m_sReadingFile = stringMap["ReadingFile"];
 	m_sWritingFile = stringMap["WritingFile"];
@@ -195,6 +200,10 @@ bool Strings::init (const char* languageCode)
 	m_sUnableToReadPositiveFloat = stringMap["UnableToReadPositiveFloat"];
 	m_sNegativeNotAllowed = stringMap["NegativeNotAllowed"];
 	m_sUnableToReadElementText = stringMap["UnableToReadElementText"];
+	m_sErrorReadingAtomicNumber = stringMap["ErrorReadingAtomicNumber"];
+	m_sErrorReadingAtomicNumber2 = stringMap["ErrorReadingAtomicNumber2"];
+	m_sErrorAtomicNumOverMax = stringMap["ErrorAtomicNumOverMax"];
+	m_sErrorAtomicNumOverMax2 = stringMap["ErrorAtomicNumOverMax2"];
 	
 	m_sError = stringMap["Error"];
 	m_sErrorOnLine = stringMap["ErrorOnLine"];
@@ -206,8 +215,9 @@ bool Strings::init (const char* languageCode)
 	
 	m_sErrorZ1Z2 = stringMap["ErrorZ1Z2"];
 	m_sErrorOneGeneralMin = stringMap["ErrorOneGeneralMin"];
-	m_sErrorAtomicNumOverMax = stringMap["ErrorAtomicNumOverMax"];
 	m_sErrorDuplicateMinDist = stringMap["ErrorDuplicateMinDist"];
+	
+	m_sErrorEmptyMoleculeTemplate = stringMap["ErrorEmptyMoleculeTemplate"];
 	
 	m_bLoaded = true;
 	return true;

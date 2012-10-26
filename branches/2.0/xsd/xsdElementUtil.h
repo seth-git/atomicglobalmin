@@ -27,7 +27,7 @@ class XsdElementUtil {
 		unsigned int m_pChoiceIndex;
 		TiXmlElement** m_allElements;
 
-		std::vector<TiXmlElement*>* m_sequenceElements;
+		std::vector<TiXmlElement*>* m_sequenceElements; // array of vectors
 		
 	public:
 
@@ -63,7 +63,7 @@ class XsdElementUtil {
 		TiXmlElement** getAllElements();
 		TiXmlElement* getChoiceElement();
 		unsigned int getChoiceElementIndex();
-		std::vector<TiXmlElement*>* getSequenceElements();
+		std::vector<TiXmlElement*>* getSequenceElements(); // array of vectors
 	private:
 		void printChoiceError(int lineNumber);
 		void printSequenceError();

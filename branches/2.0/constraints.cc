@@ -110,7 +110,7 @@ bool Constraints::load(TiXmlElement *pConstraintsElem, const Strings* messages,
 }
 
 bool Constraints::addMinDist(TiXmlElement *pElem, unsigned int &timesReadGeneralMin, const Strings* messages) {
-	const char* minAttributeNames[] = { messages->m_sxValue.c_str(), messages->m_sxZ1.c_str(), messages->m_sxZ2.c_str() };
+	const char* minAttributeNames[] = {messages->m_sxValue.c_str(), messages->m_sxZ1.c_str(), messages->m_sxZ2.c_str() };
 	const char** values;
 	const Strings* messagesDL = Strings::instance();
 
@@ -142,18 +142,10 @@ bool Constraints::addMinDist(TiXmlElement *pElem, unsigned int &timesReadGeneral
 				for (j = 1; j <= MAX_ATOMIC_NUMBERS; ++j)
 					m_rgMinAtomicDistances[i][j] = -1;
 		}
-		if (!XsdTypeUtil::getPositiveInt(values[1], i, minAttributeNames[1], pElem)) {
+		if (!XsdTypeUtil::getAtomicNumber(values[1], i, pElem->Row(), minAttributeNames[1], pElem->Value())) {
 			return false;
 		}
-		if (i > MAX_ATOMIC_NUMBERS) {
-			printf(messagesDL->m_sErrorAtomicNumOverMax.c_str(), pElem->Row(), minAttributeNames[1], pElem->Value(), i, MAX_ATOMIC_NUMBERS);
-			return false;
-		}
-		if (!XsdTypeUtil::getPositiveInt(values[2], j, minAttributeNames[2], pElem)) {
-			return false;
-		}
-		if (j > MAX_ATOMIC_NUMBERS) {
-			printf(messagesDL->m_sErrorAtomicNumOverMax.c_str(), pElem->Row(), minAttributeNames[2], pElem->Value(), j, MAX_ATOMIC_NUMBERS);
+		if (!XsdTypeUtil::getAtomicNumber(values[2], j, pElem->Row(), minAttributeNames[2], pElem->Value())) {
 			return false;
 		}
 		if (m_rgMinAtomicDistances[i][j] != -1) {

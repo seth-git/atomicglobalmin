@@ -21,7 +21,7 @@ bool InternalEnergy::load(TiXmlElement *pInternalEnergyElem, const Strings* mess
 	}
 	values = attUtil.getAllAttributes();
 
-	if (!XsdTypeUtil::getEnumValue(attributeNames[0], values[0], m_iMethod, pInternalEnergyElem, methods, 1, s_methodConstants)) {
+	if (!XsdTypeUtil::getEnumValue(attributeNames[0], values[0], m_iMethod, pInternalEnergyElem, methods, s_methodConstants)) {
 		return false;
 	}
 

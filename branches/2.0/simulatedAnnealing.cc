@@ -30,6 +30,8 @@ bool SimulatedAnnealing::saveSetup(TiXmlElement *pSimElem, const Strings* messag
 	TiXmlElement* setup = new TiXmlElement(messages->m_sxSetup.c_str());
 	pSimElem->LinkEndChild(setup);
 	
+	m_populationTemplate.save(setup, messages);
+	
 	return true;
 }
 

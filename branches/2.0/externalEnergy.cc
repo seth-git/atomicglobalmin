@@ -29,7 +29,7 @@ bool ExternalEnergy::load(TiXmlElement *pExternalElem, const Strings* messages)
 	}
 	values = attUtil.getAllAttributes();
 	
-	if (!XsdTypeUtil::getEnumValue(attributeNames[0], values[0], m_iMethod, pExternalElem, methods, 8, s_methodConstants)) {
+	if (!XsdTypeUtil::getEnumValue(attributeNames[0], values[0], m_iMethod, pExternalElem, methods, s_methodConstants)) {
 		return false;
 	}
 	
@@ -72,11 +72,13 @@ bool ExternalEnergy::load(TiXmlElement *pExternalElem, const Strings* messages)
 	if (!XsdTypeUtil::readElementText(extElements[5], m_sHeader)) {
 		return false;
 	}
+	m_sHeader = Strings::trim(m_sHeader);
 
 	if (extElements[6] != NULL) {
 		if (!XsdTypeUtil::readElementText(extElements[6], m_sFooter)) {
 			return false;
 		}
+		m_sFooter = Strings::trim(m_sFooter);
 	} else {
 		m_sFooter = "";
 	}

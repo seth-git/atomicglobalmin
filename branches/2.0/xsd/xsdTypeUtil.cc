@@ -11,23 +11,11 @@ const char*   XsdTypeUtil::s_valueAttDef[]   = {""};
 bool XsdTypeUtil::getBoolValue(const char* attributeName, const char* attributeValue, bool &result, TiXmlElement *pElem, const Strings* messages) {
 	const char* booleanValues[] = {messages->m_spTrue.c_str(), messages->m_spFalse.c_str()};
 	int val;
-	if (!getEnumValue(attributeName, attributeValue, val, pElem, booleanValues, 2, s_booleanResponses)) {
+	if (!getEnumValue(attributeName, attributeValue, val, pElem, booleanValues, s_booleanResponses)) {
 		return false;
 	}
 	result = (bool)val;
 	return true;
-}
-
-bool XsdTypeUtil::getEnumValue(const char* attributeName, const char* attributeValue, int &result, TiXmlElement *pElem,
-                               const char** possibleValues, unsigned int numPossibleValues, const int* responses) {
-	for (unsigned int i = 0; i < numPossibleValues; ++i) {
-		if (strcmp(possibleValues[i], attributeValue) == 0) {
-			result = responses[i];
-			return true;
-		}
-	}
-	printError(attributeName, attributeValue, pElem, possibleValues, numPossibleValues);
-	return false;
 }
 
 void XsdTypeUtil::printError(const char* attributeName, const char* attributeValue, TiXmlElement *pElem, const char** possibleValues, unsigned int numPossibleValues) {
@@ -217,3 +205,38 @@ bool XsdTypeUtil::readElementText(TiXmlElement *pElem, std::string &result) {
 	result = Strings::trim(pElem->GetText());
 	return true;
 }
+
+bool XsdTypeUtil::getAtomicNumber(const char* numberOrSymbol, unsigned int &iAtomicNumber, unsigned int line, const char* attributeName, const char* elementName) {
+	int signedNumber;
+	if (sscanf(numberOrSymbol, "%d", &signedNumber) != 1) {
+		const Strings* messagesDL = Strings::instance();
+		if (attributeName != NULL && elementName != NULL)
+			printf(messagesDL->m_sErrorReadingAtomicNumber.c_str(), line, numberOrSymbol, attributeName, elementName);
+		else
+			printf(messagesDL->m_sErrorReadingAtomicNumber2.c_str(), line, numberOrSymbol);
+		return false;
+	}
+	if (signedNumber <= 0) {
+		const Strings* messagesDL = Strings::instance();
+		if (attributeName != NULL && elementName != NULL)
+			printf(messagesDL->m_sErrorReadingAtomicNumber.c_str(), line, numberOrSymbol, attributeName, elementName);
+		else
+			printf(messagesDL->m_sErrorReadingAtomicNumber2.c_str(), line, numberOrSymbol);
+		return false;
+	}
+	iAtomicNumber = signedNumber;
+	if (iAtomicNumber > MAX_ATOMIC_NUMBERS) {
+		const Strings* messagesDL = Strings::instance();
+		if (attributeName != NULL && elementName != NULL)
+			printf(messagesDL->m_sErrorAtomicNumOverMax.c_str(), line, attributeName, elementName, iAtomicNumber, MAX_ATOMIC_NUMBERS);
+		else
+			printf(messagesDL->m_sErrorAtomicNumOverMax2.c_str(), line, iAtomicNumber, MAX_ATOMIC_NUMBERS);
+		return false;
+	}
+	return true;
+}
+
+bool XsdTypeUtil::getAtomicNumber(const char* numberOrSymbol, unsigned int &iAtomicNumber, unsigned int line) {
+	return getAtomicNumber(numberOrSymbol, iAtomicNumber, line, NULL, NULL);
+}
+

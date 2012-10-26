@@ -10,8 +10,21 @@
 class XsdTypeUtil {
 	public:
 		static bool getBoolValue(const char* attributeName, const char* attributeValue, bool &result, TiXmlElement *pElem, const Strings* messages);
+
+		// Templates can't be declared in .cc files
+		template <std::size_t iResponses>
 		static bool getEnumValue(const char* attributeName, const char* attributeValue, int &result, TiXmlElement *pElem,
-                                 const char** possibleValues, unsigned int numPossibleValues, const int* responses);
+		                               const char* (&possibleValues)[iResponses], const int (&responses)[iResponses]) {
+			for (unsigned int i = 0; i < iResponses; ++i) {
+				if (strcmp(possibleValues[i], attributeValue) == 0) {
+					result = responses[i];
+					return true;
+				}
+			}
+			printError(attributeName, attributeValue, pElem, possibleValues, iResponses);
+			return false;
+		}
+		
 		static bool readDirType(TiXmlElement *pElem, std::string &resultDir, const Strings* messages);
 		static void checkDirectoryOrFileName(const char* sourceDir, std::string &newDir);
 
@@ -27,6 +40,9 @@ class XsdTypeUtil {
 		static bool readPosFloatValueElement(TiXmlElement *pElem, FLOAT &result, const char* attributeName);
 		
 		static bool readElementText(TiXmlElement *pElem, std::string &result);
+		
+		static bool getAtomicNumber(const char* numberOrSymbol, unsigned int &iAtomicNumber, unsigned int line, const char* attributeName, const char* elementName);
+		static bool getAtomicNumber(const char* numberOrSymbol, unsigned int &iAtomicNumber, unsigned int line);
 	private:
 		static void printError(const char* attributeName, const char* attributeValue, TiXmlElement *pElem, const char** possibleValues, unsigned int numPossibleValues);
 		
