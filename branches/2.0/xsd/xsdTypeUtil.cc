@@ -110,6 +110,20 @@ bool XsdTypeUtil::getPositiveInt(const char* value, unsigned int &result, const 
 	return true;
 }
 
+bool XsdTypeUtil::getNonNegativeInt(const char* value, unsigned int &result, const char* attributeName, TiXmlElement *pElem)
+{
+	int signedResult;
+	if (!getInteger(value, signedResult, attributeName, pElem))
+		return false;
+	if (signedResult < 0) {
+		const Strings* messagesDL = Strings::instance();
+		printf(messagesDL->m_sNegativeNotAllowed.c_str(), value, attributeName, pElem->Value(), pElem->Row());
+		return false;
+	}
+	result = (unsigned int)signedResult;
+	return true;
+}
+
 bool XsdTypeUtil::getPositiveFloat(const char* value, FLOAT &result, const char* attributeName, TiXmlElement *pElem)
 {
 	if (sscanf(value, "%lf", &result) != 1) {

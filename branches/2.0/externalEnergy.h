@@ -8,19 +8,12 @@
 #include "xsd/xsdAttributeUtil.h"
 #include "xsd/xsdTypeUtil.h"
 
-#define ADF                                 0
-#define GAMESS                              1
-#define GAMESS_UK                           2
-#define GAUSSIAN                            3
-#define FIREFLY                             4
-#define JAGUAR                              5
-#define MOLPRO                              6
-#define ORCA                                7
-
 class ExternalEnergy {
 	public:
+		enum Method {ADF, GAMESS, GAMESS_UK, GAUSSIAN, FIREFLY, JAGUAR, MOLPRO, ORCA};
+	
 		bool m_bTransitionStateSearch;
-		int m_iMethod;
+		Method m_method;
 		std::string m_sSharedDir;
 		std::string m_sLocalDir;
 		std::string m_sResultsDir;
@@ -34,6 +27,9 @@ class ExternalEnergy {
 		
 		bool load(TiXmlElement *pExternalElem, const Strings* messages);
 		bool save(TiXmlElement *pExternalElem, const Strings* messages);
+
+		static bool getMethodEnum(const char* attributeName, const char* stringValue, Method& result, TiXmlElement *pElem, const Strings* messages);
+		static const char* getMethodString(Method enumValue, const Strings* messages);
 		
 	private:
 		static const bool         s_required[];

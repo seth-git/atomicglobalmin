@@ -94,132 +94,283 @@ bool Strings::init (const char* languageCode)
 	if (error)
 		return false;
 	
-	m_sxSimulatedAnnealing = stringMap["xSimulatedAnnealing"];
-	m_sxRandomSearch = stringMap["xRandomSearch"];
-	m_sxParticleSwarmOptimization = stringMap["xParticleSwarmOptimization"];
-	m_sxGeneticAlgorithm = stringMap["xGeneticAlgorithm"];
-	m_sxBatch = stringMap["xBatch"];
-	m_sxSetup = stringMap["xSetup"];
-	m_sxConstraints = stringMap["xConstraints"];
-	m_sxEnergy = stringMap["xEnergy"];
-	m_sxResume = stringMap["xResume"];
-	m_sxResults = stringMap["xResults"];
-	m_sxInternal = stringMap["xInternal"];
-	m_sxExternal = stringMap["xExternal"];
-	m_sxCube = stringMap["xCube"];
-	m_sxAtomicDistances = stringMap["xAtomicDistances"];
-	m_sxMin = stringMap["xMin"];
-	m_sxMax = stringMap["xMax"];
-	m_sxName = stringMap["xName"];
-	m_sxBase = stringMap["xBase"];
-	m_sxSize = stringMap["xSize"];
-	m_sxValue = stringMap["xValue"];
-	m_sxZ1 = stringMap["xZ1"];
-	m_sxZ2 = stringMap["xZ2"];
-	m_sxMethod = stringMap["xMethod"];
-	m_sxTransitionStateSearch = stringMap["xTransitionStateSearch"];
-	m_sxSharedDirectory = stringMap["xSharedDirectory"];
-	m_sxLocalDirectory = stringMap["xLocalDirectory"];
-	m_sxResultsDirectory = stringMap["xResultsDirectory"];
-	m_sxCharge = stringMap["xCharge"];
-	m_sxMultiplicity = stringMap["xMultiplicity"];
-	m_sxHeader = stringMap["xHeader"];
-	m_sxFooter = stringMap["xFooter"];
-	m_sxMpi = stringMap["xMpi"];
-	m_sxPath = stringMap["xPath"];
-	m_sxMaxFiles = stringMap["xMaxFiles"];
-	m_sxFilePrefix = stringMap["xFilePrefix"];
-	m_sxMaster = stringMap["xMaster"];
-	m_sxOpt = stringMap["xOpt"];
+	if (!copy(stringMap, "xSimulatedAnnealing", m_sxSimulatedAnnealing))
+		return false;
+	if (!copy(stringMap, "xRandomSearch", m_sxRandomSearch))
+		return false;
+	if (!copy(stringMap, "xParticleSwarmOptimization", m_sxParticleSwarmOptimization))
+		return false;
+	if (!copy(stringMap, "xGeneticAlgorithm", m_sxGeneticAlgorithm))
+		return false;
+	if (!copy(stringMap, "xBatch", m_sxBatch))
+		return false;
+	if (!copy(stringMap, "xSetup", m_sxSetup))
+		return false;
+	if (!copy(stringMap, "xConstraints", m_sxConstraints))
+		return false;
+	if (!copy(stringMap, "xEnergy", m_sxEnergy))
+		return false;
+	if (!copy(stringMap, "xResume", m_sxResume))
+		return false;
+	if (!copy(stringMap, "xResults", m_sxResults))
+		return false;
+	if (!copy(stringMap, "xInternal", m_sxInternal))
+		return false;
+	if (!copy(stringMap, "xExternal", m_sxExternal))
+		return false;
+	if (!copy(stringMap, "xCube", m_sxCube))
+		return false;
+	if (!copy(stringMap, "xAtomicDistances", m_sxAtomicDistances))
+		return false;
+	if (!copy(stringMap, "xMin", m_sxMin))
+		return false;
+	if (!copy(stringMap, "xMax", m_sxMax))
+		return false;
+	if (!copy(stringMap, "xName", m_sxName))
+		return false;
+	if (!copy(stringMap, "xBase", m_sxBase))
+		return false;
+	if (!copy(stringMap, "xSize", m_sxSize))
+		return false;
+	if (!copy(stringMap, "xValue", m_sxValue))
+		return false;
+	if (!copy(stringMap, "xZ1", m_sxZ1))
+		return false;
+	if (!copy(stringMap, "xZ2", m_sxZ2))
+		return false;
+	if (!copy(stringMap, "xMethod", m_sxMethod))
+		return false;
+	if (!copy(stringMap, "xTransitionStateSearch", m_sxTransitionStateSearch))
+		return false;
+	if (!copy(stringMap, "xSharedDirectory", m_sxSharedDirectory))
+		return false;
+	if (!copy(stringMap, "xLocalDirectory", m_sxLocalDirectory))
+		return false;
+	if (!copy(stringMap, "xResultsDirectory", m_sxResultsDirectory))
+		return false;
+	if (!copy(stringMap, "xCharge", m_sxCharge))
+		return false;
+	if (!copy(stringMap, "xMultiplicity", m_sxMultiplicity))
+		return false;
+	if (!copy(stringMap, "xHeader", m_sxHeader))
+		return false;
+	if (!copy(stringMap, "xFooter", m_sxFooter))
+		return false;
+	if (!copy(stringMap, "xMpi", m_sxMpi))
+		return false;
+	if (!copy(stringMap, "xPath", m_sxPath))
+		return false;
+	if (!copy(stringMap, "xMaxFiles", m_sxMaxFiles))
+		return false;
+	if (!copy(stringMap, "xFilePrefix", m_sxFilePrefix))
+		return false;
+	if (!copy(stringMap, "xMaster", m_sxMaster))
+		return false;
+	if (!copy(stringMap, "xOpt", m_sxOpt))
+		return false;
 	
-	m_sxPopulationTemplate = stringMap["xPopulationTemplate"];
-	m_sxTemperature = stringMap["xTemperature"];
-	m_sxAnnealingSchedule = stringMap["xAnnealingSchedule"];
-	m_sxPerturbations = stringMap["xPerturbations"];
-	m_sxStop = stringMap["xStop"];
+	if (!copy(stringMap, "xPopulationTemplate", m_sxPopulationTemplate))
+		return false;
+	if (!copy(stringMap, "xTemperature", m_sxTemperature))
+		return false;
+	if (!copy(stringMap, "xAnnealingSchedule", m_sxAnnealingSchedule))
+		return false;
+	if (!copy(stringMap, "xPerturbations", m_sxPerturbations))
+		return false;
+	if (!copy(stringMap, "xStop", m_sxStop))
+		return false;
 
-	m_sxAcceptedPerterbations = stringMap["xAcceptedPerterbations"];
-	m_sxDecreaseAfterIteration = stringMap["xDecreaseAfterIteration"];
-	m_sxQuenchingFactor = stringMap["xQuenchingFactor"];
-	m_sxMaxTemperature = stringMap["xMaxTemperature"];
-	m_sxMaxAcceptedPerturbations = stringMap["xMaxAcceptedPerturbations"];
-	m_sxMinIterations = stringMap["xMinIterations"];
-	m_sxSaveFrequency = stringMap["xSaveFrequency"];
+	if (!copy(stringMap, "xAcceptedPerterbations", m_sxAcceptedPerterbations))
+		return false;
+	if (!copy(stringMap, "xDecreaseAfterIteration", m_sxDecreaseAfterIteration))
+		return false;
+	if (!copy(stringMap, "xQuenchingFactor", m_sxQuenchingFactor))
+		return false;
+	if (!copy(stringMap, "xMaxTemperature", m_sxMaxTemperature))
+		return false;
+	if (!copy(stringMap, "xMaxAcceptedPerturbations", m_sxMaxAcceptedPerturbations))
+		return false;
+	if (!copy(stringMap, "xMinIterations", m_sxMinIterations))
+		return false;
+	if (!copy(stringMap, "xSaveFrequency", m_sxSaveFrequency))
+		return false;
 	
-	m_sxMoleculeSetTemplate = stringMap["xMoleculeSetTemplate"];
-	m_sxLinear = stringMap["xLinear"];
-	m_sxPlanar = stringMap["xPlanar"];
-	m_sxThreeD = stringMap["xThreeD"];
-	m_sxBondRotationalSearch = stringMap["xBondRotationalSearch"];
-	m_sxSeed = stringMap["xSeed"];
+	if (!copy(stringMap, "xStructureTemplate", m_sxStructureTemplate))
+		return false;
+	if (!copy(stringMap, "xLinear", m_sxLinear))
+		return false;
+	if (!copy(stringMap, "xPlanar", m_sxPlanar))
+		return false;
+	if (!copy(stringMap, "xThreeD", m_sxThreeD))
+		return false;
+	if (!copy(stringMap, "xBondRotationalSearch", m_sxBondRotationalSearch))
+		return false;
+	if (!copy(stringMap, "xSeed", m_sxSeed))
+		return false;
 	
-	m_sxMoleculeTemplate = stringMap["xMoleculeTemplate"];
-	m_sxNumber = stringMap["xNumber"];
-	m_sxFormat = stringMap["xFormat"];
+	if (!copy(stringMap, "xMoleculeTemplate", m_sxMoleculeTemplate))
+		return false;
+	if (!copy(stringMap, "xAtomTemplate", m_sxAtomTemplate))
+		return false;
+	if (!copy(stringMap, "xNumber", m_sxNumber))
+		return false;
+	if (!copy(stringMap, "xFormat", m_sxFormat))
+		return false;
+	if (!copy(stringMap, "xZ", m_sxZ))
+		return false;
+	if (!copy(stringMap, "xAngle", m_sxAngle))
+		return false;
+	if (!copy(stringMap, "xType", m_sxType))
+		return false;
 	
-	m_spADF = stringMap["pADF"];
-	m_spGAMESS = stringMap["pGAMESS"];
-	m_spGAMESSUK = stringMap["pGAMESSUK"];
-	m_spGaussian = stringMap["pGaussian"];
-	m_spFirefly = stringMap["pFirefly"];
-	m_spJaguar = stringMap["pJaguar"];
-	m_spMolpro = stringMap["pMolpro"];
-	m_spORCA = stringMap["pORCA"];
-	m_spBest = stringMap["pBest"];
-	m_spTrue = stringMap["pTrue"];
-	m_spFalse = stringMap["pFalse"];
-	m_spLennardJones = stringMap["pLennardJones"];
-	m_spCartesian = stringMap["pCartesian"];
+	if (!copy(stringMap, "xAgmlFile", m_sxAgmlFile))
+		return false;
+	if (!copy(stringMap, "xDirectory", m_sxDirectory))
+		return false;
+	if (!copy(stringMap, "xEnergyFile", m_sxEnergyFile))
+		return false;
+	if (!copy(stringMap, "xFreezingIterations", m_sxFreezingIterations))
+		return false;
 	
-	m_sReadingFile = stringMap["ReadingFile"];
-	m_sWritingFile = stringMap["WritingFile"];
-	m_spAbbrTemporary = stringMap["pAbbrTemporary"];
+	if (!copy(stringMap, "xSource", m_sxSource))
+		return false;
+	if (!copy(stringMap, "xPopulation", m_sxPopulation))
+		return false;
 	
-	m_sDuplicateAttributes = stringMap["DuplicateAttributes"];
-	m_sUnrecognizedAttribute = stringMap["UnrecognizedAttribute"];
-	m_sMissingAttribute = stringMap["MissingAttribute"];
-	m_sMustNotContainAttributes = stringMap["MustNotContainAttributes"];
-	m_sAvailableAttributes = stringMap["AvailableAttributes"];
+	if (!copy(stringMap, "pADF", m_spADF))
+		return false;
+	if (!copy(stringMap, "pGAMESS", m_spGAMESS))
+		return false;
+	if (!copy(stringMap, "pGAMESSUK", m_spGAMESSUK))
+		return false;
+	if (!copy(stringMap, "pGaussian", m_spGaussian))
+		return false;
+	if (!copy(stringMap, "pFirefly", m_spFirefly))
+		return false;
+	if (!copy(stringMap, "pJaguar", m_spJaguar))
+		return false;
+	if (!copy(stringMap, "pMolpro", m_spMolpro))
+		return false;
+	if (!copy(stringMap, "pORCA", m_spORCA))
+		return false;
+	if (!copy(stringMap, "pBest", m_spBest))
+		return false;
+	if (!copy(stringMap, "pTrue", m_spTrue))
+		return false;
+	if (!copy(stringMap, "pFalse", m_spFalse))
+		return false;
+	if (!copy(stringMap, "pLennardJones", m_spLennardJones))
+		return false;
+	if (!copy(stringMap, "pCartesian", m_spCartesian))
+		return false;
+	if (!copy(stringMap, "pAll", m_spAll))
+		return false;
 	
-	m_sMaxOf1ElementExceeded = stringMap["MaxOf1ElementExceeded"];
-	m_sUnrecognizedElement = stringMap["UnrecognizedElement"];
-	m_sElementNumNot1 = stringMap["ElementNumNot1"];
-	m_sElementRequiresExactly1Child = stringMap["ElementRequiresExactly1Child"];
-	m_sElementRequiresNChildren = stringMap["ElementRequiresNChildren"];
-	m_sElementRequires1ChildMin = stringMap["ElementRequires1ChildMin"];
-	m_sMisplacedElement = stringMap["MisplacedElement"];
-	m_sMaxElementsExceeded = stringMap["MaxElementsExceeded"];
-	m_sChoiceError = stringMap["ChoiceError"];
-	m_sChoiceElementOrder = stringMap["ChoiceElementOrder"];
-	m_spUnlimited = stringMap["pUnlimited"];
+	if (!copy(stringMap, "ReadingFile", m_sReadingFile))
+		return false;
+	if (!copy(stringMap, "WritingFile", m_sWritingFile))
+		return false;
+	if (!copy(stringMap, "pAbbrTemporary", m_spAbbrTemporary))
+		return false;
 	
-	m_sUnrecognizedAttributeValue = stringMap["UnrecognizedAttributeValue"];
-	m_sUnableToReadInteger = stringMap["UnableToReadInteger"];
-	m_sUnableToReadPositiveInteger = stringMap["UnableToReadPositiveInteger"];
-	m_sZeroNotAllowed = stringMap["ZeroNotAllowed"];
-	m_sUnableToReadPositiveFloat = stringMap["UnableToReadPositiveFloat"];
-	m_sNegativeNotAllowed = stringMap["NegativeNotAllowed"];
-	m_sUnableToReadElementText = stringMap["UnableToReadElementText"];
-	m_sErrorReadingAtomicNumber = stringMap["ErrorReadingAtomicNumber"];
-	m_sErrorReadingAtomicNumber2 = stringMap["ErrorReadingAtomicNumber2"];
-	m_sErrorAtomicNumOverMax = stringMap["ErrorAtomicNumOverMax"];
-	m_sErrorAtomicNumOverMax2 = stringMap["ErrorAtomicNumOverMax2"];
+	if (!copy(stringMap, "DuplicateAttributes", m_sDuplicateAttributes))
+		return false;
+	if (!copy(stringMap, "UnrecognizedAttribute", m_sUnrecognizedAttribute))
+		return false;
+	if (!copy(stringMap, "MissingAttribute", m_sMissingAttribute))
+		return false;
+	if (!copy(stringMap, "MustNotContainAttributes", m_sMustNotContainAttributes))
+		return false;
+	if (!copy(stringMap, "AvailableAttributes", m_sAvailableAttributes))
+		return false;
 	
-	m_sError = stringMap["Error"];
-	m_sErrorOnLine = stringMap["ErrorOnLine"];
-	m_sElementNotFound = stringMap["ElementNotFound"];
-	m_sOneRootElement = stringMap["OneRootElement"];
-	m_sTwoElementsWithSameName = stringMap["TwoElementsWithSameName"];
+	if (!copy(stringMap, "MaxOf1ElementExceeded", m_sMaxOf1ElementExceeded))
+		return false;
+	if (!copy(stringMap, "UnrecognizedElement", m_sUnrecognizedElement))
+		return false;
+	if (!copy(stringMap, "ElementNumNot1", m_sElementNumNot1))
+		return false;
+	if (!copy(stringMap, "ElementRequiresExactly1Child", m_sElementRequiresExactly1Child))
+		return false;
+	if (!copy(stringMap, "ElementRequiresNChildren", m_sElementRequiresNChildren))
+		return false;
+	if (!copy(stringMap, "ElementRequires1ChildMin", m_sElementRequires1ChildMin))
+		return false;
+	if (!copy(stringMap, "MisplacedElement", m_sMisplacedElement))
+		return false;
+	if (!copy(stringMap, "MaxElementsExceeded", m_sMaxElementsExceeded))
+		return false;
+	if (!copy(stringMap, "ChoiceError", m_sChoiceError))
+		return false;
+	if (!copy(stringMap, "ChoiceElementOrder", m_sChoiceElementOrder))
+		return false;
+	if (!copy(stringMap, "pUnlimited", m_spUnlimited))
+		return false;
+	
+	if (!copy(stringMap, "UnrecognizedAttributeValue", m_sUnrecognizedAttributeValue))
+		return false;
+	if (!copy(stringMap, "UnableToReadInteger", m_sUnableToReadInteger))
+		return false;
+	if (!copy(stringMap, "UnableToReadPositiveInteger", m_sUnableToReadPositiveInteger))
+		return false;
+	if (!copy(stringMap, "ZeroNotAllowed", m_sZeroNotAllowed))
+		return false;
+	if (!copy(stringMap, "UnableToReadPositiveFloat", m_sUnableToReadPositiveFloat))
+		return false;
+	if (!copy(stringMap, "NegativeNotAllowed", m_sNegativeNotAllowed))
+		return false;
+	if (!copy(stringMap, "UnableToReadElementText", m_sUnableToReadElementText))
+		return false;
+	if (!copy(stringMap, "ErrorReadingAtomicNumber", m_sErrorReadingAtomicNumber))
+		return false;
+	if (!copy(stringMap, "ErrorReadingAtomicNumber2", m_sErrorReadingAtomicNumber2))
+		return false;
+	if (!copy(stringMap, "ErrorAtomicNumOverMax", m_sErrorAtomicNumOverMax))
+		return false;
+	if (!copy(stringMap, "ErrorAtomicNumOverMax2", m_sErrorAtomicNumOverMax2))
+		return false;
+	
+	if (!copy(stringMap, "Error", m_sError))
+		return false;
+	if (!copy(stringMap, "ErrorOnLine", m_sErrorOnLine))
+		return false;
+	if (!copy(stringMap, "ElementNotFound", m_sElementNotFound))
+		return false;
+	if (!copy(stringMap, "OneRootElement", m_sOneRootElement))
+		return false;
+	if (!copy(stringMap, "TwoElementsWithSameName", m_sTwoElementsWithSameName))
+		return false;
 
-	m_sConstraintNameMisMatch = stringMap["ConstraintNameMisMatch"];
+	if (!copy(stringMap, "ConstraintNameMisMatch", m_sConstraintNameMisMatch))
+		return false;
 	
-	m_sErrorZ1Z2 = stringMap["ErrorZ1Z2"];
-	m_sErrorOneGeneralMin = stringMap["ErrorOneGeneralMin"];
-	m_sErrorDuplicateMinDist = stringMap["ErrorDuplicateMinDist"];
+	if (!copy(stringMap, "ErrorZ1Z2", m_sErrorZ1Z2))
+		return false;
+	if (!copy(stringMap, "ErrorOneGeneralMin", m_sErrorOneGeneralMin))
+		return false;
+	if (!copy(stringMap, "ErrorDuplicateMinDist", m_sErrorDuplicateMinDist))
+		return false;
 	
-	m_sErrorEmptyMoleculeTemplate = stringMap["ErrorEmptyMoleculeTemplate"];
+	if (!copy(stringMap, "EmptyStructureTemplate", m_sEmptyStructureTemplate))
+		return false;
+	
+	if (!copy(stringMap, "ErrorEmptyMoleculeTemplate", m_sErrorEmptyMoleculeTemplate))
+		return false;
+	
+	if (!copy(stringMap, "MissingChildElements3", m_sMissingChildElements3))
+		return false;
 	
 	m_bLoaded = true;
+	return true;
+}
+
+// This function helps detect typos in key names
+bool Strings::copy(std::map<std::string,std::string> &stringMap, const char* key, std::string &destination) {
+	destination = stringMap[key];
+	if (destination.length() == 0) {
+		printf("Copy from map with key '%s' returned an empty string in stings.cc.  Is this a typo?", key);
+		return false;
+	}
 	return true;
 }
 

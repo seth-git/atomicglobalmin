@@ -6,7 +6,7 @@
 	<particleSwarmOptimization constraints="search">
 		<setup>
 			<populationTemplate constraints="init">
-				<moleculeSetTemplate>
+				<structureTemplate>
 					<moleculeTemplate>
 						6   -2.646636   -1.062747   -0.826172
 						1   -2.119982   -2.001828   -0.710490
@@ -31,7 +31,7 @@
 						1 -0.757540797781 0.0 0.587079636589
 						8 0.0 0.0 0.0
 					</moleculeTemplate>
-				</moleculeSetTemplate>
+				</structureTemplate>
 				<threeD number="32"/>
 			</populationTemplate>
 			<velocities>

@@ -24,12 +24,26 @@ class XsdTypeUtil {
 			printError(attributeName, attributeValue, pElem, possibleValues, iResponses);
 			return false;
 		}
+
+		template <std::size_t iResponses, typename EnumType>
+		static bool getEnumValue(const char* attributeName, const char* attributeValue, EnumType &result,
+		                         TiXmlElement *pElem, const char* (&possibleValues)[iResponses]) {
+			for (unsigned int i = 0; i < iResponses; ++i) {
+				if (strcmp(possibleValues[i], attributeValue) == 0) {
+					result = static_cast<EnumType>(i);
+					return true;
+				}
+			}
+			printError(attributeName, attributeValue, pElem, possibleValues, iResponses);
+			return false;
+		}
 		
 		static bool readDirType(TiXmlElement *pElem, std::string &resultDir, const Strings* messages);
 		static void checkDirectoryOrFileName(const char* sourceDir, std::string &newDir);
 
 		static bool getInteger(const char* value, int &result, const char* attributeName, TiXmlElement *pElem);
 		static bool getPositiveInt(const char* value, unsigned int &result, const char* attributeName, TiXmlElement *pElem);
+		static bool getNonNegativeInt(const char* value, unsigned int &result, const char* attributeName, TiXmlElement *pElem);
 		static bool getPositiveFloat(const char* value, FLOAT &result, const char* attributeName, TiXmlElement *pElem);
 		
 		static bool readStrValueElement(TiXmlElement *pElem, std::string &result, const Strings* messages);

@@ -24,6 +24,7 @@ void Action::cleanUp() {
 		delete m_constraints[i];
 	}
 	m_constraints.clear();
+	m_constraintsMap.clear();
 	m_pConstraints = NULL;
 }
 
@@ -51,13 +52,9 @@ bool Action::load(TiXmlElement *pActionElem, const Strings* messages)
 	}
 	std::vector<TiXmlElement*>* actionElements = actionUtil.getSequenceElements();
 	
-	if (!loadSetup(actionElements[0][0], messages))
-		return false;
-	
-	std::map<std::string,Constraints*> constraintsMap;
 	for (i = 0; i < actionElements[1].size(); ++i) {
 		m_constraints.push_back(new Constraints());
-		if (!m_constraints[i]->load(actionElements[1][i], messages, constraintsMap))
+		if (!m_constraints[i]->load(actionElements[1][i], messages, m_constraintsMap))
 			return false;
 		for (j = 0; j < i; ++j) {
 			if (m_constraints[j]->m_sName == m_constraints[i]->m_sName) {
@@ -65,15 +62,18 @@ bool Action::load(TiXmlElement *pActionElem, const Strings* messages)
 				return false;
 			}
 		}
-		constraintsMap[m_constraints[i]->m_sName] = m_constraints[i];
+		m_constraintsMap[m_constraints[i]->m_sName] = m_constraints[i];
 	}
 	if (constraintsName != NULL) {
-		m_pConstraints = constraintsMap[constraintsName];
+		m_pConstraints = m_constraintsMap[constraintsName];
 		if (m_pConstraints == NULL) {
 			printf(messagesDL->m_sConstraintNameMisMatch.c_str(), pActionElem->Row(), messages->m_sxConstraints.c_str(), constraintsName);
 			return false;
 		}
 	}
+	
+	if (!loadSetup(actionElements[0][0], messages)) // Do this after loading constraints
+		return false;
 	
 	const char* energyElementNames[] = {messages->m_sxInternal.c_str(), messages->m_sxExternal.c_str()};
 	XsdElementUtil energyUtil(elementNames[2], XSD_CHOICE, energyElementNames);

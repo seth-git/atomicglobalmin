@@ -6,7 +6,7 @@
 	<simulatedAnnealing constraints="search">
 		<setup>
 			<populationTemplate constraints="init">
-				<moleculeSetTemplate>
+				<structureTemplate>
 					<moleculeTemplate number="1" format="Cartesian">
 						6   -2.646636   -1.062747   -0.826172
 						1   -2.119982   -2.001828   -0.710490
@@ -31,8 +31,13 @@
 						1 -0.757540797781 0.0 0.587079636589
 						8 0.0 0.0 0.0
 					</moleculeTemplate>
-				</moleculeSetTemplate>
-				<threeD number="32"/>
+				</structureTemplate>
+				<threeD number="32" constraints="init"/>
+				<seed freezingIterations="1">
+					<agmlFile path="path" number="10" source="population"/>
+					<directory path="path" type="Gaussian"/>
+					<energyFile path="mypath" type="GAMESS"/>
+				</seed>
 			</populationTemplate>
 			<temperature value="2000"/>
 			<annealingSchedule quenchingFactor="0.9995"/>

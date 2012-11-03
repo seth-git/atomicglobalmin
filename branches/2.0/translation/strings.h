@@ -95,7 +95,7 @@ public:
 	std::string m_sxMinIterations;
 	std::string m_sxSaveFrequency;
 	
-	std::string m_sxMoleculeSetTemplate;
+	std::string m_sxStructureTemplate;
 	std::string m_sxLinear;
 	std::string m_sxPlanar;
 	std::string m_sxThreeD;
@@ -103,8 +103,20 @@ public:
 	std::string m_sxSeed;
 	
 	std::string m_sxMoleculeTemplate;
+	std::string m_sxAtomTemplate;
 	std::string m_sxNumber;
 	std::string m_sxFormat;
+	std::string m_sxZ;
+	std::string m_sxAngle;
+	std::string m_sxType;
+
+	std::string m_sxAgmlFile;
+	std::string m_sxDirectory;
+	std::string m_sxEnergyFile;
+	std::string m_sxFreezingIterations;
+	
+	std::string m_sxSource;
+	std::string m_sxPopulation;
 	
 	std::string m_spADF;
 	std::string m_spGAMESS;
@@ -119,6 +131,7 @@ public:
 	std::string m_spFalse;
 	std::string m_spLennardJones;
 	std::string m_spCartesian;
+	std::string m_spAll;
 
 	std::string m_sReadingFile;
 	std::string m_sWritingFile;
@@ -166,12 +179,17 @@ public:
 	std::string m_sErrorOneGeneralMin;
 	std::string m_sErrorDuplicateMinDist;
 	
+	std::string m_sEmptyStructureTemplate;
+	
 	std::string m_sErrorEmptyMoleculeTemplate;
+	std::string m_sMissingChildElements3;
 	
 private:
 	static std::map<std::string,Strings> s_instances;
 
 	bool m_bLoaded;
+	
+	bool copy(std::map<std::string,std::string> &stringMap, const char* key, std::string &destination);
 };
 
 #endif

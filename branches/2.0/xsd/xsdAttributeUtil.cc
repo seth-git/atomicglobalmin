@@ -36,9 +36,10 @@ bool XsdAttributeUtil::process (TiXmlElement* pElem)
 			return false;
 		}
 	}
+
 	for (i = 0; i < m_iAttributes; ++i) {
 		if (m_values[i] == NULL) {
-			if (m_defaultValues != NULL && m_defaultValues[i][0] != '\0') { // If the length is not zero
+			if (m_defaultValues[i] != NULL && m_defaultValues[i][0] != '\0') { // If the length is not zero
 				m_values[i] = m_defaultValues[i];
 				continue;
 			} else if (m_required[i]) {
@@ -47,6 +48,7 @@ bool XsdAttributeUtil::process (TiXmlElement* pElem)
 			}
 		}
 	}
+
 	return true;
 }
 

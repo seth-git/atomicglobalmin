@@ -15,12 +15,12 @@ bool SimulatedAnnealing::loadSetup(TiXmlElement *pSetupElem, const Strings* mess
 	XsdElementUtil setupUtil(pSetupElem->Value(), XSD_ALL, elementNames, s_minOccurs);
 	TiXmlHandle hRoot(0);
 	hRoot=TiXmlHandle(pSetupElem);
-	if (!setupUtil.process(hRoot)) {
+	if (!setupUtil.process(hRoot))
 		return false;
-	}
 	TiXmlElement** setupElements = setupUtil.getAllElements();
 	
-	m_populationTemplate.load(setupElements[0], messages);
+	if (!m_populationTemplate.load(setupElements[0], m_constraintsMap, messages))
+		return false;
 	
 	return true;
 }

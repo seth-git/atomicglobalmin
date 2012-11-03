@@ -16,6 +16,7 @@ class Input; // Forward declaration
 class Action {
 	public:
 		std::vector<Constraints*> m_constraints;
+		std::map<std::string,Constraints*> m_constraintsMap;
 		Constraints* m_pConstraints;
 		bool m_bExternalEnergy;
 		InternalEnergy m_internalEnergy;

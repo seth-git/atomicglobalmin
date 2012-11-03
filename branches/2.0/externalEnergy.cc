@@ -8,9 +8,6 @@ const bool         ExternalEnergy::s_required[]        = {true    , false };
 //const char*      ExternalEnergy::s_elementNames[]    = {"sharedDirectory", "localDirectory", "resultsDirectory", "charge", "multiplicity", "header", "footer", "mpi"};
 const unsigned int ExternalEnergy::s_minOccurs[]       = {1                , 0               , 0                 , 1       , 1             , 1       , 0       , 0    };
 
-//const char*      ExternalEnergy::s_methods[]         = {"ADF", "GAMESS", "GAMESS-UK", "Gaussian", "Firefly", "Jaguar", "Molpro", "ORCA"};
-const int          ExternalEnergy::s_methodConstants[] = { ADF ,  GAMESS ,  GAMESS_UK,   GAUSSIAN ,  FIREFLY ,  JAGUAR ,  MOLPRO ,  ORCA};
-
 bool ExternalEnergy::load(TiXmlElement *pExternalElem, const Strings* messages)
 {
 	const char** values;
@@ -20,8 +17,6 @@ bool ExternalEnergy::load(TiXmlElement *pExternalElem, const Strings* messages)
 	const char* elementNames[] = {messages->m_sxSharedDirectory.c_str(), messages->m_sxLocalDirectory.c_str(),
 			messages->m_sxResultsDirectory.c_str(), messages->m_sxCharge.c_str(), messages->m_sxMultiplicity.c_str(),
 			messages->m_sxHeader.c_str(), messages->m_sxFooter.c_str(), messages->m_sxMpi.c_str()};
-	const char* methods[] = {messages->m_spADF.c_str(), messages->m_spGAMESS.c_str(), messages->m_spGAMESSUK.c_str(), messages->m_spGaussian.c_str(),
-			messages->m_spFirefly.c_str(), messages->m_spJaguar.c_str(), messages->m_spMolpro.c_str(), messages->m_spORCA.c_str()};
 	
 	XsdAttributeUtil attUtil(pExternalElem->Value(), attributeNames, s_required, defaultValues);
 	if (!attUtil.process(pExternalElem)) {
@@ -29,7 +24,7 @@ bool ExternalEnergy::load(TiXmlElement *pExternalElem, const Strings* messages)
 	}
 	values = attUtil.getAllAttributes();
 	
-	if (!XsdTypeUtil::getEnumValue(attributeNames[0], values[0], m_iMethod, pExternalElem, methods, s_methodConstants)) {
+	if (!getMethodEnum(attributeNames[0], values[0], m_method, pExternalElem, messages)) {
 		return false;
 	}
 	
@@ -94,6 +89,12 @@ bool ExternalEnergy::load(TiXmlElement *pExternalElem, const Strings* messages)
 	return true;
 }
 
+bool ExternalEnergy::getMethodEnum(const char* attributeName, const char* stringValue, Method& result, TiXmlElement *pElem, const Strings* messages) {
+	const char* methods[] = {messages->m_spADF.c_str(), messages->m_spGAMESS.c_str(), messages->m_spGAMESSUK.c_str(), messages->m_spGaussian.c_str(),
+			messages->m_spFirefly.c_str(), messages->m_spJaguar.c_str(), messages->m_spMolpro.c_str(), messages->m_spORCA.c_str()};
+	return XsdTypeUtil::getEnumValue(attributeName, stringValue, result, pElem, methods);
+}
+
 //const char* ExternalEnergy::s_resAttributeNames[] = {"path", "maxFiles", "filePrefix"};
 const bool    ExternalEnergy::s_resRequired[]       = {true  , false     , false};
 //const char* ExternalEnergy::s_resDefaultValues[]  = {""    , "1"       , "best"};
@@ -144,11 +145,15 @@ bool ExternalEnergy::readMpiMaster(TiXmlElement *pElem, const Strings* messages)
 	return true;
 }
 
-bool ExternalEnergy::save(TiXmlElement *pExternalElem, const Strings* messages)
-{
+const char* ExternalEnergy::getMethodString(Method enumValue, const Strings* messages) {
 	const char* methods[] = {messages->m_spADF.c_str(), messages->m_spGAMESS.c_str(), messages->m_spGAMESSUK.c_str(), messages->m_spGaussian.c_str(),
 			messages->m_spFirefly.c_str(), messages->m_spJaguar.c_str(), messages->m_spMolpro.c_str(), messages->m_spORCA.c_str()};
-	pExternalElem->SetAttribute(messages->m_sxMethod.c_str(), methods[m_iMethod]);
+	return methods[enumValue];
+}
+
+bool ExternalEnergy::save(TiXmlElement *pExternalElem, const Strings* messages)
+{
+	pExternalElem->SetAttribute(messages->m_sxMethod.c_str(), getMethodString(m_method, messages));
 	if (m_bTransitionStateSearch)
 		pExternalElem->SetAttribute(messages->m_sxTransitionStateSearch.c_str(), messages->getTrueFalseParam(m_bTransitionStateSearch));
 	

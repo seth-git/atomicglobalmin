@@ -247,7 +247,7 @@
 
 <xs:complexType name="populationTemplateType">
 	<xs:all>
-		<xs:element name="moleculeSetTemplate" type="moleculeSetTemplateType" minOccurs="0"/>
+		<xs:element name="structureTemplate" type="structureTemplateType" minOccurs="0"/>
 		<xs:element name="linear" type="initializationType" minOccurs="0"/>
 		<xs:element name="planar" type="initializationType" minOccurs="0"/>
 		<xs:element name="threeD" type="initializationType" minOccurs="0"/>
@@ -259,11 +259,10 @@
 		<xs:element name="seed" minOccurs="0">
 			<xs:complexType>
 				<xs:sequence>
-					<xs:element name="file" type="seedFileType" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="agmlFile" type="seedFileType" minOccurs="0" maxOccurs="unbounded"/>
 					<xs:element name="directory" type="seedDirType" minOccurs="0" maxOccurs="unbounded"/>
 					<xs:element name="energyFile" type="energyFileType" minOccurs="0" maxOccurs="unbounded"/>
 				</xs:sequence>
-				<xs:attribute name="number" type="xs:string" default="all"/>
 				<xs:attribute name="freezingIterations" type="nonNegativeInteger" default="0"/>
 			</xs:complexType>
 		</xs:element>
@@ -295,9 +294,9 @@
 	<xs:attribute name="type" type="externalEnergyMethods" use="required"/>
 </xs:complexType>
 
-<xs:complexType name="moleculeSetTemplateType">
+<xs:complexType name="structureTemplateType">
 	<xs:sequence>
-		<xs:element name="moleculeTemplate" minOccurs="1" maxOccurs="unbounded">
+		<xs:element name="moleculeTemplate" minOccurs="0" maxOccurs="unbounded">
 			<xs:complexType>
 				<xs:simpleContent>
 					<xs:extension base="xs:string">
@@ -307,15 +306,21 @@
 				</xs:simpleContent>
 			</xs:complexType>
 		</xs:element>
+		<xs:element name="atomTemplate" minOccurs="0" maxOccurs="unbounded">
+			<xs:complexType>
+				<xs:attribute name="number" type="positiveInteger" default="1"/>
+				<xs:attribute name="z" type="xs:string" use="required"/>
+			</xs:complexType>
+		</xs:element>
 	</xs:sequence>
 </xs:complexType>
 
 <xs:complexType name="populationType">
 	<xs:sequence>
-		<xs:element name="moleculeSet" minOccurs="0" maxOccurs="unbounded">
+		<xs:element name="structure" minOccurs="0" maxOccurs="unbounded">
 			<xs:complexType>
 				<xs:sequence>
-					<xs:element name="molecule" minOccurs="1" maxOccurs="unbounded">
+					<xs:element name="atomGroup" minOccurs="1" maxOccurs="unbounded">
 						<xs:complexType>
 							<xs:all>
 								<xs:element name="translation" type="xs:string"/>
@@ -338,7 +343,6 @@
 		</xs:element>
 	</xs:sequence>
 </xs:complexType>
-
 
 <xs:complexType name="randomSearchType">
 	<xs:sequence>

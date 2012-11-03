@@ -7,7 +7,7 @@
 		<setup>
 			<populationTemplate>
 				<seed>
-					<file path="sim.xml"/>
+					<agmlFile path="sim.xml"/>
 				</seed>
 			</populationTemplate>
 		</setup>
