@@ -39,7 +39,9 @@
 					<energyFile path="mypath" type="GAMESS"/>
 				</seed>
 			</structuresTemplate>
-			<temperature value="2000"/>
+			<temperature>
+				<kelvin value="2000"/>
+			</temperature>
 			<annealingSchedule quenchingFactor="0.9995"/>
 			<perturbations>
 				<translationVector startLength="0.25" minLength="0.05" probability="0.5" />

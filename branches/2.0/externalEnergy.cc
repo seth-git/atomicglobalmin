@@ -117,10 +117,10 @@ bool ExternalEnergy::readResultsDir(TiXmlElement *pElem, const Strings* messages
 		return false;
 	}
 	values = resultsDirUtil.getAllAttributes();
-	XsdTypeUtil::checkDirectoryOrFileName(values[0], m_sResultsDir);
-	if (!XsdTypeUtil::getPositiveInt(values[1], m_iMaxResultsFiles, resAttributeNames[1], pElem)) {
+	if (!XsdTypeUtil::checkDirectoryOrFileName(values[0], m_sResultsDir, resAttributeNames[0], pElem))
 		return false;
-	}
+	if (!XsdTypeUtil::getPositiveInt(values[1], m_iMaxResultsFiles, resAttributeNames[1], pElem))
+		return false;
 	m_sResultsFilePrefix = values[2];
 	return true;
 }

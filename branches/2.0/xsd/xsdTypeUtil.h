@@ -39,7 +39,7 @@ class XsdTypeUtil {
 		}
 		
 		static bool readDirType(TiXmlElement *pElem, std::string &resultDir, const Strings* messages);
-		static void checkDirectoryOrFileName(const char* sourceDir, std::string &newDir);
+		static bool checkDirectoryOrFileName(const char* sourceDir, std::string &newDir, const char* attributeName, TiXmlElement *pElem);
 
 		static bool getInteger(const char* value, int &result, const char* attributeName, TiXmlElement *pElem);
 		static bool getPositiveInt(const char* value, unsigned int &result, const char* attributeName, TiXmlElement *pElem);

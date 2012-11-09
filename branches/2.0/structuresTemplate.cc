@@ -128,7 +128,7 @@ bool StructuresTemplate::load(TiXmlElement *pStructuresTemplateElem, std::map<st
 	
 	if (ptElements[4] != NULL) {
 		m_bondRotationalSearchAngle = new FLOAT;
-		if (!XsdTypeUtil::readPosFloatValueElement(ptElements[4], *m_bondRotationalSearchAngle, messages->m_sxAngle.c_str()))
+		if (!XsdTypeUtil::readPosFloatValueElement(ptElements[4], *m_bondRotationalSearchAngle, messages->m_sxDegrees.c_str()))
 			return false;
 		*m_bondRotationalSearchAngle *= DEG_TO_RAD;
 	}
@@ -215,7 +215,7 @@ bool StructuresTemplate::save(TiXmlElement *pParentElem, const Strings* messages
 	if (m_bondRotationalSearchAngle != NULL) {
 		TiXmlElement* bondRotationalSearch = new TiXmlElement(messages->m_sxBondRotationalSearch.c_str());
 		structuresTemplate->LinkEndChild(bondRotationalSearch);
-		bondRotationalSearch->SetDoubleAttribute(messages->m_sxAngle.c_str(), *m_bondRotationalSearchAngle * RAD_TO_DEG);
+		bondRotationalSearch->SetDoubleAttribute(messages->m_sxDegrees.c_str(), *m_bondRotationalSearchAngle * RAD_TO_DEG);
 	}
 	
 	if (m_pSeed != NULL)

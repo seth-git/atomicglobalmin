@@ -39,8 +39,8 @@ bool XsdTypeUtil::readDirType(TiXmlElement *pElem, std::string &resultDir, const
 		return false;
 	}
 	values = dirUtil.getAllAttributes();
-	checkDirectoryOrFileName(values[0], resultDir);
-	return true;
+	
+	return checkDirectoryOrFileName(values[0], resultDir, messages->m_sxPath.c_str(), pElem);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -49,13 +49,19 @@ bool XsdTypeUtil::readDirType(TiXmlElement *pElem, std::string &resultDir, const
 //     is no trailing forward slash.
 // Parameters: sourceDir - the source directory (or file name)
 //             newDir - the destination directory (or file name)
-// Returns: nothing
-void XsdTypeUtil::checkDirectoryOrFileName(const char* sourceDir, std::string &newDir)
+// Returns: true if the directory or file name is not empty
+bool XsdTypeUtil::checkDirectoryOrFileName(const char* sourceDir, std::string &newDir, const char* attributeName, TiXmlElement *pElem)
 {
 	unsigned int sourceDirLength = strlen(sourceDir);
 	char *dir;
 	char *dirIndex;
 	int dirLength;
+	
+	if (sourceDirLength == 0) {
+		const Strings* messagesDL = Strings::instance();
+		printf(messagesDL->m_sErrorEmptyPath.c_str(), pElem->Row(), attributeName, pElem->Value());
+		return false;
+	}
 	
 	dir = new char[sourceDirLength+1];
 	strncpy(dir,sourceDir,sourceDirLength+1);
@@ -79,6 +85,8 @@ void XsdTypeUtil::checkDirectoryOrFileName(const char* sourceDir, std::string &n
 	
 	newDir = dir;
 	delete[] dir;
+	
+	return true;
 }
 
 bool XsdTypeUtil::getInteger(const char* value, int &result, const char* attributeName, TiXmlElement *pElem)

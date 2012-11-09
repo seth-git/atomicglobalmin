@@ -107,7 +107,7 @@ public:
 	std::string m_sxNumber;
 	std::string m_sxFormat;
 	std::string m_sxZ;
-	std::string m_sxAngle;
+	std::string m_sxDegrees;
 	std::string m_sxType;
 
 	std::string m_sxAgmlFile;
@@ -166,6 +166,7 @@ public:
 	std::string m_sErrorReadingAtomicNumber2;
 	std::string m_sErrorAtomicNumOverMax;
 	std::string m_sErrorAtomicNumOverMax2;
+	std::string m_sErrorEmptyPath;
 
 	std::string m_sError;
 	std::string m_sErrorOnLine;

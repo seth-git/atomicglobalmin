@@ -218,7 +218,7 @@ bool Strings::init (const char* languageCode)
 		return false;
 	if (!copy(stringMap, "xZ", m_sxZ))
 		return false;
-	if (!copy(stringMap, "xAngle", m_sxAngle))
+	if (!copy(stringMap, "xDegrees", m_sxDegrees))
 		return false;
 	if (!copy(stringMap, "xType", m_sxType))
 		return false;
@@ -328,6 +328,8 @@ bool Strings::init (const char* languageCode)
 	if (!copy(stringMap, "ErrorAtomicNumOverMax", m_sErrorAtomicNumOverMax))
 		return false;
 	if (!copy(stringMap, "ErrorAtomicNumOverMax2", m_sErrorAtomicNumOverMax2))
+		return false;
+	if (!copy(stringMap, "ErrorEmptyPath", m_sErrorEmptyPath))
 		return false;
 	
 	if (!copy(stringMap, "Error", m_sError))

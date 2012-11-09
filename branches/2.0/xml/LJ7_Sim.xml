@@ -10,9 +10,13 @@
 					<atomTemplate number="7" z="2" />
 				</structureTemplate>
 				<threeD number="32"/>
-				<seed />
+				<seed>
+					<directory path="path" type="Gaussian"/>
+				</seed>
 			</structuresTemplate>
-			<temperature acceptedPerterbations="90" decreaseAfterIteration="200"/>
+			<temperature decreaseAfterIteration="200">
+				<acceptedPerterbations percent="90"/>
+			</temperature>
 			<annealingSchedule quenchingFactor="0.9995"/>
 			<perturbations>
 				<translationVector startLength="0.3" minLength="0.01" probability="1" />

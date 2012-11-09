@@ -140,7 +140,8 @@ bool Seed::load(TiXmlElement *pSeedElem, const Strings* messages)
 				return false;
 			values = fileAttUtil.getAllAttributes();
 			
-			XsdTypeUtil::checkDirectoryOrFileName(values[0], m_agmlFilePaths[i]);
+			if (!XsdTypeUtil::checkDirectoryOrFileName(values[0], m_agmlFilePaths[i], fileAttNames[0], elements[0][i]))
+				return false;
 			
 			m_bUseAllFromAgmlFiles[i] = (messages->m_spAll.compare(values[1]) == 0); // are the two strings equal
 			
@@ -169,7 +170,8 @@ bool Seed::load(TiXmlElement *pSeedElem, const Strings* messages)
 				return false;
 			values = dirAttUtil.getAllAttributes();
 			
-			XsdTypeUtil::checkDirectoryOrFileName(values[0], m_dirPaths[i]);
+			if (!XsdTypeUtil::checkDirectoryOrFileName(values[0], m_dirPaths[i], dirAttNames[0], elements[1][i]))
+				return false;
 			
 			m_bUseAllFromDir[i] = (messages->m_spAll.compare(values[1]) == 0); // are the two strings equal
 			
@@ -196,7 +198,8 @@ bool Seed::load(TiXmlElement *pSeedElem, const Strings* messages)
 				return false;
 			values = enFileAttUtil.getAllAttributes();
 			
-			XsdTypeUtil::checkDirectoryOrFileName(values[0], m_energyFilePaths[i]);
+			if (!XsdTypeUtil::checkDirectoryOrFileName(values[0], m_energyFilePaths[i], enFileAttNames[0], elements[2][i]))
+				return false;
 			
 			if (!ExternalEnergy::getMethodEnum(enFileAttNames[1], values[1], m_energyFileTypes[i], elements[2][i], messages))
 				return false;
