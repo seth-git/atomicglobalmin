@@ -16,7 +16,7 @@ public:
 private:
 	static const unsigned int s_minOccurs[];
 	
-	PopulationTemplate m_populationTemplate;
+	StructuresTemplate m_structuresTemplate;
 };
 
 #endif

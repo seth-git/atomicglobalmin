@@ -81,7 +81,7 @@ public:
 	std::string m_sxMaster;
 	std::string m_sxOpt;
 	
-	std::string m_sxPopulationTemplate;
+	std::string m_sxStructuresTemplate;
 	std::string m_sxTemperature;
 	std::string m_sxAnnealingSchedule;
 	std::string m_sxPerturbations;

@@ -5,13 +5,13 @@
       xsi:schemaLocation= "http://sourceforge.net/projects/atomicglobalmin/ agml.xsd">
 	<simulatedAnnealing constraints="const">
 		<setup saveFrequency="10">
-			<populationTemplate constraints="const">
+			<structuresTemplate constraints="const">
 				<structureTemplate>
 					<atomTemplate number="7" z="2" />
 				</structureTemplate>
 				<threeD number="32"/>
 				<seed />
-			</populationTemplate>
+			</structuresTemplate>
 			<temperature acceptedPerterbations="90" decreaseAfterIteration="200"/>
 			<annealingSchedule quenchingFactor="0.9995"/>
 			<perturbations>

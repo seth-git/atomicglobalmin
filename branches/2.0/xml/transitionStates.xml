@@ -5,7 +5,7 @@
       xsi:schemaLocation= "http://sourceforge.net/projects/atomicglobalmin/ agml.xsd">
 	<randomSearch constraints="myConstraints">
 		<setup>
-			<populationTemplate constraints="myConstraints">
+			<structuresTemplate constraints="myConstraints">
 				<structureTemplate>
 					<moleculeTemplate>
 						6   -2.646636   -1.062747   -0.826172
@@ -33,7 +33,7 @@
 					</moleculeTemplate>
 				</structureTemplate>
 				<threeD number="32"/>
-			</populationTemplate>
+			</structuresTemplate>
 			<perturbations>
 				<translationVector startLength="0.25" minLength="0.05" probability="0.5" />
 				<rotationAngle degrees="25.0" minDegrees="3.0" probability="0.5" />

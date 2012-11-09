@@ -5,7 +5,7 @@
       xsi:schemaLocation="http://sourceforge.net/projects/atomicglobalmin/ agml.xsd">
 	<simulatedAnnealing constraints="search">
 		<setup>
-			<populationTemplate constraints="init">
+			<structuresTemplate constraints="init">
 				<structureTemplate>
 					<moleculeTemplate number="1" format="Cartesian">
 						6   -2.646636   -1.062747   -0.826172
@@ -38,7 +38,7 @@
 					<directory path="path" type="Gaussian"/>
 					<energyFile path="mypath" type="GAMESS"/>
 				</seed>
-			</populationTemplate>
+			</structuresTemplate>
 			<temperature value="2000"/>
 			<annealingSchedule quenchingFactor="0.9995"/>
 			<perturbations>

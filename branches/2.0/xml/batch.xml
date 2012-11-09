@@ -5,11 +5,11 @@
       xsi:schemaLocation= "http://sourceforge.net/projects/atomicglobalmin/ agml.xsd">
 	<batch>
 		<setup>
-			<populationTemplate>
+			<structuresTemplate>
 				<seed>
 					<agmlFile path="sim.xml"/>
 				</seed>
-			</populationTemplate>
+			</structuresTemplate>
 		</setup>
 		<energy>
 			<external method="Gaussian">

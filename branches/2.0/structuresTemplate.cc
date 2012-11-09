@@ -1,19 +1,19 @@
 
-#include "populationTemplate.h"
+#include "structuresTemplate.h"
 
-//const char* PopulationTemplate::s_attributeNames[] = {"constraints"};
-const bool    PopulationTemplate::s_attRequired[]    = {false};
-const char*   PopulationTemplate::s_attDefaults[]    = {NULL};
+//const char* StructuresTemplate::s_attributeNames[] = {"constraints"};
+const bool    StructuresTemplate::s_attRequired[]    = {false};
+const char*   StructuresTemplate::s_attDefaults[]    = {NULL};
 
 
-//const char*      PopulationTemplate::s_elementNames[] = {"structureTemplate", "linear", "planar", "threeD", "bondRotationalSearch", "seed"};
-const unsigned int PopulationTemplate::s_minOccurs[]    = {0                  , 0       , 0       , 0       , 0                     , 0     };
+//const char*      StructuresTemplate::s_elementNames[] = {"structureTemplate", "linear", "planar", "threeD", "bondRotationalSearch", "seed"};
+const unsigned int StructuresTemplate::s_minOccurs[]    = {0                  , 0       , 0       , 0       , 0                     , 0     };
 
-//const char*      PopulationTemplate::s_popTempElementNames[] = {"moleculeTemplate", "atomTemplate"};
-const unsigned int PopulationTemplate::s_popTempMinOccurs[]    = {0                 , 0             };
-const unsigned int PopulationTemplate::s_popTempMaxOccurs[]    = {XSD_UNLIMITED     , XSD_UNLIMITED };
+//const char*      StructuresTemplate::s_popTempElementNames[] = {"moleculeTemplate", "atomTemplate"};
+const unsigned int StructuresTemplate::s_popTempMinOccurs[]    = {0                 , 0             };
+const unsigned int StructuresTemplate::s_popTempMaxOccurs[]    = {XSD_UNLIMITED     , XSD_UNLIMITED };
 
-PopulationTemplate::PopulationTemplate()
+StructuresTemplate::StructuresTemplate()
 {
 	m_iAtomGroupTemplates = 0;
 	m_atomGroupTemplates = NULL;
@@ -31,12 +31,12 @@ PopulationTemplate::PopulationTemplate()
 	m_pSeed = NULL;
 }
 
-PopulationTemplate::~PopulationTemplate()
+StructuresTemplate::~StructuresTemplate()
 {
 	cleanUp();
 }
 
-void PopulationTemplate::cleanUp()
+void StructuresTemplate::cleanUp()
 {
 	m_iAtomGroupTemplates = 0;
 	if (m_atomGroupTemplates != NULL) {
@@ -63,15 +63,15 @@ void PopulationTemplate::cleanUp()
 	}
 }
 
-bool PopulationTemplate::load(TiXmlElement *pPopulationTemplateElem, std::map<std::string,Constraints*> &constraintsMap, const Strings* messages)
+bool StructuresTemplate::load(TiXmlElement *pStructuresTemplateElem, std::map<std::string,Constraints*> &constraintsMap, const Strings* messages)
 {
 	cleanUp();
 	
 	unsigned int i;
 	const char** values;
 	const char* attributeNames[]  = {messages->m_sxConstraints.c_str()};
-	XsdAttributeUtil attUtil(pPopulationTemplateElem->Value(), attributeNames, s_attRequired, s_attDefaults);
-	if (!attUtil.process(pPopulationTemplateElem)) {
+	XsdAttributeUtil attUtil(pStructuresTemplateElem->Value(), attributeNames, s_attRequired, s_attDefaults);
+	if (!attUtil.process(pStructuresTemplateElem)) {
 		return false;
 	}
 	values = attUtil.getAllAttributes();
@@ -79,15 +79,15 @@ bool PopulationTemplate::load(TiXmlElement *pPopulationTemplateElem, std::map<st
 		m_pConstraints = constraintsMap[values[0]];
 		if (m_pConstraints == NULL) {
 			const Strings* messagesDL = Strings::instance();
-			printf(messagesDL->m_sConstraintNameMisMatch.c_str(), pPopulationTemplateElem->Row(), messages->m_sxConstraints.c_str(), values[0]);
+			printf(messagesDL->m_sConstraintNameMisMatch.c_str(), pStructuresTemplateElem->Row(), messages->m_sxConstraints.c_str(), values[0]);
 			return false;
 		}
 	}
 	
 	const char* elementNames[] = {messages->m_sxStructureTemplate.c_str(), messages->m_sxLinear.c_str(), messages->m_sxPlanar.c_str(), messages->m_sxThreeD.c_str(), messages->m_sxBondRotationalSearch.c_str(), messages->m_sxSeed.c_str()};
-	XsdElementUtil ptUtil(pPopulationTemplateElem->Value(), XSD_ALL, elementNames, s_minOccurs);
+	XsdElementUtil ptUtil(pStructuresTemplateElem->Value(), XSD_ALL, elementNames, s_minOccurs);
 	TiXmlHandle hRoot(0);
-	hRoot=TiXmlHandle(pPopulationTemplateElem);
+	hRoot=TiXmlHandle(pStructuresTemplateElem);
 	if (!ptUtil.process(hRoot))
 		return false;
 	TiXmlElement** ptElements = ptUtil.getAllElements();
@@ -142,11 +142,11 @@ bool PopulationTemplate::load(TiXmlElement *pPopulationTemplateElem, std::map<st
 	return true;
 }
 
-//const char* PopulationTemplate::s_initTypeAttNames[]    = {"number", "constraints"};
-const bool    PopulationTemplate::s_initTypeAttRequired[] = {true    , false};
-const char*   PopulationTemplate::s_initTypeAttDefaults[] = {NULL    , NULL};
+//const char* StructuresTemplate::s_initTypeAttNames[]    = {"number", "constraints"};
+const bool    StructuresTemplate::s_initTypeAttRequired[] = {true    , false};
+const char*   StructuresTemplate::s_initTypeAttDefaults[] = {NULL    , NULL};
 
-bool PopulationTemplate::readInitializationType(TiXmlElement *pElem, std::map<std::string,Constraints*> &constraintsMap, unsigned int &numberOfThisType, Constraints** pConstraints, const Strings* messages) {
+bool StructuresTemplate::readInitializationType(TiXmlElement *pElem, std::map<std::string,Constraints*> &constraintsMap, unsigned int &numberOfThisType, Constraints** pConstraints, const Strings* messages) {
 	const char** values;
 	const char* attributeNames[] = {messages->m_sxNumber.c_str(), messages->m_sxConstraints.c_str()};
 	XsdAttributeUtil attUtil(pElem->Value(), attributeNames, s_initTypeAttRequired, s_initTypeAttDefaults);
@@ -170,18 +170,18 @@ bool PopulationTemplate::readInitializationType(TiXmlElement *pElem, std::map<st
 	return true;
 }
 
-bool PopulationTemplate::save(TiXmlElement *pParentElem, const Strings* messages)
+bool StructuresTemplate::save(TiXmlElement *pParentElem, const Strings* messages)
 {
 	unsigned int i;
-	TiXmlElement* populationTemplate = new TiXmlElement(messages->m_sxPopulationTemplate.c_str());
-	pParentElem->LinkEndChild(populationTemplate);
+	TiXmlElement* structuresTemplate = new TiXmlElement(messages->m_sxStructuresTemplate.c_str());
+	pParentElem->LinkEndChild(structuresTemplate);
 	
 	if (m_pConstraints != NULL)
-		populationTemplate->SetAttribute(messages->m_sxConstraints.c_str(), m_pConstraints->m_sName.c_str());
+		structuresTemplate->SetAttribute(messages->m_sxConstraints.c_str(), m_pConstraints->m_sName.c_str());
 	
 	if (m_iAtomGroupTemplates > 0) {
 		TiXmlElement* structureTemplate = new TiXmlElement(messages->m_sxStructureTemplate.c_str());
-		populationTemplate->LinkEndChild(structureTemplate);
+		structuresTemplate->LinkEndChild(structureTemplate);
 		
 		for (i = 0; i < m_iAtomGroupTemplates; ++i)
 			if (!m_atomGroupTemplates[i].save(structureTemplate, messages))
@@ -190,7 +190,7 @@ bool PopulationTemplate::save(TiXmlElement *pParentElem, const Strings* messages
 	
 	if (m_iLinear > 0) {
 		TiXmlElement* linear = new TiXmlElement(messages->m_sxLinear.c_str());
-		populationTemplate->LinkEndChild(linear);
+		structuresTemplate->LinkEndChild(linear);
 		linear->SetAttribute(messages->m_sxNumber.c_str(), m_iLinear);
 		if (m_pLinearConstraints != NULL)
 			linear->SetAttribute(messages->m_sxConstraints.c_str(), m_pLinearConstraints->m_sName.c_str());
@@ -198,7 +198,7 @@ bool PopulationTemplate::save(TiXmlElement *pParentElem, const Strings* messages
 	
 	if (m_iPlanar > 0) {
 		TiXmlElement* linear = new TiXmlElement(messages->m_sxPlanar.c_str());
-		populationTemplate->LinkEndChild(linear);
+		structuresTemplate->LinkEndChild(linear);
 		linear->SetAttribute(messages->m_sxNumber.c_str(), m_iPlanar);
 		if (m_pPlanarConstraints != NULL)
 			linear->SetAttribute(messages->m_sxConstraints.c_str(), m_pPlanarConstraints->m_sName.c_str());
@@ -206,7 +206,7 @@ bool PopulationTemplate::save(TiXmlElement *pParentElem, const Strings* messages
 	
 	if (m_i3D > 0) {
 		TiXmlElement* linear = new TiXmlElement(messages->m_sxThreeD.c_str());
-		populationTemplate->LinkEndChild(linear);
+		structuresTemplate->LinkEndChild(linear);
 		linear->SetAttribute(messages->m_sxNumber.c_str(), m_i3D);
 		if (m_p3DConstraints != NULL)
 			linear->SetAttribute(messages->m_sxConstraints.c_str(), m_p3DConstraints->m_sName.c_str());
@@ -214,12 +214,12 @@ bool PopulationTemplate::save(TiXmlElement *pParentElem, const Strings* messages
 	
 	if (m_bondRotationalSearchAngle != NULL) {
 		TiXmlElement* bondRotationalSearch = new TiXmlElement(messages->m_sxBondRotationalSearch.c_str());
-		populationTemplate->LinkEndChild(bondRotationalSearch);
+		structuresTemplate->LinkEndChild(bondRotationalSearch);
 		bondRotationalSearch->SetDoubleAttribute(messages->m_sxAngle.c_str(), *m_bondRotationalSearchAngle * RAD_TO_DEG);
 	}
 	
 	if (m_pSeed != NULL)
-		if (!m_pSeed->save(populationTemplate, messages))
+		if (!m_pSeed->save(structuresTemplate, messages))
 			return false;
 	
 	return true;

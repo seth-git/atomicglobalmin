@@ -169,7 +169,7 @@ bool Strings::init (const char* languageCode)
 	if (!copy(stringMap, "xOpt", m_sxOpt))
 		return false;
 	
-	if (!copy(stringMap, "xPopulationTemplate", m_sxPopulationTemplate))
+	if (!copy(stringMap, "xStructuresTemplate", m_sxStructuresTemplate))
 		return false;
 	if (!copy(stringMap, "xTemperature", m_sxTemperature))
 		return false;

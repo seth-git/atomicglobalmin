@@ -122,7 +122,7 @@
 
 <xs:complexType name="resultsType">
 	<xs:all>
-		<xs:element name="population" type="populationType" minOccurs="0"/>
+		<xs:element name="structures" type="structuresType" minOccurs="0"/>
 		<xs:element name="history" minOccurs="0">
 			<xs:complexType>
 				<xs:simpleContent>
@@ -139,21 +139,31 @@
 
 <xs:complexType name="simulatedAnnealingSetupType">
 	<xs:all>
-		<xs:element name="populationTemplate" type="populationTemplateType"/>
-		<xs:element name="temperature">
+		<xs:element name="structuresTemplate" type="structuresTemplateType"/>
+		<xs:element name="temperature" minOccurs="0">
 			<xs:complexType>
-				<xs:attribute name="value" type="positiveDecimal"/>
-				<xs:attribute name="acceptedPerterbations" type="percentage"/>
+				<xs:choice>
+					<xs:element name="kelvin">
+						<xs:complexType>
+							<xs:attribute name="value" type="positiveDecimal" use="required"/>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="acceptedPerterbations">
+						<xs:complexType>
+							<xs:attribute name="value" type="percentage" default="90"/>
+						</xs:complexType>
+					</xs:element>
+				</xs:choice>
 				<xs:attribute name="decreaseAfterIteration" type="positiveInteger" default="1"/>
 			</xs:complexType>
 		</xs:element>
-		<xs:element name="annealingSchedule">
+		<xs:element name="annealingSchedule" minOccurs="0">
 			<xs:complexType>
 				<xs:attribute name="quenchingFactor" type="positiveDecimal" use="required"/>
 			</xs:complexType>
 		</xs:element>
-		<xs:element name="perturbations" type="simulatedAnnealingPerturbationsType"/>
-		<xs:element name="stop">
+		<xs:element name="perturbations" type="simulatedAnnealingPerturbationsType" minOccurs="0"/>
+		<xs:element name="stop" minOccurs="0">
 			<xs:complexType>
 				<xs:attribute name="maxTemperature" type="positiveDecimal"/>
 				<xs:attribute name="maxAcceptedPerturbations" type="percentage"/>
@@ -162,6 +172,7 @@
 		</xs:element>
 	</xs:all>
 	<xs:attribute name="saveFrequency" type="positiveInteger" default="1"/>
+	<xs:attribute name="acceptedPertHistIt" type="positiveInteger" default="200"/>
 </xs:complexType>
 
 <xs:complexType name="simulatedAnnealingPerturbationsType">
@@ -182,7 +193,6 @@
 		</xs:element>
 	</xs:all>
 	<xs:attribute name="numberPerIteration" type="positiveInteger" default="1"/>
-	<xs:attribute name="historyIterations" type="positiveInteger" default="200"/>
 </xs:complexType>
 
 <xs:complexType name="simulatedAnnealingResumeType">
@@ -205,11 +215,6 @@
 		<xs:element name="perterbationsPerIteration">
 			<xs:complexType>
 				<xs:attribute name="value" type="positiveDecimal" use="required"/>
-			</xs:complexType>
-		</xs:element>
-		<xs:element name="acceptedPerturbationIterations">
-			<xs:complexType>
-				<xs:attribute name="value" type="positiveInteger" default="200"/>
 			</xs:complexType>
 		</xs:element>
 		<xs:element name="acceptedPerturbationHistory">
@@ -241,11 +246,11 @@
 				<xs:attribute name="value" type="xs:boolean" use="required"/>
 			</xs:complexType>
 		</xs:element>
-		<xs:element name="population" type="populationType"/>
+		<xs:element name="structures" type="structuresType"/>
 	</xs:all>
 </xs:complexType>
 
-<xs:complexType name="populationTemplateType">
+<xs:complexType name="structuresTemplateType">
 	<xs:all>
 		<xs:element name="structureTemplate" type="structureTemplateType" minOccurs="0"/>
 		<xs:element name="linear" type="initializationType" minOccurs="0"/>
@@ -280,7 +285,7 @@
 </xs:complexType>
 <xs:simpleType name="seedFileSourceType">
 	<xs:restriction base="xs:string">
-		<xs:enumeration value="population"/>
+		<xs:enumeration value="structures"/>
 		<xs:enumeration value="results"/>
 	</xs:restriction>
 </xs:simpleType>
@@ -315,26 +320,37 @@
 	</xs:sequence>
 </xs:complexType>
 
-<xs:complexType name="populationType">
+<xs:complexType name="structuresType">
 	<xs:sequence>
-		<xs:element name="structure" minOccurs="0" maxOccurs="unbounded">
+		<xs:element name="structure" minOccurs="1" maxOccurs="unbounded">
 			<xs:complexType>
 				<xs:sequence>
 					<xs:element name="atomGroup" minOccurs="1" maxOccurs="unbounded">
 						<xs:complexType>
-							<xs:all>
-								<xs:element name="translation" type="xs:string"/>
-								<xs:element name="rotation" type="xs:string"/>
-								<xs:element name="atoms">
+							<xs:sequence>
+								<xs:element name="translation" minOccurs="1" maxOccurs="1">
 									<xs:complexType>
-										<xs:simpleContent>
-											<xs:extension base="xs:string">
-												<xs:attribute name="format" type="coordinateType" default="Cartesian"/>
-											</xs:extension>
-										</xs:simpleContent>
+										<xs:attribute name="x" type="xs:decimal" use="required"/>
+										<xs:attribute name="y" type="xs:decimal" use="required"/>
+										<xs:attribute name="z" type="xs:decimal" use="required"/>
 									</xs:complexType>
 								</xs:element>
-							</xs:all>
+								<xs:element name="radianAngles" minOccurs="0" maxOccurs="1">
+									<xs:complexType>
+										<xs:attribute name="x" type="nonNegativeDecimal" use="required"/>
+										<xs:attribute name="y" type="nonNegativeDecimal" use="required"/>
+										<xs:attribute name="z" type="nonNegativeDecimal" use="required"/>
+									</xs:complexType>
+								</xs:element>
+								<xs:element name="atom" minOccurs="1" maxOccurs="unbounded">
+									<xs:complexType>
+										<xs:attribute name="Z" type="positiveInteger" use="required"/>
+										<xs:attribute name="x" type="xs:decimal" default="0"/>
+										<xs:attribute name="y" type="xs:decimal" default="0"/>
+										<xs:attribute name="z" type="xs:decimal" default="0"/>
+									</xs:complexType>
+								</xs:element>
+							</xs:sequence>
 						</xs:complexType>
 					</xs:element>
 				</xs:sequence>
@@ -357,7 +373,7 @@
 </xs:complexType>
 <xs:complexType name="randomSearchSetupType">
 	<xs:all>
-		<xs:element name="populationTemplate" type="populationTemplateType"/>
+		<xs:element name="structuresTemplate" type="structuresTemplateType"/>
 		<xs:element name="perturbations" type="simulatedAnnealingPerturbationsType"/>
 		<xs:element name="stop">
 			<xs:complexType>
@@ -389,7 +405,7 @@
 				<xs:attribute name="value" type="xs:boolean" use="required"/>
 			</xs:complexType>
 		</xs:element>
-		<xs:element name="population" type="populationType"/>
+		<xs:element name="structures" type="structuresType"/>
 	</xs:all>
 </xs:complexType>
 
@@ -406,7 +422,7 @@
 </xs:complexType>
 <xs:complexType name="psoSetupType">
 	<xs:all>
-		<xs:element name="populationTemplate" type="populationTemplateType"/>
+		<xs:element name="structuresTemplate" type="structuresTemplateType"/>
 		<xs:element name="velocities">
 			<xs:complexType>
 				<xs:all>
@@ -518,8 +534,8 @@
 				<xs:attribute name="value" type="xs:boolean" use="required"/>
 			</xs:complexType>
 		</xs:element>
-		<xs:element name="population" type="populationType"/>
-		<xs:element name="individualBest" type="populationType"/>
+		<xs:element name="structures" type="structuresType"/>
+		<xs:element name="individualBest" type="structuresType"/>
 	</xs:all>
 </xs:complexType>
 
@@ -535,7 +551,7 @@
 </xs:complexType>
 <xs:complexType name="gaSetupType">
 	<xs:all>
-		<xs:element name="populationTemplate" type="populationTemplateType"/>
+		<xs:element name="structuresTemplate" type="structuresTemplateType"/>
 		<xs:element name="mateSelection">
 			<xs:complexType>
 				<xs:attribute name="method" type="mateSelectionType" use="required"/>
@@ -597,7 +613,7 @@
 				<xs:attribute name="value" type="xs:boolean" use="required"/>
 			</xs:complexType>
 		</xs:element>
-		<xs:element name="population" type="populationType"/>
+		<xs:element name="structures" type="structuresType"/>
 	</xs:all>
 </xs:complexType>
 
@@ -607,7 +623,7 @@
 		<xs:element name="setup">
 			<xs:complexType>
 				<xs:all>
-					<xs:element name="populationTemplate" type="populationTemplateType"/>
+					<xs:element name="structuresTemplate" type="structuresTemplateType"/>
 				</xs:all>
 			</xs:complexType>
 		</xs:element>
@@ -626,7 +642,7 @@
 							<xs:attribute name="value" type="nonNegativeInteger" use="required"/>
 						</xs:complexType>
 					</xs:element>
-					<xs:element name="population" type="populationType"/>
+					<xs:element name="structures" type="structuresType"/>
 				</xs:all>
 			</xs:complexType>
 		</xs:element>

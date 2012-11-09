@@ -6,12 +6,12 @@ SimulatedAnnealing::SimulatedAnnealing(Input* input) : Action(input)
 {
 }
 
-//const char*      SimulatedAnnealing::s_elementNames[] = {"populationTemplate", "temperature", "annealingSchedule", "perturbations", "stop"};
+//const char*      SimulatedAnnealing::s_elementNames[] = {"structuresTemplate", "temperature", "annealingSchedule", "perturbations", "stop"};
 const unsigned int SimulatedAnnealing::s_minOccurs[]    = {1                   , 1            , 1                  , 1              , 1     };
 
 bool SimulatedAnnealing::loadSetup(TiXmlElement *pSetupElem, const Strings* messages)
 {
-	const char* elementNames[] = {messages->m_sxPopulationTemplate.c_str(), messages->m_sxTemperature.c_str(), messages->m_sxAnnealingSchedule.c_str(), messages->m_sxPerturbations.c_str(), messages->m_sxStop.c_str()};
+	const char* elementNames[] = {messages->m_sxStructuresTemplate.c_str(), messages->m_sxTemperature.c_str(), messages->m_sxAnnealingSchedule.c_str(), messages->m_sxPerturbations.c_str(), messages->m_sxStop.c_str()};
 	XsdElementUtil setupUtil(pSetupElem->Value(), XSD_ALL, elementNames, s_minOccurs);
 	TiXmlHandle hRoot(0);
 	hRoot=TiXmlHandle(pSetupElem);
@@ -19,7 +19,7 @@ bool SimulatedAnnealing::loadSetup(TiXmlElement *pSetupElem, const Strings* mess
 		return false;
 	TiXmlElement** setupElements = setupUtil.getAllElements();
 	
-	if (!m_populationTemplate.load(setupElements[0], m_constraintsMap, messages))
+	if (!m_structuresTemplate.load(setupElements[0], m_constraintsMap, messages))
 		return false;
 	
 	return true;
@@ -30,7 +30,7 @@ bool SimulatedAnnealing::saveSetup(TiXmlElement *pSimElem, const Strings* messag
 	TiXmlElement* setup = new TiXmlElement(messages->m_sxSetup.c_str());
 	pSimElem->LinkEndChild(setup);
 	
-	m_populationTemplate.save(setup, messages);
+	m_structuresTemplate.save(setup, messages);
 	
 	return true;
 }

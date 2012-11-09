@@ -1,12 +1,12 @@
 
-#ifndef __POPULATION_TEMPLATE_H_
-#define __POPULATION_TEMPLATE_H_
+#ifndef __STRUCTURES_TEMPLATE_H_
+#define __STRUCTURES_TEMPLATE_H_
 
 #include "atomGroupTemplate.h"
 #include "constraints.h"
 #include "seed.h"
 
-class PopulationTemplate {
+class StructuresTemplate {
 public:
 	unsigned int m_iAtomGroupTemplates; // size of m_atomGroupTemplates (will be zero if there are none)
 	AtomGroupTemplate* m_atomGroupTemplates;
@@ -24,9 +24,9 @@ public:
 	
 	Seed* m_pSeed;
 	
-	PopulationTemplate();
-	~PopulationTemplate();
-	bool load(TiXmlElement *pPopulationTemplateElem, std::map<std::string,Constraints*> &constraintsMap, const Strings* messages);
+	StructuresTemplate();
+	~StructuresTemplate();
+	bool load(TiXmlElement *pStructuresTemplateElem, std::map<std::string,Constraints*> &constraintsMap, const Strings* messages);
 	bool save(TiXmlElement *pParentElem, const Strings* messages);
 
 private:
