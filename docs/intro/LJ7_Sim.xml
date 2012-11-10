@@ -3,34 +3,24 @@
       xmlns="http://sourceforge.net/projects/atomicglobalmin/"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation= "http://sourceforge.net/projects/atomicglobalmin/ agml.xsd">
-	<action>
-		<simulatedAnnealing constraints="myConstraints" nonFragmentedSearch="true">
-			<setup saveFrequency="10">
-				<populationTemplate constraints="myConstraints">
-					<moleculeSetTemplate>
-						<moleculeTemplate number="7">
-2 0.0 0.0 0.0
-						</moleculeTemplate>
-					</moleculeSetTemplate>
-					<nonFragmented number="32"/>
-				</populationTemplate>
-				<temperature acceptedPerterbations="90" decreaseAfterIteration="200"/>
-				<annealingSchedule quenchingFactor="0.9995"/>
-				<perturbations>
-					<translationVector startLength="0.3" minLength="0.01" probability="1" />
-				</perturbations>
-				<stop minIterations="20000" maxTemperature="400" maxAcceptedPerturbations="10" />
-			</setup>
-		</simulatedAnnealing>
-	</action>
-	<constraints name="myConstraints">
-		<cube size="5.5"/>
-		<atomicDistances>
-			<min value="1.0" />
-			<max value="1.5" />
-		</atomicDistances>
-	</constraints>
-	<energy>
-		<internal method="Lennard Jones"/>
-	</energy>
+	<simulatedAnnealing constraints="myConstraints">
+		<setup saveFrequency="10">
+			<structuresTemplate constraints="myConstraints">
+				<structureTemplate>
+					<atomTemplate number="7" z="2" />
+				</structureTemplate>
+				<threeD number="32"/>
+			</structuresTemplate>
+		</setup>
+		<constraints name="myConstraints">
+			<cube size="5.5"/>
+			<atomicDistances>
+				<min value="1.0" />
+				<max value="1.5" />
+			</atomicDistances>
+		</constraints>
+		<energy>
+			<internal method="Lennard Jones"/>
+		</energy>
+	</simulatedAnnealing>
 </agml>
