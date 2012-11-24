@@ -62,7 +62,7 @@ sub addElementReader {
 	print "Please enter the child element names with commas in between: ";
 	my $names = <>;
 	chomp($names);
-	my @names = split(/,/, $names);
+	my @names = split(/,/, $names,-1);
 	trim(@names);
 	
 	my $parElemVar = 'p'.ucfirst($parentElem).'Elem';
@@ -179,7 +179,7 @@ sub addAttributeReader {
 	print "Please enter the attribute names with commas in between: ";
 	my $names = <>;
 	chomp($names);
-	my @names = split(/,/, $names);
+	my @names = split(/,/, $names,-1);
 	trim(@names);
 	
 	print "Please enter the required status of each attribute.  Enter true if required and false otherwise.  Seperate values with commas: ";
@@ -189,7 +189,7 @@ sub addAttributeReader {
 	print "Please enter the default value of each attribute.  Seperate values with commas, using blank values when there is no default: ";
 	my $defaults = <>;
 	chomp($defaults);
-	my @defaults = split(/,/, $defaults);
+	my @defaults = split(/,/, $defaults,-1);
 	trim(@defaults);
 	
 	my $parElemVar = 'p'.ucfirst($parentElem).'Elem';
@@ -240,13 +240,14 @@ sub addAttributeReader {
 	
 	$text = "\tconst char* ".$parentElem."AttNames[] = {@nameStrs};\n";
 	if (@phraseStrings > 0) {
+		$defalutArrayNm = "$parentElem"."AttDef";
 		$text .= "\tconst char* ".$defalutArrayNm."[] = {@defaultStrs};\n";
 	}
 	$text .= "\tXsdAttributeUtil ".$parentElem."AttUtil($parElemVar->Value(), ".$parentElem."AttNames, s_".$parentElem."AttReq, $defalutArrayNm);\n".
 	         "\tif (!".$parentElem."AttUtil.process($parElemVar)) {\n".
 	         "\t\treturn false;\n".
 	         "\t}\n".
-	         "\tconst char** ".$parentElem."AttValues = attUtil.getAllAttributes();\n\n";
+	         "\tconst char** ".$parentElem."AttValues = ".$parentElem."AttUtil.getAllAttributes();\n\n";
 	$pattern = '(bool \w+::load\w*\s*\([^\)]+\)\s*{\n)';
 	$replacement = '\1'.$text;
 	push(@{$operations{$ccFile}}, [$pattern, $replacement, 0]);
