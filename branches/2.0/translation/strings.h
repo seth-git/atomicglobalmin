@@ -39,8 +39,6 @@ public:
 	static const std::string trim(const std::string& pString);
 	static const std::string trim(const char* pCharArr);
 
-	std::string m_sLanguageCode;
-
 	std::string m_sxSimulatedAnnealing;
 	std::string m_sxRandomSearch;
 	std::string m_sxParticleSwarmOptimization;
@@ -117,7 +115,7 @@ public:
 	
 	std::string m_sxSource;
 	std::string m_sxPopulation;
-	
+
 	std::string m_spADF;
 	std::string m_spGAMESS;
 	std::string m_spGAMESSUK;
@@ -132,6 +130,8 @@ public:
 	std::string m_spLennardJones;
 	std::string m_spCartesian;
 	std::string m_spAll;
+
+	std::string m_sLanguageCode;
 
 	std::string m_sReadingFile;
 	std::string m_sWritingFile;
@@ -184,7 +184,7 @@ public:
 	
 	std::string m_sErrorEmptyMoleculeTemplate;
 	std::string m_sMissingChildElements3;
-	
+
 private:
 	static std::map<std::string,Strings> s_instances;
 
@@ -194,4 +194,3 @@ private:
 };
 
 #endif
-
