@@ -152,6 +152,21 @@ bool XsdTypeUtil::getPositiveFloat(const char* value, FLOAT &result, const char*
 	return true;
 }
 
+bool XsdTypeUtil::getNonNegativeFloat(const char* value, FLOAT &result, const char* attributeName, TiXmlElement *pElem)
+{
+	if (sscanf(value, "%lf", &result) != 1) {
+		const Strings* messagesDL = Strings::instance();
+		printf(messagesDL->m_sUnableToReadFloat.c_str(), value, attributeName, pElem->Value(), pElem->Row());
+		return false;
+	}
+	if (result < 0) {
+		const Strings* messagesDL = Strings::instance();
+		printf(messagesDL->m_sNegativeNotAllowed.c_str(), value, attributeName, pElem->Value(), pElem->Row());
+		return false;
+	}
+	return true;
+}
+
 bool XsdTypeUtil::readStrValueElement(TiXmlElement *pElem, std::string &result, const Strings* messages) {
 	return readStrValueElement(pElem, result, messages->m_sxValue.c_str());
 }
@@ -185,10 +200,19 @@ bool XsdTypeUtil::readIntValueElement(TiXmlElement *pElem, int &result, const St
 }
 
 bool XsdTypeUtil::readPosIntValueElement(TiXmlElement *pElem, unsigned int &result, const Strings* messages) {
-	const char* valueAttNames[] = {messages->m_sxValue.c_str()};
+	return readPosIntValueElement(pElem, result, messages->m_sxValue.c_str());
+}
+
+bool XsdTypeUtil::readPosIntValueElement(TiXmlElement *pElem, unsigned int &result, const char* attributeName) {
+	return readPosIntValueElement(pElem, result, attributeName, NULL);
+}
+
+bool XsdTypeUtil::readPosIntValueElement(TiXmlElement *pElem, unsigned int &result, const char* attributeName, const char* defaultValue) {
+	const char* valueAttNames[] = {attributeName};
+	const char* valueAttDef[]   = {defaultValue};
 	const char** values;
 
-	XsdAttributeUtil valueUtil(pElem->Value(), valueAttNames, s_valueAttReq, s_valueAttDef);
+	XsdAttributeUtil valueUtil(pElem->Value(), valueAttNames, s_valueAttReq, valueAttDef);
 	if (!valueUtil.process(pElem)) {
 		return false;
 	}
@@ -262,3 +286,18 @@ bool XsdTypeUtil::getAtomicNumber(const char* numberOrSymbol, unsigned int &iAto
 	return getAtomicNumber(numberOrSymbol, iAtomicNumber, line, NULL, NULL);
 }
 
+bool XsdTypeUtil::inRange(FLOAT number, FLOAT lo, FLOAT hi, TiXmlElement *pElem, const Strings* messages) {
+	return inRange(number, lo, hi, pElem, messages->m_sxValue.c_str());
+}
+
+bool XsdTypeUtil::inRange(FLOAT number, FLOAT lo, FLOAT hi, TiXmlElement *pElem, const char* attName) {
+	if (number < lo || number > hi) {
+		const Strings* messagesDL = Strings::instance();
+		char loStr[100], hiStr[100];
+		doubleToString(lo, loStr);
+		doubleToString(hi, hiStr);
+		printf(messagesDL->m_sRangeError.c_str(), pElem->Row(), attName, pElem->Value(), loStr, hiStr);
+		return false;
+	}
+	return true;
+}

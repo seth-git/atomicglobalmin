@@ -130,6 +130,8 @@ bool StructuresTemplate::load(TiXmlElement *pStructuresTemplateElem, std::map<st
 		m_bondRotationalSearchAngle = new FLOAT;
 		if (!XsdTypeUtil::readPosFloatValueElement(ptElements[4], *m_bondRotationalSearchAngle, messages->m_sxDegrees.c_str()))
 			return false;
+		if (!XsdTypeUtil::inRange(*m_bondRotationalSearchAngle, 0, 360, ptElements[4], messages->m_sxDegrees.c_str()))
+			return false;
 		*m_bondRotationalSearchAngle *= DEG_TO_RAD;
 	}
 	

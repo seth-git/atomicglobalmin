@@ -93,8 +93,14 @@ bool Action::load(TiXmlElement *pActionElem, const Strings* messages)
 		}
 	}
 	
-	if (actionElements[3].size() > 0 && !loadResume(actionElements[3][0], messages))
-		return false;
+	if (actionElements[3].size() > 0) {
+		for (i = 0; i < actionElements[3].size(); ++i)
+			if (!loadResume(actionElements[3][i], messages))
+				return false;
+	} else {
+		if (!loadResume(NULL, messages))
+			return false;
+	}
 	
 	// Todo: load the results
 	

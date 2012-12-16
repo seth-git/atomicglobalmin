@@ -40,6 +40,8 @@ class Constraints {
 		
 		void copy(Constraints &other);
 		
+		FLOAT getSmallestMinDistance(); // Returns 0 if there are no specific minimum distances
+
 	private:
 		std::map<unsigned int, std::map<unsigned int,FLOAT> > m_mapMinAtomicDistances; // 2D map (similar to m_rgMinAtomicDistances, except this is used for faster writing of the constraints to a file)
 		

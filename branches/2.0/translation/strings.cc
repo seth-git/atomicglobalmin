@@ -180,11 +180,7 @@ bool Strings::init (const char* languageCode)
 	if (!copy(stringMap, "xStop", m_sxStop))
 		return false;
 
-	if (!copy(stringMap, "xAcceptedPerterbations", m_sxAcceptedPerterbations))
-		return false;
 	if (!copy(stringMap, "xDecreaseAfterIteration", m_sxDecreaseAfterIteration))
-		return false;
-	if (!copy(stringMap, "xQuenchingFactor", m_sxQuenchingFactor))
 		return false;
 	if (!copy(stringMap, "xMaxTemperature", m_sxMaxTemperature))
 		return false;
@@ -237,6 +233,38 @@ bool Strings::init (const char* languageCode)
 	if (!copy(stringMap, "xPopulation", m_sxPopulation))
 		return false;
 	
+	if (!copy(stringMap, "xKelvin", m_sxKelvin))
+		return false;
+	if (!copy(stringMap, "xAcceptedPerturbations", m_sxAcceptedPerturbations))
+		return false;
+	if (!copy(stringMap, "xPercent", m_sxPercent))
+		return false;
+
+	if (!copy(stringMap, "xBoltzmannConstant", m_sxBoltzmannConstant))
+		return false;
+	if (!copy(stringMap, "xQuenchingFactor", m_sxQuenchingFactor))
+		return false;
+
+	if (!copy(stringMap, "xTranslationVector", m_sxTranslationVector))
+		return false;
+	if (!copy(stringMap, "xRotationAngle", m_sxRotationAngle))
+		return false;
+	if (!copy(stringMap, "xStartLength", m_sxStartLength))
+		return false;
+	if (!copy(stringMap, "xMinLength", m_sxMinLength))
+		return false;
+	if (!copy(stringMap, "xProbability", m_sxProbability))
+		return false;
+	if (!copy(stringMap, "xStartDegrees", m_sxStartDegrees))
+		return false;
+	if (!copy(stringMap, "xMinDegrees", m_sxMinDegrees))
+		return false;
+	if (!copy(stringMap, "xNumberPerIteration", m_sxNumberPerIteration))
+		return false;
+
+	if (!copy(stringMap, "xAcceptedPertHistIt", m_sxAcceptedPertHistIt))
+		return false;
+
 	if (!copy(stringMap, "pADF", m_spADF))
 		return false;
 	if (!copy(stringMap, "pGAMESS", m_spGAMESS))
@@ -265,7 +293,7 @@ bool Strings::init (const char* languageCode)
 		return false;
 	if (!copy(stringMap, "pAll", m_spAll))
 		return false;
-	
+
 	if (!copy(stringMap, "ReadingFile", m_sReadingFile))
 		return false;
 	if (!copy(stringMap, "WritingFile", m_sWritingFile))
@@ -315,6 +343,8 @@ bool Strings::init (const char* languageCode)
 		return false;
 	if (!copy(stringMap, "ZeroNotAllowed", m_sZeroNotAllowed))
 		return false;
+	if (!copy(stringMap, "UnableToReadFloat", m_sUnableToReadFloat))
+		return false;
 	if (!copy(stringMap, "UnableToReadPositiveFloat", m_sUnableToReadPositiveFloat))
 		return false;
 	if (!copy(stringMap, "NegativeNotAllowed", m_sNegativeNotAllowed))
@@ -330,6 +360,8 @@ bool Strings::init (const char* languageCode)
 	if (!copy(stringMap, "ErrorAtomicNumOverMax2", m_sErrorAtomicNumOverMax2))
 		return false;
 	if (!copy(stringMap, "ErrorEmptyPath", m_sErrorEmptyPath))
+		return false;
+	if (!copy(stringMap, "RangeError", m_sRangeError))
 		return false;
 	
 	if (!copy(stringMap, "Error", m_sError))
@@ -361,7 +393,10 @@ bool Strings::init (const char* languageCode)
 	
 	if (!copy(stringMap, "MissingChildElements3", m_sMissingChildElements3))
 		return false;
-	
+
+	if (!copy(stringMap, "ProbabilityMustTotalOne", m_sProbabilityMustTotalOne))
+		return false;
+
 	m_bLoaded = true;
 	return true;
 }

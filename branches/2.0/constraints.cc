@@ -247,3 +247,19 @@ void Constraints::copy(Constraints &other) {
 				m_mapMinAtomicDistances[i->first][j->first] = j->second;
 	}
 }
+
+FLOAT Constraints::getSmallestMinDistance() {
+	const static FLOAT start = 1000.0;
+	FLOAT smallestMin = start;
+	FLOAT min;
+	for (std::map<unsigned int, std::map<unsigned int, FLOAT> >::iterator i = m_mapMinAtomicDistances.begin(); i != m_mapMinAtomicDistances.end(); i++)
+		for (std::map<unsigned int, FLOAT>::iterator j = i->second.begin(); j != i->second.end(); j++) {
+			min = j->second;
+			if (min < smallestMin)
+				smallestMin = min;
+		}
+	if (smallestMin == start)
+		return 0;
+	else
+		return smallestMin;
+}

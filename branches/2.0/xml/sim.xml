@@ -44,8 +44,8 @@
 			</temperature>
 			<annealingSchedule quenchingFactor="0.9995"/>
 			<perturbations>
-				<translationVector startLength="0.25" minLength="0.05" probability="0.5" />
-				<rotationAngle degrees="25.0" minDegrees="3.0" probability="0.5" />
+				<translationVector startLength="0.4" minLength="0.1" probability="0.5" />
+				<rotationAngle startDegrees="30" minDegrees="3" probability="0.5" />
 			</perturbations>
 			<stop minIterations="500" maxTemperature="400" maxAcceptedPerturbations="5" />
 		</setup>

@@ -148,7 +148,7 @@
 							<xs:attribute name="value" type="positiveDecimal" use="required"/>
 						</xs:complexType>
 					</xs:element>
-					<xs:element name="acceptedPerterbations">
+					<xs:element name="acceptedPerturbations">
 						<xs:complexType>
 							<xs:attribute name="percent" type="percentage" default="90"/>
 						</xs:complexType>
@@ -167,7 +167,7 @@
 		<xs:element name="stop" minOccurs="0">
 			<xs:complexType>
 				<xs:attribute name="maxTemperature" type="positiveDecimal"/>
-				<xs:attribute name="maxAcceptedPerturbations" type="percentage" default="15"/>
+				<xs:attribute name="maxAcceptedPerturbations" type="percentage"/>
 				<xs:attribute name="minIterations" type="xs:positiveInteger"/>
 			</xs:complexType>
 		</xs:element>
@@ -180,15 +180,15 @@
 	<xs:all>
 		<xs:element name="translationVector" minOccurs="0">
 			<xs:complexType>
-				<xs:attribute name="startLength" type="positiveDecimal" default="0.5"/>
-				<xs:attribute name="minLength" type="nonNegativeDecimal" default="0.05"/>
+				<xs:attribute name="startLength" type="positiveDecimal" use="required"/>
+				<xs:attribute name="minLength" type="nonNegativeDecimal" default="0"/>
 				<xs:attribute name="probability" type="probability" use="required"/>
 			</xs:complexType>
 		</xs:element>
 		<xs:element name="rotationAngle" minOccurs="0">
 			<xs:complexType>
-				<xs:attribute name="degrees" type="positiveDegrees" default="50"/>
-				<xs:attribute name="minDegrees" type="nonNegativeDegrees" default="5"/>
+				<xs:attribute name="startDegrees" type="positiveDegrees" use="required"/>
+				<xs:attribute name="minDegrees" type="nonNegativeDegrees" default="0"/>
 				<xs:attribute name="probability" type="probability" use="required"/>
 			</xs:complexType>
 		</xs:element>
@@ -213,7 +213,7 @@
 				<xs:attribute name="radians" type="positiveDecimal" use="required"/>
 			</xs:complexType>
 		</xs:element>
-		<xs:element name="perterbationsPerIteration">
+		<xs:element name="perturbationsPerIteration">
 			<xs:complexType>
 				<xs:attribute name="value" type="positiveDecimal" use="required"/>
 			</xs:complexType>

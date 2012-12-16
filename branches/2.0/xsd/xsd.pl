@@ -232,7 +232,7 @@ sub addAttributeReader {
 	
 	$text = 'const bool \2::s_'.$parentElem."AttReq[] = {$required};\n";
 	if (@phraseStrings == 0) {
-		$text .= 'static const char* \2::'.$defalutArrayNm."[] = {@defaultStrs};\n";
+		$text .= 'const char* \2::'.$defalutArrayNm."[] = {@defaultStrs};\n";
 	}
 	$pattern = '(bool (\w+)::load)';
 	$replacement = $text.'\n\1';
@@ -297,12 +297,13 @@ sub addStringsFromCCFile {
 			while (1) {
 				print("Please enter a name (or leave blank to skip): ");
 				$name = <>;
-				$name = lc($name);
+				$name = lcfirst($name);
 				trim($name);
 				if (defined $$stringsRef{"e"}{$name}) {
 					print ("There is already a string with the same name, but a different value: \"". $$stringsRef{"e"}{$name} ."\n");
 					next;
 				} elsif (length($name) > 0) {
+					$value =~ s/([\^\$\.\*\+\?\|\(\)\[\]\{\}\\])/\\\1/g; # Escape special characters
 					push(@names, $name);
 					push(@values, $value);
 				} else {

@@ -45,11 +45,14 @@ class XsdTypeUtil {
 		static bool getPositiveInt(const char* value, unsigned int &result, const char* attributeName, TiXmlElement *pElem);
 		static bool getNonNegativeInt(const char* value, unsigned int &result, const char* attributeName, TiXmlElement *pElem);
 		static bool getPositiveFloat(const char* value, FLOAT &result, const char* attributeName, TiXmlElement *pElem);
+		static bool getNonNegativeFloat(const char* value, FLOAT &result, const char* attributeName, TiXmlElement *pElem);
 		
 		static bool readStrValueElement(TiXmlElement *pElem, std::string &result, const Strings* messages);
 		static bool readStrValueElement(TiXmlElement *pElem, std::string &result, const char* attributeName);
 		static bool readIntValueElement(TiXmlElement *pElem, int &result, const Strings* messages);
 		static bool readPosIntValueElement(TiXmlElement *pElem, unsigned int &result, const Strings* messages);
+		static bool readPosIntValueElement(TiXmlElement *pElem, unsigned int &result, const char* attributeName);
+		static bool readPosIntValueElement(TiXmlElement *pElem, unsigned int &result, const char* attributeName, const char* defaultValue);
 		static bool readPosFloatValueElement(TiXmlElement *pElem, FLOAT &result, const Strings* messages);
 		static bool readPosFloatValueElement(TiXmlElement *pElem, FLOAT &result, const char* attributeName);
 		
@@ -57,6 +60,9 @@ class XsdTypeUtil {
 		
 		static bool getAtomicNumber(const char* numberOrSymbol, unsigned int &iAtomicNumber, unsigned int line, const char* attributeName, const char* elementName);
 		static bool getAtomicNumber(const char* numberOrSymbol, unsigned int &iAtomicNumber, unsigned int line);
+		
+		static bool inRange(FLOAT number, FLOAT lo, FLOAT hi, TiXmlElement *pElem, const Strings* messages);
+		static bool inRange(FLOAT number, FLOAT lo, FLOAT hi, TiXmlElement *pElem, const char* attName);
 	private:
 		static void printError(const char* attributeName, const char* attributeValue, TiXmlElement *pElem, const char** possibleValues, unsigned int numPossibleValues);
 		

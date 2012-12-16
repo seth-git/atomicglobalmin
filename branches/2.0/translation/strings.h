@@ -85,9 +85,7 @@ public:
 	std::string m_sxPerturbations;
 	std::string m_sxStop;
 
-	std::string m_sxAcceptedPerterbations;
 	std::string m_sxDecreaseAfterIteration;
-	std::string m_sxQuenchingFactor;
 	std::string m_sxMaxTemperature;
 	std::string m_sxMaxAcceptedPerturbations;
 	std::string m_sxMinIterations;
@@ -115,6 +113,23 @@ public:
 	
 	std::string m_sxSource;
 	std::string m_sxPopulation;
+
+	std::string m_sxKelvin;
+	std::string m_sxAcceptedPerturbations;
+	std::string m_sxPercent;
+	std::string m_sxBoltzmannConstant;
+	std::string m_sxQuenchingFactor;
+
+	std::string m_sxTranslationVector;
+	std::string m_sxRotationAngle;
+	std::string m_sxStartLength;
+	std::string m_sxMinLength;
+	std::string m_sxProbability;
+	std::string m_sxStartDegrees;
+	std::string m_sxMinDegrees;
+	std::string m_sxNumberPerIteration;
+
+	std::string m_sxAcceptedPertHistIt;
 
 	std::string m_spADF;
 	std::string m_spGAMESS;
@@ -159,6 +174,7 @@ public:
 	std::string m_sUnableToReadInteger;
 	std::string m_sUnableToReadPositiveInteger;
 	std::string m_sZeroNotAllowed;
+	std::string m_sUnableToReadFloat;
 	std::string m_sUnableToReadPositiveFloat;
 	std::string m_sNegativeNotAllowed;
 	std::string m_sUnableToReadElementText;
@@ -167,6 +183,7 @@ public:
 	std::string m_sErrorAtomicNumOverMax;
 	std::string m_sErrorAtomicNumOverMax2;
 	std::string m_sErrorEmptyPath;
+	std::string m_sRangeError;
 
 	std::string m_sError;
 	std::string m_sErrorOnLine;
@@ -184,6 +201,8 @@ public:
 	
 	std::string m_sErrorEmptyMoleculeTemplate;
 	std::string m_sMissingChildElements3;
+
+	std::string m_sProbabilityMustTotalOne;
 
 private:
 	static std::map<std::string,Strings> s_instances;

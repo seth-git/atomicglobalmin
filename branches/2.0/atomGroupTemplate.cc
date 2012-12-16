@@ -154,11 +154,11 @@ bool AtomGroupTemplate::save(TiXmlElement *pStructureTemplate, const Strings* me
 			snprintf(numString, sizeof(numString), "%u", m_atomicNumbers[i]);
 			textstr.append(numString).append(" ");
 			c = m_coordinates[i];
-			snprintf(numString, sizeof(numString), "%lf", c[0]);
+			doubleToString(c[0], numString);
 			textstr.append(numString).append(" ");
-			snprintf(numString, sizeof(numString), "%lf", c[1]);
+			doubleToString(c[1], numString);
 			textstr.append(numString).append(" ");
-			snprintf(numString, sizeof(numString), "%lf", c[2]);
+			doubleToString(c[2], numString);
 			textstr.append(numString).append("\n");
 		}
 		TiXmlText* text = new TiXmlText(textstr.c_str());
