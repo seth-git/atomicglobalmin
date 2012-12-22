@@ -128,7 +128,7 @@ bool StructuresTemplate::load(TiXmlElement *pStructuresTemplateElem, std::map<st
 	
 	if (ptElements[4] != NULL) {
 		m_bondRotationalSearchAngle = new FLOAT;
-		if (!XsdTypeUtil::readPosFloatValueElement(ptElements[4], *m_bondRotationalSearchAngle, messages->m_sxDegrees.c_str()))
+		if (!XsdTypeUtil::read1PosFloatAtt(ptElements[4], *m_bondRotationalSearchAngle, messages->m_sxDegrees.c_str(), true, NULL))
 			return false;
 		if (!XsdTypeUtil::inRange(*m_bondRotationalSearchAngle, 0, 360, ptElements[4], messages->m_sxDegrees.c_str()))
 			return false;

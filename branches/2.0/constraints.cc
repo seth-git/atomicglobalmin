@@ -76,7 +76,7 @@ bool Constraints::load(TiXmlElement *pConstraintsElem, const Strings* messages,
 	if (constraintElements[0] != NULL) {
 		if (!m_pfCubeLWH)
 			m_pfCubeLWH = new FLOAT;
-		if (!XsdTypeUtil::readPosFloatValueElement(constraintElements[0], *m_pfCubeLWH, messages->m_sxSize.c_str()))
+		if (!XsdTypeUtil::read1PosFloatAtt(constraintElements[0], *m_pfCubeLWH, messages->m_sxSize.c_str(), true, NULL))
 			return false;
 	}
 
@@ -100,7 +100,7 @@ bool Constraints::load(TiXmlElement *pConstraintsElem, const Strings* messages,
 		for (i = 0; i < distElements[1].size(); ++i) { // Should be only one
 			if (!m_pfGeneralMaxAtomicDistance)
 				m_pfGeneralMaxAtomicDistance = new FLOAT;
-			if (!XsdTypeUtil::readPosFloatValueElement(distElements[1][i], *m_pfGeneralMaxAtomicDistance, messages)) {
+			if (!XsdTypeUtil::read1PosFloatAtt(distElements[1][i], *m_pfGeneralMaxAtomicDistance, messages->m_sxValue.c_str(), true, NULL)) {
 				return false;
 			}
 		}

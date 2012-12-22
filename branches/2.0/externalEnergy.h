@@ -32,6 +32,7 @@ class ExternalEnergy {
 		static const char* getMethodString(Method enumValue, const Strings* messages);
 		
 	private:
+		void cleanUp();
 		static const bool         s_required[];
 
 		static const char*        s_elementNames[];

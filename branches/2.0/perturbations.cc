@@ -134,7 +134,7 @@ bool Perturbations::loadSetup(TiXmlElement *pPerturbationsElem, const Strings* m
 		return false;
 	}
 
-	if (!XsdTypeUtil::readPosIntValueElement(pPerturbationsElem, m_iStartingPerturbationsPerIteration, messages->m_sxNumberPerIteration.c_str(), "1"))
+	if (!XsdTypeUtil::read1PosIntAtt(pPerturbationsElem, m_iStartingPerturbationsPerIteration, messages->m_sxNumberPerIteration.c_str(), true, "1"))
 		return false;
 
 	return true;

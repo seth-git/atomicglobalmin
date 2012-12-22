@@ -77,11 +77,11 @@ bool SimulatedAnnealing::loadSetup(TiXmlElement *pSetupElem, const Strings* mess
 
 		if (tempChoiceIndex == 0) {
 			m_pfStartingTemperature = new FLOAT;
-			if (!XsdTypeUtil::readPosFloatValueElement(tempChoiceElem, *m_pfStartingTemperature, messages))
+			if (!XsdTypeUtil::read1PosFloatAtt(tempChoiceElem, *m_pfStartingTemperature, messages->m_sxValue.c_str(), true, NULL))
 				return false;
 		} else {
 			m_pfPercentAcceptedPerturbations = new FLOAT;
-			if (!XsdTypeUtil::readPosFloatValueElement(tempChoiceElem, *m_pfPercentAcceptedPerturbations, messages->m_sxPercent.c_str()))
+			if (!XsdTypeUtil::read1PosFloatAtt(tempChoiceElem, *m_pfPercentAcceptedPerturbations, messages->m_sxPercent.c_str(), true, NULL))
 				return false;
 			if (!XsdTypeUtil::inRange(*m_pfPercentAcceptedPerturbations, 0, 100, tempChoiceElem, messages->m_sxPercent.c_str()))
 				return false;
@@ -107,7 +107,7 @@ bool SimulatedAnnealing::loadSetup(TiXmlElement *pSetupElem, const Strings* mess
 	}
 
 	if (setupElements[2] != NULL) {
-		if (!XsdTypeUtil::readPosFloatValueElement(setupElements[2], m_fQuenchingFactor, messages->m_sxQuenchingFactor.c_str()))
+		if (!XsdTypeUtil::read1PosFloatAtt(setupElements[2], m_fQuenchingFactor, messages->m_sxQuenchingFactor.c_str(), true, NULL))
 			return false;
 	} else {
 		m_fQuenchingFactor = 0.9995;

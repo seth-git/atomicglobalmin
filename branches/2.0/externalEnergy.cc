@@ -10,6 +10,7 @@ const unsigned int ExternalEnergy::s_minOccurs[]       = {1                , 0  
 
 bool ExternalEnergy::load(TiXmlElement *pExternalElem, const Strings* messages)
 {
+	cleanUp();
 	const char** values;
 	
 	const char* attributeNames[] = {messages->m_sxMethod.c_str(), messages->m_sxTransitionStateSearch.c_str()};
@@ -42,46 +43,38 @@ bool ExternalEnergy::load(TiXmlElement *pExternalElem, const Strings* messages)
 	}
 	extElements = extUtil.getAllElements();
 	
-	if (!XsdTypeUtil::readDirType(extElements[0], m_sSharedDir, messages)) {
+	if (!XsdTypeUtil::read1DirAtt(extElements[0], m_sSharedDir, messages->m_sxPath.c_str(), true, NULL))
 		return false;
-	}
 	
-	if (extElements[1] == NULL) {
-		m_sLocalDir = "";
-	} else if (!XsdTypeUtil::readDirType(extElements[1], m_sLocalDir, messages)) {
-		return false;
-	}
+	if (extElements[1] != NULL)
+		if (!XsdTypeUtil::read1DirAtt(extElements[1], m_sLocalDir, messages->m_sxPath.c_str(), true, NULL))
+			return false;
 	
-	if (!readResultsDir(extElements[2], messages)) {
-		return false;
-	}
+	if (extElements[2] != NULL)
+		if (!readResultsDir(extElements[2], messages))
+			return false;
 	
-	if (!XsdTypeUtil::readIntValueElement(extElements[3], m_iCharge, messages)) {
+	if (!XsdTypeUtil::read1IntAtt(extElements[3], m_iCharge, messages->m_sxValue.c_str(), true, NULL))
 		return false;
-	}
 	
-	if (!XsdTypeUtil::readPosIntValueElement(extElements[4], m_iMultiplicity, messages)) {
+	if (!XsdTypeUtil::read1PosIntAtt(extElements[4], m_iMultiplicity, messages->m_sxValue.c_str(), true, NULL))
 		return false;
-	}
 
-	if (!XsdTypeUtil::readElementText(extElements[5], m_sHeader)) {
+	if (!XsdTypeUtil::readElementText(extElements[5], m_sHeader))
 		return false;
-	}
 	m_sHeader = Strings::trim(m_sHeader);
 
 	if (extElements[6] != NULL) {
-		if (!XsdTypeUtil::readElementText(extElements[6], m_sFooter)) {
+		if (!XsdTypeUtil::readElementText(extElements[6], m_sFooter))
 			return false;
-		}
 		m_sFooter = Strings::trim(m_sFooter);
 	} else {
 		m_sFooter = "";
 	}
 
 	if (extElements[7] != NULL) {
-		if (!readMpiMaster(extElements[7], messages)) {
+		if (!readMpiMaster(extElements[7], messages))
 			return false;
-		}
 	} else {
 		m_bMpiMaster = false;
 	}
@@ -117,6 +110,7 @@ bool ExternalEnergy::readResultsDir(TiXmlElement *pElem, const Strings* messages
 		return false;
 	}
 	values = resultsDirUtil.getAllAttributes();
+
 	if (!XsdTypeUtil::checkDirectoryOrFileName(values[0], m_sResultsDir, resAttributeNames[0], pElem))
 		return false;
 	if (!XsdTypeUtil::getPositiveInt(values[1], m_iMaxResultsFiles, resAttributeNames[1], pElem))
@@ -149,6 +143,16 @@ const char* ExternalEnergy::getMethodString(Method enumValue, const Strings* mes
 	const char* methods[] = {messages->m_spADF.c_str(), messages->m_spGAMESS.c_str(), messages->m_spGAMESSUK.c_str(), messages->m_spGaussian.c_str(),
 			messages->m_spFirefly.c_str(), messages->m_spJaguar.c_str(), messages->m_spMolpro.c_str(), messages->m_spORCA.c_str()};
 	return methods[enumValue];
+}
+
+void ExternalEnergy::cleanUp() {
+	m_sSharedDir = "";
+	m_sLocalDir = "";
+	m_sResultsDir = "";
+	m_iMaxResultsFiles = 0;
+	m_sResultsFilePrefix = "";
+	m_sHeader = "";
+	m_sFooter = "";
 }
 
 bool ExternalEnergy::save(TiXmlElement *pExternalElem, const Strings* messages)
