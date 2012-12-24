@@ -12,15 +12,14 @@
 
 typedef double FLOAT;
 
-
-
 static const int MATRIX_SIZE = 4;
+typedef FLOAT COORDINATE3[3];
+typedef FLOAT COORDINATE4[MATRIX_SIZE];
 static const FLOAT PIE = 3.14159265359;
 static const FLOAT PIE_X_2 = 6.28318530718;
 static const FLOAT PIE_OVER_2 = 1.57079632679;
 static const FLOAT DEG_TO_RAD = PIE_X_2 / 360;
 static const FLOAT RAD_TO_DEG = 360 / PIE_X_2;
-static const unsigned int MAX_ATOMIC_NUMBERS = 200;
+static const unsigned int MAX_ATOMIC_NUMBERS = 118;
 
 #endif
-

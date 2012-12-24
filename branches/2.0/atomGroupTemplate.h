@@ -1,6 +1,6 @@
 
-#ifndef __MOLECULE_TEMPLATE_H_
-#define __MOLECULE_TEMPLATE_H_
+#ifndef __ATOM_GROUP_TEMPLATE_H_
+#define __ATOM_GROUP_TEMPLATE_H_
 
 #include "xsd/xsdAttributeUtil.h"
 #include "xsd/xsdElementUtil.h"

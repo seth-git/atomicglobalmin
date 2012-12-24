@@ -247,30 +247,33 @@ bool XsdTypeUtil::readElementText(TiXmlElement *pElem, std::string &result) {
 
 bool XsdTypeUtil::getAtomicNumber(const char* numberOrSymbol, unsigned int &iAtomicNumber, unsigned int line, const char* attributeName, const char* elementName) {
 	int signedNumber;
-	if (sscanf(numberOrSymbol, "%d", &signedNumber) != 1) {
-		const Strings* messagesDL = Strings::instance();
-		if (attributeName != NULL && elementName != NULL)
-			printf(messagesDL->m_sErrorReadingAtomicNumber.c_str(), line, numberOrSymbol, attributeName, elementName);
-		else
-			printf(messagesDL->m_sErrorReadingAtomicNumber2.c_str(), line, numberOrSymbol);
-		return false;
-	}
-	if (signedNumber <= 0) {
-		const Strings* messagesDL = Strings::instance();
-		if (attributeName != NULL && elementName != NULL)
-			printf(messagesDL->m_sErrorReadingAtomicNumber.c_str(), line, numberOrSymbol, attributeName, elementName);
-		else
-			printf(messagesDL->m_sErrorReadingAtomicNumber2.c_str(), line, numberOrSymbol);
-		return false;
-	}
-	iAtomicNumber = signedNumber;
-	if (iAtomicNumber > MAX_ATOMIC_NUMBERS) {
-		const Strings* messagesDL = Strings::instance();
-		if (attributeName != NULL && elementName != NULL)
-			printf(messagesDL->m_sErrorAtomicNumOverMax.c_str(), line, attributeName, elementName, iAtomicNumber, MAX_ATOMIC_NUMBERS);
-		else
-			printf(messagesDL->m_sErrorAtomicNumOverMax2.c_str(), line, iAtomicNumber, MAX_ATOMIC_NUMBERS);
-		return false;
+	iAtomicNumber = Handbook::getAtomicNumber(numberOrSymbol); // look for symbol
+	if (iAtomicNumber == 0) {
+		if (sscanf(numberOrSymbol, "%d", &signedNumber) != 1) { // look for number
+			const Strings* messagesDL = Strings::instance();
+			if (attributeName != NULL && elementName != NULL)
+				printf(messagesDL->m_sErrorReadingAtomicNumber.c_str(), line, numberOrSymbol, attributeName, elementName);
+			else
+				printf(messagesDL->m_sErrorReadingAtomicNumber2.c_str(), line, numberOrSymbol);
+			return false;
+		}
+		if (signedNumber <= 0) {
+			const Strings* messagesDL = Strings::instance();
+			if (attributeName != NULL && elementName != NULL)
+				printf(messagesDL->m_sErrorReadingAtomicNumber.c_str(), line, numberOrSymbol, attributeName, elementName);
+			else
+				printf(messagesDL->m_sErrorReadingAtomicNumber2.c_str(), line, numberOrSymbol);
+			return false;
+		}
+		iAtomicNumber = signedNumber;
+		if (iAtomicNumber > MAX_ATOMIC_NUMBERS) {
+			const Strings* messagesDL = Strings::instance();
+			if (attributeName != NULL && elementName != NULL)
+				printf(messagesDL->m_sErrorAtomicNumOverMax.c_str(), line, attributeName, elementName, iAtomicNumber, MAX_ATOMIC_NUMBERS);
+			else
+				printf(messagesDL->m_sErrorAtomicNumOverMax2.c_str(), line, iAtomicNumber, MAX_ATOMIC_NUMBERS);
+			return false;
+		}
 	}
 	return true;
 }

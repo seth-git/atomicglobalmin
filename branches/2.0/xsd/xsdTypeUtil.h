@@ -6,6 +6,7 @@
 #include <string>
 #include "xsdAttributeUtil.h"
 #include "typedef.h"
+#include "../handbook/handbook.h"
 
 class XsdTypeUtil {
 	public:
