@@ -9,41 +9,40 @@ class Input; // Forward declaration
 #include "xsd/xsdTypeUtil.h"
 #include "translation/strings.h"
 #include "internalEnergy.h"
-#include "externalEnergy.h"
+#include "externalEnergy/externalEnergy.h"
 #include "constraints.h"
-#include "structuresTemplate.h"
 
 class Action {
-	public:
-		std::vector<Constraints*> m_constraints;
-		std::map<std::string,Constraints*> m_constraintsMap;
-		Constraints* m_pConstraints;
-		bool m_bExternalEnergy;
-		InternalEnergy m_internalEnergy;
-		ExternalEnergy m_externalEnergy;
-		
-		Action(Input* input);
-		~Action();
-		
-		void cleanUp();
-		
-		bool load(TiXmlElement *pActionElem, const Strings* messages);
-		bool save(TiXmlElement *pActionElem, const Strings* messages);
-		virtual bool loadSetup(TiXmlElement *pSetupElem, const Strings* messages) = 0;
-		virtual bool saveSetup(TiXmlElement *pSetupElem, const Strings* messages) = 0;
-		virtual bool loadResume(TiXmlElement *pResumeElem, const Strings* messages) = 0;
-		virtual bool saveResume(TiXmlElement *pResumeElem, const Strings* messages) = 0;
-		virtual bool run() = 0;
-		
-	protected:
-		Input* m_pInput;
-		
-	private:
-		static const unsigned int s_minOccurs[];
-		static const unsigned int s_maxOccurs[];
-		
-		static const bool  s_required[];
-		static const char* s_defaultValues[];
+public:
+	std::vector<Constraints*> m_constraints;
+	std::map<std::string,Constraints*> m_constraintsMap;
+	Constraints* m_pConstraints;
+	bool m_bExternalEnergy;
+	InternalEnergy m_internalEnergy;
+	ExternalEnergy m_externalEnergy;
+
+	Action(Input* input);
+	~Action();
+
+	void cleanUp();
+
+	virtual bool load(TiXmlElement *pActionElem, const Strings* messages);
+	virtual bool save(TiXmlElement *pActionElem, const Strings* messages);
+	virtual bool loadSetup(TiXmlElement *pSetupElem, const Strings* messages) = 0;
+	virtual bool saveSetup(TiXmlElement *pSetupElem, const Strings* messages) = 0;
+	virtual bool loadResume(TiXmlElement *pResumeElem, const Strings* messages) = 0;
+	virtual bool saveResume(TiXmlElement *pResumeElem, const Strings* messages) = 0;
+	virtual bool run() = 0;
+
+protected:
+	Input* m_pInput;
+
+private:
+	static const unsigned int s_minOccurs[];
+	static const unsigned int s_maxOccurs[];
+
+	static const bool  s_required[];
+	static const char* s_defaultValues[];
 };
 
 #endif

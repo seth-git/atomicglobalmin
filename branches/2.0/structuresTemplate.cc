@@ -5,7 +5,6 @@
 const bool    StructuresTemplate::s_attRequired[]    = {false};
 const char*   StructuresTemplate::s_attDefaults[]    = {NULL};
 
-
 //const char*      StructuresTemplate::s_elementNames[] = {"structureTemplate", "linear", "planar", "threeD", "bondRotationalSearch", "seed"};
 const unsigned int StructuresTemplate::s_minOccurs[]    = {0                  , 0       , 0       , 0       , 0                     , 0     };
 
@@ -63,8 +62,8 @@ void StructuresTemplate::cleanUp()
 	}
 }
 
-bool StructuresTemplate::load(TiXmlElement *pStructuresTemplateElem, std::map<std::string,Constraints*> &constraintsMap, const Strings* messages)
-{
+bool StructuresTemplate::load(TiXmlElement *pStructuresTemplateElem,
+		std::map<std::string, Constraints*> &constraintsMap, const Strings* messages) {
 	cleanUp();
 	
 	unsigned int i;
@@ -140,7 +139,12 @@ bool StructuresTemplate::load(TiXmlElement *pStructuresTemplateElem, std::map<st
 		if (!m_pSeed->load(ptElements[5], messages))
 			return false;
 	}
-	
+
+	if (m_atomGroupTemplates == NULL && m_pSeed == NULL) {
+		printf("The %1$s element must contain either a %2$s element or a %3$s element.", messages->m_sxStructuresTemplate.c_str(), messages->m_sxStructureTemplate.c_str(), messages->m_sxSeed.c_str());
+		return false;
+	}
+
 	return true;
 }
 
@@ -224,5 +228,20 @@ bool StructuresTemplate::save(TiXmlElement *pParentElem, const Strings* messages
 		if (!m_pSeed->save(structuresTemplate, messages))
 			return false;
 	
+	return true;
+}
+
+bool StructuresTemplate::initializeStructures(unsigned int &numStructures,
+		Structure* &structures, const Constraints* pActionConstraints) {
+	if (m_pSeed != NULL) {
+		std::vector<Structure*> seededStructures;
+		if (!m_pSeed->readStructures(seededStructures, m_iAtomGroupTemplates, m_atomGroupTemplates))
+			return false;
+		// Validate the constraints
+	}
+/*	numStructures = 5;
+	structures = new Structure[numStructures];
+	for (unsigned int i = 0; i < numStructures; ++i)
+		structures[i].setAtoms(m_iAtomGroupTemplates, m_atomGroupTemplates);*/
 	return true;
 }

@@ -1,5 +1,6 @@
 
 #include "atomGroupTemplate.h"
+#include "structure.h"
 
 //const char* AtomGroupTemplate::s_molAttNames[]  = {"number", "format"};
 const bool    AtomGroupTemplate::s_molAttRequired[]        = {true    , true };
@@ -175,5 +176,28 @@ bool AtomGroupTemplate::save(TiXmlElement *pStructureTemplate, const Strings* me
 		pAtomTemplate->SetAttribute(messages->m_sxZ.c_str(), m_atomicNumbers[0]);
 	}
 	
+	return true;
+}
+
+bool AtomGroupTemplate::init(Structure &structure) {
+	if (structure.getNumberOfAtomGroups() != 1) {
+		printf("AtomGroupTemplate::init should not be called with a structure having more than one atom group.");
+		return false;
+	}
+	cleanUp();
+	m_iNumber = structure.getNumberOfAtomGroups();
+	m_iFormat = CARTESIAN;
+	FLOAT* c;
+	std::size_t nBytes = sizeof(FLOAT) * 3;
+
+	const unsigned int* atomicNumbers = structure.getAtomicNumbers();
+	const COORDINATE4** atomCoordinates = structure.getAtomCoordinates();
+
+	for (unsigned int i = 0; i < structure.getNumberOfAtoms(); ++i) {
+		m_atomicNumbers.push_back(atomicNumbers[i]);
+		c = new FLOAT[3];
+		memcpy(c, atomCoordinates[i], nBytes);
+		m_coordinates.push_back(c);
+	}
 	return true;
 }

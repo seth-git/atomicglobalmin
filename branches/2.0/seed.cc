@@ -159,7 +159,7 @@ bool Seed::load(TiXmlElement *pSeedElem, const Strings* messages)
 		m_dirPaths = new std::string[m_iDirectories];
 		m_bUseAllFromDir = new bool[m_iDirectories];
 		m_numberFromDir = new unsigned int[m_iDirectories];
-		m_dirFileTypes = new ExternalEnergy::Method[m_iDirectories];
+		m_dirFileTypes = new ExternalEnergyMethod::Impl[m_iDirectories];
 		
 		const char* dirAttNames[]     = {messages->m_sxPath.c_str(), messages->m_sxNumber.c_str(), messages->m_sxType.c_str()};
 		const char* dirAttDefaults[]  = {NULL                      , messages->m_spAll.c_str()   , NULL};
@@ -179,7 +179,7 @@ bool Seed::load(TiXmlElement *pSeedElem, const Strings* messages)
 				if (!XsdTypeUtil::getPositiveInt(values[1], m_numberFromDir[i], dirAttNames[1], elements[1][i]))
 					return false;
 			
-			if (!ExternalEnergy::getMethodEnum(dirAttNames[2], values[2], m_dirFileTypes[i], elements[1][i], messages))
+			if (!ExternalEnergyMethod::getEnum(dirAttNames[2], values[2], m_dirFileTypes[i], elements[1][i], messages))
 				return false;
 		}
 	}
@@ -187,7 +187,7 @@ bool Seed::load(TiXmlElement *pSeedElem, const Strings* messages)
 	if (elements[2].size() > 0) {
 		m_iEnergyFiles = elements[2].size();
 		m_energyFilePaths = new std::string[m_iEnergyFiles];
-		m_energyFileTypes = new ExternalEnergy::Method[m_iEnergyFiles];
+		m_energyFileTypes = new ExternalEnergyMethod::Impl[m_iEnergyFiles];
 		
 		const char* enFileAttNames[]     = {messages->m_sxPath.c_str(), messages->m_sxType.c_str()};
 		const char* enFileAttDefaults[]  = {NULL                      , NULL};
@@ -201,7 +201,7 @@ bool Seed::load(TiXmlElement *pSeedElem, const Strings* messages)
 			if (!XsdTypeUtil::checkDirectoryOrFileName(values[0], m_energyFilePaths[i], enFileAttNames[0], elements[2][i]))
 				return false;
 			
-			if (!ExternalEnergy::getMethodEnum(enFileAttNames[1], values[1], m_energyFileTypes[i], elements[2][i], messages))
+			if (!ExternalEnergyMethod::getEnum(enFileAttNames[1], values[1], m_energyFileTypes[i], elements[2][i], messages))
 				return false;
 		}
 	}
@@ -249,7 +249,7 @@ bool Seed::save(TiXmlElement *pParentElem, const Strings* messages)
 		pDir->SetAttribute(messages->m_sxPath.c_str(), m_dirPaths[i].c_str());
 		if (!m_bUseAllFromDir[i])
 			pDir->SetAttribute(messages->m_sxNumber.c_str(), m_numberFromDir[i]);
-		pDir->SetAttribute(messages->m_sxType.c_str(), ExternalEnergy::getMethodString(m_dirFileTypes[i], messages));
+		pDir->SetAttribute(messages->m_sxType.c_str(), ExternalEnergyMethod::getEnumString(m_dirFileTypes[i], messages));
 	}
 	
 	for (i = 0; i < m_iEnergyFiles; ++i) {
@@ -257,8 +257,93 @@ bool Seed::save(TiXmlElement *pParentElem, const Strings* messages)
 		pSeed->LinkEndChild(pEnergyFile);
 		
 		pEnergyFile->SetAttribute(messages->m_sxPath.c_str(), m_energyFilePaths[i].c_str());
-		pEnergyFile->SetAttribute(messages->m_sxType.c_str(), ExternalEnergy::getMethodString(m_energyFileTypes[i], messages));
+		pEnergyFile->SetAttribute(messages->m_sxType.c_str(), ExternalEnergyMethod::getEnumString(m_energyFileTypes[i], messages));
 	}
 	
+	return true;
+}
+
+bool Seed::readStructures(std::vector<Structure*> &structures,
+		unsigned int &iAtomGroupTemplates,
+		AtomGroupTemplate* &atomGroupTemplates) {
+	unsigned int i;
+	Structure* pStructure;
+
+	DIR *dp = NULL;
+	struct dirent *dirp;
+	const char* outputExt;
+	unsigned int outputExtLen;
+	bool exception = false;
+	std::string fullPathFileName;
+	for (i = 0; i < m_iDirectories; ++i) {
+		try {
+			if ((dp = opendir(m_dirPaths[i].c_str())) == NULL) {
+				printf("Error(%1$d) opening directory: %2$s.\n", errno, m_dirPaths[i].c_str());
+				throw "";
+			}
+
+			outputExt = ExternalEnergyMethod::getOutputFileExtension(m_dirFileTypes[i]);
+			if (outputExt == NULL)
+				throw "";
+			outputExtLen = strlen(outputExt);
+
+			while ((dirp = readdir(dp)) != NULL) {
+				if (strncmp(outputExt, dirp->d_name + strlen(dirp->d_name) - outputExtLen, outputExtLen) != 0)
+					continue;
+				pStructure = new Structure();
+				if (iAtomGroupTemplates > 0)
+					pStructure->setAtoms(iAtomGroupTemplates, atomGroupTemplates);
+
+				fullPathFileName = m_dirPaths[i] + "/" + dirp->d_name;
+
+				printf("Reading file: %1$s\n", fullPathFileName.c_str());
+				if (ExternalEnergyMethod::readOutputFile(m_dirFileTypes[i], fullPathFileName.c_str(), *pStructure, true)) {
+					structures.push_back(pStructure);
+				} else {
+					delete pStructure;
+					throw "";
+				}
+				if (iAtomGroupTemplates == 0) {
+					iAtomGroupTemplates = 1;
+					atomGroupTemplates = new AtomGroupTemplate[iAtomGroupTemplates];
+					if (!atomGroupTemplates[0].init(*pStructure))
+						throw "";
+				}
+			}
+		} catch (const char* msg) {
+			if (PRINT_CATCH_MESSAGES && strlen(msg) > 0)
+				printf("Caught message in Seed.readStructures: %s", msg);
+			exception = true;
+		}
+		closedir(dp);
+		if (exception)
+			return false;
+	}
+
+	for (i = 0; i < m_iEnergyFiles; ++i) {
+		pStructure = new Structure();
+		if (iAtomGroupTemplates > 0) {
+			pStructure->setAtoms(iAtomGroupTemplates, atomGroupTemplates);
+		}
+
+		printf("Reading file: %1$s\n", m_energyFilePaths[i].c_str());
+		if (ExternalEnergyMethod::readOutputFile(m_energyFileTypes[i], m_energyFilePaths[i].c_str(), *pStructure, true)) {
+			structures.push_back(pStructure);
+		} else {
+			delete pStructure;
+			return false;
+		}
+		if (iAtomGroupTemplates == 0) {
+			iAtomGroupTemplates = 1;
+			atomGroupTemplates = new AtomGroupTemplate[iAtomGroupTemplates];
+			if (!atomGroupTemplates[0].init(*pStructure))
+				return false;
+		}
+	}
+
+	if (structures.size() == 0) {
+		printf("Error: zero seeded structures were read.\n");
+		return false;
+	}
 	return true;
 }

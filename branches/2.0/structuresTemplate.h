@@ -5,6 +5,7 @@
 #include "atomGroupTemplate.h"
 #include "constraints.h"
 #include "seed.h"
+#include "structure.h"
 
 class StructuresTemplate {
 public:
@@ -29,9 +30,14 @@ public:
 	bool load(TiXmlElement *pStructuresTemplateElem, std::map<std::string,Constraints*> &constraintsMap, const Strings* messages);
 	bool save(TiXmlElement *pParentElem, const Strings* messages);
 
+	bool initializeStructures(unsigned int &numStructures,
+			Structure* &pStructures, const Constraints* pActionConstraints);
+
 private:
 	void cleanUp();
-	bool readInitializationType(TiXmlElement *pElem, std::map<std::string,Constraints*> &constraintsMap, unsigned int &numberOfThisType, Constraints** pConstraints, const Strings* messages);
+	bool readInitializationType(TiXmlElement *pElem, std::map<std::string,
+			Constraints*> &constraintsMap, unsigned int &numberOfThisType,
+			Constraints** pConstraints, const Strings* messages);
 	
 	static const bool         s_attRequired[];
 	static const char*        s_attDefaults[];
@@ -45,4 +51,3 @@ private:
 };
 
 #endif
-

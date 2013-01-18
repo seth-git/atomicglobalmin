@@ -6,7 +6,18 @@
 #include "xsd/xsdElementUtil.h"
 #include "xsd/xsdTypeUtil.h"
 #include "translation/strings.h"
-#include "externalEnergy.h"
+#include "externalEnergy/externalEnergy.h"
+#include "externalEnergy/externalEnergyMethod.h"
+#include "structure.h"
+
+#include <stdio.h>
+#include <cstdlib>
+#include <iostream>
+#include <string.h>
+#include <fstream>
+#include <sstream>
+#include <dirent.h>
+#include <errno.h>
 
 enum SeedSource { RESULTS, POPULATION };
 
@@ -24,17 +35,27 @@ public:
 	std::string* m_dirPaths; // An array of size m_iDirectories (same below)
 	bool* m_bUseAllFromDir; // if true, use all files in the directory
 	unsigned int* m_numberFromDir; // An array of size m_iFiles
-	ExternalEnergy::Method* m_dirFileTypes; // An array of size m_iFiles
+	ExternalEnergyMethod::Impl* m_dirFileTypes; // An array of size m_iFiles
 	
 	unsigned int m_iEnergyFiles;
 	std::string* m_energyFilePaths; // An array of size m_iEnergyFiles
-	ExternalEnergy::Method* m_energyFileTypes; // An array of size m_iEnergyFiles
+	ExternalEnergyMethod::Impl* m_energyFileTypes; // An array of size m_iEnergyFiles
 	
 	Seed();
 	~Seed();
 	bool load(TiXmlElement *pSeedElem, const Strings* messages);
 	bool save(TiXmlElement *pParentElem, const Strings* messages);
 	
+	/**************************************************************************
+	 * Purpose: Call this function to read structures from the files.
+	 * Parameters: structures - destination structures
+	 *             iAtomGroupTemplates - size of  atomGroupTemplates (may be 0)
+	 *             atomGroupTemplates - template structure (may be NULL)
+	 *************************************************************************/
+	bool readStructures(std::vector<Structure*> &structures,
+			unsigned int &iAtomGroupTemplates,
+			AtomGroupTemplate* &atomGroupTemplates);
+
 private:
 	void cleanUp();
 	

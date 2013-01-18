@@ -9,6 +9,8 @@ SimulatedAnnealing::SimulatedAnnealing(Input* input) : Action(input)
 	m_pfMaxStoppingTemperature = NULL;
 	m_pfMaxStoppingAcceptedPerturbations = NULL;
 	m_piMinStoppingIterations = NULL;
+	m_iStructures = 0;
+	m_structures = NULL;
 }
 
 SimulatedAnnealing::~SimulatedAnnealing()
@@ -37,6 +39,11 @@ void SimulatedAnnealing::cleanUp()
 	if (m_piMinStoppingIterations != NULL) {
 		delete m_piMinStoppingIterations;
 		m_piMinStoppingIterations = NULL;
+	}
+	m_iStructures = 0;
+	if (m_structures != NULL) {
+		delete m_structures;
+		m_structures = NULL;
 	}
 }
 
@@ -224,11 +231,12 @@ bool SimulatedAnnealing::saveSetup(TiXmlElement *pSimElem, const Strings* messag
 bool SimulatedAnnealing::loadResume(TiXmlElement *pResumeElem, const Strings* messages)
 {
 	if (pResumeElem == NULL) {
-		if (m_pfStartingTemperature != NULL) {
+		if (!m_structuresTemplate.initializeStructures(m_iStructures, m_structures, m_pConstraints))
+			return false;
+		if (m_pfStartingTemperature != NULL)
 			m_fTemperature = *m_pfStartingTemperature;
-		} else {
-			m_fTemperature = 100000;
-		}
+		else
+			m_fTemperature = 1000000;
 	} else {
 
 	}

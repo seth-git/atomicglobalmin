@@ -1,5 +1,6 @@
 
 #include "externalEnergy.h"
+#include "externalEnergyMethod.h"
 
 //const char*      ExternalEnergy::s_attributeNames[]  = {"method", "transitionStateSearch"};
 const bool         ExternalEnergy::s_required[]        = {true    , false };
@@ -7,6 +8,28 @@ const bool         ExternalEnergy::s_required[]        = {true    , false };
 
 //const char*      ExternalEnergy::s_elementNames[]    = {"sharedDirectory", "localDirectory", "resultsDirectory", "charge", "multiplicity", "header", "footer", "mpi"};
 const unsigned int ExternalEnergy::s_minOccurs[]       = {1                , 0               , 0                 , 1       , 1             , 1       , 0       , 0    };
+
+ExternalEnergy::ExternalEnergy() {
+	m_pMethodImpl = NULL;
+}
+
+ExternalEnergy::~ExternalEnergy() {
+	cleanUp();
+}
+
+void ExternalEnergy::cleanUp() {
+	m_sSharedDir = "";
+	m_sLocalDir = "";
+	m_sResultsDir = "";
+	m_iMaxResultsFiles = 0;
+	m_sResultsFilePrefix = "";
+	m_sHeader = "";
+	m_sFooter = "";
+	if (m_pMethodImpl != NULL) {
+		delete m_pMethodImpl;
+		m_pMethodImpl = NULL;
+	}
+}
 
 bool ExternalEnergy::load(TiXmlElement *pExternalElem, const Strings* messages)
 {
@@ -25,10 +48,10 @@ bool ExternalEnergy::load(TiXmlElement *pExternalElem, const Strings* messages)
 	}
 	values = attUtil.getAllAttributes();
 	
-	if (!getMethodEnum(attributeNames[0], values[0], m_method, pExternalElem, messages)) {
+	if (!ExternalEnergyMethod::getEnum(attributeNames[0], values[0], m_method, pExternalElem, messages)) {
 		return false;
 	}
-	
+
 	if (!XsdTypeUtil::getBoolValue(attributeNames[1], values[1], m_bTransitionStateSearch, pExternalElem, messages)) {
 		return false;
 	}
@@ -79,13 +102,11 @@ bool ExternalEnergy::load(TiXmlElement *pExternalElem, const Strings* messages)
 		m_bMpiMaster = false;
 	}
 	
-	return true;
-}
+	m_pMethodImpl = ExternalEnergyMethod::instance(m_method, this);
+	if (m_pMethodImpl == NULL)
+		return false;
 
-bool ExternalEnergy::getMethodEnum(const char* attributeName, const char* stringValue, Method& result, TiXmlElement *pElem, const Strings* messages) {
-	const char* methods[] = {messages->m_spADF.c_str(), messages->m_spGAMESS.c_str(), messages->m_spGAMESSUK.c_str(), messages->m_spGaussian.c_str(),
-			messages->m_spFirefly.c_str(), messages->m_spJaguar.c_str(), messages->m_spMolpro.c_str(), messages->m_spORCA.c_str()};
-	return XsdTypeUtil::getEnumValue(attributeName, stringValue, result, pElem, methods);
+	return true;
 }
 
 //const char* ExternalEnergy::s_resAttributeNames[] = {"path", "maxFiles", "filePrefix"};
@@ -139,25 +160,9 @@ bool ExternalEnergy::readMpiMaster(TiXmlElement *pElem, const Strings* messages)
 	return true;
 }
 
-const char* ExternalEnergy::getMethodString(Method enumValue, const Strings* messages) {
-	const char* methods[] = {messages->m_spADF.c_str(), messages->m_spGAMESS.c_str(), messages->m_spGAMESSUK.c_str(), messages->m_spGaussian.c_str(),
-			messages->m_spFirefly.c_str(), messages->m_spJaguar.c_str(), messages->m_spMolpro.c_str(), messages->m_spORCA.c_str()};
-	return methods[enumValue];
-}
-
-void ExternalEnergy::cleanUp() {
-	m_sSharedDir = "";
-	m_sLocalDir = "";
-	m_sResultsDir = "";
-	m_iMaxResultsFiles = 0;
-	m_sResultsFilePrefix = "";
-	m_sHeader = "";
-	m_sFooter = "";
-}
-
 bool ExternalEnergy::save(TiXmlElement *pExternalElem, const Strings* messages)
 {
-	pExternalElem->SetAttribute(messages->m_sxMethod.c_str(), getMethodString(m_method, messages));
+	pExternalElem->SetAttribute(messages->m_sxMethod.c_str(), ExternalEnergyMethod::getEnumString(m_method, messages));
 	if (m_bTransitionStateSearch)
 		pExternalElem->SetAttribute(messages->m_sxTransitionStateSearch.c_str(), messages->getTrueFalseParam(m_bTransitionStateSearch));
 	

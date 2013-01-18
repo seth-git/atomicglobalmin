@@ -2,6 +2,8 @@
 #ifndef __ATOM_GROUP_TEMPLATE_H_
 #define __ATOM_GROUP_TEMPLATE_H_
 
+class Structure; // Forward declaration
+
 #include "xsd/xsdAttributeUtil.h"
 #include "xsd/xsdElementUtil.h"
 #include "xsd/xsdTypeUtil.h"
@@ -21,6 +23,7 @@ public:
 	bool loadMolecule(TiXmlElement *pMoleculeTemplateElem, const Strings* messages);
 	bool loadAtom(TiXmlElement *pAtomTemplateElem, const Strings* messages);
 	bool save(TiXmlElement *pParentElem, const Strings* messages);
+	bool init(Structure &structure);
 	
 private:
 	static const bool s_molAttRequired[];

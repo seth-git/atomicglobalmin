@@ -4,11 +4,16 @@
 
 #include "action.h"
 #include "perturbations.h"
+#include "structuresTemplate.h"
+#include "structure.h"
 
 class SimulatedAnnealing : public Action {
 public:
 	StructuresTemplate m_structuresTemplate;
-	
+
+	unsigned int m_iStructures;
+	Structure* m_structures;
+
 	FLOAT* m_pfStartingTemperature;
 	FLOAT* m_pfPercentAcceptedPerturbations; // Value between 0 and 1.0
 	unsigned int m_iDecreaseTemperatureAfterIt;
