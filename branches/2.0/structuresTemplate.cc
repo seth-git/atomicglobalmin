@@ -237,7 +237,9 @@ bool StructuresTemplate::initializeStructures(unsigned int &numStructures,
 		std::vector<Structure*> seededStructures;
 		if (!m_pSeed->readStructures(seededStructures, m_iAtomGroupTemplates, m_atomGroupTemplates))
 			return false;
-		// Validate the constraints
+		for (unsigned int i = 0; i < seededStructures.size(); ++i)
+			delete seededStructures[i];
+		seededStructures.clear();
 	}
 /*	numStructures = 5;
 	structures = new Structure[numStructures];
