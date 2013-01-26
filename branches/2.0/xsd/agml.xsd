@@ -669,8 +669,8 @@
 </xs:simpleType>
 <xs:simpleType name="nonNegativeDegrees">
 	<xs:restriction base="xs:double">
-		<xs:minExclusive value="0"/>
-		<xs:maxInclusive value="360"/>
+		<xs:minInclusive value="0"/>
+		<xs:maxExclusive value="360"/>
 	</xs:restriction>
 </xs:simpleType>
 <xs:simpleType name="percentage">
