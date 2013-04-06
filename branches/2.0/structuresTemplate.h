@@ -38,7 +38,18 @@ private:
 	bool readInitializationType(TiXmlElement *pElem, std::map<std::string,
 			Constraints*> &constraintsMap, unsigned int &numberOfThisType,
 			Constraints** pConstraints, const Strings* messages);
-	
+
+	unsigned int checkCompatabilityWithGroups(const Structure &structure,
+			unsigned int &firstDiffTemplateIndex,
+			unsigned int &firstDiffStructureIndex, bool &firstDiffMissing);
+
+	unsigned int checkCompatabilityWithoutGroups(const Structure &structure,
+			unsigned int &firstDiffTemplateIndex,
+			unsigned int &firstDiffStructureIndex, bool &firstDiffMissing);
+
+	bool ensureCompatibile(Structure &structure,
+			const Constraints* pActionConstraints);
+
 	static const bool         s_attRequired[];
 	static const char*        s_attDefaults[];
 

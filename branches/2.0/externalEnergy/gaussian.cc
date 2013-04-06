@@ -214,12 +214,15 @@ bool Gaussian::readOutputFile(const char* outputFile, Structure structure, bool 
 	fin.close();
 
 	if (readGeometry && obtainedGeometry) {
-		COORDINATE3 coordinates[coordinatesVector.size()];
+		COORDINATE4 coordinates[coordinatesVector.size()];
+		FLOAT* coordinate;
 		unsigned int atomicNumbers[coordinatesVector.size()];
 
 		for (i = 0; i < coordinatesVector.size(); ++i) {
 			atomicNumbers[i] = atomicNumbersVector[i];
-			memcpy(coordinates[i], coordinatesVector[i], sizeof(COORDINATE3));
+			coordinate = coordinates[i];
+			memcpy(coordinate, coordinatesVector[i], sizeof(COORDINATE3));
+			coordinate[3] = 1;
 		}
 		structure.setAtoms(coordinatesVector.size(), coordinates, atomicNumbers);
 	}

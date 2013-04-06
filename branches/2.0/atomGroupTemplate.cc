@@ -1,6 +1,7 @@
 
 #include "atomGroupTemplate.h"
 #include "structure.h"
+#include "atomGroup.h"
 
 //const char* AtomGroupTemplate::s_molAttNames[]  = {"number", "format"};
 const bool    AtomGroupTemplate::s_molAttRequired[]        = {true    , true };
@@ -20,11 +21,10 @@ AtomGroupTemplate::~AtomGroupTemplate()
 
 void AtomGroupTemplate::cleanUp()
 {
-	  for (std::vector<FLOAT*>::iterator it = m_coordinates.begin() ; it < m_coordinates.end(); it++ ) {
-		  delete[] *it;
-	  }
-	  m_coordinates.clear();
-	  m_atomicNumbers.clear();
+	for (std::vector<FLOAT*>::iterator it = m_coordinates.begin() ; it < m_coordinates.end(); it++ )
+		delete[] *it;
+	m_coordinates.clear();
+	m_atomicNumbers.clear();
 }
 
 bool AtomGroupTemplate::loadMolecule(TiXmlElement *pMoleculeTemplateElem, const Strings* messages)
@@ -199,5 +199,27 @@ bool AtomGroupTemplate::init(Structure &structure) {
 		memcpy(c, atomCoordinates[i], nBytes);
 		m_coordinates.push_back(c);
 	}
+	return true;
+}
+
+bool AtomGroupTemplate::atomicNumbersMatch(const AtomGroup &atomGroup) const {
+	unsigned int m = atomGroup.getNumberOfAtoms();
+	if (m != m_atomicNumbers.size())
+		return false;
+	const unsigned int* atomicNumbers = atomGroup.getAtomicNumbers();
+	for (unsigned int i = 0; i < m; ++i)
+		if (atomicNumbers[i] != m_atomicNumbers[i])
+			return false;
+	return true;
+}
+
+bool AtomGroupTemplate::atomicNumbersMatch(const unsigned int* structureAtomicNumbers,
+		unsigned int size) const {
+	unsigned int m = m_atomicNumbers.size();
+	if (size < m)
+		return false;
+	for (unsigned int i = 0; i < m; ++i)
+		if (structureAtomicNumbers[i] != m_atomicNumbers[i])
+			return false;
 	return true;
 }

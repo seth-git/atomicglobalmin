@@ -52,7 +52,7 @@ void AtomGroup::setAtoms(const AtomGroupTemplate &agTemplate)
 	localToGlobal();
 }
 
-void AtomGroup::setAtoms(unsigned int numAtoms, const COORDINATE3 *cartesianPoints,
+void AtomGroup::setAtoms(unsigned int numAtoms, const COORDINATE4* cartesianPoints,
 		const unsigned int* atomicNumbers) {
 	if (numAtoms != m_iNumberOfAtoms) {
 		cleanUp();
@@ -63,11 +63,7 @@ void AtomGroup::setAtoms(unsigned int numAtoms, const COORDINATE3 *cartesianPoin
 	}
 
 	memcpy(m_atomicNumbers, atomicNumbers, sizeof(unsigned int) * m_iNumberOfAtoms);
-	for (unsigned int i = 0; i < m_iNumberOfAtoms; ++i)
-	{
-		memcpy(m_localPoints[i], cartesianPoints[i], sizeof(COORDINATE3));
-		m_localPoints[i][3] = 1;
-	}
+	memcpy(m_localPoints, cartesianPoints, sizeof(COORDINATE4) * m_iNumberOfAtoms);
 	setLocalCenterOfMassToZero();
 	initRotationMatrix();
 	localToGlobal();
@@ -103,6 +99,30 @@ bool AtomGroup::load(TiXmlElement *pAtomGroupElem, const Strings* messages)
 bool AtomGroup::save(TiXmlElement *pParentElem, const Strings* messages)
 {
 	return true;
+}
+
+void AtomGroup::copy(AtomGroup &atomGroup) {
+	cleanUp();
+
+	m_iNumberOfAtoms = atomGroup.m_iNumberOfAtoms;
+	m_atomicNumbers = new unsigned int[m_iNumberOfAtoms];
+	memcpy(m_atomicNumbers, atomGroup.m_atomicNumbers, sizeof(unsigned int) * m_iNumberOfAtoms);
+	m_localPoints = new COORDINATE4[m_iNumberOfAtoms];
+	memcpy(m_localPoints, atomGroup.m_localPoints, sizeof(COORDINATE4) * m_iNumberOfAtoms);
+	m_globalPoints = new COORDINATE4[m_iNumberOfAtoms];
+	memcpy(m_globalPoints, atomGroup.m_globalPoints, sizeof(COORDINATE4) * m_iNumberOfAtoms);
+
+	memcpy(m_centerOfMass, atomGroup.m_centerOfMass, sizeof(m_centerOfMass));
+	memcpy(m_angles, atomGroup.m_angles, sizeof(m_angles));
+	memcpy(m_sinAngles, atomGroup.m_sinAngles, sizeof(m_sinAngles));
+	memcpy(m_cosAngles, atomGroup.m_cosAngles, sizeof(m_cosAngles));
+
+	memcpy(m_rotationMatrixX, atomGroup.m_rotationMatrixX, sizeof(m_rotationMatrixX));
+	memcpy(m_rotationMatrixY, atomGroup.m_rotationMatrixY, sizeof(m_rotationMatrixY));
+	memcpy(m_rotationMatrixZ, atomGroup.m_rotationMatrixZ, sizeof(m_rotationMatrixZ));
+	memcpy(m_matrixLocalToGlobal, atomGroup.m_matrixLocalToGlobal, sizeof(m_matrixLocalToGlobal));
+
+	m_bFrozen = atomGroup.m_bFrozen;
 }
 
 void AtomGroup::initRotationMatrix()

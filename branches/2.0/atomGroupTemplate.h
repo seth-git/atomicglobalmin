@@ -3,6 +3,7 @@
 #define __ATOM_GROUP_TEMPLATE_H_
 
 class Structure; // Forward declaration
+class AtomGroup; // Forward declaration
 
 #include "xsd/xsdAttributeUtil.h"
 #include "xsd/xsdElementUtil.h"
@@ -24,6 +25,9 @@ public:
 	bool loadAtom(TiXmlElement *pAtomTemplateElem, const Strings* messages);
 	bool save(TiXmlElement *pParentElem, const Strings* messages);
 	bool init(Structure &structure);
+	bool atomicNumbersMatch(const AtomGroup &atomGroup) const;
+	bool atomicNumbersMatch(const unsigned int* structureAtomicNumbers,
+			unsigned int size) const;
 	
 private:
 	static const bool s_molAttRequired[];

@@ -61,7 +61,8 @@ bool ExternalEnergyMethod::readOutputFileWithCCLib(const char* fileName,
 	char line[500];
 	unsigned int numAtoms;
 	unsigned int lineLength;
-	COORDINATE3 *cartesianPoints = NULL;
+	COORDINATE4 *cartesianPoints = NULL;
+	FLOAT* cartesianPoint;
 	unsigned int *atomicNumbers = NULL;
 	unsigned int i;
 	char* myString;
@@ -144,7 +145,7 @@ bool ExternalEnergyMethod::readOutputFileWithCCLib(const char* fileName,
 			if (i != numAtoms)
 				throw "Failed to read the atomic numbers in ExternalEnergyMethod::readOutputFileWithCCLib.";
 
-			cartesianPoints = new COORDINATE3[numAtoms];
+			cartesianPoints = new COORDINATE4[numAtoms];
 			for (i = 0; i < numAtoms; ++i) {
 				if (feof(pipe) || (fgets(line, sizeof(line), pipe) == NULL))
 					throw "Error reading geometry line from cclib.";
@@ -160,8 +161,10 @@ bool ExternalEnergyMethod::readOutputFileWithCCLib(const char* fileName,
 				line[lineLength-2] = ' ';
 				if (line[lineLength-3] == ']')
 					line[lineLength-3] = ' ';
-				if (sscanf(line, "%lf %lf %lf", &cartesianPoints[i][0], &cartesianPoints[i][1], &cartesianPoints[i][2]) != 3)
+				cartesianPoint = cartesianPoints[i];
+				if (sscanf(line, "%lf %lf %lf", &cartesianPoint[0], &cartesianPoint[1], &cartesianPoint[2]) != 3)
 					throw "Error reading Cartesian coordinates in ExternalEnergyMethod::readOutputFileWithCCLib";
+				cartesianPoint[3] = 1;
 			}
 			structure.setAtoms(numAtoms, cartesianPoints, atomicNumbers);
 			obtainedGeometry = true;

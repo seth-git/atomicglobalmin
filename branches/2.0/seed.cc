@@ -264,9 +264,8 @@ bool Seed::save(TiXmlElement *pParentElem, const Strings* messages)
 }
 
 bool Seed::readStructures(std::vector<Structure*> &structures,
-		unsigned int &iAtomGroupTemplates,
-		AtomGroupTemplate* &atomGroupTemplates) {
-	unsigned int i;
+		const std::vector<const Constraints*> &constraints) {
+	unsigned int i, count;
 	Structure* pStructure;
 
 	DIR *dp = NULL;
@@ -287,15 +286,14 @@ bool Seed::readStructures(std::vector<Structure*> &structures,
 				throw "";
 			outputExtLen = strlen(outputExt);
 
+			count = 0;
 			while ((dirp = readdir(dp)) != NULL) {
 				if (strncmp(outputExt, dirp->d_name + strlen(dirp->d_name) - outputExtLen, outputExtLen) != 0)
 					continue;
-				pStructure = new Structure();
-				if (iAtomGroupTemplates > 0)
-					pStructure->setAtoms(iAtomGroupTemplates, atomGroupTemplates);
 
 				fullPathFileName = m_dirPaths[i] + "/" + dirp->d_name;
 
+				pStructure = new Structure();
 				printf("Reading file: %1$s\n", fullPathFileName.c_str());
 				if (ExternalEnergyMethod::readOutputFile(m_dirFileTypes[i], fullPathFileName.c_str(), *pStructure, true)) {
 					structures.push_back(pStructure);
@@ -303,12 +301,9 @@ bool Seed::readStructures(std::vector<Structure*> &structures,
 					delete pStructure;
 					throw "";
 				}
-				if (iAtomGroupTemplates == 0) {
-					iAtomGroupTemplates = 1;
-					atomGroupTemplates = new AtomGroupTemplate[iAtomGroupTemplates];
-					if (!atomGroupTemplates[0].init(*pStructure))
-						throw "";
-				}
+				++count;
+				if (!m_bUseAllFromDir[i] && count >= m_numberFromDir[i])
+					break;
 			}
 		} catch (const char* msg) {
 			if (PRINT_CATCH_MESSAGES && strlen(msg) > 0)
@@ -321,23 +316,14 @@ bool Seed::readStructures(std::vector<Structure*> &structures,
 	}
 
 	for (i = 0; i < m_iEnergyFiles; ++i) {
-		pStructure = new Structure();
-		if (iAtomGroupTemplates > 0) {
-			pStructure->setAtoms(iAtomGroupTemplates, atomGroupTemplates);
-		}
-
 		printf("Reading file: %1$s\n", m_energyFilePaths[i].c_str());
+
+		pStructure = new Structure();
 		if (ExternalEnergyMethod::readOutputFile(m_energyFileTypes[i], m_energyFilePaths[i].c_str(), *pStructure, true)) {
 			structures.push_back(pStructure);
 		} else {
 			delete pStructure;
 			return false;
-		}
-		if (iAtomGroupTemplates == 0) {
-			iAtomGroupTemplates = 1;
-			atomGroupTemplates = new AtomGroupTemplate[iAtomGroupTemplates];
-			if (!atomGroupTemplates[0].init(*pStructure))
-				return false;
 		}
 	}
 
@@ -345,5 +331,6 @@ bool Seed::readStructures(std::vector<Structure*> &structures,
 		printf("Error: zero seeded structures were read.\n");
 		return false;
 	}
+
 	return true;
 }

@@ -29,28 +29,62 @@ public:
 	Structure();
 	~Structure();
 	bool load(TiXmlElement *pStructureElem, const Strings* messages);
-	bool save(TiXmlElement *pParentElem, const Strings* messages);
+	bool save(TiXmlElement *pParentElem, const Strings* messages) const;
 
-	void setAtoms(unsigned int numAtomGroupTemplates, const AtomGroupTemplate* atomGroupTemplates);
-	void setAtoms(unsigned int numAtoms, const COORDINATE3 *cartesianPoints,
+	void setAtoms(unsigned int numAtoms, const COORDINATE4 *cartesianPoints,
 			const unsigned int* atomicNumbers);
 
-	unsigned int getNumberOfAtomGroups() { return m_iNumberOfAtomGroups; }
-	unsigned int getNumberOfAtoms() { return m_iNumberOfAtoms; }
-	const unsigned int* getAtomicNumbers() { return m_atomicNumbers; }
-	const COORDINATE4** getAtomCoordinates() { return m_atomCoordinates; }
+	/**************************************************************************
+	 * Purpose: This method assigns atom groupings to the structure.  When this
+	 *    method is called, if the structure has (1) one atom group, (2) the
+	 *    same total number of atoms as the atom group templates, and (3) the
+	 *    same atomic numbers as the atom group templates, this method enforces
+	 *    the grouping while preserving the coordinates.  Otherwise, the
+	 *    coordinates will be erased.
+	 * Parameters: numAtomGroupTemplates - the size of atomGroupTemplates
+	 *             atomGroupTemplates - an array with the replacement grouping
+	 * Returns: nothing
+	 *************************************************************************/
+	void setAtomGroups(unsigned int numAtomGroupTemplates,
+			const AtomGroupTemplate* atomGroupTemplates);
 
-    bool getIsTransitionState() const { return m_bIsTransitionState; }
+	/**************************************************************************
+	 * Purpose: This method inserts an atom group at the specified index.
+	 * Parameters: atomGroupTemplate - the template of the atom group to insert
+	 *             index - the position of the new atom group
+	 * Returns: nothing
+	 *************************************************************************/
+	void insertAtomGroup(AtomGroupTemplate &atomGroupTemplate, unsigned int index);
 
-    void setIsTransitionState(bool isTransitionState) { m_bIsTransitionState = isTransitionState; }
+	/**************************************************************************
+	 * Purpose: This method deletes an atom group at the specified index.
+	 * Parameters: index - the position of the atom group to be removed
+	 * Returns: nothing
+	 *************************************************************************/
+	void deleteAtomGroup(unsigned int index);
 
-    FLOAT getEnergy() const { return m_energy; }
+	void copy(Structure &structure);
 
-    void setEnergy(FLOAT energy) { m_energy = energy; }
+	unsigned int getNumberOfAtomGroups() const { return m_iNumberOfAtomGroups; }
+	const AtomGroup* getAtomGroups() const { return m_atomGroups; }
+	unsigned int getNumberOfAtoms() const { return m_iNumberOfAtoms; }
+	const unsigned int* getAtomicNumbers() const { return m_atomicNumbers; }
+	const COORDINATE4** getAtomCoordinates() const { return m_atomCoordinates; }
+
+	bool getIsTransitionState() const { return m_bIsTransitionState; }
+
+	void setIsTransitionState(bool isTransitionState) { m_bIsTransitionState = isTransitionState; }
+
+	FLOAT getEnergy() const { return m_energy; }
+
+	void setEnergy(FLOAT energy) { m_energy = energy; }
+
+	void clear();
 
 private:
-	void cleanUp();
 	void initCoordinateRefs();
+	bool atomsMatch(unsigned int numAtomGroupTemplates,
+			const AtomGroupTemplate* atomGroupTemplates);
 
 };
 

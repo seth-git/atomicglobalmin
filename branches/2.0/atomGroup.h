@@ -44,11 +44,13 @@ public:
 	AtomGroup();
 	~AtomGroup();
 	void setAtoms(const AtomGroupTemplate &atomGroupTemplate);
-	void setAtoms(unsigned int numAtoms, const COORDINATE3 *cartesianPoints,
+	void setAtoms(unsigned int numAtoms, const COORDINATE4* cartesianPoints,
 			const unsigned int* atomicNumbers);
 
 	bool load(TiXmlElement *pAtomGroupElem, const Strings* messages);
 	bool save(TiXmlElement *pParentElem, const Strings* messages);
+
+	void copy(AtomGroup &atomGroup);
 
 	unsigned int getNumberOfAtoms() const { return m_iNumberOfAtoms; }
 

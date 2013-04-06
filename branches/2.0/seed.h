@@ -9,6 +9,7 @@
 #include "externalEnergy/externalEnergy.h"
 #include "externalEnergy/externalEnergyMethod.h"
 #include "structure.h"
+#include "constraints.h"
 
 #include <stdio.h>
 #include <cstdlib>
@@ -34,7 +35,7 @@ public:
 	unsigned int m_iDirectories;
 	std::string* m_dirPaths; // An array of size m_iDirectories (same below)
 	bool* m_bUseAllFromDir; // if true, use all files in the directory
-	unsigned int* m_numberFromDir; // An array of size m_iFiles
+	unsigned int* m_numberFromDir; // An array of size m_iDirectories
 	ExternalEnergyMethod::Impl* m_dirFileTypes; // An array of size m_iFiles
 	
 	unsigned int m_iEnergyFiles;
@@ -45,16 +46,14 @@ public:
 	~Seed();
 	bool load(TiXmlElement *pSeedElem, const Strings* messages);
 	bool save(TiXmlElement *pParentElem, const Strings* messages);
-	
+
 	/**************************************************************************
-	 * Purpose: Call this function to read structures from the files.
+	 * Purpose: Call this function to read the seeded structures.
 	 * Parameters: structures - destination structures
-	 *             iAtomGroupTemplates - size of  atomGroupTemplates (may be 0)
-	 *             atomGroupTemplates - template structure (may be NULL)
+	 *             constraints - array of constraints (may be NULL)
 	 *************************************************************************/
 	bool readStructures(std::vector<Structure*> &structures,
-			unsigned int &iAtomGroupTemplates,
-			AtomGroupTemplate* &atomGroupTemplates);
+			const std::vector<const Constraints*> &constraints);
 
 private:
 	void cleanUp();
