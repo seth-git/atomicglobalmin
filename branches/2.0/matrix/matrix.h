@@ -12,6 +12,16 @@
 #include <string.h>
 #include <stdio.h>
 
+static const size_t MATRIX_SIZE = MATRIX_WIDTH * MATRIX_WIDTH;
+static const size_t SIZEOF_MATRIX = MATRIX_SIZE * sizeof(FLOAT);
+
+static const FLOAT IDENTITY_MATRIX[MATRIX_WIDTH][MATRIX_WIDTH] = {
+		{1, 0, 0, 0},
+		{0, 1, 0, 0},
+		{0, 0, 1, 0},
+		{0, 0, 0, 1}
+};
+
 class Matrix {
 public:
 	/////////////////////////////////////////////////////////////////////
@@ -21,20 +31,33 @@ public:
 	//             matrix2 - the second matrix
 	//             product - the location where the result is stored
 	// Returns: nothing
-	static void matrixMultiplyMatrix(const FLOAT matrix1[MATRIX_WIDTH][MATRIX_WIDTH],
-	                                 const FLOAT matrix2[MATRIX_WIDTH][MATRIX_WIDTH],
-	                                 FLOAT product[MATRIX_WIDTH][MATRIX_WIDTH]);
+	static void matrixMultiplyMatrix(
+			const FLOAT matrix1[MATRIX_WIDTH][MATRIX_WIDTH],
+			const FLOAT matrix2[MATRIX_WIDTH][MATRIX_WIDTH],
+			FLOAT product[MATRIX_WIDTH][MATRIX_WIDTH]);
+
+	static void matrixMultiplyMatrixUnoptimized(
+			const FLOAT matrix1[MATRIX_WIDTH][MATRIX_WIDTH],
+			const FLOAT matrix2[MATRIX_WIDTH][MATRIX_WIDTH],
+			FLOAT product[MATRIX_WIDTH][MATRIX_WIDTH]);
 
 	/////////////////////////////////////////////////////////////////////
-	// Purpose: This function multiplies the 3D "point" by the matrix and
-	//          stores the result in point.
-	// Parameters: point - the 3D point
-	//             matrix - matrix
+	// Purpose: This function multiplies the matrix by the point, storing
+	//          the product in result.
+	// Parameters: matrix - matrix
+	//             point - the 3D point
+	//             result - the 3d result
 	// Returns: nothing
-	static void matrixMultiplyPoint(COORDINATE4 &point, const double matrix[MATRIX_WIDTH][MATRIX_WIDTH]);
+	static void matrixMultiplyPoint(
+			const FLOAT matrix[MATRIX_WIDTH][MATRIX_WIDTH],
+			const COORDINATE4 &point, COORDINATE4 &result);
 
-	void copy(FLOAT dest[MATRIX_WIDTH][MATRIX_WIDTH], const FLOAT source[MATRIX_WIDTH][MATRIX_WIDTH]);
-	void printMatrix(const FLOAT matrix[MATRIX_WIDTH][MATRIX_WIDTH]);
+	static void matrixMultiplyPointUnoptimized(
+			const FLOAT matrix[MATRIX_WIDTH][MATRIX_WIDTH],
+			const COORDINATE4 &point, COORDINATE4 &result);
+
+	static void copy(FLOAT dest[MATRIX_WIDTH][MATRIX_WIDTH], const FLOAT source[MATRIX_WIDTH][MATRIX_WIDTH]);
+	static void print(const FLOAT matrix[MATRIX_WIDTH][MATRIX_WIDTH]);
 };
 
 #endif /* MATRIX_H_ */

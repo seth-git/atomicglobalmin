@@ -188,15 +188,14 @@ bool AtomGroupTemplate::init(Structure &structure) {
 	m_iNumber = structure.getNumberOfAtomGroups();
 	m_iFormat = CARTESIAN;
 	FLOAT* c;
-	std::size_t nBytes = sizeof(FLOAT) * 3;
 
 	const unsigned int* atomicNumbers = structure.getAtomicNumbers();
-	const COORDINATE4** atomCoordinates = structure.getAtomCoordinates();
+	const COORDINATE4* const* atomCoordinates = structure.getAtomCoordinates();
 
 	for (unsigned int i = 0; i < structure.getNumberOfAtoms(); ++i) {
 		m_atomicNumbers.push_back(atomicNumbers[i]);
 		c = new FLOAT[3];
-		memcpy(c, atomCoordinates[i], nBytes);
+		memcpy(c, atomCoordinates[i], SIZEOF_COORDINATE3);
 		m_coordinates.push_back(c);
 	}
 	return true;

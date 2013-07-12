@@ -151,8 +151,6 @@ bool Perturbations::loadDefaults(unsigned int iStructures, bool bMoleculesPresen
 	const static FLOAT defaultStartTranslationVector = 0.4;
 	if (pConstraints == NULL)
 		*m_pfTranslationVectorStartLength = defaultStartTranslationVector;
-	else if (pConstraints->m_pfGeneralMinAtomicDistance != NULL)
-		*m_pfTranslationVectorStartLength = *(pConstraints->m_pfGeneralMinAtomicDistance) * 0.5;
 	else {
 		*m_pfTranslationVectorStartLength = pConstraints->getSmallestMinDistance();
 

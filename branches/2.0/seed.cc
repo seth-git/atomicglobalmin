@@ -263,8 +263,7 @@ bool Seed::save(TiXmlElement *pParentElem, const Strings* messages)
 	return true;
 }
 
-bool Seed::readStructures(std::vector<Structure*> &structures,
-		const std::vector<const Constraints*> &constraints) {
+bool Seed::readStructures(std::vector<Structure*> &structures) {
 	unsigned int i, count;
 	Structure* pStructure;
 

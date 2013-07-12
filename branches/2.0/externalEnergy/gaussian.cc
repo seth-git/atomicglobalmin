@@ -221,7 +221,7 @@ bool Gaussian::readOutputFile(const char* outputFile, Structure structure, bool 
 		for (i = 0; i < coordinatesVector.size(); ++i) {
 			atomicNumbers[i] = atomicNumbersVector[i];
 			coordinate = coordinates[i];
-			memcpy(coordinate, coordinatesVector[i], sizeof(COORDINATE3));
+			memcpy(coordinate, coordinatesVector[i], SIZEOF_COORDINATE3);
 			coordinate[3] = 1;
 		}
 		structure.setAtoms(coordinatesVector.size(), coordinates, atomicNumbers);

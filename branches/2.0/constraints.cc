@@ -1,4 +1,5 @@
 #include "constraints.h"
+#include "structure.h"
 
 //const char*      Constraints::s_elementNames[]     = {"cube", "atomicDistances"};
 const unsigned int Constraints::s_minOccurs[] = { 0, 0 };
@@ -21,6 +22,10 @@ void Constraints::cleanUp() {
 	if (m_pfCubeLWH != NULL) {
 		delete m_pfCubeLWH;
 		m_pfCubeLWH = NULL;
+	}
+	if (m_pfHalfCubeLWH != NULL) {
+		delete m_pfHalfCubeLWH;
+		m_pfHalfCubeLWH = NULL;
 	}
 	if (m_pfGeneralMinAtomicDistance != NULL) {
 		delete m_pfGeneralMinAtomicDistance;
@@ -74,10 +79,13 @@ bool Constraints::load(TiXmlElement *pConstraintsElem, const Strings* messages,
 	constraintElements = constraintUtil.getAllElements();
 
 	if (constraintElements[0] != NULL) {
-		if (!m_pfCubeLWH)
+		if (!m_pfCubeLWH) {
 			m_pfCubeLWH = new FLOAT;
+			m_pfHalfCubeLWH = new FLOAT;
+		}
 		if (!XsdTypeUtil::read1PosFloatAtt(constraintElements[0], *m_pfCubeLWH, messages->m_sxSize.c_str(), true, NULL))
 			return false;
+		*m_pfHalfCubeLWH = *m_pfCubeLWH * 0.5;
 	}
 
 	if (constraintElements[1] != NULL) {
@@ -161,7 +169,7 @@ bool Constraints::addMinDist(TiXmlElement *pElem, unsigned int &timesReadGeneral
 	return true;
 }
 
-bool Constraints::save(TiXmlElement *pConstraintsElem, const Strings* messages) {
+bool Constraints::save(TiXmlElement *pConstraintsElem, const Strings* messages) const {
 	pConstraintsElem->SetAttribute(messages->m_sxName.c_str(), m_sName.c_str());
 	if (m_pBase)
 		pConstraintsElem->SetAttribute(messages->m_sxBase.c_str(), m_pBase->m_sName.c_str());
@@ -184,8 +192,8 @@ bool Constraints::save(TiXmlElement *pConstraintsElem, const Strings* messages) 
 		}
 		if (writeSpecificMins) {
 			TiXmlElement* min;
-			for (std::map<unsigned int, std::map<unsigned int, FLOAT> >::iterator i = m_mapMinAtomicDistances.begin(); i != m_mapMinAtomicDistances.end(); i++)
-				for (std::map<unsigned int, FLOAT>::iterator j = i->second.begin(); j != i->second.end(); j++)
+			for (std::map<unsigned int, std::map<unsigned int, FLOAT> >::const_iterator i = m_mapMinAtomicDistances.begin(); i != m_mapMinAtomicDistances.end(); i++)
+				for (std::map<unsigned int, FLOAT>::const_iterator j = i->second.begin(); j != i->second.end(); j++)
 					if (!m_pBase || j->second != m_pBase->m_rgMinAtomicDistances[i->first][j->first]) {
 						min = new TiXmlElement(messages->m_sxMin.c_str());
 						min->SetDoubleAttribute(messages->m_sxValue.c_str(), j->second);
@@ -204,28 +212,30 @@ bool Constraints::save(TiXmlElement *pConstraintsElem, const Strings* messages) 
 	return true;
 }
 
-bool Constraints::specificMinDistNotInBase() {
+bool Constraints::specificMinDistNotInBase() const {
 	if (!m_rgMinAtomicDistances)
 		return false;
 
 	if (!m_pBase || !m_pBase->m_rgMinAtomicDistances)
 		return true;
 
-	for (std::map<unsigned int, std::map<unsigned int, FLOAT> >::iterator i = m_mapMinAtomicDistances.begin(); i != m_mapMinAtomicDistances.end(); i++)
-		for (std::map<unsigned int, FLOAT>::iterator j = i->second.begin(); j != i->second.end(); j++)
+	for (std::map<unsigned int, std::map<unsigned int, FLOAT> >::const_iterator i = m_mapMinAtomicDistances.begin(); i != m_mapMinAtomicDistances.end(); i++)
+		for (std::map<unsigned int, FLOAT>::const_iterator j = i->second.begin(); j != i->second.end(); j++)
 			if (j->second != m_pBase->m_rgMinAtomicDistances[i->first][j->first])
 				return true;
 
 	return false;
 }
 
-void Constraints::copy(Constraints &other) {
+void Constraints::copy(const Constraints &other) {
 	cleanUp();
 	m_sName = other.m_sName;
 	m_pBase = other.m_pBase;
 	if (other.m_pfCubeLWH != NULL) {
 		m_pfCubeLWH = new FLOAT;
 		*m_pfCubeLWH = *other.m_pfCubeLWH;
+		m_pfHalfCubeLWH = new FLOAT;
+		*m_pfHalfCubeLWH = *other.m_pfHalfCubeLWH;
 	}
 	
 	if (other.m_pfGeneralMinAtomicDistance != NULL) {
@@ -238,22 +248,24 @@ void Constraints::copy(Constraints &other) {
 		*m_pfGeneralMaxAtomicDistance = *other.m_pfGeneralMaxAtomicDistance;
 	}
 	
-	if (other.m_rgMinAtomicDistances) {
+	if (other.m_rgMinAtomicDistances != NULL) {
 		m_rgMinAtomicDistances = new MinDistArray[MIN_DIST_ARRAY_SIZE];
-		memcpy(m_rgMinAtomicDistances, other.m_rgMinAtomicDistances, sizeof(FLOAT) * MIN_DIST_ARRAY_SIZE * MIN_DIST_ARRAY_SIZE);
+		memcpy(m_rgMinAtomicDistances, other.m_rgMinAtomicDistances, SIZEOF_MIN_DIST_ARRAY);
 
-		for (std::map<unsigned int, std::map<unsigned int, FLOAT> >::iterator i = other.m_mapMinAtomicDistances.begin(); i != other.m_mapMinAtomicDistances.end(); i++)
-			for (std::map<unsigned int, FLOAT>::iterator j = i->second.begin(); j != i->second.end(); j++)
+		for (std::map<unsigned int, std::map<unsigned int, FLOAT> >::const_iterator i = other.m_mapMinAtomicDistances.begin(); i != other.m_mapMinAtomicDistances.end(); i++)
+			for (std::map<unsigned int, FLOAT>::const_iterator j = i->second.begin(); j != i->second.end(); j++)
 				m_mapMinAtomicDistances[i->first][j->first] = j->second;
 	}
 }
 
-FLOAT Constraints::getSmallestMinDistance() {
+FLOAT Constraints::getSmallestMinDistance() const {
 	const static FLOAT start = 1000.0;
 	FLOAT smallestMin = start;
+	if (NULL != m_pfGeneralMinAtomicDistance)
+		smallestMin = *m_pfGeneralMinAtomicDistance;
 	FLOAT min;
-	for (std::map<unsigned int, std::map<unsigned int, FLOAT> >::iterator i = m_mapMinAtomicDistances.begin(); i != m_mapMinAtomicDistances.end(); i++)
-		for (std::map<unsigned int, FLOAT>::iterator j = i->second.begin(); j != i->second.end(); j++) {
+	for (std::map<unsigned int, std::map<unsigned int, FLOAT> >::const_iterator i = m_mapMinAtomicDistances.begin(); i != m_mapMinAtomicDistances.end(); i++)
+		for (std::map<unsigned int, FLOAT>::const_iterator j = i->second.begin(); j != i->second.end(); j++) {
 			min = j->second;
 			if (min < smallestMin)
 				smallestMin = min;
@@ -263,3 +275,315 @@ FLOAT Constraints::getSmallestMinDistance() {
 	else
 		return smallestMin;
 }
+
+void Constraints::combineConstraints(const Constraints &other) {
+	if (NULL != other.m_pfCubeLWH) {
+		if (NULL == m_pfCubeLWH) {
+			m_pfCubeLWH = new FLOAT;
+			m_pfHalfCubeLWH = new FLOAT;
+			*m_pfCubeLWH = *other.m_pfCubeLWH;
+			*m_pfHalfCubeLWH = *other.m_pfHalfCubeLWH;
+		} else {
+			if (*other.m_pfCubeLWH < *m_pfCubeLWH) {
+				*m_pfCubeLWH = *other.m_pfCubeLWH;
+				*m_pfHalfCubeLWH = *other.m_pfHalfCubeLWH;
+			}
+		}
+	}
+	if (NULL != other.m_pfGeneralMinAtomicDistance) {
+		if (NULL == m_pfGeneralMinAtomicDistance) {
+			m_pfGeneralMinAtomicDistance = new FLOAT;
+			*m_pfGeneralMinAtomicDistance = *other.m_pfGeneralMinAtomicDistance;
+		} else {
+			if (*other.m_pfGeneralMinAtomicDistance < *m_pfGeneralMinAtomicDistance)
+				*m_pfGeneralMinAtomicDistance = *other.m_pfGeneralMinAtomicDistance;
+		}
+	}
+	if (NULL != other.m_pfGeneralMaxAtomicDistance) {
+		if (NULL == m_pfGeneralMaxAtomicDistance) {
+			m_pfGeneralMaxAtomicDistance = new FLOAT;
+			*m_pfGeneralMaxAtomicDistance = *other.m_pfGeneralMaxAtomicDistance;
+		} else {
+			if (*other.m_pfGeneralMaxAtomicDistance < *m_pfGeneralMaxAtomicDistance)
+				*m_pfGeneralMaxAtomicDistance = *other.m_pfGeneralMaxAtomicDistance;
+		}
+	}
+
+	if (NULL != other.m_rgMinAtomicDistances) {
+		if (NULL == m_rgMinAtomicDistances) {
+			m_rgMinAtomicDistances = new MinDistArray[MIN_DIST_ARRAY_SIZE];
+			memcpy(m_rgMinAtomicDistances, other.m_rgMinAtomicDistances, SIZEOF_MIN_DIST_ARRAY);
+
+			for (std::map<unsigned int, std::map<unsigned int, FLOAT> >::const_iterator i = other.m_mapMinAtomicDistances.begin(); i != other.m_mapMinAtomicDistances.end(); i++)
+				for (std::map<unsigned int, FLOAT>::const_iterator j = i->second.begin(); j != i->second.end(); j++)
+					m_mapMinAtomicDistances[i->first][j->first] = j->second;
+		} else {
+			for (std::map<unsigned int, std::map<unsigned int, FLOAT> >::const_iterator i = other.m_mapMinAtomicDistances.begin(); i != other.m_mapMinAtomicDistances.end(); i++)
+				for (std::map<unsigned int, FLOAT>::const_iterator j = i->second.begin(); j != i->second.end(); j++)
+					if (j->second < m_rgMinAtomicDistances[i->first][j->first]) {
+						m_rgMinAtomicDistances[i->first][j->first] = j->second;
+						m_mapMinAtomicDistances[i->first][j->first] = j->second;
+					}
+		}
+	}
+}
+
+FLOAT Constraints::getMinDistance(unsigned int atomicNumber1, unsigned int atomicNumber2) const {
+	FLOAT dist = m_rgMinAtomicDistances[atomicNumber1][atomicNumber2];
+	if (-1 == dist) {
+		if (NULL != m_pfGeneralMinAtomicDistance)
+			dist = *m_pfGeneralMinAtomicDistance;
+		else
+			dist = 0;
+	}
+	return dist;
+}
+
+bool Constraints::minDistancesOK(
+		const std::map<unsigned int, bool> &atomGroupsInitialized,
+		const Structure &structure) const {
+	const FLOAT* const* distanceMatrix = structure.getAtomDistanceMatrix();
+	const unsigned int* atomicNumbers = structure.getAtomicNumbers();
+	const AtomGroup* atomGroups = structure.getAtomGroups();
+	unsigned int n = structure.getNumberOfAtomGroups();
+	unsigned int iGroup;
+
+	std::map<unsigned int, bool> atomsInitialized;
+	unsigned int atomi = 0;
+	unsigned int atomiEnd;
+	for (iGroup = 0; iGroup < n; ++iGroup) {
+		atomiEnd = atomi + atomGroups[iGroup++].getNumberOfAtoms();
+		if (atomGroupsInitialized.find(iGroup) == atomGroupsInitialized.end()) {
+			atomi = atomiEnd;
+			continue;
+		}
+		do {
+			atomsInitialized[atomi++] = true;
+		} while (atomi < atomiEnd);
+	}
+
+	std::map<unsigned int, bool>::iterator i, j;
+
+	for (i = atomsInitialized.begin(); i != atomsInitialized.end(); i++)
+		for (j = i, j++; j != atomsInitialized.end(); j++)
+			if (distanceMatrix[i->first][j->first] < getMinDistance(atomicNumbers[i->first], atomicNumbers[j->first]))
+				return false;
+	return true;
+}
+
+//	if (NULL != m_pfGeneralMaxAtomicDistance) {
+//		distance > *m_pfGeneralMaxAtomicDistance)
+//		return false;
+//	}
+
+bool Constraints::minDistancesOK(const Structure &structure) const {
+	const FLOAT* const* distanceMatrix = structure.getAtomDistanceMatrix();
+	const unsigned int* atomicNumbers = structure.getAtomicNumbers();
+	unsigned int n = structure.getNumberOfAtoms();
+	unsigned int nminus1 = n - 1;
+	unsigned int i, j;
+
+	for (i = 0; i < nminus1; i++)
+		for (j = i+1; j < n; j++)
+			if (distanceMatrix[i][j] < getMinDistance(atomicNumbers[i], atomicNumbers[j]))
+				return false;
+
+	return true;
+}
+
+bool Constraints::maxDistancesOK(
+		const std::map<unsigned int, bool> &atomGroupsInitialized,
+		const Structure &structure) const {
+	if (NULL == m_pfGeneralMaxAtomicDistance)
+		return true;
+	unsigned int n = structure.getNumberOfAtomGroups();
+	const FLOAT* const* distanceMatrix = structure.getAtomGroupDistanceMatrix();
+	unsigned int i, j;
+
+	// Make an adjacency matrix
+	unsigned int i2, j2;
+	unsigned int n2 = atomGroupsInitialized.size();
+	bool** adjacencyMatrix = new bool*[n2];
+	for (i2 = 0; i2 < n2; ++i2)
+		adjacencyMatrix[i2] = new bool[n2];
+	bool temp;
+	unsigned int nminus1 = n-1;
+	for (i = 0, i2 = 0; i < nminus1; ++i) {
+		if (atomGroupsInitialized.find(i) == atomGroupsInitialized.end())
+			continue;
+		for (j = i+1, j2 = i2+1; j < n; ++j) {
+			if (atomGroupsInitialized.find(j) == atomGroupsInitialized.end())
+				continue;
+			temp = distanceMatrix[i][j] <= *m_pfGeneralMaxAtomicDistance;
+			adjacencyMatrix[i2][j2] = temp;
+			adjacencyMatrix[j2][i2] = temp;
+			++j2;
+		}
+		++i2;
+	}
+	for (i2 = 0; i2 < n2; ++i2)
+		adjacencyMatrix[i2][i2] = false;
+
+	unsigned int numberVisited = 0;
+	bool visited[n2];
+	for (i2 = 0; i2 < n2; ++i2)
+		visited[i2] = false;
+	depthFirstSearch(0, numberVisited, visited, adjacencyMatrix, n2);
+
+	for (i2 = 0; i2 < n2; ++i2)
+		delete[] adjacencyMatrix[i2];
+	delete[] adjacencyMatrix;
+
+	return numberVisited == n2;
+}
+
+bool Constraints::maxDistancesOK(const Structure &structure) const {
+	if (NULL == m_pfGeneralMaxAtomicDistance)
+		return true;
+	unsigned int n = structure.getNumberOfAtomGroups();
+	const FLOAT* const* distanceMatrix = structure.getAtomGroupDistanceMatrix();
+	unsigned int i, j;
+
+	// Make an adjacency matrix
+	bool** adjacencyMatrix = new bool*[n];
+	for (i = 0; i < n; ++i)
+		adjacencyMatrix[i] = new bool[n];
+	bool temp;
+	unsigned int nminus1 = n-1;
+	for (i = 0; i < nminus1; ++i)
+		for (j = i+1; j < n; ++j) {
+			temp = distanceMatrix[i][j] <= *m_pfGeneralMaxAtomicDistance;
+			adjacencyMatrix[i][j] = temp;
+			adjacencyMatrix[j][i] = temp;
+		}
+	for (i = 0; i < n; ++i)
+		adjacencyMatrix[i][i] = false;
+
+	unsigned int numberVisited = 0;
+	bool visited[n];
+	for (i = 0; i < n; ++i)
+		visited[i] = false;
+	depthFirstSearch(0, numberVisited, visited, adjacencyMatrix, n);
+
+	for (i = 0; i < n; ++i)
+		delete[] adjacencyMatrix[i];
+	delete[] adjacencyMatrix;
+
+	return numberVisited == n;
+}
+
+void Constraints::depthFirstSearch(unsigned int toVisit,
+		unsigned int &visitedCount, bool* visited,
+		const bool* const * adjacencyMatrix, unsigned int matrixSize) {
+	visited[toVisit] = true;
+	++visitedCount;
+
+	for (unsigned int i = 0; i < matrixSize; ++i)
+		if (!visited[i] && adjacencyMatrix[toVisit][i])
+			depthFirstSearch(i, visitedCount, visited, adjacencyMatrix, matrixSize);
+}
+
+bool Constraints::centerInContainer(
+		const std::map<unsigned int, bool> &atomGroupsInitialized,
+		Structure &structure) const {
+	unsigned int n = structure.getNumberOfAtomGroups();
+	unsigned int i, j;
+	COORDINATE3 minCoordinates, maxCoordinates;
+	COORDINATE3 coordinateSpans; // maxs - mins
+	COORDINATE3 shiftCoordinates;
+	const FLOAT SOME_BIG_NUMBER = 1e100;
+	const COORDINATE4* const* coordinates = structure.getAtomCoordinates();
+	const FLOAT* coordinate;
+
+	for (i = 0; i < 3; ++i) {
+		minCoordinates[i] = SOME_BIG_NUMBER;
+		maxCoordinates[i] = -SOME_BIG_NUMBER;
+	}
+
+	const unsigned int* atomGroupIndices = structure.getAtomGroupIndices();
+	const AtomGroup* atomGroups = structure.getAtomGroups();
+	std::map<unsigned int, bool>::const_iterator it;
+	for (it = atomGroupsInitialized.begin(); it != atomGroupsInitialized.end(); it++) {
+		for (i = atomGroupIndices[it->first], n = i + atomGroups[it->first].getNumberOfAtoms(); i < n; ++i) {
+			coordinate = *coordinates[i];
+			for (j = 0; j < 3; ++j) {
+				if (coordinate[j] < minCoordinates[j])
+					minCoordinates[j] = coordinate[j];
+				if (coordinate[j] > maxCoordinates[j])
+					maxCoordinates[j] = coordinate[j];
+			}
+		}
+	}
+
+	for (i = 0; i < 3; ++i) {
+		coordinateSpans[i] = maxCoordinates[i] - minCoordinates[i];
+		shiftCoordinates[i] = -((coordinateSpans[i] * 0.5) + minCoordinates[i]);
+	}
+
+	AtomGroup* atomGroup;
+	const FLOAT* currentCenter;
+	COORDINATE3 newCenter;
+	for (it = atomGroupsInitialized.begin(); it != atomGroupsInitialized.end(); it++) {
+		atomGroup = structure.getAtomGroup(it->first);
+		currentCenter = atomGroup->getCenter();
+		for (j = 0; j < 3; ++j)
+			newCenter[j] = currentCenter[j] + shiftCoordinates[j];
+		atomGroup->setCenter(newCenter);
+		atomGroup->initRotationMatrix();
+		atomGroup->localToGlobal();
+	}
+
+	return (NULL == m_pfCubeLWH || (coordinateSpans[0] < *m_pfCubeLWH
+			&& coordinateSpans[1] < *m_pfCubeLWH && coordinateSpans[2]
+			< *m_pfCubeLWH));
+}
+
+bool Constraints::centerInContainer(Structure &structure) const {
+	COORDINATE3 minCoordinates, maxCoordinates;
+	COORDINATE3 coordinateSpans; // maxs - mins
+	COORDINATE3 shiftCoordinates;
+	const FLOAT SOME_BIG_NUMBER = 1e100;
+	unsigned int i, j;
+	unsigned int n = structure.getNumberOfAtoms();
+	unsigned int m = structure.getNumberOfAtomGroups();
+	const COORDINATE4* const* coordinates = structure.getAtomCoordinates();
+	const FLOAT* coordinate;
+
+	for (i = 0; i < 3; ++i) {
+		minCoordinates[i] = SOME_BIG_NUMBER;
+		maxCoordinates[i] = -SOME_BIG_NUMBER;
+	}
+
+	for (i = 0; i < n; ++i) {
+		coordinate = *coordinates[i];
+		for (j = 0; j < 3; ++j) {
+			if (coordinate[j] < minCoordinates[j])
+				minCoordinates[j] = coordinate[j];
+			if (coordinate[j] > maxCoordinates[j])
+				maxCoordinates[j] = coordinate[j];
+		}
+	}
+
+	for (i = 0; i < 3; ++i) {
+		coordinateSpans[i] = maxCoordinates[i] - minCoordinates[i];
+		shiftCoordinates[i] = -((coordinateSpans[i] * 0.5) + minCoordinates[i]);
+	}
+
+	AtomGroup* atomGroup;
+	const FLOAT* currentCenter;
+	COORDINATE3 newCenter;
+	for (i = 0; i < m; ++i) {
+		atomGroup = structure.getAtomGroup(i);
+		currentCenter = atomGroup->getCenter();
+		for (j = 0; j < 3; ++j)
+			newCenter[j] = currentCenter[j] + shiftCoordinates[j];
+		atomGroup->setCenter(newCenter);
+		atomGroup->initRotationMatrix();
+		atomGroup->localToGlobal();
+	}
+
+	return (NULL == m_pfCubeLWH || (coordinateSpans[0] < *m_pfCubeLWH
+			&& coordinateSpans[1] < *m_pfCubeLWH && coordinateSpans[2]
+			< *m_pfCubeLWH));
+}
+

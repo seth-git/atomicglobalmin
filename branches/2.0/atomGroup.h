@@ -27,6 +27,7 @@ protected:
 	FLOAT m_rotationMatrixX[MATRIX_WIDTH][MATRIX_WIDTH];
 	FLOAT m_rotationMatrixY[MATRIX_WIDTH][MATRIX_WIDTH];
 	FLOAT m_rotationMatrixZ[MATRIX_WIDTH][MATRIX_WIDTH];
+	FLOAT m_translationMatrix[MATRIX_WIDTH][MATRIX_WIDTH];
 	FLOAT m_matrixLocalToGlobal[MATRIX_WIDTH][MATRIX_WIDTH];
 
 	bool m_bFrozen; // If frozen, this indicates that coordinates shouldn't be updated until frozen is set to false
@@ -55,16 +56,10 @@ public:
 	unsigned int getNumberOfAtoms() const { return m_iNumberOfAtoms; }
 
 	const FLOAT* getCenter() const { return (const FLOAT*)m_centerOfMass; }
-	void setCenter(COORDINATE3 centerOfMass) { memcpy(m_centerOfMass, centerOfMass, sizeof(COORDINATE3)); }
+	void setCenter(COORDINATE3 centerOfMass) { memcpy(m_centerOfMass, centerOfMass, SIZEOF_COORDINATE3); }
 
-	FLOAT getAngleX() const { return m_angles[0]; }
-	void setAngleX(FLOAT radians) { m_angles[0] = radians; }
-
-	FLOAT getAngleY() const { return m_angles[1]; }
-	void setAngleY(FLOAT radians) { m_angles[1] = radians; }
-
-	FLOAT getAngleZ() const { return m_angles[2]; }
-	void setAngleZ(FLOAT radians) { m_angles[2] = radians; }
+	const FLOAT* getAngles() const { return m_angles; }
+	void setAngles(COORDINATE3 angles) { memcpy(m_angles, angles, SIZEOF_COORDINATE3); }
 
 	const COORDINATE4* getLocalAtomCoordinates() const { return m_localPoints; }
 	const COORDINATE4* getGlobalAtomCoordinates() const { return m_globalPoints; }
@@ -74,7 +69,7 @@ public:
 	bool getFrozen() { return m_bFrozen; }
 
 	/////////////////////////////////////////////////////////////////////
-	// Purpose: This function creates the rotation matrix for a molecule.
+	// Purpose: This function initializes the rotation and translation matrix.
 	//    This rotation matrix can translate any point from coordinates local
 	//    to the molecule to global coordinates.  This is accomplished simply by
 	//    mutliplying a point local molecule by the rotation matrix.
@@ -89,9 +84,12 @@ public:
 	// Returns: true if there were no errors
 	bool localToGlobal();
 
+	static void getCenterOfMass(unsigned int iNumberOfAtoms,
+			const unsigned int* atomicNumbers, const COORDINATE4* points,
+			COORDINATE3 &centerOfMass);
+
 private:
 	void cleanUp();
-	void setLocalCenterOfMassToZero();
 };
 
 #endif

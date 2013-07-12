@@ -52,8 +52,7 @@ public:
 	 * Parameters: structures - destination structures
 	 *             constraints - array of constraints (may be NULL)
 	 *************************************************************************/
-	bool readStructures(std::vector<Structure*> &structures,
-			const std::vector<const Constraints*> &constraints);
+	bool readStructures(std::vector<Structure*> &structures);
 
 private:
 	void cleanUp();

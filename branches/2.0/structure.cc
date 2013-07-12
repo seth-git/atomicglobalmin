@@ -4,9 +4,12 @@
 Structure::Structure() {
 	m_iNumberOfAtomGroups = 0;
 	m_atomGroups = NULL;
+	m_atomGroupIndices = NULL;
 	m_iNumberOfAtoms = 0;
 	m_atomCoordinates = NULL;
 	m_atomicNumbers = NULL;
+	m_atomDistanceMatrix = NULL;
+	m_atomGroupDistanceMatrix = NULL;
 }
 
 Structure::~Structure() {
@@ -14,11 +17,15 @@ Structure::~Structure() {
 }
 
 void Structure::clear() {
-	m_iNumberOfAtomGroups = 0;
-	if (m_atomGroups != NULL) {
-		delete[] m_atomGroups;
-		m_atomGroups = NULL;
+	unsigned int i;
+
+	if (m_atomDistanceMatrix != NULL) {
+		for (i = 0; i < m_iNumberOfAtoms; ++i)
+			delete[] m_atomDistanceMatrix[i];
+		delete[] m_atomDistanceMatrix;
+		m_atomDistanceMatrix = NULL;
 	}
+
 	m_iNumberOfAtoms = 0;
 	if (m_atomCoordinates != NULL) {
 		delete[] m_atomCoordinates;
@@ -27,6 +34,24 @@ void Structure::clear() {
 	if (m_atomicNumbers != NULL) {
 		delete[] m_atomicNumbers;
 		m_atomicNumbers = NULL;
+	}
+
+	if (m_atomGroupDistanceMatrix != NULL) {
+		for (i = 0; i < m_iNumberOfAtomGroups; ++i)
+			delete[] m_atomGroupDistanceMatrix[i];
+		delete[] m_atomGroupDistanceMatrix;
+		m_atomGroupDistanceMatrix = NULL;
+	}
+
+	m_iNumberOfAtomGroups = 0;
+	if (m_atomGroups != NULL) {
+		delete[] m_atomGroups;
+		m_atomGroups = NULL;
+	}
+
+	if (m_atomGroupIndices != NULL) {
+		delete[] m_atomGroupIndices;
+		m_atomGroupIndices = NULL;
 	}
 }
 
@@ -68,7 +93,7 @@ void Structure::setAtomGroups(unsigned int numAtomGroupTemplates, const AtomGrou
 		COORDINATE4 localAtomCoordinates[m_iNumberOfAtoms];
 		for (i = 0, j = 0; i < m_iNumberOfAtomGroups; ++i) {
 			ag = &m_atomGroups[i];
-			memcpy(&localAtomCoordinates[j], ag->getLocalAtomCoordinates(), sizeof(COORDINATE4) * ag->getNumberOfAtoms());
+			memcpy(&localAtomCoordinates[j], ag->getLocalAtomCoordinates(), SIZEOF_COORDINATE4 * ag->getNumberOfAtoms());
 			j += ag->getNumberOfAtoms();
 		}
 
@@ -157,12 +182,13 @@ void Structure::deleteAtomGroup(unsigned int index) {
 }
 
 void Structure::initCoordinateRefs() {
+	// Note: this method assumes the calling method has done the following before calling this method:
+	// 1. Called the clear method
+	// 2. Initialized m_iNumberOfAtoms, m_iNumberOfAtomGroups, and m_atomGroups
+	// If this isn't the case, memory leaks may result.
+
 	unsigned int i, j, k;
-	if (m_atomCoordinates != NULL)
-		delete[] m_atomCoordinates;
 	m_atomCoordinates = new const COORDINATE4*[m_iNumberOfAtoms];
-	if (m_atomicNumbers != NULL)
-		delete[] m_atomicNumbers;
 	m_atomicNumbers = new unsigned int[m_iNumberOfAtoms];
 	const COORDINATE4* coordinates;
 	k = 0;
@@ -172,6 +198,77 @@ void Structure::initCoordinateRefs() {
 		for (j = 0; j < m_atomGroups[i].getNumberOfAtoms(); ++j)
 			m_atomCoordinates[k++] = &coordinates[j];
 	}
+
+	m_atomDistanceMatrix = new FLOAT*[m_iNumberOfAtoms];
+	for (i = 0; i < m_iNumberOfAtoms; ++i)
+		m_atomDistanceMatrix[i] = new FLOAT[m_iNumberOfAtoms];
+
+	m_atomGroupIndices = new unsigned int[m_iNumberOfAtomGroups];
+	j = 0;
+	for (i = 0; i < m_iNumberOfAtomGroups; ++i) {
+		m_atomGroupIndices[i] = j;
+		j += m_atomGroups[i].getNumberOfAtoms();
+	}
+
+	m_atomGroupDistanceMatrix = new FLOAT*[m_iNumberOfAtomGroups];
+	for (i = 0; i < m_iNumberOfAtomGroups; ++i)
+		m_atomGroupDistanceMatrix[i] = new FLOAT[m_iNumberOfAtomGroups];
+}
+
+void Structure::updateAtomDistanceMatrix() {
+	unsigned int nminus1 = m_iNumberOfAtoms-1;
+	unsigned int i, iAtom, jAtom;
+
+	FLOAT distance, diff;
+	for (iAtom = 0; iAtom < nminus1; ++iAtom)
+		for (jAtom = iAtom+1; jAtom < m_iNumberOfAtoms; ++jAtom)
+		{
+			distance = 0;
+			for (i = 0; i < 3; ++i) {
+				diff = m_atomCoordinates[iAtom][i] - m_atomCoordinates[jAtom][i];
+				distance += diff*diff;
+			}
+			distance = sqrt(distance);
+			m_atomDistanceMatrix[iAtom][jAtom] = distance;
+			m_atomDistanceMatrix[jAtom][iAtom] = distance;
+		}
+	for (iAtom = 0; iAtom < m_iNumberOfAtoms; ++iAtom)
+		m_atomDistanceMatrix[iAtom][iAtom] = 0;
+}
+
+FLOAT Structure::findClosestDistance(unsigned int iAtomGroup1, unsigned int iAtomGroup2) {
+	unsigned int iAtom1Start = m_atomGroupIndices[iAtomGroup1];
+	unsigned int iAtom1End = iAtom1Start + m_atomGroups[iAtomGroup1].getNumberOfAtoms();
+	unsigned int iAtom2Start = m_atomGroupIndices[iAtomGroup2];
+	unsigned int iAtom2End = iAtom2Start + m_atomGroups[iAtomGroup2].getNumberOfAtoms();
+	unsigned int iAtom1, iAtom2;
+
+	FLOAT answer = 1e100; // some big number;
+	FLOAT temp;
+	for (iAtom1 = iAtom1Start; iAtom1 < iAtom1End; ++iAtom1)
+		for (iAtom2 = iAtom2Start; iAtom2 < iAtom2End; ++iAtom2) {
+			temp = m_atomDistanceMatrix[iAtom1][iAtom2];
+			if (answer > temp)
+				answer = temp;
+		}
+
+	return answer;
+}
+
+void Structure::updateAtomGroupDistanceMatrix() {
+	unsigned int nminus1 = m_iNumberOfAtomGroups-1;
+	unsigned int i, j;
+
+	FLOAT distance;
+	for (i = 0; i < nminus1; ++i)
+		for (j = i+1; j < m_iNumberOfAtomGroups; ++j)
+		{
+			distance = findClosestDistance(i, j);
+			m_atomGroupDistanceMatrix[i][j] = distance;
+			m_atomGroupDistanceMatrix[j][i] = distance;
+		}
+	for (i = 0; i < m_iNumberOfAtomGroups; ++i)
+		m_atomGroupDistanceMatrix[i][i] = 0;
 }
 
 bool Structure::load(TiXmlElement *pStructureElem, const Strings* messages) {
@@ -183,6 +280,7 @@ bool Structure::save(TiXmlElement *pParentElem, const Strings* messages) const {
 }
 
 void Structure::copy(Structure &structure) {
+	unsigned int i;
 	clear();
 
 	m_iNumberOfAtomGroups = structure.m_iNumberOfAtomGroups;
@@ -192,6 +290,20 @@ void Structure::copy(Structure &structure) {
 
 	m_iNumberOfAtoms = structure.m_iNumberOfAtoms;
 	initCoordinateRefs();
+
+	if (NULL != structure.m_atomGroupIndices) {
+		memcpy(m_atomGroupIndices, structure.m_atomGroupIndices, sizeof(unsigned int) * m_iNumberOfAtomGroups);
+	}
+	if (NULL != structure.m_atomDistanceMatrix) {
+		size_t nbytes = sizeof(FLOAT) * m_iNumberOfAtoms;
+		for (i = 0; i < m_iNumberOfAtoms; ++i)
+			memcpy(m_atomDistanceMatrix[i], structure.m_atomDistanceMatrix[i], nbytes);
+	}
+	if (NULL != structure.m_atomGroupDistanceMatrix) {
+		size_t nbytes = sizeof(FLOAT) * m_iNumberOfAtomGroups;
+		for (i = 0; i < m_iNumberOfAtomGroups; ++i)
+			memcpy(m_atomGroupDistanceMatrix[i], structure.m_atomGroupDistanceMatrix[i], nbytes);
+	}
 
 	m_energy = structure.m_energy;
 	m_bIsTransitionState = structure.m_bIsTransitionState;

@@ -18,9 +18,12 @@ class Structure {
 protected:
 	unsigned int m_iNumberOfAtomGroups;
 	AtomGroup* m_atomGroups;
+	unsigned int* m_atomGroupIndices; // array giving the starting atom index of each atom group
 	unsigned int m_iNumberOfAtoms;
-	const COORDINATE4** m_atomCoordinates;
+	const COORDINATE4** m_atomCoordinates; // array with each element pointing to a COORDINATE4
 	unsigned int* m_atomicNumbers;
+	FLOAT** m_atomDistanceMatrix;
+	FLOAT** m_atomGroupDistanceMatrix;
 
 	FLOAT m_energy;
 	bool m_bIsTransitionState;
@@ -67,9 +70,12 @@ public:
 
 	unsigned int getNumberOfAtomGroups() const { return m_iNumberOfAtomGroups; }
 	const AtomGroup* getAtomGroups() const { return m_atomGroups; }
+	AtomGroup* getAtomGroup(unsigned int index) { return &(m_atomGroups[index]); } // be careful with this method
 	unsigned int getNumberOfAtoms() const { return m_iNumberOfAtoms; }
 	const unsigned int* getAtomicNumbers() const { return m_atomicNumbers; }
-	const COORDINATE4** getAtomCoordinates() const { return m_atomCoordinates; }
+	const COORDINATE4* const* getAtomCoordinates() const { return (const COORDINATE4* const*) m_atomCoordinates; }
+	const FLOAT* const* getAtomDistanceMatrix() const { return (const FLOAT* const*)m_atomDistanceMatrix; }
+	const FLOAT* const* getAtomGroupDistanceMatrix() const { return (const FLOAT* const*)m_atomGroupDistanceMatrix; }
 
 	bool getIsTransitionState() const { return m_bIsTransitionState; }
 
@@ -81,11 +87,24 @@ public:
 
 	void clear();
 
+	void updateAtomDistanceMatrix();
+
+	FLOAT findClosestDistance(unsigned int iAtomGroup1, unsigned int iAtomGroup2);
+
+	void updateAtomGroupDistanceMatrix();
+
+	/**************************************************************************
+	 * Purpose: This returns the starting atom index of each atom group
+	 * Parameters: none
+	 * Returns: an array of size getNumberOfAtomGroups() where each value is
+	 *    an index for getAtomicNumbers() or getAtomCoordinates() for a group.
+	 *************************************************************************/
+	const unsigned int* getAtomGroupIndices() { return m_atomGroupIndices; }
+
 private:
 	void initCoordinateRefs();
 	bool atomsMatch(unsigned int numAtomGroupTemplates,
 			const AtomGroupTemplate* atomGroupTemplates);
-
 };
 
 #endif /* STRUCTURE_H_ */

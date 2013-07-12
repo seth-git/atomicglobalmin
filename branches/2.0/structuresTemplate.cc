@@ -1,5 +1,9 @@
 
 #include "structuresTemplate.h"
+#include "random/randomc.h"
+
+unsigned int StructuresTemplate::defaultMaxInitializationTries = 500;
+unsigned int StructuresTemplate::defaultMaxGroupInitializationTries = 50;
 
 //const char* StructuresTemplate::s_attributeNames[] = {"constraints"};
 const bool    StructuresTemplate::s_attRequired[]    = {false};
@@ -378,7 +382,7 @@ unsigned int StructuresTemplate::checkCompatabilityWithoutGroups(const Structure
  *    template, and if the structure meets the constraints.
  *************************************************************************/
 bool StructuresTemplate::ensureCompatibile(Structure &structure,
-		const Constraints* pActionConstraints) {
+		const Constraints &constraints) {
 	unsigned int numDifferences;
 	unsigned int firstDiffTemplateIndex;
 	unsigned int firstDiffStructureIndex;
@@ -393,7 +397,11 @@ bool StructuresTemplate::ensureCompatibile(Structure &structure,
 		if (firstDiffMissing) {
 			structure.insertAtomGroup(m_atomGroupTemplates[firstDiffTemplateIndex], firstDiffStructureIndex);
 
-			// Todo: initialize the atom group according to the constraints
+			InitResult result = initializeAtomGroup(structure, firstDiffStructureIndex, StructuresTemplate::ThreeD, constraints);
+			if (Success != result) {
+				printInitFailureMessage(result);
+				return false;
+			}
 		} else {
 			structure.deleteAtomGroup(firstDiffStructureIndex);
 		}
@@ -414,7 +422,11 @@ bool StructuresTemplate::ensureCompatibile(Structure &structure,
 			++agt->m_iNumber;
 			structure.insertAtomGroup(*agt, firstDiffStructureIndex);
 
-			// Todo: initialize the atom group according to the constraints
+			InitResult result = initializeAtomGroup(structure, firstDiffStructureIndex, StructuresTemplate::ThreeD, constraints);
+			if (Success != result) {
+				printInitFailureMessage(result);
+				return false;
+			}
 		} else {
 			++agt->m_iNumber;
 			structure.setAtomGroups(m_iAtomGroupTemplates, m_atomGroupTemplates);
@@ -426,31 +438,86 @@ bool StructuresTemplate::ensureCompatibile(Structure &structure,
 	return false;
 }
 
-bool StructuresTemplate::initializeStructures(unsigned int &numStructures,
-		Structure* &structures, const Constraints* pActionConstraints) {
-	unsigned int i, j;
-	std::vector<const Constraints*> constraints;
+bool StructuresTemplate::initializeStructures(
+		unsigned int &numStructures, Structure* &structures,
+		const Constraints* pActionConstraints) {
+	unsigned int i, count;
+	Constraints combinedConstraints;
+	Constraints* pTempConstraints = NULL;
+	Constraints* pTempConstraintsUsed;
+
 	if (NULL != pActionConstraints)
-		constraints.push_back(pActionConstraints);
+		combinedConstraints.combineConstraints(*pActionConstraints);
 	if (NULL != m_pConstraints)
-		constraints.push_back(m_pConstraints);
+		combinedConstraints.combineConstraints(*m_pConstraints);
 
 	bool success = true;
 	std::vector<Structure*> seededStructures;
 	try {
 		if (m_pSeed != NULL)
-			if (!m_pSeed->readStructures(seededStructures, constraints))
+			if (!m_pSeed->readStructures(seededStructures))
 				throw "";
 
-		numStructures = seededStructures.size();
+		numStructures = seededStructures.size() + m_iLinear + m_iPlanar + m_i3D;
+		if (NULL != structures)
+			delete[] structures;
 		structures = new Structure[numStructures];
-		for (i = 0, j = 0; i < seededStructures.size(); ++i, ++j) {
-			structures[j].copy(*seededStructures[i]);
-			if (!ensureCompatibile(structures[j], pActionConstraints))
+		count = 0;
+		for (i = 0; i < seededStructures.size(); ++i) {
+			structures[count].copy(*seededStructures[i]);
+			if (!ensureCompatibile(structures[count], combinedConstraints))
 				return false;
+			 ++count;
 		}
+
+		for (i = count; i < numStructures; ++i)
+			structures[i].setAtomGroups(m_iAtomGroupTemplates, m_atomGroupTemplates);
+
+		if (NULL == m_pLinearConstraints)
+			pTempConstraintsUsed = &combinedConstraints;
+		else {
+			pTempConstraints = new Constraints();
+			pTempConstraints->copy(combinedConstraints);
+			pTempConstraints->combineConstraints(*m_pLinearConstraints);
+			pTempConstraintsUsed = pTempConstraints;
+		}
+		for (i = 0; i < m_iLinear; ++i)
+			if (!initializeStructure(structures[count++], *pTempConstraintsUsed, StructuresTemplate::Linear))
+				throw "";
+		if (NULL != pTempConstraints)
+			delete pTempConstraints;
+
+		if (NULL == m_pPlanarConstraints)
+			pTempConstraintsUsed = &combinedConstraints;
+		else {
+			pTempConstraints = new Constraints();
+			pTempConstraints->copy(combinedConstraints);
+			pTempConstraints->combineConstraints(*m_pPlanarConstraints);
+			pTempConstraintsUsed = pTempConstraints;
+		}
+		for (i = 0; i < m_iPlanar; ++i)
+			if (!initializeStructure(structures[count++], *pTempConstraintsUsed, StructuresTemplate::Planar))
+				throw "";
+		if (NULL != pTempConstraints)
+			delete pTempConstraints;
+
+		if (NULL == m_p3DConstraints)
+			pTempConstraintsUsed = &combinedConstraints;
+		else {
+			pTempConstraints = new Constraints();
+			pTempConstraints->copy(combinedConstraints);
+			pTempConstraints->combineConstraints(*m_p3DConstraints);
+			pTempConstraintsUsed = pTempConstraints;
+		}
+		for (i = 0; i < m_i3D; ++i)
+			if (!initializeStructure(structures[count++], *pTempConstraintsUsed, StructuresTemplate::ThreeD))
+				throw "";
+		if (NULL != pTempConstraints)
+			delete pTempConstraints;
 	} catch (const char* message) {
 		success = false;
+		if (NULL != pTempConstraints)
+			delete pTempConstraints;
 	}
 
 	for (i = 0; i < seededStructures.size(); ++i)
@@ -458,4 +525,393 @@ bool StructuresTemplate::initializeStructures(unsigned int &numStructures,
 	seededStructures.clear();
 
 	return success;
+}
+
+unsigned int getRandomKey(const std::map<unsigned int, bool> &map) {
+	unsigned int randomIndex = Random::getInt(0, map.size() - 1);
+	unsigned int i = 0;
+	for (std::map<unsigned int, bool>::const_iterator it = map.begin(); it != map.end(); it++, i++)
+		if (i == randomIndex)
+			return it->first;
+	return 0;
+}
+
+StructuresTemplate::InitResult StructuresTemplate::initializeStructure(Structure &structure,
+		const Constraints &constraints, Type type,
+		unsigned int iMaxTries, unsigned int &iTries,
+		unsigned int iMaxGroupTries, unsigned int &iGroupTries) {
+	unsigned int n = structure.getNumberOfAtomGroups();
+	unsigned int i;
+	std::map<unsigned int, bool> atomGroupsInitialized;
+	std::map<unsigned int, bool> atomGroupsNotInitialized;
+	unsigned int currentAtomGroupIndex;
+	int previousAtomGroupIndex = -1;
+	InitResult status;
+
+	iTries = 0;
+	do {
+		atomGroupsNotInitialized.clear();
+		atomGroupsInitialized.clear();
+		for (i = 0; i < n; ++i)
+			atomGroupsNotInitialized[i] = true;
+		do {
+			currentAtomGroupIndex = getRandomKey(atomGroupsNotInitialized);
+			status = initializeAtomGroup(structure, currentAtomGroupIndex, type, previousAtomGroupIndex,
+					constraints, iMaxGroupTries, iGroupTries, atomGroupsInitialized);
+			if (Success == status) {
+				atomGroupsNotInitialized.erase(currentAtomGroupIndex);
+				atomGroupsInitialized[currentAtomGroupIndex] = true;
+				previousAtomGroupIndex = currentAtomGroupIndex;
+			}
+		} while (atomGroupsNotInitialized.size() > 0 && Success == status);
+		++iTries;
+	} while (iTries < iMaxTries && Success != status);
+
+	return status;
+}
+
+StructuresTemplate::InitResult StructuresTemplate::initializeAtomGroup(
+		Structure &structure, unsigned int index, Type type,
+		const Constraints &constraints) {
+	unsigned int n = structure.getNumberOfAtomGroups();
+	std::map<unsigned int, bool> atomGroupsInitialized;
+	for (unsigned int i = 0; i < n; ++i)
+		if (i != index)
+			atomGroupsInitialized[i] = true;
+	unsigned int iTries;
+	return initializeAtomGroup(structure, index, type, -1, constraints,
+			defaultMaxGroupInitializationTries * 2, iTries,
+			atomGroupsInitialized);
+}
+
+StructuresTemplate::InitResult StructuresTemplate::initializeAtomGroup(
+		Structure &structure, unsigned int index, Type type, int prevIndex,
+		const Constraints &constraints, unsigned int iMaxTries,
+		unsigned int &iTries,
+		const std::map<unsigned int, bool> &atomGroupsInitialized) {
+	if (!constraints.hasContainerOrMaxDist()) {
+		return MissingContainerOrMaxDist;
+	}
+	AtomGroup* currentAtomGroup = structure.getAtomGroup(index);
+	COORDINATE3 center, angles;
+	COORDINATE4 unitVector;
+	COORDINATE3 zeros = {0};
+	FLOAT angleX, angleY;
+	InitResult status;
+
+	iTries = 0;
+	do {
+		status = Success;
+		if (currentAtomGroup->getNumberOfAtoms() > 1) {
+			angles[0] = Random::getFloat(0,PIE_X_2);
+			angles[1] = Random::getFloat(-PIE_OVER_2,PIE_OVER_2);
+			angles[2] = Random::getFloat(0,PIE_X_2);
+			currentAtomGroup->setAngles(angles);
+		}
+
+		memcpy(center, zeros, SIZEOF_COORDINATE3);
+		if (NULL == constraints.m_pfGeneralMaxAtomicDistance) {
+			switch(type) {
+			case ThreeD:
+				center[1] = Random::getFloat(-*constraints.m_pfHalfCubeLWH, *constraints.m_pfHalfCubeLWH);
+				// Notice there's no break here
+			case Planar:
+				center[0] = Random::getFloat(-*constraints.m_pfHalfCubeLWH, *constraints.m_pfHalfCubeLWH);
+				// Notice there's no break here
+			case Linear:
+				center[2] = Random::getFloat(-*constraints.m_pfHalfCubeLWH, *constraints.m_pfHalfCubeLWH);
+				break;
+			}
+			currentAtomGroup->setCenter(center);
+			currentAtomGroup->initRotationMatrix();
+			currentAtomGroup->localToGlobal();
+			structure.updateAtomDistanceMatrix();
+		} else {
+			if (atomGroupsInitialized.size() == 0) {
+				currentAtomGroup->setCenter(zeros);
+				currentAtomGroup->initRotationMatrix();
+				currentAtomGroup->localToGlobal();
+				structure.updateAtomDistanceMatrix();
+			} else {
+				unsigned int referenceIndex;
+				if (type == Linear) {
+					if (prevIndex == -1)
+						referenceIndex = getRandomKey(atomGroupsInitialized);
+					else
+						referenceIndex = (unsigned int)prevIndex;
+				} else {
+					referenceIndex = getRandomKey(atomGroupsInitialized);
+					if (type == ThreeD)
+						angleX = Random::getFloat(-PIE_OVER_2,PIE_OVER_2);
+					else
+						angleX = 0;
+					angleY = Random::getFloat(0,PIE_X_2);
+					getVectorInDirection(angleX, angleY, 1, unitVector);
+				}
+				status = placeAtomGroupRelativeToAnother(index, referenceIndex, structure, unitVector, constraints);
+			}
+		}
+		if (status == Success) {
+			structure.updateAtomGroupDistanceMatrix();
+			if (!constraints.minDistancesOK(atomGroupsInitialized, structure))
+				status = MinDistanceProblem;
+			else if (!constraints.maxDistancesOK(atomGroupsInitialized, structure))
+				status = MaxDistanceProblem;
+			else if (!constraints.centerInContainer(atomGroupsInitialized, structure))
+				status = WontFitInContainer;
+		}
+		++iTries;
+	} while (iTries < iMaxTries && status != Success);
+
+	return status;
+}
+
+void StructuresTemplate::printInitFailureMessage(InitResult result) {
+	switch (result) {
+	case Success:
+		break;
+	case MissingContainerOrMaxDist:
+		printf("Failed to initialize structure because a required container or maximum distance constraint is missing.\n");
+		break;
+	case MinDistanceProblem:
+		printf("Failed to initialize structure because minimum distance constraints could not be met.\n");
+		break;
+	case MaxDistanceProblem:
+		printf("Failed to initialize structure because maximum distance constraints could not be met.\n");
+		break;
+	case WontFitInContainer:
+		printf("Failed to initialize structure because it would not fit in the container.\n");
+		break;
+	case PlaceAtomGroupRelativeToAnotherMethodFailed:
+		printf("Failed to initialize structure because the StructuresTemplate::placeAtomGroupRelativeToAnother method failed.\n");
+		break;
+	}
+}
+
+void StructuresTemplate::getVectorInDirection(FLOAT angleX, FLOAT angleY,
+		FLOAT length, COORDINATE4 &result) {
+	FLOAT matrixX[MATRIX_WIDTH][MATRIX_WIDTH];
+	FLOAT matrixY[MATRIX_WIDTH][MATRIX_WIDTH];
+	FLOAT temp[MATRIX_WIDTH][MATRIX_WIDTH];
+	COORDINATE4 vector;
+
+	FLOAT sinAngleX = sin(angleX);
+	FLOAT sinAngleY = sin(angleY);
+	FLOAT cosAngleX = cos(angleX);
+	FLOAT cosAngleY = cos(angleY);
+
+	vector[0] = 0;
+	vector[1] = 0;
+	vector[2] = length;
+	vector[3] = 1;
+
+	memcpy(matrixX, IDENTITY_MATRIX, SIZEOF_MATRIX);
+	memcpy(matrixY, IDENTITY_MATRIX, SIZEOF_MATRIX);
+
+	// Note that the column index comes before the row index (matrix[col][row])
+	matrixX[1][1] = cosAngleX;
+	matrixX[2][1] = -sinAngleX;
+	matrixX[1][2] = sinAngleX;
+	matrixX[2][2] = cosAngleX;
+
+	matrixY[0][0] = cosAngleY;
+	matrixY[2][0] = sinAngleY;
+	matrixY[0][2] = -sinAngleY;
+	matrixY[2][2] = cosAngleY;
+
+	Matrix::matrixMultiplyMatrix(matrixX,matrixY,temp);
+	Matrix::matrixMultiplyPoint(temp,vector,result);
+}
+
+StructuresTemplate::InitResult StructuresTemplate::placeAtomGroupRelativeToAnother(
+		unsigned int agToPlaceIndex, unsigned int otherAgIndex,
+		Structure &structure, const FLOAT* unitVector,
+		const Constraints &constraints) {
+	AtomGroup* agToPlace = structure.getAtomGroup(agToPlaceIndex);
+	const AtomGroup* otherAg = structure.getAtomGroup(otherAgIndex);
+	FLOAT distance;
+	COORDINATE3 vector;
+	COORDINATE3 center;
+	const FLOAT* otherCenter;
+	unsigned int i;
+
+	if (agToPlace->getNumberOfAtoms() == 1 && otherAg->getNumberOfAtoms() == 1) {
+		FLOAT minDistance = constraints.getMinDistance(agToPlace->getAtomicNumbers()[0], otherAg->getAtomicNumbers()[0]);
+		if (NULL == constraints.m_pfGeneralMaxAtomicDistance) {
+			distance = Random::getFloat(minDistance, minDistance+1);
+		} else {
+			distance = Random::getFloat(minDistance, *constraints.m_pfGeneralMaxAtomicDistance);
+		}
+		otherCenter = otherAg->getCenter();
+		for (i = 0; i < 3; ++i) {
+			vector[i] = unitVector[i] * distance;
+			center[i] = otherCenter[i] + vector[i];
+		}
+		agToPlace->setCenter(center);
+		agToPlace->initRotationMatrix();
+		agToPlace->localToGlobal();
+	} else {
+		// Find the atoms in the two molecules that are closest to one another
+		distance = 1000; // some big number
+		otherCenter = otherAg->getCenter();
+		for (i = 0; i < 3; ++i) {
+			vector[i] = unitVector[i] * distance;
+			center[i] = otherCenter[i] + vector[i];
+		}
+		agToPlace->setCenter(center);
+		agToPlace->initRotationMatrix();
+		agToPlace->localToGlobal();
+
+		const FLOAT* atom1; // atom in agToPlace closest to the otherAg (closest to atom2)
+		const FLOAT* atom2; // atom in the otherAg closest to agToPlace (closest to atom1)
+		FLOAT minDistanceBetweenAtoms;
+		getClosestAtoms(*agToPlace, *otherAg, constraints, atom1, atom2, minDistanceBetweenAtoms);
+
+		// Let R be a line defined by unitVector and atom2;
+		COORDINATE3 pointOnRClosestToAtom1;
+		closestPointFromALineToAPoint(atom2, unitVector, atom1,
+				pointOnRClosestToAtom1);
+
+		// Let L be a line defined by unitVector and otherAg->getCenter();
+		COORDINATE3 pointOnLClosestToAtom1;
+		COORDINATE3 pointOnLClosestToAtom2;
+		closestPointFromALineToAPoint(otherAg->getCenter(), unitVector, atom1, pointOnLClosestToAtom1);
+		closestPointFromALineToAPoint(otherAg->getCenter(), unitVector, atom2, pointOnLClosestToAtom2);
+
+		FLOAT a = euclideanDistance(pointOnLClosestToAtom1,agToPlace->getCenter());
+		FLOAT b = euclideanDistance(pointOnLClosestToAtom2,otherAg->getCenter());
+		FLOAT x = euclideanDistance(pointOnRClosestToAtom1,atom1);
+		FLOAT e;
+		FLOAT maxDist;
+		if (NULL == constraints.m_pfGeneralMaxAtomicDistance)
+			maxDist = minDistanceBetweenAtoms + 1;
+		else
+			maxDist = *constraints.m_pfGeneralMaxAtomicDistance;
+		if (x > maxDist)
+			// There is no way to do this problem the way we want to if x > maxDist.
+			// So we'll set e to the minimum possible value and then increment it (see below).
+			e = a + b;
+		else {
+			FLOAT y;
+			if (minDistanceBetweenAtoms < x)
+				y = Random::getFloat(x,maxDist);
+			else
+				y = Random::getFloat(minDistanceBetweenAtoms,maxDist);
+			e = sqrt((y * y) - (x * x)) + a + b;
+		}
+		if (isnan(e))
+		{
+			printf("e = nan in the function StructuresTemplate::placeAtomGroupRelativeToAnother!\n");
+			return PlaceAtomGroupRelativeToAnotherMethodFailed;
+		}
+
+		while (true) {
+			for (i = 0; i < 3; ++i) {
+				vector[i] = unitVector[i] * e;
+				center[i] = otherCenter[i] + vector[i];
+			}
+			if (isnan(center[0]))
+			{
+				printf("center[0] = nan in the function StructuresTemplate::placeAtomGroupRelativeToAnother!\n");
+				return PlaceAtomGroupRelativeToAnotherMethodFailed;
+			}
+			agToPlace->setCenter(center);
+			agToPlace->initRotationMatrix();
+			agToPlace->localToGlobal();
+			structure.updateAtomDistanceMatrix();
+			if (minDistancesOK(agToPlaceIndex, otherAgIndex, structure, constraints))
+				break;
+			e += 0.1;
+		}
+	}
+
+	return Success;
+}
+
+void StructuresTemplate::getClosestAtoms(const AtomGroup &ag1,
+		const AtomGroup &ag2, const Constraints &constraints,
+		const FLOAT* &atom1, const FLOAT* &atom2, FLOAT &minDistBetween1And2) {
+	const COORDINATE4* coordinates1 = ag1.getGlobalAtomCoordinates();
+	const COORDINATE4* coordinates2 = ag2.getGlobalAtomCoordinates();
+
+	FLOAT diff, dist, minDist;
+	FLOAT smallestDist = 1e100; // some big number
+	int closestIn1 = -1;
+	int closestIn2 = -1;
+	unsigned int i;
+
+	for (unsigned int i1 = 0, n1 = ag1.getNumberOfAtoms(); i1 < n1; ++i1)
+		for (unsigned int i2 = 0, n2 = ag1.getNumberOfAtoms(); i2 < n2; ++i2) {
+			dist = 0;
+			for (i = 0; i < 3; ++i) {
+				diff = coordinates1[i1][i] - coordinates2[i2][i];
+				dist += diff * diff;
+			}
+			dist = sqrt(dist);
+			minDist = constraints.getMinDistance(ag1.getAtomicNumbers()[i1], ag1.getAtomicNumbers()[i2]);
+			dist += minDistBetween1And2;
+			if (dist < smallestDist) {
+				smallestDist = dist;
+				minDistBetween1And2 = minDist;
+				closestIn1 = i1;
+				closestIn2 = i2;
+			}
+		}
+
+	atom1 = coordinates1[closestIn1];
+	atom2 = coordinates1[closestIn2];
+}
+
+void StructuresTemplate::closestPointFromALineToAPoint(
+		const FLOAT* pointOnLine, const FLOAT* vectorAlongLine,
+		const FLOAT* point, FLOAT* result) {
+	FLOAT vectorLengthSquared;
+	FLOAT u;
+
+	vectorLengthSquared =
+		vectorAlongLine[0] * vectorAlongLine[0] +
+		vectorAlongLine[1] * vectorAlongLine[1] +
+		vectorAlongLine[2] * vectorAlongLine[2];
+
+	u = ((point[0] - pointOnLine[0]) * vectorAlongLine[0] +
+		 (point[1] - pointOnLine[1]) * vectorAlongLine[1] +
+		 (point[2] - pointOnLine[2]) * vectorAlongLine[2]) / vectorLengthSquared;
+
+	result[0] = pointOnLine[0] + u * vectorAlongLine[0];
+	result[1] = pointOnLine[1] + u * vectorAlongLine[1];
+	result[2] = pointOnLine[2] + u * vectorAlongLine[2];
+}
+
+FLOAT StructuresTemplate::euclideanDistance(const FLOAT* point1, const FLOAT* point2) {
+	COORDINATE3 diff;
+	FLOAT answer = 0;
+	FLOAT* diffPtrEnd = diff + 3;
+	for (FLOAT* diffPtr = diff; diffPtr < diffPtrEnd; ++diffPtr) {
+		*diffPtr = *(point1++) - *(point2++);
+		answer += *diffPtr * *diffPtr;
+	}
+	return sqrt(answer);
+}
+
+bool StructuresTemplate::minDistancesOK(unsigned int ag1Index,
+		unsigned int ag2Index, const Structure &structure,
+		const Constraints &constraints) {
+	const AtomGroup* atomGroups = structure.getAtomGroups();
+	unsigned int startIndex1 = 0;
+	unsigned int startIndex2 = 0;
+	unsigned int i, j, n, m;
+	unsigned int nAtomGroups = structure.getNumberOfAtomGroups();
+	for (i = 0; i < nAtomGroups; ++i) {
+		if (i < ag1Index)
+			startIndex1 += atomGroups[i].getNumberOfAtoms();
+		if (i < ag2Index)
+			startIndex2 += atomGroups[i].getNumberOfAtoms();
+	}
+	const FLOAT* const* atomDistanceMatrix = structure.getAtomDistanceMatrix();
+	const unsigned int* atomicNumbers = structure.getAtomicNumbers();
+	for (i = startIndex1, n = startIndex1 + atomGroups[ag1Index].getNumberOfAtoms(); i < n; ++i)
+		for (j = startIndex2, m = startIndex2 + atomGroups[ag2Index].getNumberOfAtoms(); j < m; ++j)
+			if (atomDistanceMatrix[i][j] < constraints.getMinDistance(atomicNumbers[i], atomicNumbers[j]))
+				return false;
+	return true;
 }

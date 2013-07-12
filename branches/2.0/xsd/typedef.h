@@ -19,13 +19,8 @@ typedef double FLOAT;
 static const unsigned int MATRIX_WIDTH = 4;
 typedef FLOAT COORDINATE3[3];
 typedef FLOAT COORDINATE4[MATRIX_WIDTH];
-static const size_t MATRIX_SIZE = MATRIX_WIDTH*MATRIX_WIDTH;
-static const FLOAT IDENTITY_MATRIX[MATRIX_WIDTH][MATRIX_WIDTH] = {
-		{1, 0, 0, 0},
-		{0, 1, 0, 0},
-		{0, 0, 1, 0},
-		{0, 0, 0, 1}
-};
+static const size_t SIZEOF_COORDINATE3 = 3 * sizeof(FLOAT);
+static const size_t SIZEOF_COORDINATE4 = MATRIX_WIDTH * sizeof(FLOAT);
 static const FLOAT PIE = 3.14159265359;
 static const FLOAT PIE_X_2 = 6.28318530718;
 static const FLOAT PIE_OVER_2 = 1.57079632679;
