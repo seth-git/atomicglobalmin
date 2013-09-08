@@ -34,9 +34,7 @@
 				</structureTemplate>
 				<threeD number="32" constraints="init"/>
 				<seed freezingIterations="1">
-					<agmlFile path="path" number="10" source="population"/>
-					<directory path="path" type="Gaussian"/>
-					<energyFile path="mypath" type="GAMESS"/>
+					<energyFile path="test/testinit/transitionState.log" type="Gaussian" />
 				</seed>
 			</structuresTemplate>
 			<temperature>
@@ -62,7 +60,7 @@
 			</atomicDistances>
 		</constraints>
 		<energy>
-        	        <external method="ORCA">
+        	        <external method="Gaussian">
         	                <sharedDirectory path="path"/>
         	                <resultsDirectory path="path" maxFiles="100" filePrefix="res"/>
         	                <multiplicity value="2"/>

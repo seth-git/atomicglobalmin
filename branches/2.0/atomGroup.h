@@ -88,6 +88,12 @@ public:
 			const unsigned int* atomicNumbers, const COORDINATE4* points,
 			COORDINATE3 &centerOfMass);
 
+	static void printPoint(const FLOAT* point);
+
+	void print() const { print(false, false); }
+
+	void print(bool radiansOrDegrees, bool printLocalCoordinates) const;
+
 private:
 	void cleanUp();
 };

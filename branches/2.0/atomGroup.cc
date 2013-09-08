@@ -192,3 +192,34 @@ bool AtomGroup::localToGlobal()
 //			return false;
 	return true;
 }
+
+void AtomGroup::printPoint(const FLOAT* point) {
+	printf("%11.7lf %11.7lf %11.7lf", point[0], point[1], point[2]);
+}
+
+void AtomGroup::print(bool radiansOrDegrees, bool printLocalCoordinates) const {
+	printf("Center: ");
+	printPoint(m_centerOfMass);
+	if (radiansOrDegrees) {
+		printf(" Angles(rad): ");
+		printPoint(m_angles);
+	} else {
+		COORDINATE3 angles;
+		angles[0] = m_angles[0] * RAD_TO_DEG;
+		angles[1] = m_angles[1] * RAD_TO_DEG;
+		angles[2] = m_angles[2] * RAD_TO_DEG;
+		printf(" Angles(deg): ");
+		printPoint(angles);
+	}
+	printf("\n");
+	for (unsigned int atomIndex = 0; atomIndex < m_iNumberOfAtoms; ++atomIndex) {
+		printf("%2u %2s ", (atomIndex+1), Handbook::getAtomicSymbol(m_atomicNumbers[atomIndex]));
+		if (printLocalCoordinates) {
+			printf("Local: ");
+			printPoint(m_localPoints[atomIndex]);
+			printf(", Global: ");
+		}
+		printPoint(m_globalPoints[atomIndex]);
+		printf("\n");
+	}
+}

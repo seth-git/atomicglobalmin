@@ -78,7 +78,7 @@ bool ExternalEnergyMethod::readOutputFileWithCCLib(const char* fileName,
 		snprintf(cmd, sizeof(cmd), "python %s %s scfenergies_last_au isTransitionState natom atomnos atomcoords_last", cclibPythonScript, fileName);
 	else
 		snprintf(cmd, sizeof(cmd), "python %s %s scfenergies_last_au", cclibPythonScript, fileName);
-//	std::cout << "executing: " << cmd << endl;
+//	printf("executing: %s\n", cmd);
 	FILE* pipe = NULL;
 	try {
 		pipe = popen(cmd, "r");

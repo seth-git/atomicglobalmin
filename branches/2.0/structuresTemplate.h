@@ -53,16 +53,19 @@ public:
 	 * Returns: true if the structure was initialized within the constraints
 	 *          false otherwise
 	 */
-	bool initializeStructure(Structure &structure,
+	static bool initializeStructure(Structure &structure,
 			const Constraints &constraints, Type type) {
 		unsigned int iTries, iGroupTries;
 		InitResult result = initializeStructure(structure, constraints, type,
 				defaultMaxInitializationTries, iTries,
-				defaultMaxGroupInitializationTries, iGroupTries);
+				defaultMaxGroupInitializationTries, iGroupTries, false);
 		if (Success != result)
 			printInitFailureMessage(result);
 		return result == Success;
 	}
+
+	static unsigned int defaultMaxInitializationTries;
+	static unsigned int defaultMaxGroupInitializationTries;
 
 	/**************************************************************************
 	 * Purpose: This method performs random initialization by performing
@@ -76,27 +79,51 @@ public:
 	 *                              atom group
 	 *             iGroupTries - the highest number of attempts used to
 	 *                           initialize an atom group
+	 *             debug - if true, debug messages will be printed
 	 * Returns: an INIT_FAILURE_REASON enum value
 	 */
-	InitResult initializeStructure(Structure &structure,
-			const Constraints &constraints, Type type,
-			unsigned int iMaxTries, unsigned int &iTries,
-			unsigned int iMaxGroupTries, unsigned int &iGroupTries);
+	static InitResult initializeStructure(Structure &structure,
+			const Constraints &constraints, Type type, unsigned int iMaxTries,
+			unsigned int &iTries, unsigned int iMaxGroupTries,
+			unsigned int &iGroupTries, bool debug);
 
-	InitResult initializeAtomGroup(Structure &structure,
+	static InitResult initializeAtomGroup(Structure &structure,
 			unsigned int index, Type type,
 			const Constraints &constraints);
 
-	InitResult initializeAtomGroup(Structure &structure,
+	static InitResult initializeAtomGroup(Structure &structure,
 			unsigned int index, Type type, int prevIndex,
 			const Constraints &constraints, unsigned int iMaxTries,
 			unsigned int &iTries,
-			const std::map<unsigned int, bool> &atomGroupsInitialized);
+			std::map<unsigned int, bool> &atomGroupsInitialized, bool debug);
+
+	static InitResult placeAtomGroupRelativeToAnother(
+			unsigned int agToPlaceIndex, unsigned int otherAgIndex,
+			Structure &structure, const FLOAT* unitVector,
+			const Constraints &constraints, unsigned int debug);
 
 	static void getVectorInDirection(FLOAT angleX, FLOAT angleY, FLOAT length,
 			COORDINATE4 &result);
 
 	static FLOAT euclideanDistance(const FLOAT* point1, const FLOAT* point2);
+
+	static void getClosestAtoms(const AtomGroup &ag1, const AtomGroup &ag2,
+			const Constraints &constraints, const FLOAT* &atom1,
+			const FLOAT* &atom2, FLOAT &minDistBetween1And2);
+
+	static void closestPointFromALineToAPoint(const FLOAT* pointOnLine,
+			const FLOAT* vectorAlongLine, const FLOAT* point, FLOAT* result);
+
+	/**********************************************************************
+	 * Purpose: This checks the minimum distance constraints between two
+	 *    atom groups.
+	 * Parameters: ag1Index and ag2Index - indexes of the two atom groups
+	 *             structure - the structure containing the two atom groups
+	 *             constraints - contains the minimum distances
+	 * Returns: true of the distance constraints are satisfied
+	 */
+	static bool minDistancesOK(unsigned int ag1Index, unsigned int ag2Index,
+			const Structure &structure, const Constraints &constraints);
 
 	static void printInitFailureMessage(InitResult result);
 
@@ -117,28 +144,6 @@ protected:
 	bool ensureCompatibile(Structure &structure,
 			const Constraints &constraints);
 
-	InitResult placeAtomGroupRelativeToAnother(unsigned int agToPlaceIndex,
-			unsigned int otherAgIndex, Structure &structure,
-			const FLOAT* unitVector, const Constraints &constraints);
-
-	void getClosestAtoms(const AtomGroup &ag1, const AtomGroup &ag2,
-			const Constraints &constraints, const FLOAT* &atom1,
-			const FLOAT* &atom2, FLOAT &minDistBetween1And2);
-
-	void closestPointFromALineToAPoint(const FLOAT* pointOnLine,
-			const FLOAT* vectorAlongLine, const FLOAT* point, FLOAT* result);
-
-	/**********************************************************************
-	 * Purpose: This checks the minimum distance constraints between two
-	 *    atom groups.
-	 * Parameters: ag1Index and ag2Index - indexes of the two atom groups
-	 *             structure - the structure containing the two atom groups
-	 *             constraints - contains the minimum distances
-	 * Returns: true of the distance constraints are satisfied
-	 */
-	bool minDistancesOK(unsigned int ag1Index, unsigned int ag2Index,
-			const Structure &structure, const Constraints &constraints);
-
 	static const bool         s_attRequired[];
 	static const char*        s_attDefaults[];
 
@@ -148,9 +153,6 @@ protected:
 	
 	static const bool s_initTypeAttRequired[];
 	static const char* s_initTypeAttDefaults[];
-
-	static unsigned int defaultMaxInitializationTries;
-	static unsigned int defaultMaxGroupInitializationTries;
 };
 
 #endif

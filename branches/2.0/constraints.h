@@ -38,6 +38,8 @@ public:
 		cleanUp();
 	}
 
+	void setCubeLWH(FLOAT cubeLWH);
+
 	bool load(TiXmlElement *pConstraintsElem, const Strings* messages, std::map<std::string,Constraints*> &constraintsMap);
 	bool save(TiXmlElement *pConstraintsElem, const Strings* messages) const;
 
@@ -74,11 +76,11 @@ public:
 			unsigned int &visitedCount, bool* visited,
 			const bool* const * adjacencyMatrix, unsigned int matrixSize);
 
-	bool centerInContainer(
+	bool ensureInsideContainer(
 			const std::map<unsigned int, bool> &atomGroupsInitialized,
-			Structure &structure) const;
+			Structure &structure, bool debug) const;
 
-	bool centerInContainer(Structure &structure) const;
+	bool ensureInsideContainer(Structure &structure) const;
 
 private:
 	FLOAT* m_pfGeneralMinAtomicDistance;

@@ -42,6 +42,15 @@ void Constraints::cleanUp() {
 	}
 }
 
+void Constraints::setCubeLWH(FLOAT cubeLWH) {
+	if (NULL == m_pfCubeLWH) {
+		m_pfCubeLWH = new FLOAT;
+		m_pfHalfCubeLWH = new FLOAT;
+	}
+	*m_pfCubeLWH = cubeLWH;
+	*m_pfHalfCubeLWH = cubeLWH * 0.5;
+}
+
 bool Constraints::load(TiXmlElement *pConstraintsElem, const Strings* messages,
                        std::map<std::string, Constraints*> &constraintsMap) {
 	const Strings* messagesDL = Strings::instance();
@@ -483,9 +492,12 @@ void Constraints::depthFirstSearch(unsigned int toVisit,
 			depthFirstSearch(i, visitedCount, visited, adjacencyMatrix, matrixSize);
 }
 
-bool Constraints::centerInContainer(
+bool Constraints::ensureInsideContainer(
 		const std::map<unsigned int, bool> &atomGroupsInitialized,
-		Structure &structure) const {
+		Structure &structure, bool debug) const {
+	if (NULL == m_pfCubeLWH) {
+		return true;
+	}
 	unsigned int n = structure.getNumberOfAtomGroups();
 	unsigned int i, j;
 	COORDINATE3 minCoordinates, maxCoordinates;
@@ -515,30 +527,60 @@ bool Constraints::centerInContainer(
 		}
 	}
 
+	bool shifting = false;
 	for (i = 0; i < 3; ++i) {
+		if (debug) {
+			printf("In ensureInsideContainer: max[%u] = %lf, min[%u] = %lf, half cube LWH = %lf, initialized = ",
+					i, maxCoordinates[i], i, minCoordinates[i], *m_pfHalfCubeLWH);
+			for (it = atomGroupsInitialized.begin(); it != atomGroupsInitialized.end(); it++)
+				printf(" %u", it->first);
+			printf("\n");
+		}
 		coordinateSpans[i] = maxCoordinates[i] - minCoordinates[i];
-		shiftCoordinates[i] = -((coordinateSpans[i] * 0.5) + minCoordinates[i]);
+		if (maxCoordinates[i] > *m_pfHalfCubeLWH || minCoordinates[i] < -*m_pfHalfCubeLWH) {
+			shiftCoordinates[i] = -((maxCoordinates[i] + minCoordinates[i]) * 0.5);
+			shifting = true;
+		} else {
+			shiftCoordinates[i] = 0;
+		}
 	}
 
-	AtomGroup* atomGroup;
-	const FLOAT* currentCenter;
-	COORDINATE3 newCenter;
-	for (it = atomGroupsInitialized.begin(); it != atomGroupsInitialized.end(); it++) {
-		atomGroup = structure.getAtomGroup(it->first);
-		currentCenter = atomGroup->getCenter();
-		for (j = 0; j < 3; ++j)
-			newCenter[j] = currentCenter[j] + shiftCoordinates[j];
-		atomGroup->setCenter(newCenter);
-		atomGroup->initRotationMatrix();
-		atomGroup->localToGlobal();
+	if (shifting) {
+		if (debug) {
+			printf("Shift Coordinates: ");
+			AtomGroup::printPoint(shiftCoordinates);
+			printf("\nBefore Shift:\n");
+			structure.print(0);
+		}
+
+		AtomGroup* atomGroup;
+		const FLOAT* currentCenter;
+		COORDINATE3 newCenter;
+		for (it = atomGroupsInitialized.begin(); it != atomGroupsInitialized.end(); it++) {
+			atomGroup = structure.getAtomGroup(it->first);
+			currentCenter = atomGroup->getCenter();
+			for (j = 0; j < 3; ++j)
+				newCenter[j] = currentCenter[j] + shiftCoordinates[j];
+			atomGroup->setCenter(newCenter);
+			atomGroup->initRotationMatrix();
+			atomGroup->localToGlobal();
+		}
+
+		if (debug) {
+			printf("After Shift:\n");
+			structure.print(0);
+		}
 	}
 
-	return (NULL == m_pfCubeLWH || (coordinateSpans[0] < *m_pfCubeLWH
-			&& coordinateSpans[1] < *m_pfCubeLWH && coordinateSpans[2]
-			< *m_pfCubeLWH));
+	return coordinateSpans[0] <= *m_pfCubeLWH &&
+	       coordinateSpans[1] <= *m_pfCubeLWH &&
+	       coordinateSpans[2] <= *m_pfCubeLWH;
 }
 
-bool Constraints::centerInContainer(Structure &structure) const {
+bool Constraints::ensureInsideContainer(Structure &structure) const {
+	if (NULL == m_pfCubeLWH) {
+		return true;
+	}
 	COORDINATE3 minCoordinates, maxCoordinates;
 	COORDINATE3 coordinateSpans; // maxs - mins
 	COORDINATE3 shiftCoordinates;
@@ -564,26 +606,34 @@ bool Constraints::centerInContainer(Structure &structure) const {
 		}
 	}
 
+	bool shifting = false;
 	for (i = 0; i < 3; ++i) {
 		coordinateSpans[i] = maxCoordinates[i] - minCoordinates[i];
-		shiftCoordinates[i] = -((coordinateSpans[i] * 0.5) + minCoordinates[i]);
+		if (maxCoordinates[i] > *m_pfHalfCubeLWH || minCoordinates[i] < -*m_pfHalfCubeLWH) {
+			shiftCoordinates[i] = -((maxCoordinates[i] + minCoordinates[i]) * 0.5);
+			shifting = true;
+		} else {
+			shiftCoordinates[i] = 0;
+		}
 	}
 
-	AtomGroup* atomGroup;
-	const FLOAT* currentCenter;
-	COORDINATE3 newCenter;
-	for (i = 0; i < m; ++i) {
-		atomGroup = structure.getAtomGroup(i);
-		currentCenter = atomGroup->getCenter();
-		for (j = 0; j < 3; ++j)
-			newCenter[j] = currentCenter[j] + shiftCoordinates[j];
-		atomGroup->setCenter(newCenter);
-		atomGroup->initRotationMatrix();
-		atomGroup->localToGlobal();
+	if (shifting) {
+		AtomGroup* atomGroup;
+		const FLOAT* currentCenter;
+		COORDINATE3 newCenter;
+		for (i = 0; i < m; ++i) {
+			atomGroup = structure.getAtomGroup(i);
+			currentCenter = atomGroup->getCenter();
+			for (j = 0; j < 3; ++j)
+				newCenter[j] = currentCenter[j] + shiftCoordinates[j];
+			atomGroup->setCenter(newCenter);
+			atomGroup->initRotationMatrix();
+			atomGroup->localToGlobal();
+		}
 	}
 
-	return (NULL == m_pfCubeLWH || (coordinateSpans[0] < *m_pfCubeLWH
-			&& coordinateSpans[1] < *m_pfCubeLWH && coordinateSpans[2]
-			< *m_pfCubeLWH));
+	return coordinateSpans[0] <= *m_pfCubeLWH &&
+	       coordinateSpans[1] <= *m_pfCubeLWH &&
+	       coordinateSpans[2] <= *m_pfCubeLWH;
 }
 

@@ -21,6 +21,7 @@ protected:
 	unsigned int* m_atomGroupIndices; // array giving the starting atom index of each atom group
 	unsigned int m_iNumberOfAtoms;
 	const COORDINATE4** m_atomCoordinates; // array with each element pointing to a COORDINATE4
+	const COORDINATE4** m_localAtomCoordinates; // array with each element pointing to a COORDINATE4 (untranslated and unrotated)
 	unsigned int* m_atomicNumbers;
 	FLOAT** m_atomDistanceMatrix;
 	FLOAT** m_atomGroupDistanceMatrix;
@@ -74,6 +75,7 @@ public:
 	unsigned int getNumberOfAtoms() const { return m_iNumberOfAtoms; }
 	const unsigned int* getAtomicNumbers() const { return m_atomicNumbers; }
 	const COORDINATE4* const* getAtomCoordinates() const { return (const COORDINATE4* const*) m_atomCoordinates; }
+	const COORDINATE4* const* getLocalAtomCoordinates() const { return (const COORDINATE4* const*) m_localAtomCoordinates; } // Untranslated and unrotated
 	const FLOAT* const* getAtomDistanceMatrix() const { return (const FLOAT* const*)m_atomDistanceMatrix; }
 	const FLOAT* const* getAtomGroupDistanceMatrix() const { return (const FLOAT* const*)m_atomGroupDistanceMatrix; }
 
@@ -87,11 +89,23 @@ public:
 
 	void clear();
 
+	/**************************************************************************
+	 * Purpose: This method applies translation and rotation operations,
+	 *    updating the m_atomCoordinates.
+	 */
+	void applyOperations();
+
 	void updateAtomDistanceMatrix();
 
 	FLOAT findClosestDistance(unsigned int iAtomGroup1, unsigned int iAtomGroup2);
 
 	void updateAtomGroupDistanceMatrix();
+
+	void update() {
+		applyOperations();
+		updateAtomDistanceMatrix();
+		updateAtomGroupDistanceMatrix();
+	}
 
 	/**************************************************************************
 	 * Purpose: This returns the starting atom index of each atom group
@@ -100,6 +114,19 @@ public:
 	 *    an index for getAtomicNumbers() or getAtomCoordinates() for a group.
 	 *************************************************************************/
 	const unsigned int* getAtomGroupIndices() { return m_atomGroupIndices; }
+
+	static unsigned int PRINT_RADIANS;
+	static unsigned int PRINT_ENERGY;
+	static unsigned int PRINT_LOCAL_COORDINATES;
+	static unsigned int PRINT_BOND_LENGTHS;
+	static unsigned int PRINT_DISTANCE_MATRIX;
+
+	void print() const { print(PRINT_ENERGY); }
+
+	void print(unsigned int flags) const;
+
+	static void printDistanceMatrix(const FLOAT* const * matrix,
+			const unsigned int* atomicNumbers, unsigned int size);
 
 private:
 	void initCoordinateRefs();
