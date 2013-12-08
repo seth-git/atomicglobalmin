@@ -108,14 +108,163 @@ void AtomGroup::setAtoms(unsigned int numAtoms, const COORDINATE4* cartesianPoin
 	initRotationMatrix();
 }
 
+const unsigned int AtomGroup::s_atomGroupMinOccurs[] = {0,0,1};
+const unsigned int AtomGroup::s_atomGroupMaxOccurs[] = {1,1,XSD_UNLIMITED};
+
+const bool AtomGroup::s_atomAttReq[] = {true,true,true,true};
+const char* AtomGroup::s_atomAttDef[] = {"", "", "", ""};
+
+const bool AtomGroup::s_coordinateAttReq[] = {true,true,true};
+const char* AtomGroup::s_coordinateAttDef[] = {"", "", ""};
+
 bool AtomGroup::load(TiXmlElement *pAtomGroupElem, const Strings* messages)
 {
 	cleanUp();
+
+	if (!XsdTypeUtil::read1BoolAtt(pAtomGroupElem, m_bFrozen, messages->m_sxFrozen.c_str(), false, "false", messages))
+		return false;
+
+	TiXmlHandle hAtomGroup(0);
+	hAtomGroup=TiXmlHandle(pAtomGroupElem);
+	const char* atomGroupElemNames[] = {messages->m_sxTranslation.c_str(), messages->m_sxRadianAngles.c_str(), messages->m_sxAtom.c_str()};
+	XsdElementUtil atomGroupElemUtil(pAtomGroupElem->Value(), XSD_SEQUENCE, atomGroupElemNames, s_atomGroupMinOccurs, s_atomGroupMaxOccurs);
+	if (!atomGroupElemUtil.process(hAtomGroup)) {
+		return false;
+	}
+	std::vector<TiXmlElement*>* atomGroupElements = atomGroupElemUtil.getSequenceElements();
+
+	m_iNumberOfAtoms = atomGroupElements[2].size();
+	m_atomicNumbers = new unsigned int[m_iNumberOfAtoms];
+	m_localPoints = new COORDINATE4[m_iNumberOfAtoms];
+	m_globalPoints = new COORDINATE4[m_iNumberOfAtoms];
+
+	const char* atomAttNames[] = {messages->m_sxBigZ.c_str(), messages->m_sxX.c_str(), messages->m_sxY.c_str(), messages->m_sxZ.c_str()};
+
+	if (m_iNumberOfAtoms == 1) {
+		std::fill_n(m_localPoints[0], 3, 0);
+		m_localPoints[0][3] = 1;
+
+		TiXmlElement *pAtomElem = atomGroupElements[2][0];
+		XsdAttributeUtil atomAttUtil(pAtomElem->Value(), atomAttNames, s_atomAttReq, s_atomAttDef);
+		if (!atomAttUtil.process(pAtomElem))
+			return false;
+		const char** atomAttValues = atomAttUtil.getAllAttributes();
+
+		unsigned int attNum = 0;
+		if (!XsdTypeUtil::getAtomicNumber(atomAttValues[attNum], m_atomicNumbers[attNum], pAtomElem->Row(), atomAttNames[attNum], pAtomElem->Value()))
+			return false;
+		do {
+			++attNum;
+			if (!XsdTypeUtil::getFloat(atomAttValues[attNum], m_centerOfMass[attNum-1], atomAttNames[attNum], pAtomElem))
+				return false;
+		} while (attNum < 3);
+	} else if (m_iNumberOfAtoms > 1) {
+		const char* coordinateAttNames[] = {messages->m_sxX.c_str(), messages->m_sxY.c_str(), messages->m_sxZ.c_str()};
+		unsigned int i;
+		if (1 == atomGroupElements[0].size()) {
+			TiXmlElement *pTranslationElem = atomGroupElements[0][0];
+			XsdAttributeUtil translationAttUtil(pTranslationElem->Value(), coordinateAttNames, s_coordinateAttReq, s_coordinateAttDef);
+			if (!translationAttUtil.process(pTranslationElem))
+				return false;
+			const char** attValues = translationAttUtil.getAllAttributes();
+			for (i = 0; i < 3; ++i)
+				if (!XsdTypeUtil::getFloat(attValues[i], m_centerOfMass[i], coordinateAttNames[i], pTranslationElem))
+					return false;
+		} else {
+			std::fill_n(m_centerOfMass, 3, 0);
+		}
+		if (1 == atomGroupElements[1].size()) {
+			TiXmlElement *pRadianAnglesElem = atomGroupElements[1][0];
+			XsdAttributeUtil angleAttUtil(pRadianAnglesElem->Value(), coordinateAttNames, s_coordinateAttReq, s_coordinateAttDef);
+			if (!angleAttUtil.process(pRadianAnglesElem))
+				return false;
+			const char** attValues = angleAttUtil.getAllAttributes();
+			for (i = 0; i < 3; ++i)
+				if (!XsdTypeUtil::getFloat(attValues[i], m_angles[i], coordinateAttNames[i], pRadianAnglesElem))
+					return false;
+		} else {
+			std::fill_n(m_angles, 3, 0);
+		}
+		std::vector<TiXmlElement*>* atoms = &(atomGroupElements[2]);
+		for (unsigned int i = 0; i < m_iNumberOfAtoms; ++i) {
+			TiXmlElement *pAtomElem = (*atoms)[i];
+			XsdAttributeUtil atomAttUtil(pAtomElem->Value(), atomAttNames, s_atomAttReq, s_atomAttDef);
+			if (!atomAttUtil.process(pAtomElem))
+				return false;
+			const char** atomAttValues = atomAttUtil.getAllAttributes();
+			unsigned int attNum = 0;
+			if (!XsdTypeUtil::getAtomicNumber(atomAttValues[attNum], m_atomicNumbers[i], pAtomElem->Row(), atomAttNames[attNum], pAtomElem->Value()))
+				return false;
+			do {
+				++attNum;
+				if (!XsdTypeUtil::getFloat(atomAttValues[attNum], m_localPoints[i][attNum-1], atomAttNames[attNum], pAtomElem))
+					return false;
+			} while (attNum < 3);
+			m_localPoints[i][3] = 1;
+		}
+	}
+
+	// Note: Assume local coordinates have been translated so the center of mass is zero.
+
+	initRotationMatrix();
+	localToGlobal();
+
 	return true;
 }
 
 bool AtomGroup::save(TiXmlElement *pParentElem, const Strings* messages)
 {
+	TiXmlElement* atomGroup = new TiXmlElement(messages->m_sxAtomGroup.c_str());
+	pParentElem->LinkEndChild(atomGroup);
+	char numString[100];
+
+	if (m_bFrozen)
+		atomGroup->SetAttribute(messages->m_sxFrozen.c_str(), messages->m_spTrue.c_str());
+
+	if (m_iNumberOfAtoms == 1) {
+		TiXmlElement* atom = new TiXmlElement(messages->m_sxAtom.c_str());
+		atomGroup->LinkEndChild(atom);
+		atom->SetAttribute(messages->m_sxBigZ.c_str(), m_atomicNumbers[0]);
+		doubleToString(m_centerOfMass[0], numString);
+		atom->SetAttribute(messages->m_sxX.c_str(), numString);
+		doubleToString(m_centerOfMass[1], numString);
+		atom->SetAttribute(messages->m_sxY.c_str(), numString);
+		doubleToString(m_centerOfMass[2], numString);
+		atom->SetAttribute(messages->m_sxZ.c_str(), numString);
+	} else if (m_iNumberOfAtoms > 1) {
+		TiXmlElement* translation = new TiXmlElement(messages->m_sxTranslation.c_str());
+		atomGroup->LinkEndChild(translation);
+		doubleToString(m_centerOfMass[0], numString);
+		translation->SetAttribute(messages->m_sxX.c_str(), numString);
+		doubleToString(m_centerOfMass[1], numString);
+		translation->SetAttribute(messages->m_sxY.c_str(), numString);
+		doubleToString(m_centerOfMass[2], numString);
+		translation->SetAttribute(messages->m_sxZ.c_str(), numString);
+
+		TiXmlElement* radianAngles = new TiXmlElement(messages->m_sxRadianAngles.c_str());
+		atomGroup->LinkEndChild(radianAngles);
+		doubleToString(m_angles[0], numString);
+		radianAngles->SetAttribute(messages->m_sxX.c_str(), numString);
+		doubleToString(m_angles[1], numString);
+		radianAngles->SetAttribute(messages->m_sxY.c_str(), numString);
+		doubleToString(m_angles[2], numString);
+		radianAngles->SetAttribute(messages->m_sxZ.c_str(), numString);
+
+		FLOAT* temp;
+		for (unsigned int i = 0; i < m_iNumberOfAtoms; ++i) {
+			TiXmlElement* atom = new TiXmlElement(messages->m_sxAtom.c_str());
+			atomGroup->LinkEndChild(atom);
+			atom->SetAttribute(messages->m_sxBigZ.c_str(), m_atomicNumbers[i]);
+			temp = m_localPoints[i];
+			doubleToString(temp[0], numString);
+			atom->SetAttribute(messages->m_sxX.c_str(), numString);
+			doubleToString(temp[1], numString);
+			atom->SetAttribute(messages->m_sxY.c_str(), numString);
+			doubleToString(temp[2], numString);
+			atom->SetAttribute(messages->m_sxZ.c_str(), numString);
+		}
+	}
+
 	return true;
 }
 

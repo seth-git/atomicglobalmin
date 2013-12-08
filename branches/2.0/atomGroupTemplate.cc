@@ -107,7 +107,7 @@ bool AtomGroupTemplate::loadAtom(TiXmlElement *pAtomTemplateElem, const Strings*
 	cleanUp();
 	
 	const char** values;
-	const char* atomAttNames[] = {messages->m_sxNumber.c_str(), messages->m_sxZ.c_str()};
+	const char* atomAttNames[] = {messages->m_sxNumber.c_str(), messages->m_sxBigZ.c_str()};
 	
 	XsdAttributeUtil attUtil(pAtomTemplateElem->Value(), atomAttNames, s_atomAttRequired, s_atomAttDefaults);
 	if (!attUtil.process(pAtomTemplateElem)) {
@@ -173,7 +173,7 @@ bool AtomGroupTemplate::save(TiXmlElement *pStructureTemplate, const Strings* me
 			pAtomTemplate->SetAttribute(messages->m_sxNumber.c_str(), m_iNumber);
 		}
 		
-		pAtomTemplate->SetAttribute(messages->m_sxZ.c_str(), m_atomicNumbers[0]);
+		pAtomTemplate->SetAttribute(messages->m_sxBigZ.c_str(), m_atomicNumbers[0]);
 	}
 	
 	return true;

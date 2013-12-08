@@ -235,29 +235,29 @@ bool StructuresTemplate::save(TiXmlElement *pParentElem, const Strings* messages
 	return true;
 }
 
-/**************************************************************************
+/*****************************************************************************
  * Purpose: This method examines differences between the template and the
  *    structure.  A "difference" means two atom groups have differing
  *    numbers of atoms or different atomic numbers.
  * Parameters:
  *    structure - the structure
  *    firstDiffTemplateIndex - If a difference is found, this will be the
- *       index in the template of the first different atom group.
- *    firstDiffStructureIndex - If a difference is found, this will be the
- *       index in the structure of the first different atom group.
+ *       index in the m_atomGroupTemplates of the first different atom group.
+ *    firstDiffAtomGroupIndex - If a difference is found, this will be the
+ *       atom group index in the structure of the first difference.
  *    firstDiffMissing - If true, firstDiffTemplateIndex will be an index
  *       in the template of the first atom group that's missing in the
- *       structure; firstDiffStructureIndex will be where to insert the
- *       atom group.  If false, firstDiffStructureIndex will be an index to
+ *       structure; firstDiffAtomGroupIndex will be where to insert the
+ *       atom group.  If false, firstDiffAtomGroupIndex will be an index to
  *       the extra atom group that should be removed from the structure.
  * Returns: the number of different atom groups
- *************************************************************************/
+ ****************************************************************************/
 unsigned int StructuresTemplate::checkCompatabilityWithGroups(const Structure &structure,
-		unsigned int &firstDiffTemplateIndex, unsigned int &firstDiffStructureIndex,
+		unsigned int &firstDiffTemplateIndex, unsigned int &firstDiffAtomGroupIndex,
 		bool &firstDiffMissing) {
 
 	firstDiffTemplateIndex = -1;
-	firstDiffStructureIndex = -1;
+	firstDiffAtomGroupIndex = -1;
 
 	const AtomGroup* atomGroups = structure.getAtomGroups();
 	unsigned int n = structure.getNumberOfAtomGroups();
@@ -274,7 +274,7 @@ unsigned int StructuresTemplate::checkCompatabilityWithGroups(const Structure &s
 			++numDifferences;
 			if (numDifferences == 1) {
 				firstDiffTemplateIndex = tgroup;
-				firstDiffStructureIndex = sgroup;
+				firstDiffAtomGroupIndex = sgroup;
 				firstDiffMissing = !match;
 			}
 		}
@@ -306,22 +306,22 @@ unsigned int StructuresTemplate::checkCompatabilityWithGroups(const Structure &s
  * Parameters:
  *    structure - the structure
  *    firstDiffTemplateIndex - If a difference is found, this will be the
- *       index in the template of the first different atom group.
- *    firstDiffStructureIndex - If a difference is found, this will be the
- *       index in the structure of the first different atom group.
+ *       index in the m_atomGroupTemplates of the first different atom group.
+ *    firstDiffAtomGroupIndex - If a difference is found, this will be the
+ *       atom group index in the structure of the first difference.
  *    firstDiffMissing - If true, firstDiffTemplateIndex will be an index
  *       in the template of the first atom group that's missing in the
- *       structure; firstDiffStructureIndex will be where to insert the
- *       atom group.  If false, firstDiffStructureIndex will be an index to
+ *       structure; firstDiffAtomGroupIndex will be where to insert the
+ *       atom group.  If false, firstDiffAtomGroupIndex will be an index to
  *       the extra atom group that should be removed from the structure.
  * Returns: the number of different atom groups
  *************************************************************************/
 unsigned int StructuresTemplate::checkCompatabilityWithoutGroups(const Structure &structure,
-		unsigned int &firstDiffTemplateIndex, unsigned int &firstDiffStructureIndex,
+		unsigned int &firstDiffTemplateIndex, unsigned int &firstDiffAtomGroupIndex,
 		bool &firstDiffMissing) {
 
 	firstDiffTemplateIndex = -1;
-	firstDiffStructureIndex = -1;
+	firstDiffAtomGroupIndex = -1;
 
 	if (structure.getNumberOfAtomGroups() != 1) {
 		return 1000000; // Some big number indicating they're incompatible
@@ -329,27 +329,30 @@ unsigned int StructuresTemplate::checkCompatabilityWithoutGroups(const Structure
 
 	const unsigned int* atomicNumbers = structure.getAtomicNumbers();
 	unsigned int n = structure.getNumberOfAtoms();
-	unsigned int structIndex = 0;
+	unsigned int structAtomIndex = 0;
+	unsigned int structAtomGroupIndex = 0;
 	unsigned int tgroup = 0;
 	unsigned int tgroup_num = m_atomGroupTemplates[tgroup].m_iNumber;
 	unsigned int tgroupi = 0;
 	bool match;
 	unsigned int numDifferences = 0;
 	while (true) {
-		match = structIndex < n
+		match = structAtomIndex < n
 				&& m_atomGroupTemplates[tgroup].atomicNumbersMatch(
-						&(atomicNumbers[structIndex]), n-structIndex);
+						&(atomicNumbers[structAtomIndex]), n-structAtomIndex);
 		if ((!match && tgroupi < tgroup_num) ||
 				(match && tgroupi == tgroup_num)) {
 			++numDifferences;
 			if (numDifferences == 1) {
 				firstDiffTemplateIndex = tgroup;
-				firstDiffStructureIndex = structIndex;
+				firstDiffAtomGroupIndex = structAtomGroupIndex;
 				firstDiffMissing = !match;
 			}
 		}
-		if (match)
-			structIndex += m_atomGroupTemplates[tgroup].m_atomicNumbers.size();
+		if (match) {
+			structAtomIndex += m_atomGroupTemplates[tgroup].m_atomicNumbers.size();
+			++structAtomGroupIndex;
+		}
 		++tgroupi;
 		if ((!match && tgroupi == tgroup_num) ||
 				tgroupi > tgroup_num) {
@@ -357,7 +360,7 @@ unsigned int StructuresTemplate::checkCompatabilityWithoutGroups(const Structure
 			if (tgroup >= m_iAtomGroupTemplates) {
 				// If we have groups in the structure that are of a different
 				// type than those in the template, they're incompatible.
-				if (structIndex < n)
+				if (structAtomIndex < n)
 					numDifferences = 1000000;
 				break;
 			}
@@ -369,47 +372,51 @@ unsigned int StructuresTemplate::checkCompatabilityWithoutGroups(const Structure
 }
 
 /**************************************************************************
- * Purpose: This method checks the structure for compatability with the
+ * Purpose: This method checks the structure for compatibility with the
  *    template.  If the structure has the same atom groups, they're
  *    compatible. If the structure has the same atom groups as the
  *    template, except one less or one more of a particular atom group,
  *    this method will add or delete as needed.
  * Parameters:
  *    structure - the structure
- *    pActionConstraints - an array of constraints with which newly added
- *       molecules must comply
+ *    structureNumber - needed for printing error messages
+ *    constraints - used for adding new atom groups
  * Returns: true if the structure is or was made to be compatible with the
  *    template, and if the structure meets the constraints.
  *************************************************************************/
 bool StructuresTemplate::ensureCompatibile(Structure &structure,
-		const Constraints &constraints) {
+		unsigned int structureNumber, const Constraints &constraints) {
 	unsigned int numDifferences;
 	unsigned int firstDiffTemplateIndex;
-	unsigned int firstDiffStructureIndex;
+	unsigned int firstDiffAtomGroupIndex;
 	bool firstDiffMissing;
 
+	if (m_iAtomGroupTemplates == 0)
+		return true;
+
 	numDifferences = checkCompatabilityWithGroups(structure,
-			firstDiffTemplateIndex, firstDiffStructureIndex, firstDiffMissing);
+			firstDiffTemplateIndex, firstDiffAtomGroupIndex, firstDiffMissing);
 
 	if (numDifferences == 0) {
 		return true;
 	} else if (numDifferences == 1) {
 		if (firstDiffMissing) {
-			structure.insertAtomGroup(m_atomGroupTemplates[firstDiffTemplateIndex], firstDiffStructureIndex);
+			structure.insertAtomGroup(m_atomGroupTemplates[firstDiffTemplateIndex], firstDiffAtomGroupIndex);
 
-			InitResult result = initializeAtomGroup(structure, firstDiffStructureIndex, StructuresTemplate::ThreeD, constraints);
+			InitResult result = initializeAtomGroup(structure, firstDiffAtomGroupIndex, StructuresTemplate::ThreeD, constraints);
 			if (Success != result) {
 				printInitFailureMessage(result);
 				return false;
 			}
 		} else {
-			structure.deleteAtomGroup(firstDiffStructureIndex);
+			structure.deleteAtomGroup(firstDiffAtomGroupIndex);
+			structure.update();
 		}
 		return true;
 	}
 
 	numDifferences = checkCompatabilityWithoutGroups(structure,
-			firstDiffTemplateIndex, firstDiffStructureIndex, firstDiffMissing);
+			firstDiffTemplateIndex, firstDiffAtomGroupIndex, firstDiffMissing);
 
 	if (numDifferences == 0) {
 		structure.setAtomGroups(m_iAtomGroupTemplates, m_atomGroupTemplates);
@@ -420,9 +427,9 @@ bool StructuresTemplate::ensureCompatibile(Structure &structure,
 			--agt->m_iNumber;
 			structure.setAtomGroups(m_iAtomGroupTemplates, m_atomGroupTemplates);
 			++agt->m_iNumber;
-			structure.insertAtomGroup(*agt, firstDiffStructureIndex);
+			structure.insertAtomGroup(*agt, firstDiffAtomGroupIndex);
 
-			InitResult result = initializeAtomGroup(structure, firstDiffStructureIndex, StructuresTemplate::ThreeD, constraints);
+			InitResult result = initializeAtomGroup(structure, firstDiffAtomGroupIndex, StructuresTemplate::ThreeD, constraints);
 			if (Success != result) {
 				printInitFailureMessage(result);
 				return false;
@@ -431,10 +438,16 @@ bool StructuresTemplate::ensureCompatibile(Structure &structure,
 			++agt->m_iNumber;
 			structure.setAtomGroups(m_iAtomGroupTemplates, m_atomGroupTemplates);
 			--agt->m_iNumber;
-			structure.deleteAtomGroup(firstDiffStructureIndex);
+			structure.deleteAtomGroup(firstDiffAtomGroupIndex);
+			structure.update();
 		}
 		return true;
+	} else {
+		const Strings* messagesDL = Strings::instance();
+		printf(messagesDL->m_sSeededStructureDoesntMatchTemplate.c_str(), structureNumber);
+		return false;
 	}
+
 	return false;
 }
 
@@ -465,9 +478,14 @@ bool StructuresTemplate::initializeStructures(
 		count = 0;
 		for (i = 0; i < seededStructures.size(); ++i) {
 			structures[count].copy(*seededStructures[i]);
-			if (!ensureCompatibile(structures[count], combinedConstraints))
+			if (!ensureCompatibile(structures[count], (i+1), combinedConstraints))
 				return false;
-			 ++count;
+			if (!combinedConstraints.validate(structures[count])) {
+				const Strings* messagesDL = Strings::instance();
+				printf(messagesDL->m_sSeededStructureDoesntMatchConstraints.c_str(), (i+1));
+				return false;
+			}
+			++count;
 		}
 
 		for (i = count; i < numStructures; ++i)

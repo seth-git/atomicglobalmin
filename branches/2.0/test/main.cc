@@ -10,7 +10,7 @@ void addFailedTestName(std::string &failedUnitTests, const char* failedTestName)
 
 int main(int argc, char* argv[])
 {
-	const char* (*tests[])() = {&testMatrixMultiplication, &ccLibReadTest, &testPlaceAtomGroupRelativeToAnother, &testInitialization};
+	const char* (*tests[])() = {&testMatrixMultiplication, &ccLibReadTest, &testPlaceAtomGroupRelativeToAnother, &testInitialization, &testSeeding, &testSeeding2, &testSeeding3, &testSeeding4};
 
 	if (0 != chdir("..")) {
 		printf("Failed to perform 'cd ..', errno = %d\n", errno);
@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 			addFailedTestName(failedUnitTests, failedTestName);
 	}
 
-	printf("Tests run: %d  Tests passed: %d  Tests failed: %d\n\n", totalTests, passedTests, (totalTests - passedTests));
+	printf("\nTests run: %d  Tests passed: %d  Tests failed: %d\n\n", totalTests, passedTests, (totalTests - passedTests));
 	if (totalTests == passedTests)
 		printf("All tests passed!\n\n");
 	else {

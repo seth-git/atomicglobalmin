@@ -183,7 +183,8 @@ bool SimulatedAnnealing::saveSetup(TiXmlElement *pSimElem, const Strings* messag
 	TiXmlElement* setup = new TiXmlElement(messages->m_sxSetup.c_str());
 	pSimElem->LinkEndChild(setup);
 	
-	m_structuresTemplate.save(setup, messages);
+	if (!m_structuresTemplate.save(setup, messages))
+		return false;
 	
 	TiXmlElement* temperature = new TiXmlElement(messages->m_sxTemperature.c_str());
 	setup->LinkEndChild(temperature);
@@ -247,12 +248,28 @@ bool SimulatedAnnealing::saveResume(TiXmlElement *pSimElem, const Strings* messa
 {
 	TiXmlElement* resume = new TiXmlElement(messages->m_sxResume.c_str());
 	pSimElem->LinkEndChild(resume);
+
+	TiXmlElement* totalEnergyCalculations = new TiXmlElement(messages->m_sxTotalEnergyCalculations.c_str());
+	totalEnergyCalculations->SetAttribute(messages->m_sxValue.c_str(), m_iEnergyCalculations);
+	resume->LinkEndChild(totalEnergyCalculations);
 	
+	TiXmlElement* elapsedSeconds = new TiXmlElement(messages->m_sxElapsedSeconds.c_str());
+	XsdTypeUtil::writeTimeT(m_tElapsedSeconds, elapsedSeconds, messages->m_sxValue.c_str());
+	resume->LinkEndChild(elapsedSeconds);
+
+	TiXmlElement* structures = new TiXmlElement(messages->m_sxStructures.c_str());
+	resume->LinkEndChild(structures);
+	for (unsigned int i = 0; i < m_iStructures; ++i) {
+		m_structures[i].save(structures, messages);
+	}
+
 	return true;
 }
 
 bool SimulatedAnnealing::run()
 {
+	if (!Action::run())
+		return false;
 	m_pInput->save();
 	return true;
 }

@@ -4,16 +4,10 @@
 
 #include "action.h"
 #include "perturbations.h"
-#include "structuresTemplate.h"
 #include "structure.h"
 
 class SimulatedAnnealing : public Action {
 public:
-	StructuresTemplate m_structuresTemplate;
-
-	unsigned int m_iStructures;
-	Structure* m_structures;
-
 	FLOAT* m_pfStartingTemperature;
 	FLOAT* m_pfPercentAcceptedPerturbations; // Value between 0 and 1.0
 	unsigned int m_iDecreaseTemperatureAfterIt;
@@ -34,7 +28,7 @@ public:
 	SimulatedAnnealing(Input* input);
 	~SimulatedAnnealing();
 	bool loadSetup(TiXmlElement *pSetupElem, const Strings* messages);
-	bool saveSetup(TiXmlElement *pSetupElem, const Strings* messages);
+	bool saveSetup(TiXmlElement *pSimElem, const Strings* messages);
 	bool loadResume(TiXmlElement *pResumeElem, const Strings* messages);
 	bool saveResume(TiXmlElement *pResumeElem, const Strings* messages);
 	bool run();

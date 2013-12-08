@@ -13,7 +13,10 @@ const char* testMatrixMultiplication();
 
 const char* ccLibReadTest();
 
-//const char* testRandomSeeding();
+const char* testSeeding();
+const char* testSeeding2();
+const char* testSeeding3();
+const char* testSeeding4();
 
 //const char* testInitializationResults;
 

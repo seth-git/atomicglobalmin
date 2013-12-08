@@ -101,7 +101,6 @@ public:
 	std::string m_sxAtomTemplate;
 	std::string m_sxNumber;
 	std::string m_sxFormat;
-	std::string m_sxZ;
 	std::string m_sxDegrees;
 	std::string m_sxType;
 
@@ -129,6 +128,21 @@ public:
 	std::string m_sxNumberPerIteration;
 
 	std::string m_sxAcceptedPertHistIt;
+
+	std::string m_sxTotalEnergyCalculations;
+	std::string m_sxElapsedSeconds;
+	std::string m_sxStructures;
+	std::string m_sxStructure;
+	std::string m_sxIsTransitionState;
+	std::string m_sxAtomGroup;
+	std::string m_sxFrozen;
+	std::string m_sxTranslation;
+	std::string m_sxRadianAngles;
+	std::string m_sxAtom;
+	std::string m_sxX;
+	std::string m_sxY;
+	std::string m_sxZ;
+	std::string m_sxBigZ;
 
 	std::string m_spADF;
 	std::string m_spGAMESS;
@@ -183,6 +197,7 @@ public:
 	std::string m_sErrorAtomicNumOverMax2;
 	std::string m_sErrorEmptyPath;
 	std::string m_sRangeError;
+	std::string m_sUnableToReadTime;
 
 	std::string m_sError;
 	std::string m_sErrorOnLine;
@@ -197,6 +212,8 @@ public:
 	std::string m_sErrorDuplicateMinDist;
 	
 	std::string m_sEmptyStructureTemplate;
+	std::string m_sSeededStructureDoesntMatchTemplate;
+	std::string m_sSeededStructureDoesntMatchConstraints;
 	
 	std::string m_sErrorEmptyMoleculeTemplate;
 	std::string m_sMissingChildElements3;

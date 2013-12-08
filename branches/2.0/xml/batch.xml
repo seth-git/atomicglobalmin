@@ -6,11 +6,43 @@
 	<batch>
 		<setup>
 			<structuresTemplate>
-				<seed>
-					<agmlFile path="sim.xml"/>
-				</seed>
+				<structureTemplate>
+					<moleculeTemplate number="1" format="Cartesian">
+						C   -2.646636   -1.062747   -0.826172
+						H   -2.119982   -2.001828   -0.710490
+						H   -3.641961   -1.101236   -1.253241
+						C   -2.111713    0.099834   -0.464456
+						H   -2.678377    1.017862   -0.603423
+						C   -0.750835    0.322832    0.142508
+						O   -0.067373   -1.001838    0.105605
+						C    0.095247    1.231857   -0.794368
+						H   -0.461842    2.164024   -0.930859
+						H    0.171239    0.736640   -1.769275
+						C   -0.831198    0.863314    1.563463
+						H   -1.313463    0.140349    2.223240
+						H    0.159542    1.102554    1.943679
+						H   -1.431320    1.776562    1.552151
+						O    0.761868   -1.229237    1.100385
+						O    1.355158    1.567601   -0.273791
+						H    1.981122    0.839765   -0.438313
+					</moleculeTemplate>
+					<moleculeTemplate number="2">
+						H 0.757540797781 0.0 0.587079636589
+						H -0.757540797781 0.0 0.587079636589
+						O 0.0 0.0 0.0
+					</moleculeTemplate>
+				</structureTemplate>
+				<threeD number="32" constraints="const"/>
 			</structuresTemplate>
 		</setup>
+		<constraints name="const">
+			<cube size="10"/>
+			<atomicDistances>
+				<min value="0.9" Z1="O" Z2="H"/>
+				<min value="0.7"/>
+				<max value="2.7"/>
+			</atomicDistances>
+		</constraints>
 		<energy>
 			<external method="Gaussian">
 				<sharedDirectory path="path"/>

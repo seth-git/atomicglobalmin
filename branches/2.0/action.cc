@@ -12,6 +12,8 @@ const unsigned int Action::s_maxOccurs[]    = {1      , XSD_UNLIMITED, 1       ,
 Action::Action(Input* input)
 {
 	m_pInput = input;
+	m_iEnergyCalculations = 0;
+	m_tElapsedSeconds = 0;
 }
 
 Action::~Action()
@@ -144,5 +146,10 @@ bool Action::save(TiXmlElement *pActionElem, const Strings* messages)
 	TiXmlElement* results = new TiXmlElement(messages->m_sxResults.c_str());  
 	pActionElem->LinkEndChild(results);
 	
+	return true;
+}
+
+bool Action::run() {
+	m_tStartTime = time (NULL);
 	return true;
 }

@@ -110,6 +110,16 @@ bool XsdTypeUtil::getNonNegativeInt(const char* value, unsigned int &result, con
 	return true;
 }
 
+bool XsdTypeUtil::getFloat(const char* value, FLOAT &result, const char* attributeName, TiXmlElement *pElem)
+{
+	if (sscanf(value, "%lf", &result) != 1) {
+		const Strings* messagesDL = Strings::instance();
+		printf(messagesDL->m_sUnableToReadPositiveFloat.c_str(), value, attributeName, pElem->Value(), pElem->Row());
+		return false;
+	}
+	return true;
+}
+
 bool XsdTypeUtil::getPositiveFloat(const char* value, FLOAT &result, const char* attributeName, TiXmlElement *pElem)
 {
 	if (sscanf(value, "%lf", &result) != 1) {
@@ -145,6 +155,17 @@ bool XsdTypeUtil::getNonNegativeFloat(const char* value, FLOAT &result, const ch
 	return true;
 }
 
+bool XsdTypeUtil::readTimeT(const char* value, time_t &result, const char* attributeName, TiXmlElement *pElem) {
+	long long num;
+	if (sscanf(value, "%lld", &num) != 1) {
+		const Strings* messagesDL = Strings::instance();
+		printf(messagesDL->m_sUnableToReadTime.c_str(), value, attributeName, pElem->Value(), pElem->Row());
+		return false;
+	}
+	result = num;
+	return true;
+}
+
 bool XsdTypeUtil::read1StrAtt(TiXmlElement *pElem, std::string &result, const char* attributeName, bool required, const char* defaultValue) {
 	const char* valueAttNames[] = {attributeName};
 	const bool  valueAttReq[]   = {required};
@@ -174,6 +195,14 @@ bool XsdTypeUtil::read1DirAtt(TiXmlElement *pElem, std::string &resultDir, const
 		return true;
 	return checkDirectoryOrFileName(values[0], resultDir, attributeName, pElem);
 }
+
+bool XsdTypeUtil::read1BoolAtt(TiXmlElement *pElem, bool &result, const char* attributeName, bool required, const char* defaultValue, const Strings* messages) {
+	std::string resultStr;
+	if (!read1StrAtt(pElem, resultStr, attributeName, required, defaultValue))
+		return false;
+	return getBoolValue(attributeName, resultStr.c_str(), result, pElem, messages);
+}
+
 
 bool XsdTypeUtil::read1IntAtt(TiXmlElement *pElem, int &result, const char* attributeName, bool required, const char* defaultValue) {
 	const char* valueAttNames[] = {attributeName};
@@ -235,6 +264,21 @@ bool XsdTypeUtil::read1PosFloatAtt(TiXmlElement *pElem, FLOAT &result, const cha
 	return getPositiveFloat(values[0], result, attributeName, pElem);
 }
 
+bool XsdTypeUtil::read1TimeT(TiXmlElement *pElem, time_t &result, const char* attributeName, bool required, const char* defaultValue) {
+	const char* attributeNames[] = {attributeName};
+	const bool  valueAttReq[]   = {required};
+	const char* valueAttDef[]   = {defaultValue};
+	const char** values;
+
+	XsdAttributeUtil valueUtil(pElem->Value(), attributeNames, valueAttReq, valueAttDef);
+	if (!valueUtil.process(pElem))
+		return false;
+	values = valueUtil.getAllAttributes();
+	if (!required && (values[0] == NULL || values[0][0] == '\0'))
+		return true;
+	return readTimeT(values[0], result, attributeName, pElem);
+}
+
 bool XsdTypeUtil::readElementText(TiXmlElement *pElem, std::string &result) {
 	if (pElem->GetText() == NULL) {
 		const Strings* messagesDL = Strings::instance();
@@ -293,3 +337,16 @@ bool XsdTypeUtil::inRange(FLOAT number, FLOAT lo, FLOAT hi, TiXmlElement *pElem,
 	}
 	return true;
 }
+
+void XsdTypeUtil::writeTimeT(time_t value, TiXmlElement *pElem, const char* attName) {
+	char temp[100];
+	snprintf(temp, sizeof(temp), "%lld", (long long)value);
+	pElem->SetAttribute(attName, temp);
+}
+
+void XsdTypeUtil::writeBool(bool value, TiXmlElement *pElem, const char* attName, const Strings* messages) {
+	const char* booleanValues[] = {messages->m_spTrue.c_str(), messages->m_spFalse.c_str()};
+	pElem->SetAttribute(attName, booleanValues[(unsigned int)value]);
+}
+
+

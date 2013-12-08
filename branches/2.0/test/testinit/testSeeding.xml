@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<agml version="2.0"
+      xmlns="http://sourceforge.net/projects/atomicglobalmin/"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation= "http://sourceforge.net/projects/atomicglobalmin/ ../../xsd/agml.xsd">
+	<batch>
+		<setup>
+			<structuresTemplate constraints="const">
+				<structureTemplate>
+					<moleculeTemplate number="1">
+						H 0.0 0.0 1.064890
+						O 0.0 0.0 0.0
+					</moleculeTemplate>
+					<moleculeTemplate number="3">
+						H 0.757540797781 0.0 0.587079636589
+						H -0.757540797781 0.0 0.587079636589
+						O 0.0 0.0 0.0
+					</moleculeTemplate>
+				</structureTemplate>
+				<seed>
+					<agmlFile path="test/testinit/seed.xml" source="population" />
+				</seed>
+			</structuresTemplate>
+		</setup>
+		<constraints name="const">
+			<cube size="10"/>
+			<atomicDistances>
+				<min value="0.9" Z1="O" Z2="H"/>
+				<min value="0.7"/>
+				<max value="2.7"/>
+			</atomicDistances>
+		</constraints>
+		<energy>
+			<external method="Gaussian">
+				<sharedDirectory path="path"/>
+				<resultsDirectory path="path" maxFiles="100" filePrefix="res"/>
+				<multiplicity value="1"/>
+				<charge value="-1"/>
+				<header>
+% mem=2000MB
+# B3LYP/6-311++G(d,p) scfcon=4 scfcyc=300 scf=direct
+				</header>
+			</external>
+		</energy>
+	</batch>
+</agml>

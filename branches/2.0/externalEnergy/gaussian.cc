@@ -108,7 +108,7 @@ bool Gaussian::createInputFile(Structure &structure,
 	return true;
 }
 
-bool Gaussian::readOutputFile(const char* outputFile, Structure structure, bool readGeometry) {
+bool Gaussian::readOutputFile(const char* outputFile, Structure &structure, bool readGeometry) {
 	ifstream fin(outputFile);
 	char line[300];
 	std::string stringLine;

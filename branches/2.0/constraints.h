@@ -45,6 +45,8 @@ public:
 
 	void copy(const Constraints &other);
 
+	bool validate(Structure &structure) const;
+
 	FLOAT getSmallestMinDistance() const; // Returns 0 if there are no specific minimum distances
 
 	/**********************************************************************

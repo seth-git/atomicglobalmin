@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<agml version="2.0"
+      xmlns="http://sourceforge.net/projects/atomicglobalmin/"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation= "http://sourceforge.net/projects/atomicglobalmin/ ../../xsd/agml.xsd">
+	<batch>
+		<setup>
+			<structuresTemplate constraints="const">
+				<structureTemplate>
+					<moleculeTemplate number="1">
+8  0.3652    0.47589   0.76478 
+8 -0.31215   1.09909  -0.32744 
+1 -1.16676   0.60546  -0.33102 
+					</moleculeTemplate>
+					<moleculeTemplate number="2">
+8 -2.63287  -0.43792  -0.2147 
+1 -3.22375  -0.22319   0.5183 
+1 -2.37611  -1.35848  -0.07368 
+					</moleculeTemplate>
+					<moleculeTemplate number="1">
+8  0.97853  -0.69304   0.26981 
+8  2.20952  -0.3195   -0.35326 
+1  1.90078  -0.01984  -1.22715 
+					</moleculeTemplate>
+				</structureTemplate>
+				<seed>
+					<energyFile path="test/testinit/seed.log" type="Gaussian" />
+				</seed>
+			</structuresTemplate>
+		</setup>
+		<constraints name="const">
+			<atomicDistances>
+				<min value="0.9" Z1="O" Z2="H"/>
+				<min value="0.7"/>
+				<max value="2.7"/>
+			</atomicDistances>
+		</constraints>
+		<energy>
+			<external method="Gaussian">
+				<sharedDirectory path="path"/>
+				<resultsDirectory path="path" maxFiles="100" filePrefix="res"/>
+				<multiplicity value="1"/>
+				<charge value="-1"/>
+				<header>
+% mem=2000MB
+# B3LYP/6-311++G(d,p) scfcon=4 scfcyc=300 scf=direct
+				</header>
+			</external>
+		</energy>
+	</batch>
+</agml>

@@ -33,9 +33,6 @@
 					</moleculeTemplate>
 				</structureTemplate>
 				<threeD number="32" constraints="init"/>
-				<seed freezingIterations="1">
-					<energyFile path="test/testinit/transitionState.log" type="Gaussian" />
-				</seed>
 			</structuresTemplate>
 			<temperature>
 				<kelvin value="2000"/>
@@ -50,7 +47,7 @@
 		<constraints name="search">
 			<cube size="10"/>
 			<atomicDistances>
-				<min value="0.9" z1="O" z2="H"/>
+				<min value="0.9" Z1="O" Z2="H"/>
 				<min value="0.7"/>
 			</atomicDistances>
 		</constraints>

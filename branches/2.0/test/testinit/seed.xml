@@ -1,0 +1,74 @@
+<?xml version="1.0" ?>
+<agml version="2.0" language="en" xmlns="http://sourceforge.net/projects/atomicglobalmin/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://sourceforge.net/projects/atomicglobalmin/ ../../xsd/agml.xsd">
+    <batch>
+        <setup>
+            <structuresTemplate>
+                <structureTemplate>
+                    <moleculeTemplate>
+                        <![CDATA[
+1 0 0 1.06489
+8 0 0 0
+]]>
+</moleculeTemplate>
+                    <moleculeTemplate number="2">
+                        <![CDATA[
+1 0.757540797781 0 0.587079636589
+1 -0.757540797781 0 0.587079636589
+8 0 0 0
+]]>
+</moleculeTemplate>
+                </structureTemplate>
+                <threeD number="1" constraints="const" />
+            </structuresTemplate>
+        </setup>
+        <constraints name="const">
+            <cube size="10" />
+            <atomicDistances>
+                <min value="0.7" />
+                <min value="0.9" Z1="8" Z2="1" />
+                <max value="2.7" />
+            </atomicDistances>
+        </constraints>
+        <energy>
+            <external method="Gaussian">
+                <sharedDirectory path="path" />
+                <resultsDirectory path="path" maxFiles="100" filePrefix="res" />
+                <charge value="-1" />
+                <multiplicity value="1" />
+                <header>
+                    <![CDATA[% mem=2000MB
+# B3LYP/6-311++G(d,p) scfcon=4 scfcyc=300 scf=direct]]>
+</header>
+            </external>
+        </energy>
+        <resume>
+            <totalEnergyCalculations value="0" />
+            <elapsedSeconds value="0" />
+            <structures>
+                <structure>
+                    <atomGroup>
+                        <translation x="-1.444494032156835" y="-0.634193218514482" z="-1.143692706535868" />
+                        <radianAngles x="2.984974292732323" y="0.176135131934686" z="6.040002535995737" />
+                        <atom Z="1" x="0" y="0" z="1.001769422713633" />
+                        <atom Z="8" x="0" y="0" z="-0.063120577286367" />
+                    </atomGroup>
+                    <atomGroup>
+                        <translation x="-0.981488063212163" y="0.204019696320884" z="-0.228285502204065" />
+                        <radianAngles x="6.099233394330167" y="-1.118228598363243" z="4.952725768794085" />
+                        <atom Z="1" x="0.757540797781" y="0" z="0.521376696703959" />
+                        <atom Z="1" x="-0.757540797781" y="0" z="0.521376696703959" />
+                        <atom Z="8" x="-0" y="0" z="-0.065702939885041" />
+                    </atomGroup>
+                    <atomGroup>
+                        <translation x="0" y="0" z="0" />
+                        <radianAngles x="5.741741910003455" y="0.440380229591406" z="1.814165217731898" />
+                        <atom Z="1" x="0.757540797781" y="0" z="0.521376696703959" />
+                        <atom Z="1" x="-0.757540797781" y="0" z="0.521376696703959" />
+                        <atom Z="8" x="-0" y="0" z="-0.065702939885041" />
+                    </atomGroup>
+                </structure>
+            </structures>
+        </resume>
+        <results />
+    </batch>
+</agml>

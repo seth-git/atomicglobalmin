@@ -26,7 +26,7 @@ protected:
 	FLOAT** m_atomDistanceMatrix;
 	FLOAT** m_atomGroupDistanceMatrix;
 
-	FLOAT m_energy;
+	FLOAT m_fEnergy;
 	bool m_bIsTransitionState;
 
 public:
@@ -34,6 +34,8 @@ public:
 	~Structure();
 	bool load(TiXmlElement *pStructureElem, const Strings* messages);
 	bool save(TiXmlElement *pParentElem, const Strings* messages) const;
+
+	void copy(Structure &structure);
 
 	void setAtoms(unsigned int numAtoms, const COORDINATE4 *cartesianPoints,
 			const unsigned int* atomicNumbers);
@@ -67,8 +69,6 @@ public:
 	 *************************************************************************/
 	void deleteAtomGroup(unsigned int index);
 
-	void copy(Structure &structure);
-
 	unsigned int getNumberOfAtomGroups() const { return m_iNumberOfAtomGroups; }
 	const AtomGroup* getAtomGroups() const { return m_atomGroups; }
 	AtomGroup* getAtomGroup(unsigned int index) { return &(m_atomGroups[index]); } // be careful with this method
@@ -83,9 +83,9 @@ public:
 
 	void setIsTransitionState(bool isTransitionState) { m_bIsTransitionState = isTransitionState; }
 
-	FLOAT getEnergy() const { return m_energy; }
+	FLOAT getEnergy() const { return m_fEnergy; }
 
-	void setEnergy(FLOAT energy) { m_energy = energy; }
+	void setEnergy(FLOAT energy) { m_fEnergy = energy; }
 
 	void clear();
 
@@ -129,6 +129,9 @@ public:
 			const unsigned int* atomicNumbers, unsigned int size);
 
 private:
+	static const bool s_structureAttReq[];
+	static const unsigned int s_structureMinOccurs[];
+	static const unsigned int s_structureMaxOccurs[];
 	void initCoordinateRefs();
 	bool atomsMatch(unsigned int numAtomGroupTemplates,
 			const AtomGroupTemplate* atomGroupTemplates);

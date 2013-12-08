@@ -26,7 +26,7 @@ public:
 			unsigned int populationMemberNumber, bool writeEnergyValueInHeader,
 			bool writeMetaData);
 
-	static bool readOutputFile(const char* outputFile, Structure structure, bool readGeometry);
+	static bool readOutputFile(const char* outputFile, Structure &structure, bool readGeometry);
 
 	bool doEnergyCalculation(unsigned int populationMemberNumber);
 

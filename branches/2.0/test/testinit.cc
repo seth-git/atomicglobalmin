@@ -127,104 +127,165 @@ const char* ccLibReadTest()
 	return NULL;
 }
 
-/*
-const char* testRandomSeeding(void) {
-	static const char* testName = "testRandomSeeding";
-	char commandLine[500];
-	char line[500];
-	std::string simulatedAnnealingFile = "LJ7_Sim.inp";
-	const char* failMessage = "Testing of random number seeding failed!";
-	ofstream fout;
+const char* testSeeding(void) {
+	static const char* testName = "testSeeding";
+	const char* failMessage = "Test of seeding failed!\n";
+
+	printf("\nTesting seeding...\n");
+	std::string inputFile = testFilesDir + "/testSeeding.xml";
 	Input input;
-	vector<Structure*> moleculeSets;
-	vector<Structure*> bestNMoleculeSets;
-	vector<Structure*> bestIndividualMoleculeSets; // The best solution found for each individual (used in particle swarm optimization)
-	std::string bufferOutputFile = testFilesDir + "/temp.txt";
-	FILE* pipe;
-
-	std::cout << std::endl;
-	printf("Testing random number seeding...\n");
-
-	if (!input.open(simulatedAnnealingFile, true, false, moleculeSets, bestNMoleculeSets, bestIndividualMoleculeSets)) {
-		std::cout << failMessage << std::endl;
-		std::cout << "\tReason: unable to upen file: " << simulatedAnnealingFile << std::endl;
+	if (!input.load(inputFile.c_str())) {
+		printf(failMessage);
 		return testName;
 	}
 
-	input.m_sInputFileName = testFilesDir+"/"+input.m_sInputFileName;
-	input.m_sOutputFileName = testFilesDir+"/"+input.m_sOutputFileName;
-	input.m_sResumeFileName = testFilesDir+"/"+input.m_sResumeFileName;
-	input.m_iResumeFileNumIterations = 1;
-	input.m_iMaxIterations = 5;
-	input.m_iPrintSummaryInfoEveryNIterations = 1;
-	std::cout << "Writing file: " << input.m_sInputFileName << std::endl;
-	fout.open(input.m_sInputFileName.c_str(), ofstream::out);
-	if (!fout.is_open())
-	{
-		std::cout << failMessage << std::endl;
-		std::cout << "\tReason: unable to write to file: " << input.m_sInputFileName << std::endl;
+	Batch* batch = (Batch*)input.m_pAction;
+	Structure* structure = &(batch->m_structures[0]);
+	const unsigned int expectedAtomicNumbers[] = {1,8,1,1,8,1,1,8,1,1,8};
+	unsigned int expectedAtoms = sizeof(expectedAtomicNumbers) / sizeof(unsigned int*);
+	if (structure->getNumberOfAtoms() != expectedAtoms) {
+		printf("Unexpected number of atoms in seeded result. Expected: %u, actual: %u.\n", expectedAtoms, structure->getNumberOfAtoms());
 		return testName;
 	}
-	input.printToFile(fout);
-	fout.close();
-
-	snprintf(commandLine, sizeof(commandLine), "./pso %s > %s", input.m_sInputFileName.c_str(), bufferOutputFile.c_str());
-	std::cout << "Executing: " << commandLine << std::endl;
-	if (system(commandLine) == -1) {
-		std::cout << failMessage << std::endl;
-		std::cout << "\tReason: unable to execute command: " << commandLine << std::endl;
+	unsigned int expectedAtomGroups = 4;
+	if (structure->getNumberOfAtomGroups() != expectedAtomGroups) {
+		printf("Unexpected number of atom groups in seeded result. Expected: %u, actual: %u.\n", expectedAtomGroups, structure->getNumberOfAtomGroups());
 		return testName;
 	}
-
-	snprintf(commandLine, sizeof(commandLine), "mv %s %s.saved", input.m_sOutputFileName.c_str(), input.m_sOutputFileName.c_str());
-	std::cout << "Executing: " << commandLine << std::endl;
-	if (system(commandLine) == -1) {
-		std::cout << failMessage << std::endl;
-		std::cout << "\tReason: unable to execute command: " << commandLine << std::endl;
-		return testName;
+	const unsigned int* atomicNumbers = structure->getAtomicNumbers();
+	for (unsigned int i = 0; i < expectedAtoms; ++i) {
+		if (atomicNumbers[i] != expectedAtomicNumbers[i]) {
+			printf("Unexpected atomic number at position %u. Expected: %u, actual: %u.\n", (i+1), expectedAtomicNumbers[i], atomicNumbers[i]);
+			return testName;
+		}
 	}
 
-	useconds_t sleepTime = 100000;
-	std::cout << "Sleeping for " << sleepTime << " microseconds." << std::endl;
-	usleep(sleepTime); // microseconds
-
-	snprintf(commandLine, sizeof(commandLine), "./pso %s > %s", input.m_sInputFileName.c_str(), bufferOutputFile.c_str());
-	std::cout << "Executing: " << commandLine << std::endl;
-	if (system(commandLine) == -1) {
-		std::cout << failMessage << std::endl;
-		std::cout << "\tReason: unable to execute command: " << commandLine << std::endl;
-		return testName;
-	}
-
-	snprintf(commandLine, sizeof(commandLine), "diff %s %s.saved", input.m_sOutputFileName.c_str(), input.m_sOutputFileName.c_str());
-	std::cout << "Executing: " << commandLine << std::endl;
-	pipe = popen(commandLine, "r");
-	if (pipe == NULL) {
-		std::cout << failMessage << std::endl;
-		std::cout << "\tReason: unable to execute command: " << commandLine << std::endl;
-		return testName;
-	}
-	if (feof(pipe) || (fgets(line, sizeof(line), pipe) == NULL)) {
-		std::cout << failMessage << std::endl;
-		std::cout << "\tReason: these files are identical when they shouldn't be: " << input.m_sOutputFileName.c_str()
-			 << " and " << input.m_sOutputFileName.c_str() << ".saved" << std::endl;
-		return testName;
-	}
-	pclose(pipe);
-
-	snprintf(commandLine, sizeof(commandLine), "rm %s %s %s.saved %s %s", input.m_sInputFileName.c_str(),
-	         input.m_sOutputFileName.c_str(), input.m_sOutputFileName.c_str(), input.m_sResumeFileName.c_str(), bufferOutputFile.c_str());
-	std::cout << "Executing: " << commandLine << std::endl;
-	if (system(commandLine) == -1) {
-		std::cout << failMessage << std::endl;
-		std::cout << "\tReason: unable to execute command: " << commandLine << std::endl;
-		return testName;
-	}
-
-	printf("Testing of random number seeding succeeded!\n");
+	printf("Test of seeding succeeded!\n");
 	return NULL;
-}*/
+}
 
+const char* testSeeding2(void) {
+	static const char* testName = "testSeeding2";
+	const char* failMessage = "Second test of seeding failed!\n";
+
+	printf("\nPerforming second test of seeding...\n");
+	std::string inputFile = testFilesDir + "/testSeeding2.xml";
+	Input input;
+	if (!input.load(inputFile.c_str())) {
+		printf(failMessage);
+		return testName;
+	}
+
+	Batch* batch = (Batch*)input.m_pAction;
+	Structure* structure = &(batch->m_structures[0]);
+	const unsigned int expectedAtomicNumbers[] = {1,8,1,1,8};
+	unsigned int expectedAtoms = sizeof(expectedAtomicNumbers) / sizeof(unsigned int*);
+	if (structure->getNumberOfAtoms() != expectedAtoms) {
+		printf("Unexpected number of atoms in seeded result. Expected: %u, actual: %u.\n", expectedAtoms, structure->getNumberOfAtoms());
+		return testName;
+	}
+	unsigned int expectedAtomGroups = 2;
+	if (structure->getNumberOfAtomGroups() != expectedAtomGroups) {
+		printf("Unexpected number of atom groups in seeded result. Expected: %u, actual: %u.\n", expectedAtomGroups, structure->getNumberOfAtomGroups());
+		return testName;
+	}
+	const unsigned int* atomicNumbers = structure->getAtomicNumbers();
+	for (unsigned int i = 0; i < expectedAtoms; ++i) {
+		if (atomicNumbers[i] != expectedAtomicNumbers[i]) {
+			printf("Unexpected atomic number at position %u. Expected: %u, actual: %u.\n", (i+1), expectedAtomicNumbers[i], atomicNumbers[i]);
+			return testName;
+		}
+	}
+
+	printf("Second test of seeding succeeded!\n");
+	return NULL;
+}
+
+const char* testSeeding3(void) {
+	static const char* testName = "testSeeding3";
+	const char* failMessage = "Third test of seeding failed!\n";
+
+	printf("\nPerforming third testing of seeding...\n");
+	std::string inputFile = testFilesDir + "/testSeeding3.xml";
+	Input input;
+	if (!input.load(inputFile.c_str())) {
+		printf(failMessage);
+		return testName;
+	}
+
+	Batch* batch = (Batch*)input.m_pAction;
+	Structure structure1;
+	Seed* seed = batch->m_structuresTemplate.m_pSeed;
+	if (!ExternalEnergyMethod::readOutputFile(seed->m_energyFileTypes[0], seed->m_energyFilePaths[0].c_str(), structure1, true))
+		return testName;
+	Structure* pStructure2 = &(batch->m_structures[0]);
+	const unsigned int expectedAtomicNumbers[] = {8,8,1,8,1,1,8,1,1,8,8,1};
+	unsigned int expectedAtoms = sizeof(expectedAtomicNumbers) / sizeof(unsigned int*);
+	if (pStructure2->getNumberOfAtoms() != expectedAtoms) {
+		printf("Unexpected number of atoms in seeded result. Expected: %u, actual: %u.\n", expectedAtoms, pStructure2->getNumberOfAtoms());
+		return testName;
+	}
+	unsigned int expectedAtomGroups = 4;
+	if (pStructure2->getNumberOfAtomGroups() != expectedAtomGroups) {
+		printf("Unexpected number of atom groups in seeded result. Expected: %u, actual: %u.\n", expectedAtomGroups, pStructure2->getNumberOfAtomGroups());
+		return testName;
+	}
+	const unsigned int* atomicNumbers = pStructure2->getAtomicNumbers();
+	for (unsigned int i = 0; i < expectedAtoms; ++i) {
+		if (atomicNumbers[i] != expectedAtomicNumbers[i]) {
+			printf("Unexpected atomic number at position %u. Expected: %u, actual: %u.\n", (i+1), expectedAtomicNumbers[i], atomicNumbers[i]);
+			return testName;
+		}
+	}
+	FLOAT x1 = *structure1.getAtomCoordinates()[structure1.getNumberOfAtoms()-1][0];
+	FLOAT x2 = *pStructure2->getAtomCoordinates()[pStructure2->getNumberOfAtoms()-1][0];
+	if (abs(x1 - x2) >= 0.0001) {
+		printf("The last x coordinate of the newly created structure and the read structure should be the same, but they're not. Values: %0.5lf, %0.5lf\n", x1, x2);
+		return testName;
+	}
+	if (TEST_VERBOSE)
+		printf("The last x coordinate of the newly created structure and the read structure are the same as they should be: %0.7lf, %0.7lf\n", x1, x2);
+
+	printf("Third test of seeding succeeded!\n");
+	return NULL;
+}
+
+const char* testSeeding4(void) {
+	static const char* testName = "testSeeding4";
+	const char* failMessage = "Fourth test of seeding failed!\n";
+
+	printf("\nPerforming fourth testing of seeding...\n");
+	std::string inputFile = testFilesDir + "/testSeeding4.xml";
+	Input input;
+	if (!input.load(inputFile.c_str())) {
+		printf(failMessage);
+		return testName;
+	}
+
+	Batch* batch = (Batch*)input.m_pAction;
+	Structure* pStructure = &(batch->m_structures[0]);
+	const unsigned int expectedAtomicNumbers[] = {8,1,6,1,1};
+	unsigned int expectedAtoms = sizeof(expectedAtomicNumbers) / sizeof(unsigned int*);
+	if (pStructure->getNumberOfAtoms() != expectedAtoms) {
+		printf("Unexpected number of atoms in seeded result. Expected: %u, actual: %u.\n", expectedAtoms, pStructure->getNumberOfAtoms());
+		return testName;
+	}
+	unsigned int expectedAtomGroups = 5;
+	if (pStructure->getNumberOfAtomGroups() != expectedAtomGroups) {
+		printf("Unexpected number of atom groups in seeded result. Expected: %u, actual: %u.\n", expectedAtomGroups, pStructure->getNumberOfAtomGroups());
+		return testName;
+	}
+	const unsigned int* atomicNumbers = pStructure->getAtomicNumbers();
+	for (unsigned int i = 0; i < expectedAtoms; ++i) {
+		if (atomicNumbers[i] != expectedAtomicNumbers[i]) {
+			printf("Unexpected atomic number at position %u. Expected: %u, actual: %u.\n", (i+1), expectedAtomicNumbers[i], atomicNumbers[i]);
+			return testName;
+		}
+	}
+
+	printf("Third test of seeding succeeded!\n");
+	return NULL;
+}
 /*
 const char* testInitializationResults(Structure &moleculeSet, Point3D &box, FLOAT generalMin,
 		map<unsigned int, map<unsigned int,FLOAT> > &minAtomicDistances, FLOAT *pMaxDist, unsigned int fragmentation) {
@@ -383,9 +444,9 @@ const char* testPlaceAtomGroupRelativeToAnother(void) {
 	constraintsxml.append("<constraints name='constraints' >");
 	constraintsxml.append("   <cube size='10'/>");
 	constraintsxml.append("   <atomicDistances>");
-	constraintsxml.append("      <min value='0.7' z1='H' z2='H' />");
-	constraintsxml.append("      <min value='0.9' z1='H' z2='O' />");
-	constraintsxml.append("      <min value='1.2' z1='O' z2='O' />");
+	constraintsxml.append("      <min value='0.7' Z1='H' Z2='H' />");
+	constraintsxml.append("      <min value='0.9' Z1='H' Z2='O' />");
+	constraintsxml.append("      <min value='1.2' Z1='O' Z2='O' />");
 	constraintsxml.append("      <max value='2' />");
 	constraintsxml.append("   </atomicDistances>");
 	constraintsxml.append("</constraints>");
@@ -460,9 +521,9 @@ const char* testInitialization(void) {
 	constraintsxml.append("<constraints name='constraints' >");
 	constraintsxml.append("   <cube size='10'/>");
 	constraintsxml.append("   <atomicDistances>");
-	constraintsxml.append("      <min value='0.7' z1='H' z2='H' />");
-	constraintsxml.append("      <min value='0.9' z1='H' z2='O' />");
-	constraintsxml.append("      <min value='1.2' z1='O' z2='O' />");
+	constraintsxml.append("      <min value='0.7' Z1='H' Z2='H' />");
+	constraintsxml.append("      <min value='0.9' Z1='H' Z2='O' />");
+	constraintsxml.append("      <min value='1.2' Z1='O' Z2='O' />");
 	constraintsxml.append("      <max value='2' />");
 	constraintsxml.append("   </atomicDistances>");
 	constraintsxml.append("</constraints>");

@@ -212,8 +212,6 @@ bool Strings::init (const char* languageCode)
 		return false;
 	if (!copy(stringMap, "xFormat", m_sxFormat))
 		return false;
-	if (!copy(stringMap, "xZ", m_sxZ))
-		return false;
 	if (!copy(stringMap, "xDegrees", m_sxDegrees))
 		return false;
 	if (!copy(stringMap, "xType", m_sxType))
@@ -263,6 +261,35 @@ bool Strings::init (const char* languageCode)
 		return false;
 
 	if (!copy(stringMap, "xAcceptedPertHistIt", m_sxAcceptedPertHistIt))
+		return false;
+
+	if (!copy(stringMap, "xTotalEnergyCalculations", m_sxTotalEnergyCalculations))
+		return false;
+	if (!copy(stringMap, "xElapsedSeconds", m_sxElapsedSeconds))
+		return false;
+	if (!copy(stringMap, "xStructures", m_sxStructures))
+		return false;
+	if (!copy(stringMap, "xStructure", m_sxStructure))
+		return false;
+	if (!copy(stringMap, "xIsTransitionState", m_sxIsTransitionState))
+		return false;
+	if (!copy(stringMap, "xAtomGroup", m_sxAtomGroup))
+		return false;
+	if (!copy(stringMap, "xFrozen", m_sxFrozen))
+		return false;
+	if (!copy(stringMap, "xTranslation", m_sxTranslation))
+		return false;
+	if (!copy(stringMap, "xRadianAngles", m_sxRadianAngles))
+		return false;
+	if (!copy(stringMap, "xAtom", m_sxAtom))
+		return false;
+	if (!copy(stringMap, "xX", m_sxX))
+		return false;
+	if (!copy(stringMap, "xY", m_sxY))
+		return false;
+	if (!copy(stringMap, "xZ", m_sxZ))
+		return false;
+	if (!copy(stringMap, "xBigZ", m_sxBigZ))
 		return false;
 
 	if (!copy(stringMap, "pADF", m_spADF))
@@ -363,6 +390,8 @@ bool Strings::init (const char* languageCode)
 		return false;
 	if (!copy(stringMap, "RangeError", m_sRangeError))
 		return false;
+	if (!copy(stringMap, "UnableToReadTime", m_sUnableToReadTime))
+		return false;
 	
 	if (!copy(stringMap, "Error", m_sError))
 		return false;
@@ -386,6 +415,10 @@ bool Strings::init (const char* languageCode)
 		return false;
 	
 	if (!copy(stringMap, "EmptyStructureTemplate", m_sEmptyStructureTemplate))
+		return false;
+	if (!copy(stringMap, "SeededStructureDoesntMatchTemplate", m_sSeededStructureDoesntMatchTemplate))
+		return false;
+	if (!copy(stringMap, "SeededStructureDoesntMatchConstraints", m_sSeededStructureDoesntMatchConstraints))
 		return false;
 	
 	if (!copy(stringMap, "ErrorEmptyMoleculeTemplate", m_sErrorEmptyMoleculeTemplate))

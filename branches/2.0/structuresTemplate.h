@@ -141,7 +141,7 @@ protected:
 			unsigned int &firstDiffTemplateIndex,
 			unsigned int &firstDiffStructureIndex, bool &firstDiffMissing);
 
-	bool ensureCompatibile(Structure &structure,
+	bool ensureCompatibile(Structure &structure, unsigned int structureNumber,
 			const Constraints &constraints);
 
 	static const bool         s_attRequired[];

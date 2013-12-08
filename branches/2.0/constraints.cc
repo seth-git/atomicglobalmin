@@ -267,6 +267,16 @@ void Constraints::copy(const Constraints &other) {
 	}
 }
 
+bool Constraints::validate(Structure &structure) const {
+	if (!ensureInsideContainer(structure))
+		return false;
+	if (!minDistancesOK(structure))
+		return false;
+	if (!maxDistancesOK(structure))
+		return false;
+	return true;
+}
+
 FLOAT Constraints::getSmallestMinDistance() const {
 	const static FLOAT start = 1000.0;
 	FLOAT smallestMin = start;
@@ -338,7 +348,9 @@ void Constraints::combineConstraints(const Constraints &other) {
 }
 
 FLOAT Constraints::getMinDistance(unsigned int atomicNumber1, unsigned int atomicNumber2) const {
-	FLOAT dist = m_rgMinAtomicDistances[atomicNumber1][atomicNumber2];
+	FLOAT dist = -1;
+	if (NULL != m_rgMinAtomicDistances)
+		dist = m_rgMinAtomicDistances[atomicNumber1][atomicNumber2];
 	if (-1 == dist) {
 		if (NULL != m_pfGeneralMinAtomicDistance)
 			dist = *m_pfGeneralMinAtomicDistance;

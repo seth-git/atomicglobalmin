@@ -43,16 +43,20 @@ class XsdTypeUtil {
 		static bool getInteger(const char* value, int &result, const char* attributeName, TiXmlElement *pElem);
 		static bool getPositiveInt(const char* value, unsigned int &result, const char* attributeName, TiXmlElement *pElem);
 		static bool getNonNegativeInt(const char* value, unsigned int &result, const char* attributeName, TiXmlElement *pElem);
+		static bool getFloat(const char* value, FLOAT &result, const char* attributeName, TiXmlElement *pElem);
 		static bool getPositiveFloat(const char* value, FLOAT &result, const char* attributeName, TiXmlElement *pElem);
 		static bool getNonNegativeFloat(const char* value, FLOAT &result, const char* attributeName, TiXmlElement *pElem);
+		static bool readTimeT(const char* value, time_t &result, const char* attributeName, TiXmlElement *pElem);
 		
 		static bool read1StrAtt(TiXmlElement *pElem, std::string &result, const char* attributeName, bool required, const char* defaultValue);
 		static bool read1DirAtt(TiXmlElement *pElem, std::string &resultDir, const char* attributeName, bool required, const char* defaultValue);
+		static bool read1BoolAtt(TiXmlElement *pElem, bool &result, const char* attributeName, bool required, const char* defaultValue, const Strings* messages);
 		static bool read1IntAtt(TiXmlElement *pElem, int &result, const char* attributeName, bool required, const char* defaultValue);
 		static bool read1PosIntAtt(TiXmlElement *pElem, unsigned int &result, const char* attributeName, bool required, const char* defaultValue);
 		static bool read1NonNegativeIntAtt(TiXmlElement *pElem, unsigned int &result, const char* attributeName, bool required, const char* defaultValue);
 		static bool read1PosFloatAtt(TiXmlElement *pElem, FLOAT &result, const char* attributeName, bool required, const char* defaultValue);
 		static bool read1NonNegativeFloatAtt(TiXmlElement *pElem, FLOAT &result, const char* attributeName, bool required, const char* defaultValue);
+		static bool read1TimeT(TiXmlElement *pElem, time_t &result, const char* attributeName, bool required, const char* defaultValue);
 		
 		static bool readElementText(TiXmlElement *pElem, std::string &result);
 		
@@ -60,6 +64,9 @@ class XsdTypeUtil {
 		static bool getAtomicNumber(const char* numberOrSymbol, unsigned int &iAtomicNumber, unsigned int line);
 		
 		static bool inRange(FLOAT number, FLOAT lo, FLOAT hi, TiXmlElement *pElem, const char* attName);
+
+		static void writeTimeT(time_t value, TiXmlElement *pElem, const char* attName);
+		static void writeBool(bool value, TiXmlElement *pElem, const char* attName, const Strings* messages);
 	private:
 		static void printError(const char* attributeName, const char* attributeValue, TiXmlElement *pElem, const char** possibleValues, unsigned int numPossibleValues);
 		

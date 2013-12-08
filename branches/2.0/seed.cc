@@ -1,5 +1,6 @@
 
 #include "seed.h"
+#include "input.h"
 
 Seed::Seed()
 {
@@ -273,6 +274,36 @@ bool Seed::readStructures(std::vector<Structure*> &structures) {
 	unsigned int outputExtLen;
 	bool exception = false;
 	std::string fullPathFileName;
+
+	Input input;
+	for (i = 0; i < m_iAgmlFiles; ++i) {
+		if (!input.load(m_agmlFilePaths[i].c_str()))
+			return false;
+		if (m_sourceInAgmlFiles[i] == RESULTS) {
+			printf("Unable to read seeded structures from results of %s in Seed::readStructures.\n", m_agmlFilePaths[i].c_str());
+			return false;
+		} else { // Population
+			Action* action = input.m_pAction;
+			Structure* agmlStructures = action->m_structures;
+			count = 0;
+			unsigned int numFromFile;
+			if (m_bUseAllFromAgmlFiles[i])
+				numFromFile = action->m_iStructures;
+			else if (m_numberFromAgmlFiles[i] <= action->m_iStructures)
+				numFromFile = m_numberFromAgmlFiles[i];
+			else {
+				printf("Unable to read %u structures from %s.", m_numberFromAgmlFiles[i], m_agmlFilePaths[i].c_str());
+				return false;
+			}
+
+			for (count = 0; count < numFromFile; ++count) {
+				pStructure = new Structure();
+				pStructure->copy(agmlStructures[count]);
+				structures.push_back(pStructure);
+			}
+		}
+	}
+
 	for (i = 0; i < m_iDirectories; ++i) {
 		try {
 			if ((dp = opendir(m_dirPaths[i].c_str())) == NULL) {

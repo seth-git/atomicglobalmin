@@ -11,6 +11,8 @@ Structure::Structure() {
 	m_atomicNumbers = NULL;
 	m_atomDistanceMatrix = NULL;
 	m_atomGroupDistanceMatrix = NULL;
+	m_fEnergy = 0;
+	m_bIsTransitionState = false;
 }
 
 Structure::~Structure() {
@@ -60,6 +62,95 @@ void Structure::clear() {
 	}
 }
 
+const bool Structure::s_structureAttReq[] = {true,true};
+
+const unsigned int Structure::s_structureMinOccurs[] = {1};
+const unsigned int Structure::s_structureMaxOccurs[] = {XSD_UNLIMITED};
+
+bool Structure::load(TiXmlElement *pStructureElem, const Strings* messages) {
+	clear();
+
+	const char* structureAttNames[] = {messages->m_sxEnergy.c_str(), messages->m_sxIsTransitionState.c_str()};
+	const char* structureAttDef[] = {"0", messages->m_spFalse.c_str()};
+	XsdAttributeUtil structureAttUtil(pStructureElem->Value(), structureAttNames, s_structureAttReq, structureAttDef);
+	if (!structureAttUtil.process(pStructureElem)) {
+		return false;
+	}
+	const char** structureAttValues = structureAttUtil.getAllAttributes();
+	if (!XsdTypeUtil::getFloat(structureAttValues[0], m_fEnergy, structureAttNames[0], pStructureElem))
+		return false;
+	if (!XsdTypeUtil::getBoolValue(structureAttNames[1], structureAttValues[1], m_bIsTransitionState, pStructureElem, messages))
+		return false;
+
+	TiXmlHandle hStructure(0);
+	hStructure=TiXmlHandle(pStructureElem);
+	const char* structureElemNames[] = {messages->m_sxAtomGroup.c_str()};
+	XsdElementUtil structureElemUtil(pStructureElem->Value(), XSD_SEQUENCE, structureElemNames, s_structureMinOccurs, s_structureMaxOccurs);
+	if (!structureElemUtil.process(hStructure)) {
+		return false;
+	}
+	std::vector<TiXmlElement*>* structureElements = structureElemUtil.getSequenceElements();
+	std::vector<TiXmlElement*>* atomGroups = &(structureElements[0]);
+	m_iNumberOfAtomGroups = atomGroups->size();
+	m_atomGroups = new AtomGroup[m_iNumberOfAtomGroups];
+	m_iNumberOfAtoms = 0;
+	for (unsigned int i = 0; i < m_iNumberOfAtomGroups; ++i) {
+		if (!m_atomGroups[i].load((*atomGroups)[i], messages))
+			return false;
+		m_iNumberOfAtoms += m_atomGroups[i].getNumberOfAtoms();
+	}
+	initCoordinateRefs();
+	update();
+
+	return true;
+}
+
+bool Structure::save(TiXmlElement *pParentElem, const Strings* messages) const {
+	TiXmlElement* structure = new TiXmlElement(messages->m_sxStructure.c_str());
+	pParentElem->LinkEndChild(structure);
+
+	if (0 != m_fEnergy)
+		structure->SetDoubleAttribute(messages->m_sxEnergy.c_str(), m_fEnergy);
+	if (m_bIsTransitionState)
+		structure->SetAttribute(messages->m_sxIsTransitionState.c_str(), messages->m_spTrue.c_str());
+
+	for (unsigned int i = 0; i < m_iNumberOfAtomGroups; ++i)
+		if (!m_atomGroups[i].save(structure, messages))
+			return false;
+
+	return true;
+}
+
+void Structure::copy(Structure &structure) {
+	unsigned int i;
+	clear();
+
+	m_iNumberOfAtomGroups = structure.m_iNumberOfAtomGroups;
+	m_atomGroups = new AtomGroup[m_iNumberOfAtomGroups];
+	for (unsigned int i = 0; i < m_iNumberOfAtomGroups; ++i)
+		m_atomGroups[i].copy(structure.m_atomGroups[i]);
+
+	m_iNumberOfAtoms = structure.m_iNumberOfAtoms;
+	initCoordinateRefs();
+
+	if (NULL != structure.m_atomGroupIndices) {
+		memcpy(m_atomGroupIndices, structure.m_atomGroupIndices, sizeof(unsigned int) * m_iNumberOfAtomGroups);
+	}
+	if (NULL != structure.m_atomDistanceMatrix) {
+		size_t nbytes = sizeof(FLOAT) * m_iNumberOfAtoms;
+		for (i = 0; i < m_iNumberOfAtoms; ++i)
+			memcpy(m_atomDistanceMatrix[i], structure.m_atomDistanceMatrix[i], nbytes);
+	}
+	if (NULL != structure.m_atomGroupDistanceMatrix) {
+		size_t nbytes = sizeof(FLOAT) * m_iNumberOfAtomGroups;
+		for (i = 0; i < m_iNumberOfAtomGroups; ++i)
+			memcpy(m_atomGroupDistanceMatrix[i], structure.m_atomGroupDistanceMatrix[i], nbytes);
+	}
+
+	m_fEnergy = structure.m_fEnergy;
+	m_bIsTransitionState = structure.m_bIsTransitionState;
+}
+
 void Structure::setAtoms(unsigned int numAtoms,
 		const COORDINATE4 *cartesianPoints, const unsigned int* atomicNumbers) {
 	if (numAtoms != m_iNumberOfAtoms) {
@@ -94,22 +185,24 @@ void Structure::setAtomGroups(unsigned int numAtomGroupTemplates, const AtomGrou
 	AtomGroup* atomGroups = new AtomGroup[iNumberOfAtomGroups];
 
 	if (atomsMatch(numAtomGroupTemplates, atomGroupTemplates)) {
-		// Copy the coordinates
-		COORDINATE4 localAtomCoordinates[m_iNumberOfAtoms];
+		// Assume this is a seeded structure and keep the same coordinates
+
+		COORDINATE4 globalAtomCoordinates[m_iNumberOfAtoms];
 		for (i = 0, j = 0; i < m_iNumberOfAtomGroups; ++i) {
 			ag = &m_atomGroups[i];
-			memcpy(&localAtomCoordinates[j], ag->getLocalAtomCoordinates(), SIZEOF_COORDINATE4 * ag->getNumberOfAtoms());
+			memcpy(&globalAtomCoordinates[j], m_atomCoordinates[j], SIZEOF_COORDINATE4 * ag->getNumberOfAtoms());
 			j += ag->getNumberOfAtoms();
 		}
 
 		for (i = 0, k = 0, l = 0; i < numAtomGroupTemplates; ++i) {
 			agtemp = &atomGroupTemplates[i];
 			for (j = 1; j <= agtemp->m_iNumber; ++j) {
-				atomGroups[k++].setAtoms(agtemp->m_atomicNumbers.size(), &localAtomCoordinates[l], &m_atomicNumbers[l]);
+				atomGroups[k++].setAtoms(agtemp->m_atomicNumbers.size(), &globalAtomCoordinates[l], &m_atomicNumbers[l]);
 				l += agtemp->m_atomicNumbers.size();
 			}
 		}
 	} else {
+		// Copy coordinates from the template
 		for (i = 0, k = 0; i < numAtomGroupTemplates; ++i) {
 			agtemp = &atomGroupTemplates[i];
 			for (j = 1; j <= agtemp->m_iNumber; ++j)
@@ -136,7 +229,7 @@ bool Structure::atomsMatch(unsigned int numAtomGroupTemplates,
 	for (groupi = 0; groupi < numAtomGroupTemplates; ++groupi) {
 		templatei = &atomGroupTemplates[groupi];
 		for (groupj = 0, groupn = templatei->m_iNumber; groupj < groupn; ++groupj) {
-			totalAtoms += groupn;
+			totalAtoms += templatei->m_atomicNumbers.size();
 			if (totalAtoms > m_iNumberOfAtoms)
 				return false;
 			for (i = 0; i < templatei->m_atomicNumbers.size(); ++i)
@@ -296,44 +389,6 @@ void Structure::updateAtomGroupDistanceMatrix() {
 		m_atomGroupDistanceMatrix[i][i] = 0;
 }
 
-bool Structure::load(TiXmlElement *pStructureElem, const Strings* messages) {
-	return true;
-}
-
-bool Structure::save(TiXmlElement *pParentElem, const Strings* messages) const {
-	return true;
-}
-
-void Structure::copy(Structure &structure) {
-	unsigned int i;
-	clear();
-
-	m_iNumberOfAtomGroups = structure.m_iNumberOfAtomGroups;
-	m_atomGroups = new AtomGroup[m_iNumberOfAtomGroups];
-	for (unsigned int i = 0; i < m_iNumberOfAtomGroups; ++i)
-		m_atomGroups[i].copy(structure.m_atomGroups[i]);
-
-	m_iNumberOfAtoms = structure.m_iNumberOfAtoms;
-	initCoordinateRefs();
-
-	if (NULL != structure.m_atomGroupIndices) {
-		memcpy(m_atomGroupIndices, structure.m_atomGroupIndices, sizeof(unsigned int) * m_iNumberOfAtomGroups);
-	}
-	if (NULL != structure.m_atomDistanceMatrix) {
-		size_t nbytes = sizeof(FLOAT) * m_iNumberOfAtoms;
-		for (i = 0; i < m_iNumberOfAtoms; ++i)
-			memcpy(m_atomDistanceMatrix[i], structure.m_atomDistanceMatrix[i], nbytes);
-	}
-	if (NULL != structure.m_atomGroupDistanceMatrix) {
-		size_t nbytes = sizeof(FLOAT) * m_iNumberOfAtomGroups;
-		for (i = 0; i < m_iNumberOfAtomGroups; ++i)
-			memcpy(m_atomGroupDistanceMatrix[i], structure.m_atomGroupDistanceMatrix[i], nbytes);
-	}
-
-	m_energy = structure.m_energy;
-	m_bIsTransitionState = structure.m_bIsTransitionState;
-}
-
 unsigned int Structure::PRINT_RADIANS = 1;
 unsigned int Structure::PRINT_ENERGY = 1 << 1;
 unsigned int Structure::PRINT_LOCAL_COORDINATES = 1 << 2;
@@ -347,7 +402,7 @@ void Structure::print(unsigned int flags) const {
 	COORDINATE3 diff;
 	FLOAT lengthL, lengthG;
 	if (flags & PRINT_ENERGY) {
-		printf("Energy: %0.7lf\n", m_energy);
+		printf("Energy: %0.7lf\n", m_fEnergy);
 	}
 	for (i = 0; i < m_iNumberOfAtomGroups; ++i) {
 		atomGroup = &m_atomGroups[i];

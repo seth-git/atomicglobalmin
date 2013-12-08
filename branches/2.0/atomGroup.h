@@ -95,6 +95,12 @@ public:
 	void print(bool radiansOrDegrees, bool printLocalCoordinates) const;
 
 private:
+	static const unsigned int s_atomGroupMinOccurs[];
+	static const unsigned int s_atomGroupMaxOccurs[];
+	static const bool s_atomAttReq[];
+	static const char* s_atomAttDef[];
+	static const bool s_coordinateAttReq[];
+	static const char* s_coordinateAttDef[];
 	void cleanUp();
 };
 

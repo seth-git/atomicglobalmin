@@ -30,11 +30,11 @@ const char* Input::s_defaultValues[]    = {""       , "en"      , "http://source
 
 bool Input::load(const char* pFilename)
 {
+	cleanUp();
 	TiXmlDocument xmlDocument(pFilename);
 	TiXmlElement* pElem;
 	const Strings* messagesDL = Strings::instance();
 	
-	cleanUp();
 	printf(messagesDL->m_sReadingFile.c_str(), pFilename);
 	if (!xmlDocument.LoadFile() || xmlDocument.Error()) {
 		if (strncmp(xmlDocument.ErrorDesc(), "Failed to open file", 20) == 0)
@@ -83,8 +83,10 @@ bool Input::load(const char* pFilename)
 	case RANDOM_SEARCH:
 	case PARTICLE_SWARM_OPTIMIZATION:
 	case GENETIC_ALGORITHM:
-	case BATCH:
 		return false;
+	case BATCH:
+		m_pAction = new Batch(this);
+		break;
 	}
 	
 	return m_pAction->load(pElem, m_messages);
