@@ -797,6 +797,7 @@ StructuresTemplate::InitResult StructuresTemplate::placeAtomGroupRelativeToAnoth
 		agToPlace->setCenter(center);
 		agToPlace->initRotationMatrix();
 		agToPlace->localToGlobal();
+		structure.updateAtomDistanceMatrix();
 	} else {
 		// Find the atoms in the two molecules that are closest to one another
 		distance = 1000; // some big number

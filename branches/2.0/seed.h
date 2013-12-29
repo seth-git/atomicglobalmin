@@ -7,7 +7,6 @@
 #include "xsd/xsdTypeUtil.h"
 #include "translation/strings.h"
 #include "externalEnergy/externalEnergy.h"
-#include "externalEnergy/externalEnergyMethod.h"
 #include "structure.h"
 #include "constraints.h"
 
@@ -36,11 +35,11 @@ public:
 	std::string* m_dirPaths; // An array of size m_iDirectories (same below)
 	bool* m_bUseAllFromDir; // if true, use all files in the directory
 	unsigned int* m_numberFromDir; // An array of size m_iDirectories
-	ExternalEnergyMethod::Impl* m_dirFileTypes; // An array of size m_iFiles
+	ExternalEnergy::Impl* m_dirFileTypes; // An array of size m_iFiles
 	
 	unsigned int m_iEnergyFiles;
 	std::string* m_energyFilePaths; // An array of size m_iEnergyFiles
-	ExternalEnergyMethod::Impl* m_energyFileTypes; // An array of size m_iEnergyFiles
+	ExternalEnergy::Impl* m_energyFileTypes; // An array of size m_iEnergyFiles
 	
 	Seed();
 	~Seed();

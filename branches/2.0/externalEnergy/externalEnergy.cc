@@ -1,217 +1,216 @@
+/*
+ * ExternalEnergyMethod.cpp
+ *
+ *  Created on: Dec 31, 2012
+ *      Author: sethcall
+ */
 
 #include "externalEnergy.h"
-#include "externalEnergyMethod.h"
+#include "externalEnergyXml.h"
+#include "gaussian.h"
+#include "gamess.h"
 
-//const char*      ExternalEnergy::s_attributeNames[]  = {"method", "transitionStateSearch"};
-const bool         ExternalEnergy::s_required[]        = {true    , false };
-//const char*      ExternalEnergy::s_defaultValues[]   = {""      , "false"};
+const char* ExternalEnergy::cclibPythonScript = "/home/sethcall/Chemistry/cclib-1.0.1/atomicGlobalMin.py";
 
-//const char*      ExternalEnergy::s_elementNames[]    = {"sharedDirectory", "localDirectory", "resultsDirectory", "charge", "multiplicity", "header", "footer", "mpi"};
-const unsigned int ExternalEnergy::s_minOccurs[]       = {1                , 0               , 0                 , 1       , 1             , 1       , 0       , 0    };
 
-ExternalEnergy::ExternalEnergy() {
-	m_pMethodImpl = NULL;
+ExternalEnergy::ExternalEnergy(const ExternalEnergyXml* pExternalEnergyXml) : Energy() {
+	m_pExternalEnergyXml = pExternalEnergyXml;
 }
 
-ExternalEnergy::~ExternalEnergy() {
-	cleanUp();
-}
-
-void ExternalEnergy::cleanUp() {
-	m_sSharedDir = "";
-	m_sLocalDir = "";
-	m_sResultsDir = "";
-	m_iMaxResultsFiles = 0;
-	m_sResultsFilePrefix = "";
-	m_sHeader = "";
-	m_sFooter = "";
-	if (m_pMethodImpl != NULL) {
-		delete m_pMethodImpl;
-		m_pMethodImpl = NULL;
+ExternalEnergy* ExternalEnergy::instance(Impl impl,
+		const ExternalEnergyXml* pExternalEnergyXml) {
+	switch(impl) {
+	case GAUSSIAN:
+		return new Gaussian(pExternalEnergyXml);
+	case GAMESS:
+		return new Gamess(pExternalEnergyXml);
+	default:
+		Strings* messagesDL = Strings::instance();
+		printf("There is no method for creating '%1$s' input files. ", getEnumString(impl, messagesDL));
+		printf("Please create a new class for this method that extends ExternalEnergyMethod.\n");
+		return NULL;
 	}
 }
 
-bool ExternalEnergy::load(TiXmlElement *pExternalElem, const Strings* messages)
-{
-	cleanUp();
-	const char** values;
-	
-	const char* attributeNames[] = {messages->m_sxMethod.c_str(), messages->m_sxTransitionStateSearch.c_str()};
-	const char* defaultValues[]   = {"", messages->m_spFalse.c_str()};
-	const char* elementNames[] = {messages->m_sxSharedDirectory.c_str(), messages->m_sxLocalDirectory.c_str(),
-			messages->m_sxResultsDirectory.c_str(), messages->m_sxCharge.c_str(), messages->m_sxMultiplicity.c_str(),
-			messages->m_sxHeader.c_str(), messages->m_sxFooter.c_str(), messages->m_sxMpi.c_str()};
-	
-	XsdAttributeUtil attUtil(pExternalElem->Value(), attributeNames, s_required, defaultValues);
-	if (!attUtil.process(pExternalElem)) {
-		return false;
+bool ExternalEnergy::readOutputFile(Impl impl, const char* outputFile,
+		Structure &structure, bool readGeometry) {
+	switch (impl) {
+	case GAUSSIAN:
+		return Gaussian::readOutputFile(outputFile, structure, readGeometry);
+	default:
+		return readOutputFileWithCCLib(outputFile, structure, readGeometry);
 	}
-	values = attUtil.getAllAttributes();
-	
-	if (!ExternalEnergyMethod::getEnum(attributeNames[0], values[0], m_method, pExternalElem, messages)) {
-		return false;
-	}
-
-	if (!XsdTypeUtil::getBoolValue(attributeNames[1], values[1], m_bTransitionStateSearch, pExternalElem, messages)) {
-		return false;
-	}
-	
-	XsdElementUtil extUtil(pExternalElem->Value(), XSD_ALL, elementNames, s_minOccurs);
-	TiXmlHandle handle(0);
-	TiXmlElement** extElements;
-	
-	handle=TiXmlHandle(pExternalElem);
-	if (!extUtil.process(handle)) {
-		return false;
-	}
-	extElements = extUtil.getAllElements();
-	
-	if (!XsdTypeUtil::read1DirAtt(extElements[0], m_sSharedDir, messages->m_sxPath.c_str(), true, NULL))
-		return false;
-	
-	if (extElements[1] != NULL)
-		if (!XsdTypeUtil::read1DirAtt(extElements[1], m_sLocalDir, messages->m_sxPath.c_str(), true, NULL))
-			return false;
-	
-	if (extElements[2] != NULL)
-		if (!readResultsDir(extElements[2], messages))
-			return false;
-	
-	if (!XsdTypeUtil::read1IntAtt(extElements[3], m_iCharge, messages->m_sxValue.c_str(), true, NULL))
-		return false;
-	
-	if (!XsdTypeUtil::read1PosIntAtt(extElements[4], m_iMultiplicity, messages->m_sxValue.c_str(), true, NULL))
-		return false;
-
-	if (!XsdTypeUtil::readElementText(extElements[5], m_sHeader))
-		return false;
-	m_sHeader = Strings::trim(m_sHeader);
-
-	if (extElements[6] != NULL) {
-		if (!XsdTypeUtil::readElementText(extElements[6], m_sFooter))
-			return false;
-		m_sFooter = Strings::trim(m_sFooter);
-	} else {
-		m_sFooter = "";
-	}
-
-	if (extElements[7] != NULL) {
-		if (!readMpiMaster(extElements[7], messages))
-			return false;
-	} else {
-		m_bMpiMaster = false;
-	}
-	
-	m_pMethodImpl = ExternalEnergyMethod::instance(m_method, this);
-	if (m_pMethodImpl == NULL)
-		return false;
-
-	return true;
 }
 
-//const char* ExternalEnergy::s_resAttributeNames[] = {"path", "maxFiles", "filePrefix"};
-const bool    ExternalEnergy::s_resRequired[]       = {true  , false     , false};
-//const char* ExternalEnergy::s_resDefaultValues[]  = {""    , "1"       , "best"};
-
-bool ExternalEnergy::readResultsDir(TiXmlElement *pElem, const Strings* messages) {
-	const char* resAttributeNames[] = {messages->m_sxPath.c_str(), messages->m_sxMaxFiles.c_str(), messages->m_sxFilePrefix.c_str()};
-	const char* resDefaultValues[]  = {""                        , "1"                           , messages->m_spBest.c_str()};
-	
-	if (pElem == NULL) {
-		m_sResultsDir == "";
-		m_iMaxResultsFiles = 0;
-		m_sResultsFilePrefix = "";
-		return true;
+bool ExternalEnergy::isCCLibInstalled(std::string &error) {
+	char cmd[500];
+	char line[500];
+	static const char* testFile = "";
+	snprintf(cmd, sizeof(cmd), "python %s %s scfenergies_last_au isTransitionState natom atomnos atomcoords_last", cclibPythonScript, testFile);
+	FILE* pipe = NULL;
+	pipe = popen(cmd, "r");
+	error = "";
+	if (pipe == NULL) {
+		error = "Unable to call cclib.";
+	} else if (feof(pipe) || (fgets(line, sizeof(line), pipe) == NULL)) {
+		error = "Unable get output from cclib.";
 	}
-
-	const char** values;
-	
-	XsdAttributeUtil resultsDirUtil(pElem->Value(), resAttributeNames, s_resRequired, resDefaultValues);
-	if (!resultsDirUtil.process(pElem)) {
-		return false;
-	}
-	values = resultsDirUtil.getAllAttributes();
-
-	if (!XsdTypeUtil::checkDirectoryOrFileName(values[0], m_sResultsDir, resAttributeNames[0], pElem))
-		return false;
-	if (!XsdTypeUtil::getPositiveInt(values[1], m_iMaxResultsFiles, resAttributeNames[1], pElem))
-		return false;
-	m_sResultsFilePrefix = values[2];
-	return true;
+	if (pipe != NULL)
+		pclose(pipe);
+	return error.length() == 0;
 }
 
-//const char* ExternalEnergy::s_mpiAttributeNames[] = {"master"};
-const bool    ExternalEnergy::s_mpiRequired[]       = {true};
-const char*   ExternalEnergy::s_mpiDefaultValues[]  = {""};
+bool ExternalEnergy::readOutputFileWithCCLib(const char* fileName,
+		Structure &structure, bool readGeometry) {
+	char cmd[500];
+	char line[500];
+	unsigned int numAtoms;
+	unsigned int lineLength;
+	COORDINATE4 *cartesianPoints = NULL;
+	FLOAT* cartesianPoint;
+	unsigned int *atomicNumbers = NULL;
+	unsigned int i;
+	char* myString;
+	const char* infoNotFoundFlag = "not found\n";
 
-bool ExternalEnergy::readMpiMaster(TiXmlElement *pElem, const Strings* messages) {
-	const char* mpiAttributeNames[] = {messages->m_sxMaster.c_str()};
-	const char** values;
-	
-	XsdAttributeUtil util(pElem->Value(), mpiAttributeNames, s_mpiRequired, s_mpiDefaultValues);
-	if (!util.process(pElem)) {
-		return false;
-	}
-	values = util.getAllAttributes();
+	bool error = false;
+	bool readEnergy = false;
+	bool obtainedGeometry = false;
+	structure.setEnergy(0);
+	structure.setIsTransitionState(false);
 
-	if (!XsdTypeUtil::getBoolValue(mpiAttributeNames[0], values[0], m_bMpiMaster, pElem, messages)) {
-		return false;
+	if (readGeometry)
+		snprintf(cmd, sizeof(cmd), "python %s %s scfenergies_last_au isTransitionState natom atomnos atomcoords_last", cclibPythonScript, fileName);
+	else
+		snprintf(cmd, sizeof(cmd), "python %s %s scfenergies_last_au", cclibPythonScript, fileName);
+//	printf("executing: %s\n", cmd);
+	FILE* pipe = NULL;
+	try {
+		pipe = popen(cmd, "r");
+		if (pipe == NULL) {
+			printf("Please install cclib.");
+			throw "";
+		}
+		if (feof(pipe) || (fgets(line, sizeof(line), pipe) == NULL)) {
+			printf("Please install cclib.");
+			throw "";
+		}
+
+		if ((strncmp("I/O error 2 (", line, 13) == 0) && (strstr(line, fileName) != 0)) {
+			printf("Unable to open this file with cclib: %1$s\n", fileName);
+			throw "";
+		}
+
+		if (strcmp(line,infoNotFoundFlag) == 0) {
+			printf("Unable to read energy from file: %1$s\n", fileName);
+			throw "";
+		}
+		structure.setEnergy(atof(line));
+		readEnergy = true;
+
+		if (readGeometry) {
+			if (feof(pipe) || (fgets(line, sizeof(line), pipe) == NULL))
+				throw "Error reading transition state information from cclib.";
+			if (strcmp(line,infoNotFoundFlag) == 0)
+				structure.setIsTransitionState(false);
+			else
+				structure.setIsTransitionState((bool)atoi(line));
+
+			if (feof(pipe) || (fgets(line, sizeof(line), pipe) == NULL))
+				throw "Error reading the number of atoms from cclib.";
+			if (strcmp(line,infoNotFoundFlag) == 0)
+				throw "The number of atoms was not found in the output file.";
+			numAtoms = atoi(line);
+			if (numAtoms == 0)
+				throw "The number of atoms returned from cclib must be greater than zero.";
+
+			atomicNumbers = new unsigned int[numAtoms];
+			i = 0;
+			while (i < numAtoms) {
+				if (feof(pipe) || (fgets(line, sizeof(line), pipe) == NULL))
+					throw "Error reading atomic number line from cclib.";
+				if (strcmp(line,infoNotFoundFlag) == 0)
+					throw "The atomic numbers were not found in the output file.";
+				lineLength = strlen(line);
+				if (lineLength < 2)
+					throw "cclib atomic number line length is less than the minimum.";
+
+				// get rid of brakets
+				line[0] = ' ';
+				if (line[lineLength-2] == ']')
+					line[lineLength-2] = ' ';
+
+				myString = strtok(line, " ");
+				while ((myString != NULL) && (i < numAtoms)) {
+					atomicNumbers[i] = atoi(myString);
+					++i;
+					myString = strtok(NULL, " ");
+				}
+			}
+			if (i != numAtoms)
+				throw "Failed to read the atomic numbers in ExternalEnergyMethod::readOutputFileWithCCLib.";
+
+			cartesianPoints = new COORDINATE4[numAtoms];
+			for (i = 0; i < numAtoms; ++i) {
+				if (feof(pipe) || (fgets(line, sizeof(line), pipe) == NULL))
+					throw "Error reading geometry line from cclib.";
+				if (strcmp(line,infoNotFoundFlag) == 0)
+					throw "The geometry was not found in the output file.";
+				lineLength = strlen(line);
+				if (lineLength < 8)
+					throw "cclib geometry line length is less than the minimum.";
+
+				// get rid of brakets
+				line[0] = ' ';
+				line[1] = ' ';
+				line[lineLength-2] = ' ';
+				if (line[lineLength-3] == ']')
+					line[lineLength-3] = ' ';
+				cartesianPoint = cartesianPoints[i];
+				if (sscanf(line, "%lf %lf %lf", &cartesianPoint[0], &cartesianPoint[1], &cartesianPoint[2]) != 3)
+					throw "Error reading Cartesian coordinates in ExternalEnergyMethod::readOutputFileWithCCLib";
+				cartesianPoint[3] = 1;
+			}
+			structure.setAtoms(numAtoms, cartesianPoints, atomicNumbers);
+			obtainedGeometry = true;
+		}
+	} catch (const char* message) {
+		if (PRINT_CATCH_MESSAGES)
+			std::cerr << "Caught message: '" << message << "'" << std::endl;
+		error = true;
 	}
-	return true;
+	if (atomicNumbers != NULL)
+		delete[] atomicNumbers;
+	if (cartesianPoints != NULL)
+		delete[] cartesianPoints;
+	if (pipe != NULL)
+		pclose(pipe);
+
+	return !error && readEnergy && (!readGeometry || obtainedGeometry);
 }
 
-bool ExternalEnergy::save(TiXmlElement *pExternalElem, const Strings* messages)
-{
-	pExternalElem->SetAttribute(messages->m_sxMethod.c_str(), ExternalEnergyMethod::getEnumString(m_method, messages));
-	if (m_bTransitionStateSearch)
-		pExternalElem->SetAttribute(messages->m_sxTransitionStateSearch.c_str(), messages->getTrueFalseParam(m_bTransitionStateSearch));
-	
-	TiXmlElement* sharedDir = new TiXmlElement(messages->m_sxSharedDirectory.c_str());  
-	pExternalElem->LinkEndChild(sharedDir);
-	sharedDir->SetAttribute(messages->m_sxPath.c_str(), m_sSharedDir.c_str());
-	
-	if (m_sLocalDir.length() > 0) {
-		TiXmlElement* localDir = new TiXmlElement(messages->m_sxLocalDirectory.c_str());  
-		pExternalElem->LinkEndChild(localDir);
-		localDir->SetAttribute(messages->m_sxPath.c_str(), m_sLocalDir.c_str());
+const char* ExternalEnergy::getOutputFileExtension(Impl impl) {
+	switch (impl) {
+	case GAUSSIAN:
+		return Gaussian::s_sOutputFileExtension;
+	case GAMESS:
+		return Gamess::s_sOutputFileExtension;
+	default:
+		Strings* messagesDL = Strings::instance();
+		printf("Unknown output file extension for method: %s. ", getEnumString(impl, messagesDL));
+		printf("Please create a new class for this method that extends ExternalEnergyMethod.\n");
+		return NULL;
 	}
-	
-	if (m_sResultsDir.length() > 0) {
-		TiXmlElement* resultsDir = new TiXmlElement(messages->m_sxResultsDirectory.c_str());  
-		pExternalElem->LinkEndChild(resultsDir);
-		resultsDir->SetAttribute(messages->m_sxPath.c_str(), m_sResultsDir.c_str());
-		if (m_iMaxResultsFiles != 1)
-			resultsDir->SetAttribute(messages->m_sxMaxFiles.c_str(), m_iMaxResultsFiles);
-		if (m_sResultsFilePrefix != messages->m_spBest)
-			resultsDir->SetAttribute(messages->m_sxFilePrefix.c_str(), m_sResultsFilePrefix.c_str());
-	}
-	
-	TiXmlElement* charge = new TiXmlElement(messages->m_sxCharge.c_str());  
-	pExternalElem->LinkEndChild(charge);
-	charge->SetAttribute(messages->m_sxValue.c_str(), m_iCharge);
-	
-	TiXmlElement* multiplicity = new TiXmlElement(messages->m_sxMultiplicity.c_str());  
-	pExternalElem->LinkEndChild(multiplicity);
-	multiplicity->SetAttribute(messages->m_sxValue.c_str(), m_iMultiplicity);
-	
-	TiXmlElement* header = new TiXmlElement(messages->m_sxHeader.c_str());
-	TiXmlText* text = new TiXmlText(m_sHeader.c_str());
-	text->SetCDATA(true); // helps protect formatting
-	header->LinkEndChild(text);
-	pExternalElem->LinkEndChild(header);
-	
-	if (m_sFooter.length() > 0) {
-		TiXmlElement* footer = new TiXmlElement(messages->m_sxFooter.c_str());
-		TiXmlText* text = new TiXmlText(m_sFooter.c_str());
-		text->SetCDATA(true); // helps protect formatting
-		footer->LinkEndChild(text);
-		pExternalElem->LinkEndChild(footer);
-	}
-	
-	if (m_bMpiMaster) {
-		TiXmlElement* mpi = new TiXmlElement(messages->m_sxMpi.c_str());
-		mpi->SetAttribute(messages->m_sxMaster.c_str(), messages->getTrueFalseParam(m_bMpiMaster));
-		pExternalElem->LinkEndChild(mpi);
-	}
-	return true;
+}
+
+bool ExternalEnergy::getEnum(const char* attributeName, const char* stringValue, Impl &result, TiXmlElement *pElem, const Strings* messages) {
+	const char* methods[] = {messages->m_spADF.c_str(), messages->m_spGAMESS.c_str(), messages->m_spGAMESSUK.c_str(), messages->m_spGaussian.c_str(),
+			messages->m_spFirefly.c_str(), messages->m_spJaguar.c_str(), messages->m_spMolpro.c_str(), messages->m_spORCA.c_str()};
+	return XsdTypeUtil::getEnumValue(attributeName, stringValue, result, pElem, methods);
+}
+
+const char* ExternalEnergy::getEnumString(Impl enumValue, const Strings* messages) {
+	const char* methods[] = {messages->m_spADF.c_str(), messages->m_spGAMESS.c_str(), messages->m_spGAMESSUK.c_str(), messages->m_spGaussian.c_str(),
+			messages->m_spFirefly.c_str(), messages->m_spJaguar.c_str(), messages->m_spMolpro.c_str(), messages->m_spORCA.c_str()};
+	return methods[enumValue];
 }

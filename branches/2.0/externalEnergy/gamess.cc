@@ -6,14 +6,14 @@
  */
 
 #include "gamess.h"
-#include "externalEnergy.h"
+#include "externalEnergyXml.h"
 
 const char* Gamess::s_sPathToExecutable = "/Full/path/to/Gamess/executable";
 const char* Gamess::s_sInputFileExtension = "com";
 const char* Gamess::s_sOutputFileExtension = "log";
 const char* Gamess::s_optionalOutputFileExtensions[] = {"chk"};
 
-Gamess::Gamess(const ExternalEnergy* pExternalEnergy) : ExternalEnergyMethod(pExternalEnergy) {
+Gamess::Gamess(const ExternalEnergyXml* pExternalEnergyXml) : ExternalEnergy(pExternalEnergyXml) {
 }
 
 bool Gamess::createInputFile(Structure &structure,
@@ -22,7 +22,7 @@ bool Gamess::createInputFile(Structure &structure,
 	return true;
 }
 
-bool Gamess::doEnergyCalculation(unsigned int populationMemberNumber) {
+bool Gamess::execute(Structure &structure) {
 	return true;
 }
 

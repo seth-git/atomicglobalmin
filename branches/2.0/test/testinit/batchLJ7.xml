@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<agml version="2.0"
+      xmlns="http://sourceforge.net/projects/atomicglobalmin/"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation= "http://sourceforge.net/projects/atomicglobalmin/ agml.xsd">
+	<batch constraints="const">
+		<setup>
+			<structuresTemplate constraints="const">
+				<structureTemplate>
+					<atomTemplate number="7" Z="2" />
+				</structureTemplate>
+				<threeD number="100"/>
+			</structuresTemplate>
+		</setup>
+		<constraints name="const">
+			<cube size="5.5"/>
+			<atomicDistances>
+				<min value="1.0" />
+				<max value="1.5" />
+			</atomicDistances>
+		</constraints>
+		<energy>
+			<internal method="Lennard Jones"/>
+		</energy>
+	</batch>
+</agml>

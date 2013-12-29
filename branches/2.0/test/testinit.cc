@@ -59,7 +59,7 @@ const char* ccLibReadTest()
 	printf("\nTesting cclib...\n");
 
 	printf("Reading the energy only from file: %s\n", unitTestFile.c_str());
-	success = ExternalEnergyMethod::readOutputFileWithCCLib(unitTestFile.c_str(), structure, false);
+	success = ExternalEnergy::readOutputFileWithCCLib(unitTestFile.c_str(), structure, false);
 
 	if (!success) {
 		printf("Testing of cclib failed!\n");
@@ -76,7 +76,7 @@ const char* ccLibReadTest()
 	printf("Energy: %0.7lf au\n", structure.getEnergy());
 
 	printf("Reading energy and geometry from file: %s\n", unitTestFile.c_str());
-	success = ExternalEnergyMethod::readOutputFileWithCCLib(unitTestFile.c_str(), structure, true);
+	success = ExternalEnergy::readOutputFileWithCCLib(unitTestFile.c_str(), structure, true);
 	if (!success) {
 		printf("Testing of cclib failed!\n");
 		printf("\tReason: cclib is not installed correctly!\n");
@@ -100,7 +100,7 @@ const char* ccLibReadTest()
 	printf("Is a transition state: %d\n", structure.getIsTransitionState());
 
 	std::cout << "Reading energy and geometry from file: " << unitTestFile2.c_str() << std::endl;
-	success = ExternalEnergyMethod::readOutputFileWithCCLib(unitTestFile2.c_str(), structure, true);
+	success = ExternalEnergy::readOutputFileWithCCLib(unitTestFile2.c_str(), structure, true);
 	if (!success) {
 		printf("Testing of cclib failed!\n");
 		std::cout << "\tReason: Unable to open test file: " << unitTestFile2 << std::endl;
@@ -216,7 +216,7 @@ const char* testSeeding3(void) {
 	Batch* batch = (Batch*)input.m_pAction;
 	Structure structure1;
 	Seed* seed = batch->m_structuresTemplate.m_pSeed;
-	if (!ExternalEnergyMethod::readOutputFile(seed->m_energyFileTypes[0], seed->m_energyFilePaths[0].c_str(), structure1, true))
+	if (!ExternalEnergy::readOutputFile(seed->m_energyFileTypes[0], seed->m_energyFilePaths[0].c_str(), structure1, true))
 		return testName;
 	Structure* pStructure2 = &(batch->m_structures[0]);
 	const unsigned int expectedAtomicNumbers[] = {8,8,1,8,1,1,8,1,1,8,8,1};
@@ -580,5 +580,33 @@ const char* testInitialization(void) {
 	printf("  Passed!\n");
 
 	printf("Initialization test succeeded!\n");
+	return NULL;
+}
+
+const char* testLJ7(void) {
+	static const char* testName = "testLJ7";
+	const char* failMessage = "Testing of LJ7 initialization failed!";
+
+	printf("\nPerforming LJ7 initialization test...\n");
+	std::string inputFile = testFilesDir + "/batchLJ7.xml";
+	Input input;
+	if (!input.load(inputFile.c_str())) {
+		printf(failMessage);
+		return testName;
+	}
+
+	Structure* structures = input.m_pAction->m_structures;
+	const Constraints* constraints = input.m_pAction->m_constraints[0];
+	for (unsigned int i = 0, n = input.m_pAction->m_iStructures; i < n; ++i) {
+		structures[i].update();
+		if (!constraints->validate(structures[i])) {
+			std::cout << failMessage << std::endl;
+			printf("\tReason: structure %u failed to meet the constraints:\n", i+1);
+			structures[i].print(Structure::PRINT_DISTANCE_MATRIX);
+			return testName;
+		}
+	}
+
+	printf("LJ7 initialization test succeeded!\n");
 	return NULL;
 }

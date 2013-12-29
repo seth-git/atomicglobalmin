@@ -1,55 +1,54 @@
+/*
+ * ExternalEnergyMethod.h
+ *
+ *  Created on: Dec 31, 2012
+ *      Author: sethcall
+ */
 
-#ifndef __EXTERNAL_ENERGY_H__
-#define __EXTERNAL_ENERGY_H__
+#ifndef EXTERNAL_ENERGY_H_
+#define EXTERNAL_ENERGY_H_
 
-#include <stdio.h>
-#include <string>
-#include "../xsd/xsdElementUtil.h"
-#include "../xsd/xsdAttributeUtil.h"
+class ExternalEnergyXml; // Forward declaration
+
+#include "../energy.h"
 #include "../xsd/xsdTypeUtil.h"
-#include "externalEnergyMethod.h"
 
-class ExternalEnergy {
+class ExternalEnergy : public Energy {
 public:
-	bool m_bTransitionStateSearch;
-	ExternalEnergyMethod::Impl m_method;
-	ExternalEnergyMethod* m_pMethodImpl;
-	std::string m_sSharedDir;
-	std::string m_sLocalDir;
-	std::string m_sResultsDir;
-	unsigned int m_iMaxResultsFiles;
-	std::string m_sResultsFilePrefix;
-	int m_iCharge;
-	unsigned int m_iMultiplicity;
-	std::string m_sHeader;
-	std::string m_sFooter;
-	bool m_bMpiMaster;
+	enum Impl {ADF, GAMESS, GAMESS_UK, GAUSSIAN, FIREFLY, JAGUAR, MOLPRO, ORCA};
 
-	ExternalEnergy();
-	~ExternalEnergy();
+	ExternalEnergy(const ExternalEnergyXml* pExternalEnergyXml);
 
-	bool load(TiXmlElement *pExternalElem, const Strings* messages);
-	bool save(TiXmlElement *pExternalElem, const Strings* messages);
+	static ExternalEnergy* instance(Impl impl, const ExternalEnergyXml* pExternalEnergyXml);
 
-	static ExternalEnergyMethod* createMethod(ExternalEnergyMethod::Impl enumValue, ExternalEnergy* pExternalEnergy);
+	virtual bool createInputFile(Structure &structure,
+			unsigned int populationMemberNumber, bool resetInputFileName,
+			bool writeMetaData) = 0;
+
+	static void readOutputFile(const char* outputFile, FLOAT &energy,
+			Structure* pStructure, bool &openedFile, bool &readEnergy,
+			bool &obtainedGeometry);
+
+	static bool readOutputFile(Impl impl, const char* outputFile, Structure &structure, bool readGeometry);
+
+	static bool isCCLibInstalled(std::string &error);
+
+	static bool readOutputFileWithCCLib(const char* fileName, Structure &structure, bool readGeometry);
+
+	virtual bool setup() = 0;
+	virtual bool execute(Structure &structure) = 0;
+	virtual bool cleanup() = 0;
+
+	static const char* getOutputFileExtension(Impl impl);
+
+	static bool getEnum(const char* attributeName, const char* stringValue, Impl &result, TiXmlElement *pElem, const Strings* messages);
+	static const char* getEnumString(Impl enumValue, const Strings* messages);
+
+protected:
+	const ExternalEnergyXml* m_pExternalEnergyXml;
 
 private:
-	void cleanUp();
-	static const bool         s_required[];
-
-	static const char*        s_elementNames[];
-	static const unsigned int s_minOccurs[];
-
-	static const char*        s_methods[];
-	static const int          s_methodConstants[];
-
-	static const bool         s_resRequired[];
-
-	static const bool         s_mpiRequired[];
-	static const char*        s_mpiDefaultValues[];
-
-	bool readResultsDir(TiXmlElement *pElem, const Strings* messages);
-	bool readMpiMaster(TiXmlElement *pElem, const Strings* messages);
+	static const char* cclibPythonScript;
 };
 
-#endif
+#endif /* EXTERNAL_ENERGY_H_ */

@@ -8,25 +8,27 @@
 #ifndef GAMESS_H_
 #define GAMESS_H_
 
-#include "externalEnergyMethod.h"
+#include "externalEnergy.h"
 #include <algorithm>
 #include <string>
 #include <stdio.h>
 
-class Gamess : public ExternalEnergyMethod {
+class Gamess : public ExternalEnergy {
 public:
 	static const char* s_sPathToExecutable;
 	static const char* s_sInputFileExtension;
 	static const char* s_sOutputFileExtension;
 	static const char* s_optionalOutputFileExtensions[];
 
-	Gamess(const ExternalEnergy* pExternalEnergy);
+	Gamess(const ExternalEnergyXml* pExternalEnergyXml);
 
 	bool createInputFile(Structure &structure,
 			unsigned int populationMemberNumber, bool writeEnergyValueInHeader,
 			bool writeMetaData);
 
-	bool doEnergyCalculation(unsigned int populationMemberNumber);
+	bool setup() { return true; }
+	bool execute(Structure &structure);
+	bool cleanup() { return true; }
 };
 
 #endif /* GAMESS_H_ */

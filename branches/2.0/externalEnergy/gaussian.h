@@ -8,19 +8,19 @@
 #ifndef GAUSSIAN_H_
 #define GAUSSIAN_H_
 
-#include "externalEnergyMethod.h"
+#include "externalEnergy.h"
 #include <algorithm>
 #include <string>
 #include <stdio.h>
 
-class Gaussian : public ExternalEnergyMethod {
+class Gaussian : public ExternalEnergy {
 public:
 	static const char* s_sPathToExecutable;
 	static const char* s_sInputFileExtension;
 	static const char* s_sOutputFileExtension;
 	static const char* s_optionalOutputFileExtensions[];
 
-	Gaussian(const ExternalEnergy* pExternalEnergy);
+	Gaussian(const ExternalEnergyXml* pExternalEnergyXml);
 
 	bool createInputFile(Structure &structure,
 			unsigned int populationMemberNumber, bool writeEnergyValueInHeader,
@@ -28,7 +28,9 @@ public:
 
 	static bool readOutputFile(const char* outputFile, Structure &structure, bool readGeometry);
 
-	bool doEnergyCalculation(unsigned int populationMemberNumber);
+	bool setup() { return true; }
+	bool execute(Structure &structure);
+	bool cleanup() { return true; }
 
 private:
 	static bool s_bGetStandardOrientation;

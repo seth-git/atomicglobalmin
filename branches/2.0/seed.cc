@@ -160,7 +160,7 @@ bool Seed::load(TiXmlElement *pSeedElem, const Strings* messages)
 		m_dirPaths = new std::string[m_iDirectories];
 		m_bUseAllFromDir = new bool[m_iDirectories];
 		m_numberFromDir = new unsigned int[m_iDirectories];
-		m_dirFileTypes = new ExternalEnergyMethod::Impl[m_iDirectories];
+		m_dirFileTypes = new ExternalEnergy::Impl[m_iDirectories];
 		
 		const char* dirAttNames[]     = {messages->m_sxPath.c_str(), messages->m_sxNumber.c_str(), messages->m_sxType.c_str()};
 		const char* dirAttDefaults[]  = {NULL                      , messages->m_spAll.c_str()   , NULL};
@@ -180,7 +180,7 @@ bool Seed::load(TiXmlElement *pSeedElem, const Strings* messages)
 				if (!XsdTypeUtil::getPositiveInt(values[1], m_numberFromDir[i], dirAttNames[1], elements[1][i]))
 					return false;
 			
-			if (!ExternalEnergyMethod::getEnum(dirAttNames[2], values[2], m_dirFileTypes[i], elements[1][i], messages))
+			if (!ExternalEnergy::getEnum(dirAttNames[2], values[2], m_dirFileTypes[i], elements[1][i], messages))
 				return false;
 		}
 	}
@@ -188,7 +188,7 @@ bool Seed::load(TiXmlElement *pSeedElem, const Strings* messages)
 	if (elements[2].size() > 0) {
 		m_iEnergyFiles = elements[2].size();
 		m_energyFilePaths = new std::string[m_iEnergyFiles];
-		m_energyFileTypes = new ExternalEnergyMethod::Impl[m_iEnergyFiles];
+		m_energyFileTypes = new ExternalEnergy::Impl[m_iEnergyFiles];
 		
 		const char* enFileAttNames[]     = {messages->m_sxPath.c_str(), messages->m_sxType.c_str()};
 		const char* enFileAttDefaults[]  = {NULL                      , NULL};
@@ -202,7 +202,7 @@ bool Seed::load(TiXmlElement *pSeedElem, const Strings* messages)
 			if (!XsdTypeUtil::checkDirectoryOrFileName(values[0], m_energyFilePaths[i], enFileAttNames[0], elements[2][i]))
 				return false;
 			
-			if (!ExternalEnergyMethod::getEnum(enFileAttNames[1], values[1], m_energyFileTypes[i], elements[2][i], messages))
+			if (!ExternalEnergy::getEnum(enFileAttNames[1], values[1], m_energyFileTypes[i], elements[2][i], messages))
 				return false;
 		}
 	}
@@ -250,7 +250,7 @@ bool Seed::save(TiXmlElement *pParentElem, const Strings* messages)
 		pDir->SetAttribute(messages->m_sxPath.c_str(), m_dirPaths[i].c_str());
 		if (!m_bUseAllFromDir[i])
 			pDir->SetAttribute(messages->m_sxNumber.c_str(), m_numberFromDir[i]);
-		pDir->SetAttribute(messages->m_sxType.c_str(), ExternalEnergyMethod::getEnumString(m_dirFileTypes[i], messages));
+		pDir->SetAttribute(messages->m_sxType.c_str(), ExternalEnergy::getEnumString(m_dirFileTypes[i], messages));
 	}
 	
 	for (i = 0; i < m_iEnergyFiles; ++i) {
@@ -258,7 +258,7 @@ bool Seed::save(TiXmlElement *pParentElem, const Strings* messages)
 		pSeed->LinkEndChild(pEnergyFile);
 		
 		pEnergyFile->SetAttribute(messages->m_sxPath.c_str(), m_energyFilePaths[i].c_str());
-		pEnergyFile->SetAttribute(messages->m_sxType.c_str(), ExternalEnergyMethod::getEnumString(m_energyFileTypes[i], messages));
+		pEnergyFile->SetAttribute(messages->m_sxType.c_str(), ExternalEnergy::getEnumString(m_energyFileTypes[i], messages));
 	}
 	
 	return true;
@@ -311,7 +311,7 @@ bool Seed::readStructures(std::vector<Structure*> &structures) {
 				throw "";
 			}
 
-			outputExt = ExternalEnergyMethod::getOutputFileExtension(m_dirFileTypes[i]);
+			outputExt = ExternalEnergy::getOutputFileExtension(m_dirFileTypes[i]);
 			if (outputExt == NULL)
 				throw "";
 			outputExtLen = strlen(outputExt);
@@ -325,7 +325,7 @@ bool Seed::readStructures(std::vector<Structure*> &structures) {
 
 				pStructure = new Structure();
 				printf("Reading file: %1$s\n", fullPathFileName.c_str());
-				if (ExternalEnergyMethod::readOutputFile(m_dirFileTypes[i], fullPathFileName.c_str(), *pStructure, true)) {
+				if (ExternalEnergy::readOutputFile(m_dirFileTypes[i], fullPathFileName.c_str(), *pStructure, true)) {
 					structures.push_back(pStructure);
 				} else {
 					delete pStructure;
@@ -349,7 +349,7 @@ bool Seed::readStructures(std::vector<Structure*> &structures) {
 		printf("Reading file: %1$s\n", m_energyFilePaths[i].c_str());
 
 		pStructure = new Structure();
-		if (ExternalEnergyMethod::readOutputFile(m_energyFileTypes[i], m_energyFilePaths[i].c_str(), *pStructure, true)) {
+		if (ExternalEnergy::readOutputFile(m_energyFileTypes[i], m_energyFilePaths[i].c_str(), *pStructure, true)) {
 			structures.push_back(pStructure);
 		} else {
 			delete pStructure;

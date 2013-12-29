@@ -6,7 +6,7 @@
  */
 
 #include "gaussian.h"
-#include "externalEnergy.h"
+#include "externalEnergyXml.h"
 
 const char* Gaussian::s_sPathToExecutable = "/Full/path/to/Gaussian/executable";
 const char* Gaussian::s_sInputFileExtension = "com";
@@ -16,13 +16,13 @@ const char* Gaussian::s_optionalOutputFileExtensions[] = {"chk"};
 bool Gaussian::s_bGetStandardOrientation = false;
 bool Gaussian::s_bRequireNormalTermination = false;
 
-Gaussian::Gaussian(const ExternalEnergy* pExternalEnergy) : ExternalEnergyMethod(pExternalEnergy) {
+Gaussian::Gaussian(const ExternalEnergyXml* pExternalEnergyXml) : ExternalEnergy(pExternalEnergyXml) {
 	getCheckpointFileName();
 }
 
 void Gaussian::getCheckpointFileName()
 {
-	std::string lowerHeader = m_pExternalEnergy->m_sHeader;
+	std::string lowerHeader = m_pExternalEnergyXml->m_sHeader;
 	std::transform(lowerHeader.begin(), lowerHeader.end(), lowerHeader.begin(), ::tolower);
 
 	std::string::size_type pos;
@@ -36,7 +36,7 @@ void Gaussian::getCheckpointFileName()
 		pos = lowerHeader.find("%chk");
 	if (pos != std::string::npos) { // if we found it
 		// find the beginning of the name
-		header = m_pExternalEnergy->m_sHeader.c_str();
+		header = m_pExternalEnergyXml->m_sHeader.c_str();
 		header = &header[pos];
 		while (*header != '=')
 			++header;
@@ -251,7 +251,7 @@ bool Gaussian::readOutputFile(const char* outputFile, Structure &structure, bool
 	return true;
 }
 
-bool Gaussian::doEnergyCalculation(unsigned int populationMemberNumber) {
+bool Gaussian::execute(Structure &structure) {
 	return true;
 }
 

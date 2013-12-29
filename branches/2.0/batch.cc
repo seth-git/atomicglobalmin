@@ -111,9 +111,9 @@ bool Batch::saveResume(TiXmlElement *pBatchElem, const Strings* messages)
 
 	TiXmlElement* structures = new TiXmlElement(messages->m_sxStructures.c_str());
 	resume->LinkEndChild(structures);
-	for (unsigned int i = 0; i < m_iStructures; ++i) {
-		m_structures[i].save(structures, messages);
-	}
+	for (unsigned int i = 0; i < m_iStructures; ++i)
+		if (!m_structures[i].save(structures, messages))
+			return false;
 
 	return true;
 }
@@ -122,6 +122,13 @@ bool Batch::run()
 {
 	if (!Action::run())
 		return false;
+
+	for (unsigned int i = 0; i < m_iStructures; ++i) {
+		if (!m_pEnergy->execute(m_structures[i]))
+			return false;
+		++m_iEnergyCalculations;
+	}
+
 	m_pInput->save();
 	return true;
 }

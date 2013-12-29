@@ -24,4 +24,6 @@ const char* testPlaceAtomGroupRelativeToAnother(void);
 
 const char* testInitialization();
 
+const char* testLJ7();
+
 #endif

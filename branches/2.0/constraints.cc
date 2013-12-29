@@ -373,7 +373,7 @@ bool Constraints::minDistancesOK(
 	unsigned int atomi = 0;
 	unsigned int atomiEnd;
 	for (iGroup = 0; iGroup < n; ++iGroup) {
-		atomiEnd = atomi + atomGroups[iGroup++].getNumberOfAtoms();
+		atomiEnd = atomi + atomGroups[iGroup].getNumberOfAtoms();
 		if (atomGroupsInitialized.find(iGroup) == atomGroupsInitialized.end()) {
 			atomi = atomiEnd;
 			continue;
@@ -386,16 +386,13 @@ bool Constraints::minDistancesOK(
 	std::map<unsigned int, bool>::iterator i, j;
 
 	for (i = atomsInitialized.begin(); i != atomsInitialized.end(); i++)
-		for (j = i, j++; j != atomsInitialized.end(); j++)
-			if (distanceMatrix[i->first][j->first] < getMinDistance(atomicNumbers[i->first], atomicNumbers[j->first]))
+		for (j = i, j++; j != atomsInitialized.end(); j++) {
+			if (distanceMatrix[i->first][j->first] < getMinDistance(atomicNumbers[i->first], atomicNumbers[j->first])) {
 				return false;
+			}
+		}
 	return true;
 }
-
-//	if (NULL != m_pfGeneralMaxAtomicDistance) {
-//		distance > *m_pfGeneralMaxAtomicDistance)
-//		return false;
-//	}
 
 bool Constraints::minDistancesOK(const Structure &structure) const {
 	const FLOAT* const* distanceMatrix = structure.getAtomDistanceMatrix();

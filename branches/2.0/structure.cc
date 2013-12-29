@@ -436,7 +436,7 @@ void Structure::printDistanceMatrix(const FLOAT* const * matrix,
 	printf("Distance Matrix:\n");
 	printf("   ");
 	for (i = 0; i < size; ++i)
-		printf("%6u (%s)", i+1, Handbook::getAtomicSymbol(atomicNumbers[i]));
+		printf("%7u:%2s", i+1, Handbook::getAtomicSymbol(atomicNumbers[i]));
 	printf("\n");
 	for (i = 0; i < size; ++i) {
 		printf("%3u", i+1);

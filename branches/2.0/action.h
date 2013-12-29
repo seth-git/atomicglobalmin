@@ -9,8 +9,8 @@ class Input; // Forward declaration
 #include "xsd/xsdTypeUtil.h"
 #include "structuresTemplate.h"
 #include "translation/strings.h"
-#include "internalEnergy.h"
-#include "externalEnergy/externalEnergy.h"
+#include "energyXml.h"
+#include "energy.h"
 #include "constraints.h"
 
 class Action {
@@ -21,9 +21,8 @@ public:
 	std::vector<Constraints*> m_constraints;
 	std::map<std::string,Constraints*> m_constraintsMap;
 	Constraints* m_pConstraints;
-	bool m_bExternalEnergy;
-	InternalEnergy m_internalEnergy;
-	ExternalEnergy m_externalEnergy;
+	EnergyXml energyXml;
+	Energy* m_pEnergy;
 
 	unsigned int m_iEnergyCalculations;
 	time_t m_tElapsedSeconds; // Time taken by previous runs

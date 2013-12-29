@@ -4,5 +4,5 @@ tinyxml = Split('../tinyxml/tinyxml.cpp ../tinyxml/tinyxmlparser.cpp ../tinyxml/
 main = Glob('../*.cc')
 maincc = Glob('../main.cc')[0]
 main.remove(maincc)
-src = [Glob('*.cc'), main, Glob('../translation/*.cc'), Glob('../xsd/*.cc'), Glob('../handbook/*.cc'), Glob('../matrix/*.cc'), Glob('../externalEnergy/*.cc')] + tinyxml + random
+src = [Glob('*.cc'), main, Glob('../translation/*.cc'), Glob('../xsd/*.cc'), Glob('../handbook/*.cc'), Glob('../matrix/*.cc'), Glob('../externalEnergy/*.cc'), Glob('../internalEnergy/*.cc')] + tinyxml + random
 env.Program(target = 'test', source = src)

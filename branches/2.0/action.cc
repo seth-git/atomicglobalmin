@@ -14,6 +14,7 @@ Action::Action(Input* input)
 	m_pInput = input;
 	m_iEnergyCalculations = 0;
 	m_tElapsedSeconds = 0;
+	m_pEnergy = NULL;
 }
 
 Action::~Action()
@@ -28,6 +29,7 @@ void Action::cleanUp() {
 	m_constraints.clear();
 	m_constraintsMap.clear();
 	m_pConstraints = NULL;
+	m_pEnergy = NULL;
 }
 
 bool Action::load(TiXmlElement *pActionElem, const Strings* messages)
@@ -77,23 +79,8 @@ bool Action::load(TiXmlElement *pActionElem, const Strings* messages)
 	if (!loadSetup(actionElements[0][0], messages)) // Do this after loading constraints
 		return false;
 	
-	const char* energyElementNames[] = {messages->m_sxInternal.c_str(), messages->m_sxExternal.c_str()};
-	XsdElementUtil energyUtil(elementNames[2], XSD_CHOICE, energyElementNames);
-	TiXmlHandle hChild(0);
-	hChild=TiXmlHandle(actionElements[2][0]);
-	if (!energyUtil.process(hChild)) {
+	if (!energyXml.load(actionElements[2][0], messages))
 		return false;
-	}
-	m_bExternalEnergy = (bool)energyUtil.getChoiceElementIndex();
-	if (m_bExternalEnergy) {
-		if (!m_externalEnergy.load(energyUtil.getChoiceElement(), messages)) {
-			return false;
-		}
-	} else {
-		if (!m_internalEnergy.load(energyUtil.getChoiceElement(), messages)) {
-			return false;
-		}
-	}
 	
 	if (actionElements[3].size() > 0) {
 		for (i = 0; i < actionElements[3].size(); ++i)
@@ -126,19 +113,8 @@ bool Action::save(TiXmlElement *pActionElem, const Strings* messages)
 			return false;
 	}
 	
-	TiXmlElement* energy = new TiXmlElement(messages->m_sxEnergy.c_str());  
-	pActionElem->LinkEndChild(energy);
-	if (m_bExternalEnergy) {
-		TiXmlElement* external = new TiXmlElement(messages->m_sxExternal.c_str());
-		energy->LinkEndChild(external);
-		if (!m_externalEnergy.save(external, messages))
-			return false;
-	} else {
-		TiXmlElement* internal = new TiXmlElement(messages->m_sxInternal.c_str());
-		energy->LinkEndChild(internal);
-		if (!m_internalEnergy.save(internal, messages))
-			return false;
-	}
+	if (!energyXml.save(pActionElem, messages))
+		return false;
 	
 	if (!saveResume(pActionElem, messages))
 		return false;
@@ -151,5 +127,6 @@ bool Action::save(TiXmlElement *pActionElem, const Strings* messages)
 
 bool Action::run() {
 	m_tStartTime = time (NULL);
-	return true;
+	m_pEnergy = energyXml.getEnergy();
+	return NULL != m_pEnergy;
 }
