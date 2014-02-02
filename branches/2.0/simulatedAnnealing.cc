@@ -9,8 +9,6 @@ SimulatedAnnealing::SimulatedAnnealing(Input* input) : Action(input)
 	m_pfMaxStoppingTemperature = NULL;
 	m_pfMaxStoppingAcceptedPerturbations = NULL;
 	m_piMinStoppingIterations = NULL;
-	m_iStructures = 0;
-	m_structures = NULL;
 }
 
 SimulatedAnnealing::~SimulatedAnnealing()
@@ -20,6 +18,7 @@ SimulatedAnnealing::~SimulatedAnnealing()
 
 void SimulatedAnnealing::cleanUp()
 {
+	Action::clear();
 	if (m_pfStartingTemperature != NULL) {
 		delete m_pfStartingTemperature;
 		m_pfStartingTemperature = NULL;
@@ -39,11 +38,6 @@ void SimulatedAnnealing::cleanUp()
 	if (m_piMinStoppingIterations != NULL) {
 		delete m_piMinStoppingIterations;
 		m_piMinStoppingIterations = NULL;
-	}
-	m_iStructures = 0;
-	if (m_structures != NULL) {
-		delete m_structures;
-		m_structures = NULL;
 	}
 }
 
@@ -232,7 +226,7 @@ bool SimulatedAnnealing::saveSetup(TiXmlElement *pSimElem, const Strings* messag
 bool SimulatedAnnealing::loadResume(TiXmlElement *pResumeElem, const Strings* messages)
 {
 	if (pResumeElem == NULL) {
-		if (!m_structuresTemplate.initializeStructures(m_iStructures, m_structures, m_pConstraints))
+		if (!m_structuresTemplate.initializeStructures(m_structures, m_pConstraints))
 			return false;
 		if (m_pfStartingTemperature != NULL)
 			m_fTemperature = *m_pfStartingTemperature;
@@ -254,22 +248,22 @@ bool SimulatedAnnealing::saveResume(TiXmlElement *pSimElem, const Strings* messa
 	resume->LinkEndChild(totalEnergyCalculations);
 	
 	TiXmlElement* elapsedSeconds = new TiXmlElement(messages->m_sxElapsedSeconds.c_str());
-	XsdTypeUtil::writeTimeT(m_tElapsedSeconds, elapsedSeconds, messages->m_sxValue.c_str());
+	XsdTypeUtil::writeTimeT(getTotalElapsedSeconds(), elapsedSeconds, messages->m_sxValue.c_str());
 	resume->LinkEndChild(elapsedSeconds);
 
 	TiXmlElement* structures = new TiXmlElement(messages->m_sxStructures.c_str());
 	resume->LinkEndChild(structures);
-	for (unsigned int i = 0; i < m_iStructures; ++i) {
-		m_structures[i].save(structures, messages);
-	}
+	for (std::list<Structure*>::iterator it = m_structures.begin(); it != m_structures.end(); it++)
+		if (!(*it)->save(structures, messages))
+			return false;
 
 	return true;
 }
 
-bool SimulatedAnnealing::run()
-{
-	if (!Action::run())
-		return false;
-	m_pInput->save();
+bool SimulatedAnnealing::runMaster() {
+	return true;
+}
+
+bool SimulatedAnnealing::runSlave() {
 	return true;
 }

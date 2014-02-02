@@ -7,6 +7,7 @@
 #include "seed.h"
 #include "structure.h"
 #include "random/random.h"
+#include <list>
 
 class StructuresTemplate {
 public:
@@ -41,8 +42,7 @@ public:
 	bool load(TiXmlElement *pStructuresTemplateElem, std::map<std::string,Constraints*> &constraintsMap, const Strings* messages);
 	bool save(TiXmlElement *pParentElem, const Strings* messages);
 
-	bool initializeStructures(unsigned int &numStructures,
-			Structure* &pStructures, const Constraints* pActionConstraints);
+	bool initializeStructures(std::list<Structure*> &structures, const Constraints* pActionConstraints);
 
 	/**************************************************************************
 	 * Purpose: This method performs random initialization by performing
@@ -128,10 +128,10 @@ public:
 	static void printInitFailureMessage(InitResult result);
 
 protected:
-	void cleanUp();
+	void clear();
 	bool readInitializationType(TiXmlElement *pElem, std::map<std::string,
 			Constraints*> &constraintsMap, unsigned int &numberOfThisType,
-			Constraints** pConstraints, const Strings* messages);
+			Constraints* &pConstraints, const Strings* messages);
 
 	unsigned int checkCompatabilityWithGroups(const Structure &structure,
 			unsigned int &firstDiffTemplateIndex,

@@ -71,7 +71,6 @@ public:
 	std::string m_sxMultiplicity;
 	std::string m_sxHeader;
 	std::string m_sxFooter;
-	std::string m_sxMpi;
 	std::string m_sxPath;
 	std::string m_sxMaxFiles;
 	std::string m_sxFilePrefix;
@@ -89,6 +88,7 @@ public:
 	std::string m_sxMaxAcceptedPerturbations;
 	std::string m_sxMinIterations;
 	std::string m_sxSaveFrequency;
+	std::string m_sxQueueSize;
 	
 	std::string m_sxStructureTemplate;
 	std::string m_sxLinear;
@@ -131,9 +131,11 @@ public:
 
 	std::string m_sxTotalEnergyCalculations;
 	std::string m_sxElapsedSeconds;
+	std::string m_sxRunComplete;
 	std::string m_sxStructures;
 	std::string m_sxStructure;
 	std::string m_sxIsTransitionState;
+	std::string m_sxId;
 	std::string m_sxAtomGroup;
 	std::string m_sxFrozen;
 	std::string m_sxTranslation;
@@ -143,6 +145,9 @@ public:
 	std::string m_sxY;
 	std::string m_sxZ;
 	std::string m_sxBigZ;
+
+	std::string m_sxMaxSize;
+	std::string m_sxRmsDistance;
 
 	std::string m_spADF;
 	std::string m_spGAMESS;

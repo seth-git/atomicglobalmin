@@ -90,11 +90,6 @@
 		</xs:element>
 		<xs:element name="header" type="xs:string"/>
 		<xs:element name="footer" type="xs:string" minOccurs="0"/>
-		<xs:element name="mpi" minOccurs="0">  <!-- default: master = false -->
-			<xs:complexType>
-				<xs:attribute name="master" type="xs:boolean" use="required"/>
-			</xs:complexType>
-		</xs:element>
 	</xs:all>
 	<xs:attribute name="method" type="externalEnergyMethods" use="required"/>
 	<xs:attribute name="transitionStateSearch" type="xs:boolean" default="false"/>
@@ -121,20 +116,12 @@
 </xs:simpleType>
 
 <xs:complexType name="resultsType">
-	<xs:all>
-		<xs:element name="structures" type="structuresType" minOccurs="0"/>
-		<xs:element name="history" minOccurs="0">
-			<xs:complexType>
-				<xs:simpleContent>
-					<xs:extension base="xs:string">
-						<xs:attribute name="save" type="xs:boolean" default="true"/>
-					</xs:extension>
-				</xs:simpleContent>
-			</xs:complexType>
-		</xs:element>
-	</xs:all>
-	<xs:attribute name="maxSize" type="xs:positiveInteger" default="1"/>
-	<xs:attribute name="rmsDistance" type="nonNegativeDecimal"/>
+	<xs:complexContent>
+		<xs:extension base="structuresType">
+			<xs:attribute name="maxSize" type="xs:positiveInteger"/>
+			<xs:attribute name="rmsDistance" type="nonNegativeDecimal"/>
+		</xs:extension>
+	</xs:complexContent>
 </xs:complexType>
 
 <xs:complexType name="simulatedAnnealingSetupType">
@@ -358,6 +345,7 @@
 				</xs:sequence>
 				<xs:attribute name="energy" type="xs:double" default="0"/>
 				<xs:attribute name="isTransitionState" type="xs:boolean" default="false"/>
+				<xs:attribute name="id" type="xs:integer" default="0"/>
 			</xs:complexType>
 		</xs:element>
 	</xs:sequence>
@@ -627,6 +615,8 @@
 				<xs:all>
 					<xs:element name="structuresTemplate" type="structuresTemplateType"/>
 				</xs:all>
+				<xs:attribute name="saveFrequency" type="xs:positiveInteger" default="1"/>
+				<xs:attribute name="queueSize" type="xs:positiveInteger" default="2"/>
 			</xs:complexType>
 		</xs:element>
 		<xs:element name="constraints" type="constraintsType" minOccurs="0" maxOccurs="unbounded"/>
@@ -642,6 +632,11 @@
 					<xs:element name="elapsedSeconds">
 						<xs:complexType>
 							<xs:attribute name="value" type="xs:unsignedLong" use="required"/>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="runComplete">
+						<xs:complexType>
+							<xs:attribute name="value" type="xs:boolean" use="required"/>
 						</xs:complexType>
 					</xs:element>
 					<xs:element name="structures" type="structuresType"/>

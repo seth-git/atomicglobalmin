@@ -247,5 +247,5 @@ void makeWaterSet(Structure &structure, unsigned int number) {
 }
 
 bool floatsEqual(FLOAT a, FLOAT b) {
-	return abs(a-b) <= FLOAT_ERROR;
+	return std::abs(a-b) <= FLOAT_ERROR;
 }

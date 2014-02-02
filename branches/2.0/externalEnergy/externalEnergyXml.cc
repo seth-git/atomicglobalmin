@@ -5,8 +5,8 @@
 const bool         ExternalEnergyXml::s_required[]        = {true    , false };
 //const char*      ExternalEnergyXml::s_defaultValues[]   = {""      , "false"};
 
-//const char*      ExternalEnergyXml::s_elementNames[]    = {"sharedDirectory", "localDirectory", "resultsDirectory", "charge", "multiplicity", "header", "footer", "mpi"};
-const unsigned int ExternalEnergyXml::s_minOccurs[]       = {1                , 0               , 0                 , 1       , 1             , 1       , 0       , 0    };
+//const char*      ExternalEnergyXml::s_elementNames[]    = {"sharedDirectory", "localDirectory", "resultsDirectory", "charge", "multiplicity", "header", "footer"};
+const unsigned int ExternalEnergyXml::s_minOccurs[]       = {1                , 0               , 0                 , 1       , 1             , 1       , 0       };
 
 ExternalEnergyXml::ExternalEnergyXml() {
 }
@@ -34,7 +34,7 @@ bool ExternalEnergyXml::load(TiXmlElement *pExternalElem, const Strings* message
 	const char* defaultValues[]   = {"", messages->m_spFalse.c_str()};
 	const char* elementNames[] = {messages->m_sxSharedDirectory.c_str(), messages->m_sxLocalDirectory.c_str(),
 			messages->m_sxResultsDirectory.c_str(), messages->m_sxCharge.c_str(), messages->m_sxMultiplicity.c_str(),
-			messages->m_sxHeader.c_str(), messages->m_sxFooter.c_str(), messages->m_sxMpi.c_str()};
+			messages->m_sxHeader.c_str(), messages->m_sxFooter.c_str()};
 	
 	XsdAttributeUtil attUtil(pExternalElem->Value(), attributeNames, s_required, defaultValues);
 	if (!attUtil.process(pExternalElem)) {
@@ -51,14 +51,11 @@ bool ExternalEnergyXml::load(TiXmlElement *pExternalElem, const Strings* message
 	}
 	
 	XsdElementUtil extUtil(pExternalElem->Value(), XSD_ALL, elementNames, s_minOccurs);
-	TiXmlHandle handle(0);
-	TiXmlElement** extElements;
-	
-	handle=TiXmlHandle(pExternalElem);
+	TiXmlHandle handle(pExternalElem);
 	if (!extUtil.process(handle)) {
 		return false;
 	}
-	extElements = extUtil.getAllElements();
+	TiXmlElement** extElements = extUtil.getAllElements();
 	
 	if (!XsdTypeUtil::read1DirAtt(extElements[0], m_sSharedDir, messages->m_sxPath.c_str(), true, NULL))
 		return false;
@@ -87,13 +84,6 @@ bool ExternalEnergyXml::load(TiXmlElement *pExternalElem, const Strings* message
 		m_sFooter = Strings::trim(m_sFooter);
 	} else {
 		m_sFooter = "";
-	}
-
-	if (extElements[7] != NULL) {
-		if (!readMpiMaster(extElements[7], messages))
-			return false;
-	} else {
-		m_bMpiMaster = false;
 	}
 
 	return true;
@@ -127,26 +117,6 @@ bool ExternalEnergyXml::readResultsDir(TiXmlElement *pElem, const Strings* messa
 	if (!XsdTypeUtil::getPositiveInt(values[1], m_iMaxResultsFiles, resAttributeNames[1], pElem))
 		return false;
 	m_sResultsFilePrefix = values[2];
-	return true;
-}
-
-//const char* ExternalEnergyXml::s_mpiAttributeNames[] = {"master"};
-const bool    ExternalEnergyXml::s_mpiRequired[]       = {true};
-const char*   ExternalEnergyXml::s_mpiDefaultValues[]  = {""};
-
-bool ExternalEnergyXml::readMpiMaster(TiXmlElement *pElem, const Strings* messages) {
-	const char* mpiAttributeNames[] = {messages->m_sxMaster.c_str()};
-	const char** values;
-	
-	XsdAttributeUtil util(pElem->Value(), mpiAttributeNames, s_mpiRequired, s_mpiDefaultValues);
-	if (!util.process(pElem)) {
-		return false;
-	}
-	values = util.getAllAttributes();
-
-	if (!XsdTypeUtil::getBoolValue(mpiAttributeNames[0], values[0], m_bMpiMaster, pElem, messages)) {
-		return false;
-	}
 	return true;
 }
 
@@ -197,11 +167,6 @@ bool ExternalEnergyXml::save(TiXmlElement *pExternalElem, const Strings* message
 		footer->LinkEndChild(text);
 		pExternalElem->LinkEndChild(footer);
 	}
-	
-	if (m_bMpiMaster) {
-		TiXmlElement* mpi = new TiXmlElement(messages->m_sxMpi.c_str());
-		mpi->SetAttribute(messages->m_sxMaster.c_str(), messages->getTrueFalseParam(m_bMpiMaster));
-		pExternalElem->LinkEndChild(mpi);
-	}
+
 	return true;
 }

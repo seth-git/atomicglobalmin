@@ -12,11 +12,13 @@ class Input; // Forward declaration
 #include "energyXml.h"
 #include "energy.h"
 #include "constraints.h"
+#include "xsd/mpiUtils.h"
+#include "rmsDistance.h"
+#include <list>
 
 class Action {
 public:
-	unsigned int m_iStructures;
-	Structure* m_structures;
+	std::list<Structure*> m_structures;
 	StructuresTemplate m_structuresTemplate;
 	std::vector<Constraints*> m_constraints;
 	std::map<std::string,Constraints*> m_constraintsMap;
@@ -24,14 +26,22 @@ public:
 	EnergyXml energyXml;
 	Energy* m_pEnergy;
 
+	unsigned int m_iSaveFrequency; // Save xml file after each set of this number of iterations
+
+	unsigned int m_iMaxResults;
+	FLOAT m_fResultsRmsDistance;
+	std::list<Structure*> m_results;
+
+	bool m_bRunComplete;
+
 	unsigned int m_iEnergyCalculations;
-	time_t m_tElapsedSeconds; // Time taken by previous runs
+	time_t m_tPrevElapsedSeconds; // Time taken by previous runs
 	time_t m_tStartTime; // Time stamp when the current run started
 
 	Action(Input* input);
 	~Action();
 
-	void cleanUp();
+	virtual void clear();
 
 	virtual bool load(TiXmlElement *pActionElem, const Strings* messages);
 	virtual bool save(TiXmlElement *pActionElem, const Strings* messages);
@@ -40,9 +50,22 @@ public:
 	virtual bool loadResume(TiXmlElement *pResumeElem, const Strings* messages) = 0;
 	virtual bool saveResume(TiXmlElement *pResumeElem, const Strings* messages) = 0;
 	virtual bool run();
+	virtual bool runMaster() = 0;
+	virtual bool runSlave() = 0;
 
 protected:
+	void updateResults(Structure &structure);
+	void updateResults(Structure* pStructure);
+	void checkResults(Structure* pStructure, std::list<Structure*>::iterator resultsIt);
+
 	Input* m_pInput;
+	unsigned int m_iMpiRank;
+	unsigned int m_iMpiProcesses;
+
+	time_t getTotalElapsedSeconds();
+
+	static unsigned int s_iMaxEnergyCalcFailures;
+	static FLOAT s_fMaxMPIProcessFailures;
 
 private:
 	static const unsigned int s_minOccurs[];
@@ -50,6 +73,12 @@ private:
 
 	static const bool  s_required[];
 	static const char* s_defaultValues[];
+
+	static const unsigned int s_resultsMinOccurs[];
+	static const unsigned int s_resultsMaxOccurs[];
+
+	static const bool  s_resultsRequired[];
+	static const char* s_resultsDefaultValues[];
 };
 
 #endif

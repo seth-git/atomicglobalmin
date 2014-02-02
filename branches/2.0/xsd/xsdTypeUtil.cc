@@ -345,7 +345,7 @@ void XsdTypeUtil::writeTimeT(time_t value, TiXmlElement *pElem, const char* attN
 }
 
 void XsdTypeUtil::writeBool(bool value, TiXmlElement *pElem, const char* attName, const Strings* messages) {
-	const char* booleanValues[] = {messages->m_spTrue.c_str(), messages->m_spFalse.c_str()};
+	const char* booleanValues[] = {messages->m_spFalse.c_str(), messages->m_spTrue.c_str()};
 	pElem->SetAttribute(attName, booleanValues[(unsigned int)value]);
 }
 

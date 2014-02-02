@@ -10,7 +10,8 @@ void addFailedTestName(std::string &failedUnitTests, const char* failedTestName)
 
 int main(int argc, char* argv[])
 {
-	const char* (*tests[])() = {&testMatrixMultiplication, &ccLibReadTest, &testPlaceAtomGroupRelativeToAnother, &testInitialization, &testSeeding, &testSeeding2, &testSeeding3, &testSeeding4, &testLJ7};
+	const char * (*tests[])() = {&testMatrixMultiplication, &ccLibReadTest, &testPlaceAtomGroupRelativeToAnother, &testInitialization,
+			&testSeeding, &testSeeding2, &testSeeding3, &testSeeding4, &testLJ7, &testUpdateAtomToCenterRanks};
 
 	if (0 != chdir("..")) {
 		printf("Failed to perform 'cd ..', errno = %d\n", errno);

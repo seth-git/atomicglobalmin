@@ -11,10 +11,10 @@ AtomGroup::AtomGroup()
 
 AtomGroup::~AtomGroup()
 {
-	cleanUp();
+	clear();
 }
 
-void AtomGroup::cleanUp()
+void AtomGroup::clear()
 {
 	m_iNumberOfAtoms = 0;
 	if (m_atomicNumbers != NULL) {
@@ -31,13 +31,14 @@ void AtomGroup::cleanUp()
 	}
 	std::fill_n(m_centerOfMass, 3, 0);
 	std::fill_n(m_angles, 3, 0);
+	m_bFrozen = false;
 }
 
 void AtomGroup::setAtoms(const AtomGroupTemplate &agTemplate)
 {
 	unsigned int i, j;
 
-	cleanUp();
+	clear();
 	m_iNumberOfAtoms = agTemplate.m_atomicNumbers.size();
 	m_atomicNumbers = new unsigned int[m_iNumberOfAtoms];
 	m_localPoints = new COORDINATE4[m_iNumberOfAtoms];
@@ -69,8 +70,7 @@ void AtomGroup::getCenterOfMass(unsigned int iNumberOfAtoms,
 	FLOAT totalMass = 0;
 	unsigned int i, j;
 
-	for (i = 0; i < iNumberOfAtoms; ++i)
-	{
+	for (i = 0; i < iNumberOfAtoms; ++i) {
 		FLOAT mass = Handbook::getMass(atomicNumbers[i]);
 		for (j = 0; j < 3; ++j)
 			centerOfMass[j] += mass * points[i][j];
@@ -85,7 +85,7 @@ void AtomGroup::setAtoms(unsigned int numAtoms, const COORDINATE4* cartesianPoin
 	unsigned int i, j;
 
 	if (numAtoms != m_iNumberOfAtoms) {
-		cleanUp();
+		clear();
 		m_iNumberOfAtoms = numAtoms;
 		m_atomicNumbers = new unsigned int[m_iNumberOfAtoms];
 		m_localPoints = new COORDINATE4[m_iNumberOfAtoms];
@@ -119,13 +119,12 @@ const char* AtomGroup::s_coordinateAttDef[] = {"", "", ""};
 
 bool AtomGroup::load(TiXmlElement *pAtomGroupElem, const Strings* messages)
 {
-	cleanUp();
+	clear();
 
 	if (!XsdTypeUtil::read1BoolAtt(pAtomGroupElem, m_bFrozen, messages->m_sxFrozen.c_str(), false, "false", messages))
 		return false;
 
-	TiXmlHandle hAtomGroup(0);
-	hAtomGroup=TiXmlHandle(pAtomGroupElem);
+	TiXmlHandle hAtomGroup(pAtomGroupElem);
 	const char* atomGroupElemNames[] = {messages->m_sxTranslation.c_str(), messages->m_sxRadianAngles.c_str(), messages->m_sxAtom.c_str()};
 	XsdElementUtil atomGroupElemUtil(pAtomGroupElem->Value(), XSD_SEQUENCE, atomGroupElemNames, s_atomGroupMinOccurs, s_atomGroupMaxOccurs);
 	if (!atomGroupElemUtil.process(hAtomGroup)) {
@@ -269,7 +268,7 @@ bool AtomGroup::save(TiXmlElement *pParentElem, const Strings* messages)
 }
 
 void AtomGroup::copy(AtomGroup &atomGroup) {
-	cleanUp();
+	clear();
 
 	m_iNumberOfAtoms = atomGroup.m_iNumberOfAtoms;
 	m_atomicNumbers = new unsigned int[m_iNumberOfAtoms];

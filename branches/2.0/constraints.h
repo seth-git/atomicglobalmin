@@ -11,8 +11,9 @@
 
 class Structure; // Forward declaration
 
-#define MIN_DIST_ARRAY_SIZE  MAX_ATOMIC_NUMBERS+1
-#define SIZEOF_MIN_DIST_ARRAY sizeof(FLOAT) * MIN_DIST_ARRAY_SIZE * MIN_DIST_ARRAY_SIZE
+static const unsigned int MIN_DIST_ARRAY_SIZE = MAX_ATOMIC_NUMBERS+1;
+static const size_t SIZEOF_MIN_DIST_ARRAY = MIN_DIST_ARRAY_SIZE * MIN_DIST_ARRAY_SIZE * sizeof(FLOAT);
+
 typedef FLOAT MinDistArray[MIN_DIST_ARRAY_SIZE];
 
 class Constraints {

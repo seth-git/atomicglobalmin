@@ -26,8 +26,15 @@ class Input {
 		~Input();
 		
 		bool load(const char* pFilename);
+		bool loadStr(const char* xml);
+		bool load(TiXmlDocument &xmlDocument);
+
+		bool save(TiXmlDocument &doc);
 		bool save(const char* pFilename);
 		bool save();
+		bool save(std::string &buffer);
+		const char* getXml();
+		bool run(const char* fileName);
 	private:
 		const Strings*            m_messages; // messages for m_sLanguageCode
 		

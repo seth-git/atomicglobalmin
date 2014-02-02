@@ -11,18 +11,21 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 
-	if (!Random::init(1))
-		return 0;
 	if (!Strings::init())
 		return 0;
 	if (!Handbook::init())
 		return 0;
 	TiXmlBase::SetCondenseWhiteSpace(false);
 
+	MPI_Init(&argc, &argv);
+	int iRank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &iRank);
+	int returnValue;
 	Input input;
-	if (!input.load(argv[1]))
-		return 0;
-	if (!input.m_pAction->run())
-		return 0;
-	return 1;
+	if (!Random::init(iRank))
+		returnValue = 0;
+	else
+		returnValue = (int)input.run(argv[1]);
+	MPI_Finalize();
+	return returnValue;
 }

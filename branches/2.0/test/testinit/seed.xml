@@ -44,6 +44,7 @@
         <resume>
             <totalEnergyCalculations value="0" />
             <elapsedSeconds value="0" />
+            <runComplete value="false"/>
             <structures>
                 <structure>
                     <atomGroup>

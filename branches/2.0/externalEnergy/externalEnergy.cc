@@ -11,7 +11,7 @@
 #include "gamess.h"
 
 const char* ExternalEnergy::cclibPythonScript = "/home/sethcall/Chemistry/cclib-1.0.1/atomicGlobalMin.py";
-
+unsigned int ExternalEnergy::s_iMaxEnergyCalcFailuresOnStructure = 2;
 
 ExternalEnergy::ExternalEnergy(const ExternalEnergyXml* pExternalEnergyXml) : Energy() {
 	m_pExternalEnergyXml = pExternalEnergyXml;
@@ -214,3 +214,4 @@ const char* ExternalEnergy::getEnumString(Impl enumValue, const Strings* message
 			messages->m_spFirefly.c_str(), messages->m_spJaguar.c_str(), messages->m_spMolpro.c_str(), messages->m_spORCA.c_str()};
 	return methods[enumValue];
 }
+

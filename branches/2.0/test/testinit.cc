@@ -1,5 +1,6 @@
 
 #include "testinit.h"
+#include <list>
 
 const char* testMatrixMultiplication() {
 	static const char* testName = "testMatrixMultlipication";
@@ -67,7 +68,7 @@ const char* ccLibReadTest()
 		return testName;
 	}
 	FLOAT expected = -121.4379729252;
-	if (abs(structure.getEnergy() - expected) > 0.000001) {
+	if (!floatsEqual(structure.getEnergy(), expected)) {
 		printf("Testing of cclib failed!\n");
 		printf("\tReason: unexpected energy value read from %s. Expected: %0.7lf au, Found: %0.7lf au\n",
 				unitTestFile.c_str(), expected, structure.getEnergy());
@@ -83,7 +84,7 @@ const char* ccLibReadTest()
 		return testName;
 	}
 	bool obtainedGeometry = structure.getNumberOfAtoms() == 27
-			&& abs(*structure.getAtomCoordinates()[26][0] - 5.5221902015) < 0.0001
+			&& floatsEqual(*structure.getAtomCoordinates()[26][0], 5.5221902015)
 			&& structure.getAtomicNumbers()[7] == 16;
 	if (!obtainedGeometry) {
 		printf("Testing of cclib failed!\n");
@@ -107,7 +108,7 @@ const char* ccLibReadTest()
 		return testName;
 	}
 	obtainedGeometry = structure.getNumberOfAtoms() == 6
-			&& abs(*structure.getAtomCoordinates()[5][0] - 1.175736) < 0.0001
+			&& floatsEqual(*structure.getAtomCoordinates()[5][0], 1.175736)
 			&& structure.getAtomicNumbers()[4] == 8;
 	if (!obtainedGeometry) {
 		printf("Testing of cclib failed!\n");
@@ -140,7 +141,7 @@ const char* testSeeding(void) {
 	}
 
 	Batch* batch = (Batch*)input.m_pAction;
-	Structure* structure = &(batch->m_structures[0]);
+	Structure* structure = batch->m_structures.front();
 	const unsigned int expectedAtomicNumbers[] = {1,8,1,1,8,1,1,8,1,1,8};
 	unsigned int expectedAtoms = sizeof(expectedAtomicNumbers) / sizeof(unsigned int*);
 	if (structure->getNumberOfAtoms() != expectedAtoms) {
@@ -177,7 +178,7 @@ const char* testSeeding2(void) {
 	}
 
 	Batch* batch = (Batch*)input.m_pAction;
-	Structure* structure = &(batch->m_structures[0]);
+	Structure* structure = batch->m_structures.front();
 	const unsigned int expectedAtomicNumbers[] = {1,8,1,1,8};
 	unsigned int expectedAtoms = sizeof(expectedAtomicNumbers) / sizeof(unsigned int*);
 	if (structure->getNumberOfAtoms() != expectedAtoms) {
@@ -218,7 +219,7 @@ const char* testSeeding3(void) {
 	Seed* seed = batch->m_structuresTemplate.m_pSeed;
 	if (!ExternalEnergy::readOutputFile(seed->m_energyFileTypes[0], seed->m_energyFilePaths[0].c_str(), structure1, true))
 		return testName;
-	Structure* pStructure2 = &(batch->m_structures[0]);
+	Structure* pStructure2 = batch->m_structures.front();
 	const unsigned int expectedAtomicNumbers[] = {8,8,1,8,1,1,8,1,1,8,8,1};
 	unsigned int expectedAtoms = sizeof(expectedAtomicNumbers) / sizeof(unsigned int*);
 	if (pStructure2->getNumberOfAtoms() != expectedAtoms) {
@@ -239,7 +240,7 @@ const char* testSeeding3(void) {
 	}
 	FLOAT x1 = *structure1.getAtomCoordinates()[structure1.getNumberOfAtoms()-1][0];
 	FLOAT x2 = *pStructure2->getAtomCoordinates()[pStructure2->getNumberOfAtoms()-1][0];
-	if (abs(x1 - x2) >= 0.0001) {
+	if (!floatsEqual(x1, x2)) {
 		printf("The last x coordinate of the newly created structure and the read structure should be the same, but they're not. Values: %0.5lf, %0.5lf\n", x1, x2);
 		return testName;
 	}
@@ -263,7 +264,7 @@ const char* testSeeding4(void) {
 	}
 
 	Batch* batch = (Batch*)input.m_pAction;
-	Structure* pStructure = &(batch->m_structures[0]);
+	Structure* pStructure = batch->m_structures.front();
 	const unsigned int expectedAtomicNumbers[] = {8,1,6,1,1};
 	unsigned int expectedAtoms = sizeof(expectedAtomicNumbers) / sizeof(unsigned int*);
 	if (pStructure->getNumberOfAtoms() != expectedAtoms) {
@@ -569,7 +570,7 @@ const char* testInitialization(void) {
 	for (i = 0; i < structure.getNumberOfAtomGroups(); ++i) {
 		const FLOAT* center = structure.getAtomGroups()[i].getCenter();
 		for (j = 0; j < 2; ++j) {
-			if (abs(center[j]) > FLOAT_ERROR) {
+			if (std::abs(center[j]) > FLOAT_ERROR) {
 				std::cout << failMessage << std::endl;
 				printf("\tReason: not all the centers of the water molecules have zero values for the x and y coordinates.");
 				return testName;
@@ -595,14 +596,14 @@ const char* testLJ7(void) {
 		return testName;
 	}
 
-	Structure* structures = input.m_pAction->m_structures;
+	std::list<Structure*>* pStructures = &(input.m_pAction->m_structures);
 	const Constraints* constraints = input.m_pAction->m_constraints[0];
-	for (unsigned int i = 0, n = input.m_pAction->m_iStructures; i < n; ++i) {
-		structures[i].update();
-		if (!constraints->validate(structures[i])) {
+	for (std::list<Structure*>::iterator it = pStructures->begin(); it != pStructures->end(); ++it) {
+		(*it)->update();
+		if (!constraints->validate(**it)) {
 			std::cout << failMessage << std::endl;
-			printf("\tReason: structure %u failed to meet the constraints:\n", i+1);
-			structures[i].print(Structure::PRINT_DISTANCE_MATRIX);
+			printf("\tReason: structure %d failed to meet the constraints:\n", (*it)->getId());
+			(*it)->print(Structure::PRINT_DISTANCE_MATRIX);
 			return testName;
 		}
 	}

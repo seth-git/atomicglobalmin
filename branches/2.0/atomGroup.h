@@ -101,7 +101,7 @@ private:
 	static const char* s_atomAttDef[];
 	static const bool s_coordinateAttReq[];
 	static const char* s_coordinateAttDef[];
-	void cleanUp();
+	void clear();
 };
 
 #endif

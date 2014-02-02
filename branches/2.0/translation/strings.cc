@@ -156,8 +156,6 @@ bool Strings::init (const char* languageCode)
 		return false;
 	if (!copy(stringMap, "xFooter", m_sxFooter))
 		return false;
-	if (!copy(stringMap, "xMpi", m_sxMpi))
-		return false;
 	if (!copy(stringMap, "xPath", m_sxPath))
 		return false;
 	if (!copy(stringMap, "xMaxFiles", m_sxMaxFiles))
@@ -189,6 +187,8 @@ bool Strings::init (const char* languageCode)
 	if (!copy(stringMap, "xMinIterations", m_sxMinIterations))
 		return false;
 	if (!copy(stringMap, "xSaveFrequency", m_sxSaveFrequency))
+		return false;
+	if (!copy(stringMap, "xQueueSize", m_sxQueueSize))
 		return false;
 	
 	if (!copy(stringMap, "xStructureTemplate", m_sxStructureTemplate))
@@ -267,11 +267,15 @@ bool Strings::init (const char* languageCode)
 		return false;
 	if (!copy(stringMap, "xElapsedSeconds", m_sxElapsedSeconds))
 		return false;
+	if (!copy(stringMap, "xRunComplete", m_sxRunComplete))
+		return false;
 	if (!copy(stringMap, "xStructures", m_sxStructures))
 		return false;
 	if (!copy(stringMap, "xStructure", m_sxStructure))
 		return false;
 	if (!copy(stringMap, "xIsTransitionState", m_sxIsTransitionState))
+		return false;
+	if (!copy(stringMap, "xId", m_sxId))
 		return false;
 	if (!copy(stringMap, "xAtomGroup", m_sxAtomGroup))
 		return false;
@@ -290,6 +294,11 @@ bool Strings::init (const char* languageCode)
 	if (!copy(stringMap, "xZ", m_sxZ))
 		return false;
 	if (!copy(stringMap, "xBigZ", m_sxBigZ))
+		return false;
+
+	if (!copy(stringMap, "xMaxSize", m_sxMaxSize))
+		return false;
+	if (!copy(stringMap, "xRmsDistance", m_sxRmsDistance))
 		return false;
 
 	if (!copy(stringMap, "pADF", m_spADF))

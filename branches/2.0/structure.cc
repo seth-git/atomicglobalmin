@@ -13,6 +13,8 @@ Structure::Structure() {
 	m_atomGroupDistanceMatrix = NULL;
 	m_fEnergy = 0;
 	m_bIsTransitionState = false;
+	m_id = 0;
+	m_atomToCenterRanks = NULL;
 }
 
 Structure::~Structure() {
@@ -60,9 +62,14 @@ void Structure::clear() {
 		delete[] m_atomGroupIndices;
 		m_atomGroupIndices = NULL;
 	}
+
+	if (NULL != m_atomToCenterRanks) {
+		delete[] m_atomToCenterRanks;
+		m_atomToCenterRanks = NULL;
+	}
 }
 
-const bool Structure::s_structureAttReq[] = {true,true};
+const bool Structure::s_structureAttReq[] = {true,true,false};
 
 const unsigned int Structure::s_structureMinOccurs[] = {1};
 const unsigned int Structure::s_structureMaxOccurs[] = {XSD_UNLIMITED};
@@ -70,8 +77,8 @@ const unsigned int Structure::s_structureMaxOccurs[] = {XSD_UNLIMITED};
 bool Structure::load(TiXmlElement *pStructureElem, const Strings* messages) {
 	clear();
 
-	const char* structureAttNames[] = {messages->m_sxEnergy.c_str(), messages->m_sxIsTransitionState.c_str()};
-	const char* structureAttDef[] = {"0", messages->m_spFalse.c_str()};
+	const char* structureAttNames[] = {messages->m_sxEnergy.c_str(), messages->m_sxIsTransitionState.c_str(), messages->m_sxId.c_str()};
+	const char* structureAttDef[] = {"0", messages->m_spFalse.c_str(), "0"};
 	XsdAttributeUtil structureAttUtil(pStructureElem->Value(), structureAttNames, s_structureAttReq, structureAttDef);
 	if (!structureAttUtil.process(pStructureElem)) {
 		return false;
@@ -80,6 +87,8 @@ bool Structure::load(TiXmlElement *pStructureElem, const Strings* messages) {
 	if (!XsdTypeUtil::getFloat(structureAttValues[0], m_fEnergy, structureAttNames[0], pStructureElem))
 		return false;
 	if (!XsdTypeUtil::getBoolValue(structureAttNames[1], structureAttValues[1], m_bIsTransitionState, pStructureElem, messages))
+		return false;
+	if (!XsdTypeUtil::getInteger(structureAttValues[2], m_id, structureAttNames[2], pStructureElem))
 		return false;
 
 	TiXmlHandle hStructure(0);
@@ -105,20 +114,57 @@ bool Structure::load(TiXmlElement *pStructureElem, const Strings* messages) {
 	return true;
 }
 
+bool Structure::loadStr(const char* xml) {
+	const Strings* messagesDL = Strings::instance();
+	TiXmlDocument xmlDocument;
+	xmlDocument.Parse(xml, 0, TIXML_ENCODING_UTF8);
+	if (xmlDocument.Error()) {
+		printf(messagesDL->m_sErrorOnLine.c_str(), xmlDocument.ErrorRow(), xmlDocument.ErrorCol(), xmlDocument.ErrorDesc());
+		return false;
+	}
+	TiXmlHandle hDoc(&xmlDocument);
+	return load(hDoc.FirstChildElement().Element(), messagesDL);
+}
+
 bool Structure::save(TiXmlElement *pParentElem, const Strings* messages) const {
-	TiXmlElement* structure = new TiXmlElement(messages->m_sxStructure.c_str());
+	TiXmlElement* structure = save(messages);
+	if (NULL == structure)
+		return false;
 	pParentElem->LinkEndChild(structure);
+	return true;
+}
+
+bool Structure::save(std::string &buffer) const {
+	TiXmlElement* structure = save(Strings::instance());
+	if (NULL == structure)
+		return false;
+
+	TiXmlDocument doc;
+	TiXmlDeclaration* decl = new TiXmlDeclaration( "1.0", "", "" );
+	doc.LinkEndChild(decl);
+	doc.LinkEndChild(structure);
+	TiXmlPrinter printer;
+	doc.Accept(&printer);
+	buffer = printer.CStr();
+	return true;
+}
+
+TiXmlElement* Structure::save(const Strings* messages) const {
+	TiXmlElement* structure = new TiXmlElement(messages->m_sxStructure.c_str());
 
 	if (0 != m_fEnergy)
 		structure->SetDoubleAttribute(messages->m_sxEnergy.c_str(), m_fEnergy);
 	if (m_bIsTransitionState)
 		structure->SetAttribute(messages->m_sxIsTransitionState.c_str(), messages->m_spTrue.c_str());
+	if (0 != m_id)
+		structure->SetAttribute(messages->m_sxId.c_str(), m_id);
 
 	for (unsigned int i = 0; i < m_iNumberOfAtomGroups; ++i)
-		if (!m_atomGroups[i].save(structure, messages))
-			return false;
-
-	return true;
+		if (!m_atomGroups[i].save(structure, messages)) {
+			delete structure;
+			return NULL;
+		}
+	return structure;
 }
 
 void Structure::copy(Structure &structure) {
@@ -149,6 +195,12 @@ void Structure::copy(Structure &structure) {
 
 	m_fEnergy = structure.m_fEnergy;
 	m_bIsTransitionState = structure.m_bIsTransitionState;
+	m_id = structure.m_id;
+
+	if (NULL != structure.m_atomToCenterRanks) {
+		m_atomToCenterRanks = new unsigned int[m_iNumberOfAtoms];
+		memcpy(m_atomToCenterRanks, structure.m_atomToCenterRanks, sizeof(unsigned int) * m_iNumberOfAtoms);
+	}
 }
 
 void Structure::setAtoms(unsigned int numAtoms,
@@ -445,5 +497,24 @@ void Structure::printDistanceMatrix(const FLOAT* const * matrix,
 		}
 		printf("\n");
 	}
+}
+
+void Structure::getCenterOfMass(COORDINATE3 &centerOfMass) {
+	centerOfMass[0] = 0;
+	centerOfMass[1] = 0;
+	centerOfMass[2] = 0;
+	FLOAT totalMass = 0;
+	unsigned int i, j;
+	const FLOAT* coordinate;
+
+	for (i = 0; i < m_iNumberOfAtoms; ++i) {
+		FLOAT mass = Handbook::getMass(m_atomicNumbers[i]);
+		coordinate = *(m_atomCoordinates[i]);
+		for (j = 0; j < 3; ++j)
+			centerOfMass[j] += mass * coordinate[j];
+		totalMass += mass;
+	}
+	for (j = 0; j < 3; ++j)
+		centerOfMass[j] /= totalMass;
 }
 

@@ -23,7 +23,6 @@ public:
 	unsigned int m_iMultiplicity;
 	std::string m_sHeader;
 	std::string m_sFooter;
-	bool m_bMpiMaster;
 
 	ExternalEnergyXml();
 	~ExternalEnergyXml();
@@ -43,11 +42,7 @@ private:
 
 	static const bool         s_resRequired[];
 
-	static const bool         s_mpiRequired[];
-	static const char*        s_mpiDefaultValues[];
-
 	bool readResultsDir(TiXmlElement *pElem, const Strings* messages);
-	bool readMpiMaster(TiXmlElement *pElem, const Strings* messages);
 };
 
 #endif

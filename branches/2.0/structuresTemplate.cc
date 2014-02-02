@@ -36,10 +36,10 @@ StructuresTemplate::StructuresTemplate()
 
 StructuresTemplate::~StructuresTemplate()
 {
-	cleanUp();
+	clear();
 }
 
-void StructuresTemplate::cleanUp()
+void StructuresTemplate::clear()
 {
 	m_iAtomGroupTemplates = 0;
 	if (m_atomGroupTemplates != NULL) {
@@ -68,7 +68,7 @@ void StructuresTemplate::cleanUp()
 
 bool StructuresTemplate::load(TiXmlElement *pStructuresTemplateElem,
 		std::map<std::string, Constraints*> &constraintsMap, const Strings* messages) {
-	cleanUp();
+	clear();
 	
 	unsigned int i;
 	const char** values;
@@ -118,15 +118,15 @@ bool StructuresTemplate::load(TiXmlElement *pStructuresTemplateElem,
 	}
 	
 	if (ptElements[1] != NULL)
-		if (!readInitializationType(ptElements[1], constraintsMap, m_iLinear, &m_pLinearConstraints, messages))
+		if (!readInitializationType(ptElements[1], constraintsMap, m_iLinear, m_pLinearConstraints, messages))
 			return false;
 	
 	if (ptElements[2] != NULL)
-		if (!readInitializationType(ptElements[2], constraintsMap, m_iPlanar, &m_pPlanarConstraints, messages))
+		if (!readInitializationType(ptElements[2], constraintsMap, m_iPlanar, m_pPlanarConstraints, messages))
 			return false;
 	
 	if (ptElements[3] != NULL)
-		if (!readInitializationType(ptElements[3], constraintsMap, m_i3D, &m_p3DConstraints, messages))
+		if (!readInitializationType(ptElements[3], constraintsMap, m_i3D, m_p3DConstraints, messages))
 			return false;
 	
 	if (ptElements[4] != NULL) {
@@ -156,7 +156,7 @@ bool StructuresTemplate::load(TiXmlElement *pStructuresTemplateElem,
 const bool    StructuresTemplate::s_initTypeAttRequired[] = {true    , false};
 const char*   StructuresTemplate::s_initTypeAttDefaults[] = {NULL    , NULL};
 
-bool StructuresTemplate::readInitializationType(TiXmlElement *pElem, std::map<std::string,Constraints*> &constraintsMap, unsigned int &numberOfThisType, Constraints** pConstraints, const Strings* messages) {
+bool StructuresTemplate::readInitializationType(TiXmlElement *pElem, std::map<std::string,Constraints*> &constraintsMap, unsigned int &numberOfThisType, Constraints* &pConstraints, const Strings* messages) {
 	const char** values;
 	const char* attributeNames[] = {messages->m_sxNumber.c_str(), messages->m_sxConstraints.c_str()};
 	XsdAttributeUtil attUtil(pElem->Value(), attributeNames, s_initTypeAttRequired, s_initTypeAttDefaults);
@@ -165,13 +165,12 @@ bool StructuresTemplate::readInitializationType(TiXmlElement *pElem, std::map<st
 	}
 	values = attUtil.getAllAttributes();
 	
-	if (!XsdTypeUtil::getPositiveInt(values[0], numberOfThisType, attributeNames[0], pElem)) {
+	if (!XsdTypeUtil::getPositiveInt(values[0], numberOfThisType, attributeNames[0], pElem))
 		return false;
-	}
 	
 	if (values[1] != NULL) {
-		(*pConstraints) = constraintsMap[values[1]];
-		if ((*pConstraints) == NULL) {
+		pConstraints = constraintsMap[values[1]];
+		if (pConstraints == NULL) {
 			const Strings* messagesDL = Strings::instance();
 			printf(messagesDL->m_sConstraintNameMisMatch.c_str(), pElem->Row(), messages->m_sxConstraints.c_str(), values[1]);
 			return false;
@@ -451,10 +450,9 @@ bool StructuresTemplate::ensureCompatibile(Structure &structure,
 	return false;
 }
 
-bool StructuresTemplate::initializeStructures(
-		unsigned int &numStructures, Structure* &structures,
+bool StructuresTemplate::initializeStructures(std::list<Structure*> &structures,
 		const Constraints* pActionConstraints) {
-	unsigned int i, count;
+	unsigned int i;
 	Constraints combinedConstraints;
 	Constraints* pTempConstraints = NULL;
 	Constraints* pTempConstraintsUsed;
@@ -465,31 +463,26 @@ bool StructuresTemplate::initializeStructures(
 		combinedConstraints.combineConstraints(*m_pConstraints);
 
 	bool success = true;
-	std::vector<Structure*> seededStructures;
+	std::list<Structure*> seededStructures;
 	try {
 		if (m_pSeed != NULL)
 			if (!m_pSeed->readStructures(seededStructures))
 				throw "";
 
-		numStructures = seededStructures.size() + m_iLinear + m_iPlanar + m_i3D;
-		if (NULL != structures)
-			delete[] structures;
-		structures = new Structure[numStructures];
-		count = 0;
-		for (i = 0; i < seededStructures.size(); ++i) {
-			structures[count].copy(*seededStructures[i]);
-			if (!ensureCompatibile(structures[count], (i+1), combinedConstraints))
+		i = 1;
+		for (std::list<Structure*>::iterator it = seededStructures.begin(); it != seededStructures.end(); ++it) {
+			Structure* pStructure = new Structure();
+			pStructure->copy(**it);
+			structures.push_back(pStructure);
+			if (!ensureCompatibile(*pStructure, i, combinedConstraints))
 				return false;
-			if (!combinedConstraints.validate(structures[count])) {
+			if (!combinedConstraints.validate(*pStructure)) {
 				const Strings* messagesDL = Strings::instance();
-				printf(messagesDL->m_sSeededStructureDoesntMatchConstraints.c_str(), (i+1));
+				printf(messagesDL->m_sSeededStructureDoesntMatchConstraints.c_str(), i);
 				return false;
 			}
-			++count;
+			++i;
 		}
-
-		for (i = count; i < numStructures; ++i)
-			structures[i].setAtomGroups(m_iAtomGroupTemplates, m_atomGroupTemplates);
 
 		if (NULL == m_pLinearConstraints)
 			pTempConstraintsUsed = &combinedConstraints;
@@ -499,9 +492,13 @@ bool StructuresTemplate::initializeStructures(
 			pTempConstraints->combineConstraints(*m_pLinearConstraints);
 			pTempConstraintsUsed = pTempConstraints;
 		}
-		for (i = 0; i < m_iLinear; ++i)
-			if (!initializeStructure(structures[count++], *pTempConstraintsUsed, StructuresTemplate::Linear))
+		for (i = 1; i <= m_iLinear; ++i) {
+			Structure* pStructure = new Structure();
+			structures.push_back(pStructure);
+			pStructure->setAtomGroups(m_iAtomGroupTemplates, m_atomGroupTemplates);
+			if (!initializeStructure(*pStructure, *pTempConstraintsUsed, StructuresTemplate::Linear))
 				throw "";
+		}
 		if (NULL != pTempConstraints)
 			delete pTempConstraints;
 
@@ -513,9 +510,13 @@ bool StructuresTemplate::initializeStructures(
 			pTempConstraints->combineConstraints(*m_pPlanarConstraints);
 			pTempConstraintsUsed = pTempConstraints;
 		}
-		for (i = 0; i < m_iPlanar; ++i)
-			if (!initializeStructure(structures[count++], *pTempConstraintsUsed, StructuresTemplate::Planar))
+		for (i = 1; i <= m_iPlanar; ++i) {
+			Structure* pStructure = new Structure();
+			structures.push_back(pStructure);
+			pStructure->setAtomGroups(m_iAtomGroupTemplates, m_atomGroupTemplates);
+			if (!initializeStructure(*pStructure, *pTempConstraintsUsed, StructuresTemplate::Planar))
 				throw "";
+		}
 		if (NULL != pTempConstraints)
 			delete pTempConstraints;
 
@@ -527,9 +528,13 @@ bool StructuresTemplate::initializeStructures(
 			pTempConstraints->combineConstraints(*m_p3DConstraints);
 			pTempConstraintsUsed = pTempConstraints;
 		}
-		for (i = 0; i < m_i3D; ++i)
-			if (!initializeStructure(structures[count++], *pTempConstraintsUsed, StructuresTemplate::ThreeD))
+		for (i = 1; i <= m_i3D; ++i) {
+			Structure* pStructure = new Structure();
+			structures.push_back(pStructure);
+			pStructure->setAtomGroups(m_iAtomGroupTemplates, m_atomGroupTemplates);
+			if (!initializeStructure(*pStructure, *pTempConstraintsUsed, StructuresTemplate::ThreeD))
 				throw "";
+		}
 		if (NULL != pTempConstraints)
 			delete pTempConstraints;
 	} catch (const char* message) {
@@ -538,9 +543,13 @@ bool StructuresTemplate::initializeStructures(
 			delete pTempConstraints;
 	}
 
-	for (i = 0; i < seededStructures.size(); ++i)
-		delete seededStructures[i];
+	for (std::list<Structure*>::iterator it = seededStructures.begin(); it != seededStructures.end(); ++it)
+		delete *it;
 	seededStructures.clear();
+
+	i = 0;
+	for (std::list<Structure*>::iterator it = structures.begin(); it != structures.end(); ++it)
+		(*it)->setId(++i);
 
 	return success;
 }

@@ -18,6 +18,7 @@
 #include <sstream>
 #include <dirent.h>
 #include <errno.h>
+#include <list>
 
 enum SeedSource { RESULTS, POPULATION };
 
@@ -51,7 +52,7 @@ public:
 	 * Parameters: structures - destination structures
 	 *             constraints - array of constraints (may be NULL)
 	 *************************************************************************/
-	bool readStructures(std::vector<Structure*> &structures);
+	bool readStructures(std::list<Structure*> &structures);
 
 private:
 	void cleanUp();

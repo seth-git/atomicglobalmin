@@ -31,7 +31,9 @@ public:
 	bool saveSetup(TiXmlElement *pSimElem, const Strings* messages);
 	bool loadResume(TiXmlElement *pResumeElem, const Strings* messages);
 	bool saveResume(TiXmlElement *pResumeElem, const Strings* messages);
-	bool run();
+
+	bool runMaster();
+	bool runSlave();
 	
 private:
 	static const bool s_setupAttReq[];

@@ -3,8 +3,6 @@
 
 bool XsdElementUtil::process (TiXmlHandle &handle)
 {
-	TiXmlHandle hRoot(0);
-	TiXmlHandle hChild(0);
 	TiXmlElement* pElem;
 	const char *pName;
 	unsigned int i;

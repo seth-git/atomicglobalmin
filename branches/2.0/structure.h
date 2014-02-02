@@ -28,12 +28,21 @@ protected:
 
 	FLOAT m_fEnergy;
 	bool m_bIsTransitionState;
+	int m_id;
+
+	unsigned int* m_atomToCenterRanks; // An array used in RMS distance calculations;
+
+	static const bool s_structureAttReq[];
+	static const unsigned int s_structureMinOccurs[];
+	static const unsigned int s_structureMaxOccurs[];
 
 public:
 	Structure();
 	~Structure();
 	bool load(TiXmlElement *pStructureElem, const Strings* messages);
+	bool loadStr(const char* xml);
 	bool save(TiXmlElement *pParentElem, const Strings* messages) const;
+	bool save(std::string &buffer) const;
 
 	void copy(Structure &structure);
 
@@ -87,6 +96,10 @@ public:
 
 	void setEnergy(FLOAT energy) { m_fEnergy = energy; }
 
+	int getId() const { return m_id; }
+
+	void setId(int id) { m_id = id; }
+
 	void clear();
 
 	/**************************************************************************
@@ -106,6 +119,17 @@ public:
 		updateAtomDistanceMatrix();
 		updateAtomGroupDistanceMatrix();
 	}
+
+	void setAtomToCenterRanks(unsigned int* atomToCenterRanks) {
+		if (NULL != m_atomToCenterRanks)
+			delete[] m_atomToCenterRanks;
+		m_atomToCenterRanks = new unsigned int[m_iNumberOfAtoms];
+		memcpy(m_atomToCenterRanks, atomToCenterRanks, m_iNumberOfAtoms * sizeof(unsigned int));
+	}
+
+	const unsigned int* getAtomToCenterRanks() const { return m_atomToCenterRanks; }
+
+	void getCenterOfMass(COORDINATE3 &centerOfMass);
 
 	/**************************************************************************
 	 * Purpose: This returns the starting atom index of each atom group
@@ -128,10 +152,9 @@ public:
 	static void printDistanceMatrix(const FLOAT* const * matrix,
 			const unsigned int* atomicNumbers, unsigned int size);
 
-private:
-	static const bool s_structureAttReq[];
-	static const unsigned int s_structureMinOccurs[];
-	static const unsigned int s_structureMaxOccurs[];
+protected:
+	TiXmlElement* save(const Strings* messages) const;
+
 	void initCoordinateRefs();
 	bool atomsMatch(unsigned int numAtomGroupTemplates,
 			const AtomGroupTemplate* atomGroupTemplates);
