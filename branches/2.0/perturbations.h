@@ -30,7 +30,7 @@ public:
 	bool saveSetup(TiXmlElement *pParentElem, const Strings* messages);
 
 private:
-	void cleanUp();
+	void clear();
 
 	static const unsigned int s_perturbationsMinOccurs[];
 

@@ -445,10 +445,8 @@ const char* testPlaceAtomGroupRelativeToAnother(void) {
 	constraintsxml.append("<constraints name='constraints' >");
 	constraintsxml.append("   <cube size='10'/>");
 	constraintsxml.append("   <atomicDistances>");
-	constraintsxml.append("      <min value='0.7' Z1='H' Z2='H' />");
-	constraintsxml.append("      <min value='0.9' Z1='H' Z2='O' />");
-	constraintsxml.append("      <min value='1.2' Z1='O' Z2='O' />");
-	constraintsxml.append("      <max value='2' />");
+	constraintsxml.append("      <min value='1.2' />");
+	constraintsxml.append("      <max value='1.2' />");
 	constraintsxml.append("   </atomicDistances>");
 	constraintsxml.append("</constraints>");
 	TiXmlDocument xmlDocument;
@@ -485,7 +483,7 @@ const char* testPlaceAtomGroupRelativeToAnother(void) {
 
 	StructuresTemplate::InitResult initResult =
 			StructuresTemplate::placeAtomGroupRelativeToAnother(1, 0,
-					structure, unitVector, constraints, TEST_VERBOSE ? 2 : 1);
+					structure, unitVector, constraints);
 
 	if (initResult != StructuresTemplate::Success) {
 		std::cout << failMessage << std::endl;
@@ -552,7 +550,7 @@ const char* testInitialization(void) {
 					StructuresTemplate::Linear,
 					StructuresTemplate::defaultMaxInitializationTries, iTries,
 					StructuresTemplate::defaultMaxGroupInitializationTries,
-					iGroupTries, TEST_VERBOSE);
+					iGroupTries);
 
 	if (TEST_VERBOSE) {
 		printf("iMaxTries = %u, iTries = %u\n", StructuresTemplate::defaultMaxInitializationTries, iTries);

@@ -144,8 +144,9 @@ bool Batch::runMaster() {
 	if (m_structures.size() >= m_iMpiProcesses && numberToAssign == m_structures.size())
 		--numberToAssign; // Reserve one for the master
 
-	if (PRINT_MPI_MESSAGES)
+	#if MPI_DEBUG
 		printf("Target queue size: %d, Queue size: %d, Number to assign: %d.\n", m_targetQueueSize, queueSize, numberToAssign);
+	#endif
 
 	std::list<Structure*> unassigned;
 	for (std::list<Structure*>::iterator it = m_structures.begin(); it != m_structures.end(); ++it)
@@ -160,8 +161,9 @@ bool Batch::runMaster() {
 		pStructure = unassigned.front();
 		unassigned.pop_front();
 		id = pStructure->getId();
-		if (PRINT_MPI_MESSAGES)
+		#if MPI_DEBUG
 			printf("Sending slave %d structure %d.\n", j, id);
+		#endif
 		MPI_Send(&id, 1, MPI_INT, j, WORK_TAG, MPI_COMM_WORLD);
 		assignments[j][id] = pStructure;
 		++iAssignments;
@@ -181,8 +183,9 @@ bool Batch::runMaster() {
 		if (unassigned.size() > 0) {
 			pStructure = unassigned.front();
 			unassigned.pop_front();
-			if (PRINT_MPI_MESSAGES)
+			#if MPI_DEBUG
 				printf("Master performing calculations on %d.\n", pStructure->getId());
+			#endif
 			if (m_pEnergy->execute(*pStructure)) {
 				iEnergyCalcFailures = 0;
 				processResult(pStructure);
@@ -190,8 +193,9 @@ bool Batch::runMaster() {
 				++iEnergyCalcFailures;
 				unassigned.push_back(pStructure);
 				if (iEnergyCalcFailures > s_iMaxEnergyCalcFailures) {
-					if (PRINT_MPI_MESSAGES)
+					#if MPI_DEBUG
 						printf("Master failed to perform %d energy calculations in a row. Sending die signal to other processes and exiting.\n", iEnergyCalcFailures);
+					#endif
 					for (unsigned int i = 1; i < m_iMpiProcesses; ++i)
 						MPI_Send(0, 0, MPI_INT, i, DIE_TAG, MPI_COMM_WORLD);
 					return false;
@@ -207,23 +211,26 @@ bool Batch::runMaster() {
 					delete pStructure;
 					return false;
 				}
-				if (PRINT_MPI_MESSAGES)
+				#if MPI_DEBUG
 					printf("Master received structure %d from process %d.\n", pStructure->getId(), status.MPI_SOURCE);
+				#endif
 				processResult(pStructure);
 				assignments[status.MPI_SOURCE].erase(pStructure->getId());
 				--iAssignments;
 			} else {
 				id = atoi(xml);
-				if (PRINT_MPI_MESSAGES)
+				#if MPI_DEBUG
 					printf("Master received non work message %d from process %d regarding structure %d.\n", status.MPI_TAG, status.MPI_SOURCE, pStructure->getId());
+				#endif
 				delete[] xml;
 				std::map<int,Structure*>* pAssignments = &(assignments[status.MPI_SOURCE]);
 				if (status.MPI_TAG == DIE_TAG) {
 					++iFailedProcesses;
 					FLOAT percentFailed = (FLOAT)iFailedProcesses / (FLOAT)m_iMpiProcesses;
 					if (percentFailed > s_fMaxMPIProcessFailures) {
-						if (PRINT_MPI_MESSAGES)
+						#if MPI_DEBUG
 							printf("More than %0.0lf% of processes failed. Sending die signal to other processes and exiting.\n", s_fMaxMPIProcessFailures * 100);
+						#endif
 						for (unsigned int i = 1; i < m_iMpiProcesses; ++i)
 							MPI_Send(0, 0, MPI_INT, i, DIE_TAG, MPI_COMM_WORLD);
 						return false;
@@ -244,14 +251,16 @@ bool Batch::runMaster() {
 				pStructure = unassigned.front();
 				unassigned.pop_front();
 				id = pStructure->getId();
-				if (PRINT_MPI_MESSAGES)
+				#if MPI_DEBUG
 					printf("Sending slave %d structure %d.\n", status.MPI_SOURCE, id);
+				#endif
 				assignments[status.MPI_SOURCE][id] = pStructure;
 				++iAssignments;
 				MPI_Send(&id, 1, MPI_INT, status.MPI_SOURCE, WORK_TAG, MPI_COMM_WORLD);
 			} else {
-				if (PRINT_MPI_MESSAGES)
+				#if MPI_DEBUG
 					printf("There are no more structures. Sending slave %d the finish tag.\n", status.MPI_SOURCE);
+				#endif
 				MPI_Send(0, 0, MPI_INT, status.MPI_SOURCE, FINISH_TAG, MPI_COMM_WORLD);
 			}
 		}
@@ -293,34 +302,40 @@ bool Batch::runSlave() {
 	std::string temp;
 
 	while (true) {
-		if (PRINT_MPI_MESSAGES)
+		#if MPI_DEBUG
 			printf("Slave %d waiting for a structure.\n", m_iMpiRank);
+		#endif
 		MPI_Recv(&id, 1, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 		if (status.MPI_TAG != WORK_TAG) {
-			if (PRINT_MPI_MESSAGES)
+			#if MPI_DEBUG
 				printf("Slave %d received non-work message %d. Exiting.\n", m_iMpiRank, status.MPI_TAG);
+			#endif
 			break;
 		}
-		if (PRINT_MPI_MESSAGES)
+		#if MPI_DEBUG
 			printf("Slave %d received structure %d.\n", m_iMpiRank, id);
+		#endif
 		pStructure = structureMap[id];
 		if (m_pEnergy->execute(*pStructure)) {
 			iEnergyCalcFailures = 0;
 			std::string xml;
 			pStructure->save(xml);
-			if (PRINT_MPI_MESSAGES)
+			#if MPI_DEBUG
 				printf("Slave %d reporting energy calculation results on structure %d.\n", m_iMpiRank, pStructure->getId());
+			#endif
 		    MPI_Send((void*)xml.c_str(), xml.length()+1, MPI_CHAR, 0, WORK_TAG, MPI_COMM_WORLD);
 		} else {
 			++iEnergyCalcFailures;
 			temp = id;
 			if (iEnergyCalcFailures <= s_iMaxEnergyCalcFailures) {
-				if (PRINT_MPI_MESSAGES)
+				#if MPI_DEBUG
 					printf("Slave %d sending failure message to master.\n", m_iMpiRank);
+				#endif
 				MPI_Send((void*)temp.c_str(), temp.length()+1, MPI_CHAR, 0, FAILURE_TAG, MPI_COMM_WORLD);
 			} else {
-				if (PRINT_MPI_MESSAGES)
+				#if MPI_DEBUG
 					printf("Slave %d sending die message to master and exiting.\n", m_iMpiRank);
+				#endif
 				MPI_Send((void*)temp.c_str(), temp.length()+1, MPI_CHAR, 0, DIE_TAG, MPI_COMM_WORLD);
 				return false;
 			}

@@ -9,7 +9,7 @@
 #define FINISH_TAG   3
 #define FAILURE_TAG  4
 
-#define PRINT_MPI_MESSAGES	false
+#define MPI_DEBUG	false
 
 class MpiUtil {
 public:

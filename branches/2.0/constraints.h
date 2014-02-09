@@ -36,7 +36,7 @@ public:
 
 	~Constraints()
 	{
-		cleanUp();
+		clear();
 	}
 
 	void setCubeLWH(FLOAT cubeLWH);
@@ -103,7 +103,7 @@ private:
 
 	bool addMinDist(TiXmlElement *pElem, unsigned int &timesReadGeneralMin, const Strings* messages);
 
-	void cleanUp();
+	void clear();
 	bool specificMinDistNotInBase() const;
 };
 

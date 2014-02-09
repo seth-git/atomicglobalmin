@@ -31,7 +31,7 @@ public:
 	bool save(TiXmlElement *pExternalElem, const Strings* messages);
 
 private:
-	void cleanUp();
+	void clear();
 	static const bool         s_required[];
 
 	static const char*        s_elementNames[];

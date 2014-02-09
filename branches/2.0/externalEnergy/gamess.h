@@ -28,7 +28,7 @@ public:
 
 	bool setup() { return true; }
 	bool execute(Structure &structure);
-	bool cleanup() { return true; }
+	bool clear() { return true; }
 };
 
 #endif /* GAMESS_H_ */

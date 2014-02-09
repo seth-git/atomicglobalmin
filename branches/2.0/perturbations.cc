@@ -15,10 +15,10 @@ Perturbations::Perturbations()
 
 Perturbations::~Perturbations()
 {
-	cleanUp();
+	clear();
 }
 
-void Perturbations::cleanUp()
+void Perturbations::clear()
 {
 	if (m_pfTranslationVectorStartLength != NULL) {
 		delete m_pfTranslationVectorStartLength;
@@ -65,7 +65,7 @@ const char* Perturbations::s_rotationAngleAttDef[] = {"", "0", ""};
 
 bool Perturbations::loadSetup(TiXmlElement *pPerturbationsElem, const Strings* messages)
 {
-	cleanUp();
+	clear();
 	TiXmlHandle hPerturbations(0);
 	hPerturbations=TiXmlHandle(pPerturbationsElem);
 	const char* perturbationsElemNames[] = {messages->m_sxTranslationVector.c_str(), messages->m_sxRotationAngle.c_str()};
@@ -142,7 +142,7 @@ bool Perturbations::loadSetup(TiXmlElement *pPerturbationsElem, const Strings* m
 
 bool Perturbations::loadDefaults(unsigned int iStructures, bool bMoleculesPresent, Constraints* pConstraints)
 {
-	cleanUp();
+	clear();
 
 	m_pfTranslationVectorStartLength = new FLOAT;
 	m_pfTranslationVectorMinLength = new FLOAT;

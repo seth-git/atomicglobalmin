@@ -16,10 +16,10 @@ AtomGroupTemplate::AtomGroupTemplate()
 
 AtomGroupTemplate::~AtomGroupTemplate()
 {
-	cleanUp();
+	clear();
 }
 
-void AtomGroupTemplate::cleanUp()
+void AtomGroupTemplate::clear()
 {
 	for (std::vector<FLOAT*>::iterator it = m_coordinates.begin() ; it < m_coordinates.end(); it++ )
 		delete[] *it;
@@ -29,7 +29,7 @@ void AtomGroupTemplate::cleanUp()
 
 bool AtomGroupTemplate::loadMolecule(TiXmlElement *pMoleculeTemplateElem, const Strings* messages)
 {
-	cleanUp();
+	clear();
 	
 	const char** values;
 	
@@ -104,7 +104,7 @@ const char*   AtomGroupTemplate::s_atomAttDefaults[] = {"1"     , NULL};
 
 bool AtomGroupTemplate::loadAtom(TiXmlElement *pAtomTemplateElem, const Strings* messages)
 {
-	cleanUp();
+	clear();
 	
 	const char** values;
 	const char* atomAttNames[] = {messages->m_sxNumber.c_str(), messages->m_sxBigZ.c_str()};
@@ -184,7 +184,7 @@ bool AtomGroupTemplate::init(Structure &structure) {
 		printf("AtomGroupTemplate::init should not be called with a structure having more than one atom group.");
 		return false;
 	}
-	cleanUp();
+	clear();
 	m_iNumber = structure.getNumberOfAtomGroups();
 	m_iFormat = CARTESIAN;
 	FLOAT* c;

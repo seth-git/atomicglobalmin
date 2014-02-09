@@ -44,7 +44,7 @@ class Input {
 		static const bool         s_required[];
 		static const char*        s_defaultValues[];
 		
-		void cleanUp();
+		void clear();
 };
 
 #endif

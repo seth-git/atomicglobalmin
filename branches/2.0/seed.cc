@@ -25,10 +25,10 @@ Seed::Seed()
 
 Seed::~Seed()
 {
-	cleanUp();
+	clear();
 }
 
-void Seed::cleanUp()
+void Seed::clear()
 {
 	m_iFreezingIterations = 0;
 	
@@ -102,7 +102,7 @@ const bool         Seed::s_enFileAttRequired[]  = {true  , true};
 
 bool Seed::load(TiXmlElement *pSeedElem, const Strings* messages)
 {
-	cleanUp();
+	clear();
 	
 	const char** values;
 	const char* attNames[]     = {messages->m_sxFreezingIterations.c_str()};

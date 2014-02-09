@@ -36,7 +36,7 @@ private:
 	static const bool s_atomAttRequired[];
 	static const char* s_atomAttDefaults[];
 	
-	void cleanUp();
+	void clear();
 };
 
 #endif

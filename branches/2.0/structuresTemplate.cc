@@ -566,7 +566,7 @@ unsigned int getRandomKey(const std::map<unsigned int, bool> &map) {
 StructuresTemplate::InitResult StructuresTemplate::initializeStructure(Structure &structure,
 		const Constraints &constraints, Type type,
 		unsigned int iMaxTries, unsigned int &iTries,
-		unsigned int iMaxGroupTries, unsigned int &iGroupTries, bool debug) {
+		unsigned int iMaxGroupTries, unsigned int &iGroupTries) {
 	unsigned int n = structure.getNumberOfAtomGroups();
 	unsigned int i;
 	std::map<unsigned int, bool> atomGroupsInitialized;
@@ -583,23 +583,23 @@ StructuresTemplate::InitResult StructuresTemplate::initializeStructure(Structure
 			atomGroupsNotInitialized[i] = true;
 		do {
 			currentAtomGroupIndex = getRandomKey(atomGroupsNotInitialized);
-			if (debug) {
+			#if INIT_DEBUG
 				printf("\tInitializing atom group with index %u (%u out of %u groups initialized, this is try %u out of %u)...\n",
 						currentAtomGroupIndex, atomGroupsInitialized.size(),
 						structure.getNumberOfAtomGroups(), iTries+1, iMaxTries);
-			}
+			#endif
 			status = initializeAtomGroup(structure, currentAtomGroupIndex, type, previousAtomGroupIndex,
-					constraints, iMaxGroupTries, iGroupTries, atomGroupsInitialized, debug);
+					constraints, iMaxGroupTries, iGroupTries, atomGroupsInitialized);
 			if (Success == status) {
 				atomGroupsNotInitialized.erase(currentAtomGroupIndex);
 				previousAtomGroupIndex = currentAtomGroupIndex;
 			}
-			if (debug) {
+			#if INIT_DEBUG
 				printf("\tInitialization finished for atom group with index %u with success = %u and %u groups left to initialize.\n",
 						currentAtomGroupIndex, status == Success,
 						structure.getNumberOfAtomGroups()
 								- atomGroupsInitialized.size());
-			}
+			#endif
 		} while (atomGroupsNotInitialized.size() > 0 && Success == status);
 		++iTries;
 	} while (iTries < iMaxTries && Success != status);
@@ -618,14 +618,14 @@ StructuresTemplate::InitResult StructuresTemplate::initializeAtomGroup(
 	unsigned int iTries;
 	return initializeAtomGroup(structure, index, type, -1, constraints,
 			defaultMaxGroupInitializationTries * 2, iTries,
-			atomGroupsInitialized, false);
+			atomGroupsInitialized);
 }
 
 StructuresTemplate::InitResult StructuresTemplate::initializeAtomGroup(
 		Structure &structure, unsigned int index, Type type, int prevIndex,
 		const Constraints &constraints, unsigned int iMaxTries,
 		unsigned int &iTries,
-		std::map<unsigned int, bool> &atomGroupsInitialized, bool debug) {
+		std::map<unsigned int, bool> &atomGroupsInitialized) {
 	if (!constraints.hasContainerOrMaxDist()) {
 		return MissingContainerOrMaxDist;
 	}
@@ -690,18 +690,19 @@ StructuresTemplate::InitResult StructuresTemplate::initializeAtomGroup(
 					angleY = Random::getFloat(0,PIE_X_2);
 					getVectorInDirection(angleX, angleY, 1, unitVector);
 				}
-				status = placeAtomGroupRelativeToAnother(index, referenceIndex, structure, unitVector, constraints, 0);
+				status = placeAtomGroupRelativeToAnother(index, referenceIndex, structure, unitVector, constraints);
 			}
 		}
-		if (debug) {
+		#if INIT_DEBUG
 			printf("\tAtom group initialized with success = %u:\n", status == Success);
 			currentAtomGroup->print(true, true);
-		}
+		#endif
 		if (status == Success) {
 			atomGroupsInitialized[index] = true;
 			structure.updateAtomGroupDistanceMatrix();
-			if (debug)
+			#if INIT_DEBUG
 				printf("\tChecking constraints...");
+			#endif
 			if (!constraints.minDistancesOK(atomGroupsInitialized, structure))
 				status = MinDistanceProblem;
 			else if (!constraints.maxDistancesOK(atomGroupsInitialized, structure))
@@ -710,11 +711,14 @@ StructuresTemplate::InitResult StructuresTemplate::initializeAtomGroup(
 				status = WontFitInContainer;
 			if (status != Success) {
 				atomGroupsInitialized.erase(index);
-				if (debug)
+				#if INIT_DEBUG
 					printInitFailureMessage(status);
-			} else if (debug) {
-				printf(" Passed!\n");
+				#endif
 			}
+			#if INIT_DEBUG
+				if (Success == status)
+					printf(" Passed!\n");
+			#endif
 		}
 		++iTries;
 	} while (iTries < iMaxTries && status != Success);
@@ -782,7 +786,7 @@ void StructuresTemplate::getVectorInDirection(FLOAT angleX, FLOAT angleY,
 StructuresTemplate::InitResult StructuresTemplate::placeAtomGroupRelativeToAnother(
 		unsigned int agToPlaceIndex, unsigned int otherAgIndex,
 		Structure &structure, const FLOAT* unitVector,
-		const Constraints &constraints, unsigned int debug) {
+		const Constraints &constraints) {
 	AtomGroup* agToPlace = structure.getAtomGroup(agToPlaceIndex);
 	const AtomGroup* otherAg = structure.getAtomGroup(otherAgIndex);
 	FLOAT distance;
@@ -824,7 +828,7 @@ StructuresTemplate::InitResult StructuresTemplate::placeAtomGroupRelativeToAnoth
 		FLOAT minDistanceBetweenAtoms;
 		getClosestAtoms(*agToPlace, *otherAg, constraints, atom1, atom2, minDistanceBetweenAtoms);
 
-		if (debug == 2) {
+		#if INIT_DEBUG == 2
 			structure.updateAtomDistanceMatrix();
 			structure.print(Structure::PRINT_LOCAL_COORDINATES | Structure::PRINT_DISTANCE_MATRIX);
 
@@ -854,7 +858,7 @@ StructuresTemplate::InitResult StructuresTemplate::placeAtomGroupRelativeToAnoth
 			printf("\natom2: ");
 			AtomGroup::printPoint(atom2);
 			printf("\n");
-		}
+		#endif
 
 		// Let R be a line defined by unitVector and atom2;
 		COORDINATE3 pointOnRClosestToAtom1;
@@ -883,9 +887,9 @@ StructuresTemplate::InitResult StructuresTemplate::placeAtomGroupRelativeToAnoth
 		else {
 			FLOAT y;
 			if (minDistanceBetweenAtoms < x)
-				y = (bool)debug ? x : Random::getFloat(x,maxDist);
+				y = Random::getFloat(x,maxDist);
 			else
-				y = (bool)debug ? minDistanceBetweenAtoms : Random::getFloat(minDistanceBetweenAtoms,maxDist);
+				y = Random::getFloat(minDistanceBetweenAtoms,maxDist);
 			e = sqrt((y * y) - (x * x)) + a + b;
 		}
 		if (isnan(e))
@@ -894,7 +898,7 @@ StructuresTemplate::InitResult StructuresTemplate::placeAtomGroupRelativeToAnoth
 			return PlaceAtomGroupRelativeToAnotherMethodFailed;
 		}
 
-		if (debug == 2) {
+		#if INIT_DEBUG == 2
 			printf("pointOnRClosestToAtom1: ");
 			AtomGroup::printPoint(pointOnRClosestToAtom1);
 			printf("\n");
@@ -908,7 +912,7 @@ StructuresTemplate::InitResult StructuresTemplate::placeAtomGroupRelativeToAnoth
 			printf("\n");
 
 			printf("a = %lf, b = %lf, x = %lf, e = %lf, maxDist = %lf\n", a, b, x, e, maxDist);
-		}
+		#endif
 
 		while (true) {
 			for (i = 0; i < 3; ++i) {
@@ -924,10 +928,10 @@ StructuresTemplate::InitResult StructuresTemplate::placeAtomGroupRelativeToAnoth
 			agToPlace->initRotationMatrix();
 			agToPlace->localToGlobal();
 			structure.updateAtomDistanceMatrix();
-			if (debug == 2) {
+			#if INIT_DEBUG == 2
 				printf("\nStructure with (e = %lf)\n", e);
 				structure.print(Structure::PRINT_DISTANCE_MATRIX);
-			}
+			#endif
 			if (minDistancesOK(agToPlaceIndex, otherAgIndex, structure, constraints))
 				break;
 			e += 0.1;

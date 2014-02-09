@@ -30,7 +30,7 @@ public:
 
 	bool setup() { return true; }
 	bool execute(Structure &structure);
-	bool cleanup() { return true; }
+	bool clear() { return true; }
 
 private:
 	static bool s_bGetStandardOrientation;

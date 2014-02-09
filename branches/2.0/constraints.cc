@@ -16,7 +16,7 @@ const char*   Constraints::s_defaultValues[]  = { "", "" };
 const bool    Constraints::s_minRequired[]       = { true, false, false };
 const char*   Constraints::s_minDefaultValues[]  = { "", "", "" };
 
-void Constraints::cleanUp() {
+void Constraints::clear() {
 	m_sName = "";
 	m_pBase = NULL;
 	if (m_pfCubeLWH != NULL) {
@@ -60,7 +60,7 @@ bool Constraints::load(TiXmlElement *pConstraintsElem, const Strings* messages,
 	TiXmlHandle handle(0);
 	TiXmlElement** constraintElements;
 
-	cleanUp();
+	clear();
 
 	const char* valueAttNames[] = { messages->m_sxName.c_str(), messages->m_sxBase.c_str() };
 	const char** values;
@@ -237,7 +237,7 @@ bool Constraints::specificMinDistNotInBase() const {
 }
 
 void Constraints::copy(const Constraints &other) {
-	cleanUp();
+	clear();
 	m_sName = other.m_sName;
 	m_pBase = other.m_pBase;
 	if (other.m_pfCubeLWH != NULL) {

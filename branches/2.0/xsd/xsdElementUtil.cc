@@ -9,7 +9,7 @@ bool XsdElementUtil::process (TiXmlHandle &handle)
 	bool bMatch;
 	const Strings* messagesDL = Strings::instance();
 
-	cleanUp();
+	clear();
 	switch(m_type) {
 		case XSD_ALL:
 			m_allElements = new TiXmlElement*[m_iElements];

@@ -44,7 +44,7 @@ private:
 	static const bool s_stopAttReq[];
 	static const char* s_stopAttDef[];
 	
-	void cleanUp();
+	void clear();
 };
 
 #endif

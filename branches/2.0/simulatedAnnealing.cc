@@ -13,10 +13,10 @@ SimulatedAnnealing::SimulatedAnnealing(Input* input) : Action(input)
 
 SimulatedAnnealing::~SimulatedAnnealing()
 {
-	cleanUp();
+	clear();
 }
 
-void SimulatedAnnealing::cleanUp()
+void SimulatedAnnealing::clear()
 {
 	Action::clear();
 	if (m_pfStartingTemperature != NULL) {
@@ -55,7 +55,7 @@ const char* SimulatedAnnealing::s_setupAttDef[] = {"1", "200"};
 
 bool SimulatedAnnealing::loadSetup(TiXmlElement *pSetupElem, const Strings* messages)
 {
-	cleanUp();
+	clear();
 	const char* elementNames[] = {messages->m_sxStructuresTemplate.c_str(), messages->m_sxTemperature.c_str(), messages->m_sxAnnealingSchedule.c_str(), messages->m_sxPerturbations.c_str(), messages->m_sxStop.c_str()};
 	XsdElementUtil setupUtil(pSetupElem->Value(), XSD_ALL, elementNames, s_minOccurs);
 	TiXmlHandle handle(0);

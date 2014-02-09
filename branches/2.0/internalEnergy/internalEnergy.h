@@ -16,7 +16,7 @@ public:
 	static InternalEnergy* instance(Impl impl, const InternalEnergyXml* pInternalEnergyXml);
 
 	bool setup() { return true; };
-	bool cleanup() { return true; };
+	bool clear() { return true; };
 
 	virtual bool execute(Structure &structure);
 

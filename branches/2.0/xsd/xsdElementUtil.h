@@ -56,7 +56,7 @@ class XsdElementUtil {
 
 		~XsdElementUtil()
 		{
-			cleanUp();
+			clear();
 		}
 
 		bool process(TiXmlHandle &handle);
@@ -84,7 +84,7 @@ class XsdElementUtil {
 			m_sequenceElements = NULL;
 		}
 
-		void cleanUp()
+		void clear()
 		{
 			// We don't need to deallocate m_pChoiceElement
 			if (m_allElements != NULL) {

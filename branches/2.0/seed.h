@@ -55,7 +55,7 @@ public:
 	bool readStructures(std::list<Structure*> &structures);
 
 private:
-	void cleanUp();
+	void clear();
 	
 	static const bool s_attRequired[];
 	

@@ -12,10 +12,10 @@ ExternalEnergyXml::ExternalEnergyXml() {
 }
 
 ExternalEnergyXml::~ExternalEnergyXml() {
-	cleanUp();
+	clear();
 }
 
-void ExternalEnergyXml::cleanUp() {
+void ExternalEnergyXml::clear() {
 	m_sSharedDir = "";
 	m_sLocalDir = "";
 	m_sResultsDir = "";
@@ -27,7 +27,7 @@ void ExternalEnergyXml::cleanUp() {
 
 bool ExternalEnergyXml::load(TiXmlElement *pExternalElem, const Strings* messages)
 {
-	cleanUp();
+	clear();
 	const char** values;
 	
 	const char* attributeNames[] = {messages->m_sxMethod.c_str(), messages->m_sxTransitionStateSearch.c_str()};

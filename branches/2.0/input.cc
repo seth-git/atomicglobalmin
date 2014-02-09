@@ -12,10 +12,10 @@ Input::Input()
 
 Input::~Input()
 {
-	cleanUp();
+	clear();
 }
 
-void Input::cleanUp() {
+void Input::clear() {
 	m_iAction = -1;
 	if (m_pAction != NULL)
 		delete m_pAction;
@@ -52,7 +52,7 @@ const char* Input::s_defaultValues[]    = {""       , "en"      , "http://source
 
 bool Input::load(TiXmlDocument &xmlDocument)
 {
-	cleanUp();
+	clear();
 	TiXmlElement* pElem;
 	
 	if (xmlDocument.Error()) {
@@ -184,8 +184,9 @@ bool Input::run(const char* fileName) {
 		if (!load(fileName))
 			return false;
 		if (iMpiProcesses >= 2) {
-			if (PRINT_MPI_MESSAGES)
+			#if MPI_DEBUG
 				printf("Master process 0 sending the loaded xml to %d other slave mpi processes.\n", (iMpiProcesses-1));
+			#endif
 			std::string xml;
 			save(xml);
 			int temp = xml.length()+1;
@@ -199,11 +200,11 @@ bool Input::run(const char* fileName) {
 		MPI_Bcast(&size, 1, MPI_INT, 0, MPI_COMM_WORLD);
 		xml = new char[size];
 		MPI_Bcast(xml, size, MPI_CHAR, 0, MPI_COMM_WORLD);
-		if (PRINT_MPI_MESSAGES) {
+		#if MPI_DEBUG
 			int iRank;
 			MPI_Comm_rank(MPI_COMM_WORLD, &iRank);
 			printf("Slave process %d received loaded xml from process 0.\n", iRank);
-		}
+		#endif
 		bool success = loadStr(xml);
 		delete[] xml; // Always delete
 		if (!success)

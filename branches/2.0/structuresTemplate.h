@@ -9,6 +9,9 @@
 #include "random/random.h"
 #include <list>
 
+// 0 = OFF, 1 = DEBUG, 2 = DEBUG VERBOSE
+#define INIT_DEBUG 0
+
 class StructuresTemplate {
 public:
 	enum Type { Linear, Planar, ThreeD };
@@ -58,7 +61,7 @@ public:
 		unsigned int iTries, iGroupTries;
 		InitResult result = initializeStructure(structure, constraints, type,
 				defaultMaxInitializationTries, iTries,
-				defaultMaxGroupInitializationTries, iGroupTries, false);
+				defaultMaxGroupInitializationTries, iGroupTries);
 		if (Success != result)
 			printInitFailureMessage(result);
 		return result == Success;
@@ -79,13 +82,12 @@ public:
 	 *                              atom group
 	 *             iGroupTries - the highest number of attempts used to
 	 *                           initialize an atom group
-	 *             debug - if true, debug messages will be printed
 	 * Returns: an INIT_FAILURE_REASON enum value
 	 */
 	static InitResult initializeStructure(Structure &structure,
 			const Constraints &constraints, Type type, unsigned int iMaxTries,
 			unsigned int &iTries, unsigned int iMaxGroupTries,
-			unsigned int &iGroupTries, bool debug);
+			unsigned int &iGroupTries);
 
 	static InitResult initializeAtomGroup(Structure &structure,
 			unsigned int index, Type type,
@@ -95,12 +97,12 @@ public:
 			unsigned int index, Type type, int prevIndex,
 			const Constraints &constraints, unsigned int iMaxTries,
 			unsigned int &iTries,
-			std::map<unsigned int, bool> &atomGroupsInitialized, bool debug);
+			std::map<unsigned int, bool> &atomGroupsInitialized);
 
 	static InitResult placeAtomGroupRelativeToAnother(
 			unsigned int agToPlaceIndex, unsigned int otherAgIndex,
 			Structure &structure, const FLOAT* unitVector,
-			const Constraints &constraints, unsigned int debug);
+			const Constraints &constraints);
 
 	static void getVectorInDirection(FLOAT angleX, FLOAT angleY, FLOAT length,
 			COORDINATE4 &result);
