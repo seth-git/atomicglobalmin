@@ -9,6 +9,19 @@ Batch::Batch(Input* input) : Action(input)
 Batch::~Batch()
 {
 	clear();
+
+	MPI_Status status;
+	int flag;
+	for (std::list<SendRequestPair>::iterator it = m_sendRequests.begin(); it != m_sendRequests.end(); ++it) {
+		MPI_Test(it->second, &flag, &status);
+		if (!flag) {
+			MPI_Cancel(it->second);
+			MPI_Request_free(it->second);
+		}
+		delete it->first;
+		delete it->second;
+	}
+	m_sendRequests.clear();
 }
 
 //const char*      Batch::s_elementNames[] = {"structuresTemplate"};
@@ -155,6 +168,7 @@ bool Batch::runMaster() {
 	Structure* pStructure;
 	std::map<int,Structure*> assignments[m_iMpiProcesses];
 	unsigned int iAssignments = 0;
+	SendRequestPair sendPair;
 	int id;
 	j = 1;
 	for (i = 1; i <= numberToAssign; ++i) {
@@ -164,7 +178,12 @@ bool Batch::runMaster() {
 		#if MPI_DEBUG
 			printf("Sending slave %d structure %d.\n", j, id);
 		#endif
-		MPI_Send(&id, 1, MPI_INT, j, WORK_TAG, MPI_COMM_WORLD);
+
+		sendPair.first = new int;
+		*(sendPair.first) = id;
+		sendPair.second = new MPI_Request;
+		MPI_Isend(sendPair.first, 1, MPI_INT, j, WORK_TAG, MPI_COMM_WORLD, sendPair.second);
+		m_sendRequests.push_back(sendPair);
 		assignments[j][id] = pStructure;
 		++iAssignments;
 
@@ -175,12 +194,15 @@ bool Batch::runMaster() {
 
 	char* xml;
 	bool success;
+	int flag;
 	MPI_Status status;
 	unsigned int iEnergyCalcFailures = 0;
 	unsigned int iFailedProcesses = 0;
 	unsigned int iSaveCount = 0;
+	std::map<int,bool> sentFinishMessage;
+	std::list<SendRequestPair>::iterator pairIt, pairIt2;
 	do {
-		if (unassigned.size() > 0) {
+		if (!unassigned.empty()) {
 			pStructure = unassigned.front();
 			unassigned.pop_front();
 			#if MPI_DEBUG
@@ -202,7 +224,23 @@ bool Batch::runMaster() {
 				}
 			}
 		}
-		while (iAssignments > 0 && MpiUtil::receiveString(MPI_ANY_SOURCE, xml, status, unassigned.size() == 0)) {
+
+		pairIt = m_sendRequests.begin();
+		while (m_sendRequests.end() != pairIt) {
+			pairIt2 = pairIt;
+			++pairIt;
+			MPI_Test(pairIt2->second, &flag, &status);
+			if (flag) {
+				m_sendRequests.erase(pairIt2);
+				delete pairIt2->first;
+				delete pairIt2->second;
+			}
+		}
+
+		#if MPI_DEBUG
+			printf("Master checking for messages.\n");
+		#endif
+		while (iAssignments > 0 && MpiUtil::receiveString(MPI_ANY_SOURCE, xml, status, unassigned.empty())) {
 			if (status.MPI_TAG == WORK_TAG) {
 				pStructure = new Structure();
 				success = pStructure->loadStr(xml);
@@ -220,7 +258,7 @@ bool Batch::runMaster() {
 			} else {
 				id = atoi(xml);
 				#if MPI_DEBUG
-					printf("Master received non work message %d from process %d regarding structure %d.\n", status.MPI_TAG, status.MPI_SOURCE, pStructure->getId());
+					printf("Master received non-work message %d from process %d regarding structure %d.\n", status.MPI_TAG, status.MPI_SOURCE, id);
 				#endif
 				delete[] xml;
 				std::map<int,Structure*>* pAssignments = &(assignments[status.MPI_SOURCE]);
@@ -247,7 +285,7 @@ bool Batch::runMaster() {
 					pAssignments->erase(id);
 				}
 			}
-			if (unassigned.size() > 0) {
+			if (!unassigned.empty()) {
 				pStructure = unassigned.front();
 				unassigned.pop_front();
 				id = pStructure->getId();
@@ -256,15 +294,21 @@ bool Batch::runMaster() {
 				#endif
 				assignments[status.MPI_SOURCE][id] = pStructure;
 				++iAssignments;
-				MPI_Send(&id, 1, MPI_INT, status.MPI_SOURCE, WORK_TAG, MPI_COMM_WORLD);
-			} else {
+
+				sendPair.first = new int;
+				*(sendPair.first) = id;
+				sendPair.second = new MPI_Request;
+				MPI_Isend(sendPair.first, 1, MPI_INT, status.MPI_SOURCE, WORK_TAG, MPI_COMM_WORLD, sendPair.second);
+				m_sendRequests.push_back(sendPair);
+			} else if (sentFinishMessage.find(status.MPI_SOURCE) == sentFinishMessage.end()) {
 				#if MPI_DEBUG
 					printf("There are no more structures. Sending slave %d the finish tag.\n", status.MPI_SOURCE);
 				#endif
 				MPI_Send(0, 0, MPI_INT, status.MPI_SOURCE, FINISH_TAG, MPI_COMM_WORLD);
+				sentFinishMessage[status.MPI_SOURCE] = true;
 			}
 		}
-		m_bRunComplete = unassigned.size() == 0 && iAssignments == 0;
+		m_bRunComplete = unassigned.empty() && iAssignments == 0;
 		if (++iSaveCount >= m_iSaveFrequency || m_bRunComplete) {
 			m_pInput->save();
 			iSaveCount = 0;
@@ -300,22 +344,76 @@ bool Batch::runSlave() {
 	Structure* pStructure;
 	unsigned int iEnergyCalcFailures = 0;
 	std::string temp;
+	MPI_Request request;
+	int messageReceived = 0;
+	bool initiateReceive = true;
+	bool receivedFinishMessage = false;
+	std::list<int> queue;
 
 	while (true) {
-		#if MPI_DEBUG
-			printf("Slave %d waiting for a structure.\n", m_iMpiRank);
-		#endif
-		MPI_Recv(&id, 1, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-		if (status.MPI_TAG != WORK_TAG) {
+		do {
+			if (initiateReceive) {
+				MPI_Irecv(&id, 1, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &request);
+				initiateReceive = false;
+			}
+			if (queue.empty() && !receivedFinishMessage) {
+				#if MPI_DEBUG
+					printf("Slave %d waiting for a message.\n", m_iMpiRank);
+				#endif
+				MPI_Wait(&request,&status);
+				messageReceived = 1;
+			} else {
+				#if MPI_DEBUG
+					printf("Slave %d checking for a message.\n", m_iMpiRank);
+				#endif
+				MPI_Test(&request, &messageReceived, &status);
+			}
+			if (messageReceived) {
+				initiateReceive = true;
+				switch(status.MPI_TAG) {
+				case WORK_TAG:
+					queue.push_back(id);
+					#if MPI_DEBUG
+						printf("Slave %d received structure %d.\n", m_iMpiRank, id);
+					#endif
+					break;
+				case DIE_TAG:
+					#if MPI_DEBUG
+						printf("Slave %d received die message. Exiting.\n", m_iMpiRank);
+					#endif
+					return false;
+				case WALL_TIME_TAG:
+					#if MPI_DEBUG
+						printf("Slave %d received wall-time message. Exiting.\n", m_iMpiRank);
+					#endif
+					return true;
+				case FINISH_TAG:
+					#if MPI_DEBUG
+						printf("Slave %d received finish message.\n", m_iMpiRank);
+					#endif
+					receivedFinishMessage = true;
+					break;
+				default:
+					#if MPI_DEBUG
+						printf("Slave %d received non-work message %d. Exiting.\n", m_iMpiRank, status.MPI_TAG);
+					#endif
+					return false;
+				}
 			#if MPI_DEBUG
-				printf("Slave %d received non-work message %d. Exiting.\n", m_iMpiRank, status.MPI_TAG);
+			} else {
+				printf("Slave %d did not receive a message.\n", m_iMpiRank, status.MPI_TAG);
 			#endif
+			}
+		} while (messageReceived && !receivedFinishMessage);
+		if (queue.empty()) {
 			break;
 		}
-		#if MPI_DEBUG
-			printf("Slave %d received structure %d.\n", m_iMpiRank, id);
-		#endif
+		id = queue.front();
+		queue.pop_front();
 		pStructure = structureMap[id];
+		#if MPI_DEBUG
+			printf("Slave %d performing calculations on structure %d.\n", m_iMpiRank, pStructure->getId());
+		#endif
 		if (m_pEnergy->execute(*pStructure)) {
 			iEnergyCalcFailures = 0;
 			std::string xml;
@@ -329,9 +427,9 @@ bool Batch::runSlave() {
 			temp = id;
 			if (iEnergyCalcFailures <= s_iMaxEnergyCalcFailures) {
 				#if MPI_DEBUG
-					printf("Slave %d sending failure message to master.\n", m_iMpiRank);
+					printf("Slave %d sending energy calculation failure message to master.\n", m_iMpiRank);
 				#endif
-				MPI_Send((void*)temp.c_str(), temp.length()+1, MPI_CHAR, 0, FAILURE_TAG, MPI_COMM_WORLD);
+				MPI_Send((void*)temp.c_str(), temp.length()+1, MPI_CHAR, 0, ENERGY_CAL_FAILURE_TAG, MPI_COMM_WORLD);
 			} else {
 				#if MPI_DEBUG
 					printf("Slave %d sending die message to master and exiting.\n", m_iMpiRank);

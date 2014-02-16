@@ -4,10 +4,11 @@
 
 #include <mpi.h>
 
-#define DIE_TAG      1
-#define WORK_TAG     2
-#define FINISH_TAG   3
-#define FAILURE_TAG  4
+#define DIE_TAG                   1
+#define WORK_TAG                  2
+#define FINISH_TAG                3
+#define ENERGY_CAL_FAILURE_TAG    4
+#define WALL_TIME_TAG             5
 
 #define MPI_DEBUG	false
 

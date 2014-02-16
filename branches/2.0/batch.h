@@ -18,8 +18,11 @@ public:
 	bool runMaster();
 	bool runSlave();
 
-private:
+protected:
 	void processResult(Structure* structure);
+
+	typedef std::pair<int*,MPI_Request*> SendRequestPair;
+	std::list<SendRequestPair> m_sendRequests;
 
 	static const unsigned int s_minOccurs[];
 	static const bool s_setupAttReq[];
