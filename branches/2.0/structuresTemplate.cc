@@ -66,14 +66,15 @@ void StructuresTemplate::clear()
 	}
 }
 
-bool StructuresTemplate::load(TiXmlElement *pStructuresTemplateElem,
+bool StructuresTemplate::load(const rapidxml::xml_node<>* pStructuresTemplateElem,
 		std::map<std::string, Constraints*> &constraintsMap, const Strings* messages) {
+	using namespace rapidxml;
 	clear();
 	
 	unsigned int i;
 	const char** values;
 	const char* attributeNames[]  = {messages->m_sxConstraints.c_str()};
-	XsdAttributeUtil attUtil(pStructuresTemplateElem->Value(), attributeNames, s_attRequired, s_attDefaults);
+	XsdAttributeUtil attUtil(attributeNames, s_attRequired, s_attDefaults);
 	if (!attUtil.process(pStructuresTemplateElem)) {
 		return false;
 	}
@@ -82,30 +83,27 @@ bool StructuresTemplate::load(TiXmlElement *pStructuresTemplateElem,
 		m_pConstraints = constraintsMap[values[0]];
 		if (m_pConstraints == NULL) {
 			const Strings* messagesDL = Strings::instance();
-			printf(messagesDL->m_sConstraintNameMisMatch.c_str(), pStructuresTemplateElem->Row(), messages->m_sxConstraints.c_str(), values[0]);
+			printf(messagesDL->m_sConstraintNotDefined.c_str(), pStructuresTemplateElem->name(), messages->m_sxConstraints.c_str(), values[0]);
 			return false;
 		}
 	}
 	
 	const char* elementNames[] = {messages->m_sxStructureTemplate.c_str(), messages->m_sxLinear.c_str(), messages->m_sxPlanar.c_str(), messages->m_sxThreeD.c_str(), messages->m_sxBondRotationalSearch.c_str(), messages->m_sxSeed.c_str()};
-	XsdElementUtil ptUtil(pStructuresTemplateElem->Value(), XSD_ALL, elementNames, s_minOccurs);
-	TiXmlHandle hRoot(0);
-	hRoot=TiXmlHandle(pStructuresTemplateElem);
-	if (!ptUtil.process(hRoot))
+	XsdElementUtil ptUtil(XSD_ALL, elementNames, s_minOccurs);
+	if (!ptUtil.process(pStructuresTemplateElem))
 		return false;
-	TiXmlElement** ptElements = ptUtil.getAllElements();
+	const xml_node<>** ptElements = ptUtil.getAllElements();
 	
 	if (ptElements[0] != NULL) {
 		const char* popTempElementNames[] = {messages->m_sxMoleculeTemplate.c_str(), messages->m_sxAtomTemplate.c_str()};
-		XsdElementUtil mtUtil(ptElements[0]->Value(), XSD_SEQUENCE, popTempElementNames, s_popTempMinOccurs, s_popTempMaxOccurs);
-		hRoot=TiXmlHandle(ptElements[0]);
-		if (!mtUtil.process(hRoot))
+		XsdElementUtil mtUtil(XSD_SEQUENCE, popTempElementNames, s_popTempMinOccurs, s_popTempMaxOccurs);
+		if (!mtUtil.process(ptElements[0]))
 			return false;
-		std::vector<TiXmlElement*>* templates = mtUtil.getSequenceElements();
+		std::vector<const xml_node<>*>* templates = mtUtil.getSequenceElements();
 		m_iAtomGroupTemplates = templates[0].size() + templates[1].size();
 		if (m_iAtomGroupTemplates == 0) {
 			const Strings* messagesDL = Strings::instance();
-			printf(messagesDL->m_sEmptyStructureTemplate.c_str(), ptElements[0]->Value(), ptElements[0]->Row(), messages->m_sxMoleculeTemplate.c_str(), messages->m_sxAtomTemplate.c_str());
+			printf(messagesDL->m_sEmptyStructureTemplate.c_str(), ptElements[0]->name(), messages->m_sxMoleculeTemplate.c_str(), messages->m_sxAtomTemplate.c_str());
 			return false;
 		}
 		m_atomGroupTemplates = new AtomGroupTemplate[m_iAtomGroupTemplates];
@@ -156,10 +154,10 @@ bool StructuresTemplate::load(TiXmlElement *pStructuresTemplateElem,
 const bool    StructuresTemplate::s_initTypeAttRequired[] = {true    , false};
 const char*   StructuresTemplate::s_initTypeAttDefaults[] = {NULL    , NULL};
 
-bool StructuresTemplate::readInitializationType(TiXmlElement *pElem, std::map<std::string,Constraints*> &constraintsMap, unsigned int &numberOfThisType, Constraints* &pConstraints, const Strings* messages) {
+bool StructuresTemplate::readInitializationType(const rapidxml::xml_node<>* pElem, std::map<std::string,Constraints*> &constraintsMap, unsigned int &numberOfThisType, Constraints* &pConstraints, const Strings* messages) {
 	const char** values;
 	const char* attributeNames[] = {messages->m_sxNumber.c_str(), messages->m_sxConstraints.c_str()};
-	XsdAttributeUtil attUtil(pElem->Value(), attributeNames, s_initTypeAttRequired, s_initTypeAttDefaults);
+	XsdAttributeUtil attUtil(attributeNames, s_initTypeAttRequired, s_initTypeAttDefaults);
 	if (!attUtil.process(pElem)) {
 		return false;
 	}
@@ -172,63 +170,64 @@ bool StructuresTemplate::readInitializationType(TiXmlElement *pElem, std::map<st
 		pConstraints = constraintsMap[values[1]];
 		if (pConstraints == NULL) {
 			const Strings* messagesDL = Strings::instance();
-			printf(messagesDL->m_sConstraintNameMisMatch.c_str(), pElem->Row(), messages->m_sxConstraints.c_str(), values[1]);
+			printf(messagesDL->m_sConstraintNotDefined.c_str(), pElem->name(), messages->m_sxConstraints.c_str(), values[1]);
 			return false;
 		}
 	}
 	return true;
 }
 
-bool StructuresTemplate::save(TiXmlElement *pParentElem, const Strings* messages)
+bool StructuresTemplate::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem, const Strings* messages)
 {
+	using namespace rapidxml;
 	unsigned int i;
-	TiXmlElement* structuresTemplate = new TiXmlElement(messages->m_sxStructuresTemplate.c_str());
-	pParentElem->LinkEndChild(structuresTemplate);
+	xml_node<>* structuresTemplate = doc.allocate_node(node_element, messages->m_sxStructuresTemplate.c_str());
+	pParentElem->append_node(structuresTemplate);
 	
 	if (m_pConstraints != NULL)
-		structuresTemplate->SetAttribute(messages->m_sxConstraints.c_str(), m_pConstraints->m_sName.c_str());
+		structuresTemplate->append_attribute(doc.allocate_attribute(messages->m_sxConstraints.c_str(), m_pConstraints->m_sName.c_str()));
 	
 	if (m_iAtomGroupTemplates > 0) {
-		TiXmlElement* structureTemplate = new TiXmlElement(messages->m_sxStructureTemplate.c_str());
-		structuresTemplate->LinkEndChild(structureTemplate);
+		xml_node<>* structureTemplate = doc.allocate_node(node_element, messages->m_sxStructureTemplate.c_str());
+		structuresTemplate->append_node(structureTemplate);
 		
 		for (i = 0; i < m_iAtomGroupTemplates; ++i)
-			if (!m_atomGroupTemplates[i].save(structureTemplate, messages))
+			if (!m_atomGroupTemplates[i].save(doc, structureTemplate, messages))
 				return false;
 	}
 	
 	if (m_iLinear > 0) {
-		TiXmlElement* linear = new TiXmlElement(messages->m_sxLinear.c_str());
-		structuresTemplate->LinkEndChild(linear);
-		linear->SetAttribute(messages->m_sxNumber.c_str(), m_iLinear);
+		xml_node<>* linear = doc.allocate_node(node_element, messages->m_sxLinear.c_str());
+		structuresTemplate->append_node(linear);
+		XsdTypeUtil::setAttribute(doc, linear, messages->m_sxNumber.c_str(), m_iLinear);
 		if (m_pLinearConstraints != NULL)
-			linear->SetAttribute(messages->m_sxConstraints.c_str(), m_pLinearConstraints->m_sName.c_str());
+			linear->append_attribute(doc.allocate_attribute(messages->m_sxConstraints.c_str(), m_pLinearConstraints->m_sName.c_str()));
 	}
 	
 	if (m_iPlanar > 0) {
-		TiXmlElement* linear = new TiXmlElement(messages->m_sxPlanar.c_str());
-		structuresTemplate->LinkEndChild(linear);
-		linear->SetAttribute(messages->m_sxNumber.c_str(), m_iPlanar);
+		xml_node<>* planar = doc.allocate_node(node_element, messages->m_sxPlanar.c_str());
+		structuresTemplate->append_node(planar);
+		XsdTypeUtil::setAttribute(doc, planar, messages->m_sxNumber.c_str(), m_iPlanar);
 		if (m_pPlanarConstraints != NULL)
-			linear->SetAttribute(messages->m_sxConstraints.c_str(), m_pPlanarConstraints->m_sName.c_str());
+			planar->append_attribute(doc.allocate_attribute(messages->m_sxConstraints.c_str(), m_pPlanarConstraints->m_sName.c_str()));
 	}
 	
 	if (m_i3D > 0) {
-		TiXmlElement* linear = new TiXmlElement(messages->m_sxThreeD.c_str());
-		structuresTemplate->LinkEndChild(linear);
-		linear->SetAttribute(messages->m_sxNumber.c_str(), m_i3D);
+		xml_node<>* threeD = doc.allocate_node(node_element, messages->m_sxThreeD.c_str());
+		structuresTemplate->append_node(threeD);
+		XsdTypeUtil::setAttribute(doc, threeD, messages->m_sxNumber.c_str(), m_i3D);
 		if (m_p3DConstraints != NULL)
-			linear->SetAttribute(messages->m_sxConstraints.c_str(), m_p3DConstraints->m_sName.c_str());
+			threeD->append_attribute(doc.allocate_attribute(messages->m_sxConstraints.c_str(), m_p3DConstraints->m_sName.c_str()));
 	}
 	
 	if (m_bondRotationalSearchAngle != NULL) {
-		TiXmlElement* bondRotationalSearch = new TiXmlElement(messages->m_sxBondRotationalSearch.c_str());
-		structuresTemplate->LinkEndChild(bondRotationalSearch);
-		bondRotationalSearch->SetDoubleAttribute(messages->m_sxDegrees.c_str(), *m_bondRotationalSearchAngle * RAD_TO_DEG);
+		xml_node<>* bondRotationalSearch = doc.allocate_node(node_element, messages->m_sxBondRotationalSearch.c_str());
+		structuresTemplate->append_node(bondRotationalSearch);
+		XsdTypeUtil::setAttribute(doc, bondRotationalSearch, messages->m_sxDegrees.c_str(), *m_bondRotationalSearchAngle * RAD_TO_DEG);
 	}
 	
 	if (m_pSeed != NULL)
-		if (!m_pSeed->save(structuresTemplate, messages))
+		if (!m_pSeed->save(doc, structuresTemplate, messages))
 			return false;
 	
 	return true;

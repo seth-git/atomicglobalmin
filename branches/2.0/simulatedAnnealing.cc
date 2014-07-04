@@ -46,6 +46,7 @@ const unsigned int SimulatedAnnealing::s_minOccurs[]    = {1                   ,
 
 const bool SimulatedAnnealing::s_tempAttReq[] = {true,true};
 const char* SimulatedAnnealing::s_tempAttDef[] = {"1", "3.16689e-6"};
+const FLOAT SimulatedAnnealing::s_fDefaultBoltzmannConstant = 3.16689e-6;
 
 const bool SimulatedAnnealing::s_stopAttReq[] = {false,false,false};
 const char* SimulatedAnnealing::s_stopAttDef[] = {"", "", ""};
@@ -53,28 +54,26 @@ const char* SimulatedAnnealing::s_stopAttDef[] = {"", "", ""};
 const bool SimulatedAnnealing::s_setupAttReq[] = {true,true};
 const char* SimulatedAnnealing::s_setupAttDef[] = {"1", "200"};
 
-bool SimulatedAnnealing::loadSetup(TiXmlElement *pSetupElem, const Strings* messages)
+bool SimulatedAnnealing::loadSetup(const rapidxml::xml_node<>* pSetupElem, const Strings* messages)
 {
+	using namespace rapidxml;
 	clear();
 	const char* elementNames[] = {messages->m_sxStructuresTemplate.c_str(), messages->m_sxTemperature.c_str(), messages->m_sxAnnealingSchedule.c_str(), messages->m_sxPerturbations.c_str(), messages->m_sxStop.c_str()};
-	XsdElementUtil setupUtil(pSetupElem->Value(), XSD_ALL, elementNames, s_minOccurs);
-	TiXmlHandle handle(0);
-	handle=TiXmlHandle(pSetupElem);
-	if (!setupUtil.process(handle))
+	XsdElementUtil setupUtil(XSD_ALL, elementNames, s_minOccurs);
+	if (!setupUtil.process(pSetupElem))
 		return false;
-	TiXmlElement** setupElements = setupUtil.getAllElements();
+	const xml_node<>** setupElements = setupUtil.getAllElements();
 	
 	if (!m_structuresTemplate.load(setupElements[0], m_constraintsMap, messages))
 		return false;
 	
 	if (setupElements[1] != NULL) {
-		handle=TiXmlHandle(setupElements[1]);
 		const char* setupElemNames[] = {messages->m_sxKelvin.c_str(), messages->m_sxAcceptedPerturbations.c_str()};
-		XsdElementUtil tempElemUtil(setupElements[1]->Value(), XSD_CHOICE, setupElemNames);
-		if (!tempElemUtil.process(handle))
+		XsdElementUtil tempElemUtil(XSD_CHOICE, setupElemNames);
+		if (!tempElemUtil.process(setupElements[1]))
 			return false;
 		unsigned int tempChoiceIndex = tempElemUtil.getChoiceElementIndex();
-		TiXmlElement* tempChoiceElem = tempElemUtil.getChoiceElement();
+		const xml_node<>* tempChoiceElem = tempElemUtil.getChoiceElement();
 
 		if (tempChoiceIndex == 0) {
 			m_pfStartingTemperature = new FLOAT;
@@ -90,7 +89,7 @@ bool SimulatedAnnealing::loadSetup(TiXmlElement *pSetupElem, const Strings* mess
 		}
 
 		const char* tempAttNames[] = {messages->m_sxDecreaseAfterIteration.c_str(), messages->m_sxBoltzmannConstant.c_str()};
-		XsdAttributeUtil tempAttUtil(setupElements[1]->Value(), tempAttNames, s_tempAttReq, s_tempAttDef);
+		XsdAttributeUtil tempAttUtil(tempAttNames, s_tempAttReq, s_tempAttDef);
 		if (!tempAttUtil.process(setupElements[1]))
 			return false;
 		const char** tempAttValues = tempAttUtil.getAllAttributes();
@@ -104,7 +103,7 @@ bool SimulatedAnnealing::loadSetup(TiXmlElement *pSetupElem, const Strings* mess
 		m_pfPercentAcceptedPerturbations = new FLOAT;
 		*m_pfPercentAcceptedPerturbations = 0.9;
 		m_iDecreaseTemperatureAfterIt = 200;
-		m_fBoltzmannConstant = 3.16689e-6;
+		m_fBoltzmannConstant = s_fDefaultBoltzmannConstant;
 	}
 
 	if (setupElements[2] != NULL) {
@@ -129,7 +128,7 @@ bool SimulatedAnnealing::loadSetup(TiXmlElement *pSetupElem, const Strings* mess
 
 	if (setupElements[4] != NULL) {
 		const char* stopAttNames[] = {messages->m_sxMaxTemperature.c_str(), messages->m_sxMaxAcceptedPerturbations.c_str(), messages->m_sxMinIterations.c_str()};
-		XsdAttributeUtil stopAttUtil(setupElements[4]->Value(), stopAttNames, s_stopAttReq, s_stopAttDef);
+		XsdAttributeUtil stopAttUtil(stopAttNames, s_stopAttReq, s_stopAttDef);
 		if (!stopAttUtil.process(setupElements[4])) {
 			return false;
 		}
@@ -159,7 +158,7 @@ bool SimulatedAnnealing::loadSetup(TiXmlElement *pSetupElem, const Strings* mess
 	}
 
 	const char* setupAttNames[] = {messages->m_sxSaveFrequency.c_str(), messages->m_sxAcceptedPertHistIt.c_str()};
-	XsdAttributeUtil setupAttUtil(pSetupElem->Value(), setupAttNames, s_setupAttReq, s_setupAttDef);
+	XsdAttributeUtil setupAttUtil(setupAttNames, s_setupAttReq, s_setupAttDef);
 	if (!setupAttUtil.process(pSetupElem)) {
 		return false;
 	}
@@ -172,58 +171,57 @@ bool SimulatedAnnealing::loadSetup(TiXmlElement *pSetupElem, const Strings* mess
 	return true;
 }
 
-bool SimulatedAnnealing::saveSetup(TiXmlElement *pSimElem, const Strings* messages)
+bool SimulatedAnnealing::saveSetup(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pSimElem, const Strings* messages)
 {
-	TiXmlElement* setup = new TiXmlElement(messages->m_sxSetup.c_str());
-	pSimElem->LinkEndChild(setup);
+	using namespace rapidxml;
+	xml_node<>* setup = doc.allocate_node(node_element, messages->m_sxSetup.c_str());
+	pSimElem->append_node(setup);
 	
-	if (!m_structuresTemplate.save(setup, messages))
+	if (!m_structuresTemplate.save(doc, setup, messages))
 		return false;
 	
-	TiXmlElement* temperature = new TiXmlElement(messages->m_sxTemperature.c_str());
-	setup->LinkEndChild(temperature);
+	xml_node<>* temperature = doc.allocate_node(node_element, messages->m_sxTemperature.c_str());
+	setup->append_node(temperature);
 	if (m_pfStartingTemperature != NULL) {
-		TiXmlElement* kelvin = new TiXmlElement(messages->m_sxKelvin.c_str());
-		temperature->LinkEndChild(kelvin);
-		kelvin->SetDoubleAttribute(messages->m_sxValue.c_str(), *m_pfStartingTemperature);
+		xml_node<>* kelvin = doc.allocate_node(node_element, messages->m_sxKelvin.c_str());
+		temperature->append_node(kelvin);
+		XsdTypeUtil::setAttribute(doc, kelvin, messages->m_sxValue.c_str(), *m_pfStartingTemperature);
 	} else if (m_pfPercentAcceptedPerturbations != NULL) {
-		TiXmlElement* acceptedPert = new TiXmlElement(messages->m_sxAcceptedPerturbations.c_str());
-		temperature->LinkEndChild(acceptedPert);
-		acceptedPert->SetDoubleAttribute(messages->m_sxPercent.c_str(), *m_pfPercentAcceptedPerturbations * 100.0);
+		xml_node<>* acceptedPert = doc.allocate_node(node_element, messages->m_sxAcceptedPerturbations.c_str());
+		temperature->append_node(acceptedPert);
+		XsdTypeUtil::setAttribute(doc, acceptedPert, messages->m_sxPercent.c_str(), *m_pfPercentAcceptedPerturbations * 100.0);
 	}
-	if (m_iDecreaseTemperatureAfterIt != 1) {
-		temperature->SetAttribute(messages->m_sxDecreaseAfterIteration.c_str(), m_iDecreaseTemperatureAfterIt);
-	}
-	if (m_fBoltzmannConstant != 3.16689e-6) {
-		temperature->SetDoubleAttribute(messages->m_sxBoltzmannConstant.c_str(), m_fBoltzmannConstant);
-	}
+	if (m_iDecreaseTemperatureAfterIt != 1)
+		XsdTypeUtil::setAttribute(doc, temperature, messages->m_sxDecreaseAfterIteration.c_str(), m_iDecreaseTemperatureAfterIt);
+	if (m_fBoltzmannConstant != s_fDefaultBoltzmannConstant)
+		XsdTypeUtil::setAttribute(doc, temperature, messages->m_sxBoltzmannConstant.c_str(), m_fBoltzmannConstant);
 
-	TiXmlElement* annealingSchedule = new TiXmlElement(messages->m_sxAnnealingSchedule.c_str());
-	setup->LinkEndChild(annealingSchedule);
-	annealingSchedule->SetDoubleAttribute(messages->m_sxQuenchingFactor.c_str(), m_fQuenchingFactor);
+	xml_node<>* annealingSchedule = doc.allocate_node(node_element, messages->m_sxAnnealingSchedule.c_str());
+	setup->append_node(annealingSchedule);
+	XsdTypeUtil::setAttribute(doc, annealingSchedule, messages->m_sxQuenchingFactor.c_str(), m_fQuenchingFactor);
 
-	if (!m_perturbations.saveSetup(setup, messages))
+	if (!m_perturbations.saveSetup(doc, setup, messages))
 		return false;
 	
 	if (m_pfMaxStoppingTemperature != NULL || m_pfMaxStoppingAcceptedPerturbations != NULL || m_piMinStoppingIterations != NULL) {
-		TiXmlElement* stop = new TiXmlElement(messages->m_sxStop.c_str());
-		setup->LinkEndChild(stop);
+		xml_node<>* stop = doc.allocate_node(node_element, messages->m_sxStop.c_str());
+		setup->append_node(stop);
 		if (m_pfMaxStoppingTemperature != NULL)
-			stop->SetDoubleAttribute(messages->m_sxMaxTemperature.c_str(), *m_pfMaxStoppingTemperature);
+			XsdTypeUtil::setAttribute(doc, stop, messages->m_sxMaxTemperature.c_str(), *m_pfMaxStoppingTemperature);
 		if (m_pfMaxStoppingAcceptedPerturbations != NULL)
-			stop->SetDoubleAttribute(messages->m_sxMaxAcceptedPerturbations.c_str(), *m_pfMaxStoppingAcceptedPerturbations * 100);
+			XsdTypeUtil::setAttribute(doc, stop, messages->m_sxMaxAcceptedPerturbations.c_str(), *m_pfMaxStoppingAcceptedPerturbations * 100);
 		if (m_piMinStoppingIterations != NULL)
-			stop->SetAttribute(messages->m_sxMinIterations.c_str(), *m_piMinStoppingIterations);
+			XsdTypeUtil::setAttribute(doc, stop, messages->m_sxMinIterations.c_str(), *m_piMinStoppingIterations);
 	}
 	if (m_iSaveFrequency != 1)
-		setup->SetAttribute(messages->m_sxSaveFrequency.c_str(), m_iSaveFrequency);
+		XsdTypeUtil::setAttribute(doc, setup, messages->m_sxSaveFrequency.c_str(), m_iSaveFrequency);
 	if (m_iAcceptedPertHistIt != 200)
-		setup->SetAttribute(messages->m_sxAcceptedPertHistIt.c_str(), m_iAcceptedPertHistIt);
+		XsdTypeUtil::setAttribute(doc, setup, messages->m_sxAcceptedPertHistIt.c_str(), m_iAcceptedPertHistIt);
 
 	return true;
 }
 
-bool SimulatedAnnealing::loadResume(TiXmlElement *pResumeElem, const Strings* messages)
+bool SimulatedAnnealing::loadResume(const rapidxml::xml_node<>* pResumeElem, const Strings* messages)
 {
 	if (pResumeElem == NULL) {
 		if (!m_structuresTemplate.initializeStructures(m_structures, m_pConstraints))
@@ -238,23 +236,24 @@ bool SimulatedAnnealing::loadResume(TiXmlElement *pResumeElem, const Strings* me
 	return true;
 }
 
-bool SimulatedAnnealing::saveResume(TiXmlElement *pSimElem, const Strings* messages)
+bool SimulatedAnnealing::saveResume(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pSimElem, const Strings* messages)
 {
-	TiXmlElement* resume = new TiXmlElement(messages->m_sxResume.c_str());
-	pSimElem->LinkEndChild(resume);
+	using namespace rapidxml;
+	xml_node<>* resume = doc.allocate_node(node_element, messages->m_sxResume.c_str());
+	pSimElem->append_node(resume);
 
-	TiXmlElement* totalEnergyCalculations = new TiXmlElement(messages->m_sxTotalEnergyCalculations.c_str());
-	totalEnergyCalculations->SetAttribute(messages->m_sxValue.c_str(), m_iEnergyCalculations);
-	resume->LinkEndChild(totalEnergyCalculations);
+	xml_node<>* totalEnergyCalculations = doc.allocate_node(node_element, messages->m_sxTotalEnergyCalculations.c_str());
+	XsdTypeUtil::setAttribute(doc, totalEnergyCalculations, messages->m_sxValue.c_str(), m_iEnergyCalculations);
+	resume->append_node(totalEnergyCalculations);
 	
-	TiXmlElement* elapsedSeconds = new TiXmlElement(messages->m_sxElapsedSeconds.c_str());
-	XsdTypeUtil::writeTimeT(getTotalElapsedSeconds(), elapsedSeconds, messages->m_sxValue.c_str());
-	resume->LinkEndChild(elapsedSeconds);
+	xml_node<>* elapsedSeconds = doc.allocate_node(node_element, messages->m_sxElapsedSeconds.c_str());
+	XsdTypeUtil::setAttribute(doc, elapsedSeconds, messages->m_sxValue.c_str(), getTotalElapsedSeconds());
+	resume->append_node(elapsedSeconds);
 
-	TiXmlElement* structures = new TiXmlElement(messages->m_sxStructures.c_str());
-	resume->LinkEndChild(structures);
+	xml_node<>* structures = doc.allocate_node(node_element, messages->m_sxStructures.c_str());
+	resume->append_node(structures);
 	for (std::list<Structure*>::iterator it = m_structures.begin(); it != m_structures.end(); it++)
-		if (!(*it)->save(structures, messages))
+		if (!(*it)->save(doc, structures, messages))
 			return false;
 
 	return true;

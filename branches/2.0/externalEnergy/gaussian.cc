@@ -91,7 +91,7 @@ bool Gaussian::createInputFile(Structure &structure,
 	fprintf(fp, "%s\n", header.c_str());
 	if (writeEnergyValueInHeader) {
 		char energyStr[100];
-		doubleToString(structure.getEnergy(), energyStr);
+		XsdTypeUtil::doubleToString(structure.getEnergy(), energyStr);
 		fprintf(fp, "This is a computer generated structure with energy: %s\n\n", energyStr);
 	} else {
 		fprintf(fp, "This is a computer generated structure.\n\n", energyStr);

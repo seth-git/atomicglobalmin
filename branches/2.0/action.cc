@@ -22,6 +22,7 @@ Action::Action(Input* input)
 	m_pInput = input;
 	m_iEnergyCalculations = 0;
 	m_tPrevElapsedSeconds = 0;
+	m_tStartTime = time (NULL);
 	m_pEnergy = NULL;
 	m_fResultsRmsDistance = 0;
 	m_pConstraints = NULL;
@@ -49,14 +50,15 @@ void Action::clear() {
 	m_fResultsRmsDistance = 0;
 }
 
-bool Action::load(TiXmlElement *pActionElem, const Strings* messages)
+bool Action::load(const rapidxml::xml_node<>* pActionElem, const Strings* messages)
 {
+	using namespace rapidxml;
 	clear();
 	const Strings* messagesDL = Strings::instance();
 	
 	const char* attributeNames[] = {messages->m_sxConstraints.c_str()};
 	const char** attributeValues;
-	XsdAttributeUtil attUtil(pActionElem->Value(), attributeNames, s_required, s_defaultValues);
+	XsdAttributeUtil attUtil(attributeNames, s_required, s_defaultValues);
 	if (!attUtil.process(pActionElem)) {
 		return false;
 	}
@@ -64,15 +66,14 @@ bool Action::load(TiXmlElement *pActionElem, const Strings* messages)
 	const char* constraintsName = attributeValues[0];
 	
 	unsigned int i, j;
-	TiXmlHandle hRoot(pActionElem);
 	const char* elementNames[] = {messages->m_sxSetup.c_str(), messages->m_sxConstraints.c_str(), messages->m_sxEnergy.c_str(), messages->m_sxResume.c_str(), messages->m_sxResults.c_str()};
-	XsdElementUtil actionUtil(pActionElem->Value(), XSD_SEQUENCE, elementNames, s_minOccurs, s_maxOccurs);
-	if (!actionUtil.process(hRoot))
+	XsdElementUtil actionUtil(XSD_SEQUENCE, elementNames, s_minOccurs, s_maxOccurs);
+	if (!actionUtil.process(pActionElem))
 		return false;
-	std::vector<TiXmlElement*>* actionElements = actionUtil.getSequenceElements();
+	std::vector<const xml_node<>*>* actionElements = actionUtil.getSequenceElements();
 	
 	Constraints* pConstraints;
-	for (std::vector<TiXmlElement*>::iterator it = actionElements[1].begin(); it != actionElements[1].end(); ++it) {
+	for (std::vector<const xml_node<>*>::iterator it = actionElements[1].begin(); it != actionElements[1].end(); ++it) {
 		pConstraints = new Constraints();
 		if (!pConstraints->load(*it, messages, m_constraintsMap)) {
 			delete pConstraints;
@@ -91,7 +92,7 @@ bool Action::load(TiXmlElement *pActionElem, const Strings* messages)
 	if (constraintsName != NULL) {
 		m_pConstraints = m_constraintsMap[constraintsName];
 		if (m_pConstraints == NULL) {
-			printf(messagesDL->m_sConstraintNameMisMatch.c_str(), pActionElem->Row(), messages->m_sxConstraints.c_str(), constraintsName);
+			printf(messagesDL->m_sConstraintNotDefined.c_str(), pActionElem->name(), messages->m_sxConstraints.c_str(), constraintsName);
 			return false;
 		}
 	}
@@ -101,7 +102,6 @@ bool Action::load(TiXmlElement *pActionElem, const Strings* messages)
 	
 	if (!energyXml.load(actionElements[2][0], messages))
 		return false;
-	
 
 	if (actionElements[3].size() > 0) {
 		for (i = 0; i < actionElements[3].size(); ++i)
@@ -113,15 +113,14 @@ bool Action::load(TiXmlElement *pActionElem, const Strings* messages)
 	}
 	
 	if (actionElements[4].size() > 0) {
-		TiXmlElement* resultsElem = actionElements[4][0];
-		TiXmlHandle rRoot(resultsElem);
+		const xml_node<>* resultsElem = actionElements[4][0];
 		const char* resultsElementNames[] = {messages->m_sxStructure.c_str()};
-		XsdElementUtil resultsUtil(resultsElem->Value(), XSD_SEQUENCE, resultsElementNames, s_resultsMinOccurs, s_resultsMaxOccurs);
-		if (!resultsUtil.process(rRoot))
+		XsdElementUtil resultsUtil(XSD_SEQUENCE, resultsElementNames, s_resultsMinOccurs, s_resultsMaxOccurs);
+		if (!resultsUtil.process(resultsElem))
 			return false;
-		std::vector<TiXmlElement*>* structureElements = &(resultsUtil.getSequenceElements()[0]);
+		std::vector<const xml_node<>*>* structureElements = &(resultsUtil.getSequenceElements()[0]);
 		Structure* pStructure;
-		for (std::vector<TiXmlElement*>::iterator it = structureElements->begin(); it != structureElements->end(); ++it) {
+		for (std::vector<const xml_node<>*>::iterator it = structureElements->begin(); it != structureElements->end(); ++it) {
 			pStructure = new Structure();
 			m_results.push_back(pStructure);
 			if (!pStructure->load(*it, messages))
@@ -129,7 +128,7 @@ bool Action::load(TiXmlElement *pActionElem, const Strings* messages)
 		}
 
 		const char* resultsAttributeNames[] = {messages->m_sxMaxSize.c_str(), messages->m_sxRmsDistance.c_str()};
-		XsdAttributeUtil resultsAttUtil(resultsElem->Value(), resultsAttributeNames, s_resultsRequired, s_resultsDefaultValues);
+		XsdAttributeUtil resultsAttUtil(resultsAttributeNames, s_resultsRequired, s_resultsDefaultValues);
 		if (!resultsAttUtil.process(resultsElem))
 			return false;
 		const char** resultsAttributeValues = resultsAttUtil.getAllAttributes();
@@ -151,40 +150,41 @@ bool Action::load(TiXmlElement *pActionElem, const Strings* messages)
 	return true;
 }
 
-bool Action::save(TiXmlElement *pActionElem, const Strings* messages)
+bool Action::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pActionElem, const Strings* messages)
 {
-	if (m_pConstraints != NULL)
-		pActionElem->SetAttribute(messages->m_sxConstraints.c_str(), m_pConstraints->m_sName.c_str());
+	using namespace rapidxml;
+	xml_attribute<>* attr;
+	if (m_pConstraints != NULL) {
+		attr = doc.allocate_attribute(messages->m_sxConstraints.c_str(), m_pConstraints->m_sName.c_str());
+		pActionElem->append_attribute(attr);
+	}
 	
-	if (!saveSetup(pActionElem, messages))
+	if (!saveSetup(doc, pActionElem, messages))
 		return false;
 	
-	TiXmlElement* constraints;
+	xml_node<>* constraints;
 	for (unsigned int i = 0; i < m_constraints.size(); ++i) {
-		constraints = new TiXmlElement(messages->m_sxConstraints.c_str());
-		pActionElem->LinkEndChild(constraints);
-		if (!m_constraints[i]->save(constraints, messages))
+		constraints = doc.allocate_node(node_element, messages->m_sxConstraints.c_str());
+		pActionElem->append_node(constraints);
+		if (!m_constraints[i]->save(doc, constraints, messages))
 			return false;
 	}
 	
-	if (!energyXml.save(pActionElem, messages))
+	if (!energyXml.save(doc, pActionElem, messages))
 		return false;
 	
-	if (!saveResume(pActionElem, messages))
+	if (!saveResume(doc, pActionElem, messages))
 		return false;
 	
-	TiXmlElement* results = new TiXmlElement(messages->m_sxResults.c_str());  
-	pActionElem->LinkEndChild(results);
+	xml_node<>* results = doc.allocate_node(node_element, messages->m_sxResults.c_str());
+	pActionElem->append_node(results);
 	
 	if (m_structures.size() != m_iMaxResults)
-		results->SetAttribute(messages->m_sxMaxSize.c_str(), m_iMaxResults);
-	if (0 != m_fResultsRmsDistance) {
-		char numString[100];
-		doubleToString(m_fResultsRmsDistance, numString);
-		results->SetAttribute(messages->m_sxRmsDistance.c_str(), numString);
-	}
+		XsdTypeUtil::setAttribute(doc, results, messages->m_sxMaxSize.c_str(), m_iMaxResults);
+	if (0 != m_fResultsRmsDistance)
+		XsdTypeUtil::setAttribute(doc, results, messages->m_sxRmsDistance.c_str(), m_fResultsRmsDistance);
 	for (std::list<Structure*>::iterator it = m_results.begin(); it != m_results.end(); it++)
-		if (!(*it)->save(results, messages))
+		if (!(*it)->save(doc, results, messages))
 			return false;
 
 	return true;

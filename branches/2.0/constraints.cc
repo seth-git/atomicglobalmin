@@ -51,29 +51,27 @@ void Constraints::setCubeLWH(FLOAT cubeLWH) {
 	*m_pfHalfCubeLWH = cubeLWH * 0.5;
 }
 
-bool Constraints::load(TiXmlElement *pConstraintsElem, const Strings* messages,
+bool Constraints::load(const rapidxml::xml_node<>* pConstraintsElem, const Strings* messages,
                        std::map<std::string, Constraints*> &constraintsMap) {
+	using namespace rapidxml;
 	const Strings* messagesDL = Strings::instance();
 	const char* elementNames[] = { messages->m_sxCube.c_str(), messages->m_sxAtomicDistances.c_str() };
 	const char* distElementNames[] = { messages->m_sxMin.c_str(), messages->m_sxMax.c_str() };
-	XsdElementUtil constraintUtil(pConstraintsElem->Value(), XSD_ALL, elementNames, s_minOccurs);
-	TiXmlHandle handle(0);
-	TiXmlElement** constraintElements;
+	XsdElementUtil constraintUtil(XSD_ALL, elementNames, s_minOccurs);
 
 	clear();
 
 	const char* valueAttNames[] = { messages->m_sxName.c_str(), messages->m_sxBase.c_str() };
 	const char** values;
-	XsdAttributeUtil valueUtil(pConstraintsElem->Value(), valueAttNames, s_required, s_defaultValues);
-	if (!valueUtil.process(pConstraintsElem)) {
+	XsdAttributeUtil valueUtil(valueAttNames, s_required, s_defaultValues);
+	if (!valueUtil.process(pConstraintsElem))
 		return false;
-	}
 	values = valueUtil.getAllAttributes();
 
 	if (values[1] != NULL) {
 		Constraints* other = constraintsMap[values[1]];
 		if (other == NULL) {
-			printf(messagesDL->m_sConstraintNameMisMatch.c_str(), pConstraintsElem->Row(), messages->m_sxBase.c_str(), values[1]);
+			printf(messagesDL->m_sConstraintNameMisMatch.c_str(), pConstraintsElem->name(), valueAttNames[0], values[0], messages->m_sxBase.c_str(), values[1]);
 			return false;
 		}
 		copy(*other);
@@ -81,11 +79,9 @@ bool Constraints::load(TiXmlElement *pConstraintsElem, const Strings* messages,
 	}
 	m_sName = values[0];
 
-	handle = TiXmlHandle(pConstraintsElem);
-	if (!constraintUtil.process(handle)) {
+	if (!constraintUtil.process(pConstraintsElem))
 		return false;
-	}
-	constraintElements = constraintUtil.getAllElements();
+	const xml_node<>** constraintElements = constraintUtil.getAllElements();
 
 	if (constraintElements[0] != NULL) {
 		if (!m_pfCubeLWH) {
@@ -98,22 +94,17 @@ bool Constraints::load(TiXmlElement *pConstraintsElem, const Strings* messages,
 	}
 
 	if (constraintElements[1] != NULL) {
-		XsdElementUtil distUtil(pConstraintsElem->Value(), XSD_SEQUENCE, distElementNames, s_distMinOccurs, s_distMaxOccurs);
-		TiXmlHandle handle(0);
-		std::vector<TiXmlElement*>* distElements;
+		XsdElementUtil distUtil(XSD_SEQUENCE, distElementNames, s_distMinOccurs, s_distMaxOccurs);
+		std::vector<const xml_node<>*>* distElements;
 		unsigned int i;
 
-		handle = TiXmlHandle(constraintElements[1]);
-		if (!distUtil.process(handle)) {
+		if (!distUtil.process(constraintElements[1]))
 			return false;
-		}
 		distElements = distUtil.getSequenceElements();
 		unsigned int timesReadGeneralMin = 0;
-		for (i = 0; i < distElements[0].size(); ++i) {
-			if (!addMinDist(distElements[0][i], timesReadGeneralMin, messages)) {
+		for (i = 0; i < distElements[0].size(); ++i)
+			if (!addMinDist(distElements[0][i], timesReadGeneralMin, messages))
 				return false;
-			}
-		}
 		for (i = 0; i < distElements[1].size(); ++i) { // Should be only one
 			if (!m_pfGeneralMaxAtomicDistance)
 				m_pfGeneralMaxAtomicDistance = new FLOAT;
@@ -126,25 +117,24 @@ bool Constraints::load(TiXmlElement *pConstraintsElem, const Strings* messages,
 	return true;
 }
 
-bool Constraints::addMinDist(TiXmlElement *pElem, unsigned int &timesReadGeneralMin, const Strings* messages) {
+bool Constraints::addMinDist(const rapidxml::xml_node<>* pElem, unsigned int &timesReadGeneralMin, const Strings* messages) {
 	const char* minAttributeNames[] = {messages->m_sxValue.c_str(), messages->m_sxZ1.c_str(), messages->m_sxZ2.c_str() };
 	const char** values;
 	const Strings* messagesDL = Strings::instance();
 
-	XsdAttributeUtil attUtil(pElem->Value(), minAttributeNames, s_minRequired, s_minDefaultValues);
-	if (!attUtil.process(pElem)) {
+	XsdAttributeUtil attUtil(minAttributeNames, s_minRequired, s_minDefaultValues);
+	if (!attUtil.process(pElem))
 		return false;
-	}
 	values = attUtil.getAllAttributes();
 
 	if ((values[1] == NULL && values[2] != NULL) || (values[1] != NULL && values[2] == NULL)) {
-		printf(messagesDL->m_sErrorZ1Z2.c_str(), pElem->Row(), pElem->Value(), minAttributeNames[1], minAttributeNames[2]);
+		printf(messagesDL->m_sErrorZ1Z2.c_str(), pElem->name(), minAttributeNames[1], minAttributeNames[2]);
 		return false;
 	}
 
 	if (values[1] == NULL) {
 		if (timesReadGeneralMin >= 1) {
-			printf(messagesDL->m_sErrorOneGeneralMin.c_str(), pElem->Row(), pElem->Value(), minAttributeNames[1], minAttributeNames[2]);
+			printf(messagesDL->m_sErrorOneGeneralMin.c_str(), pElem->name(), minAttributeNames[1], minAttributeNames[2]);
 			return false;
 		}
 		if (!m_pfGeneralMinAtomicDistance)
@@ -159,33 +149,31 @@ bool Constraints::addMinDist(TiXmlElement *pElem, unsigned int &timesReadGeneral
 				for (j = 1; j <= MAX_ATOMIC_NUMBERS; ++j)
 					m_rgMinAtomicDistances[i][j] = -1;
 		}
-		if (!XsdTypeUtil::getAtomicNumber(values[1], i, pElem->Row(), minAttributeNames[1], pElem->Value())) {
+		if (!XsdTypeUtil::getAtomicNumber(values[1], i, minAttributeNames[1], pElem->name()))
 			return false;
-		}
-		if (!XsdTypeUtil::getAtomicNumber(values[2], j, pElem->Row(), minAttributeNames[2], pElem->Value())) {
+		if (!XsdTypeUtil::getAtomicNumber(values[2], j, minAttributeNames[2], pElem->name()))
 			return false;
-		}
 		if (m_rgMinAtomicDistances[i][j] != -1) {
-			printf(messagesDL->m_sErrorDuplicateMinDist.c_str(), pElem->Row(), pElem->Value(), minAttributeNames[1], i, minAttributeNames[2], j);
+			printf(messagesDL->m_sErrorDuplicateMinDist.c_str(), pElem->name(), minAttributeNames[1], i, minAttributeNames[2], j);
 			return false;
 		}
-		if (!XsdTypeUtil::getPositiveFloat(values[0], m_rgMinAtomicDistances[i][j], minAttributeNames[0], pElem)) {
+		if (!XsdTypeUtil::getPositiveFloat(values[0], m_rgMinAtomicDistances[i][j], minAttributeNames[0], pElem))
 			return false;
-		}
 		m_rgMinAtomicDistances[j][i] = m_rgMinAtomicDistances[i][j];
 		m_mapMinAtomicDistances[i][j] = m_rgMinAtomicDistances[i][j];
 	}
 	return true;
 }
 
-bool Constraints::save(TiXmlElement *pConstraintsElem, const Strings* messages) const {
-	pConstraintsElem->SetAttribute(messages->m_sxName.c_str(), m_sName.c_str());
+bool Constraints::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pConstraintsElem, const Strings* messages) const {
+	using namespace rapidxml;
+	pConstraintsElem->append_attribute(doc.allocate_attribute(messages->m_sxName.c_str(), m_sName.c_str()));
 	if (m_pBase)
-		pConstraintsElem->SetAttribute(messages->m_sxBase.c_str(), m_pBase->m_sName.c_str());
+		pConstraintsElem->append_attribute(doc.allocate_attribute(messages->m_sxBase.c_str(), m_pBase->m_sName.c_str()));
 	if (m_pfCubeLWH && (!m_pBase || !m_pBase->m_pfCubeLWH || *m_pfCubeLWH != *(m_pBase->m_pfCubeLWH))) {
-		TiXmlElement* cube = new TiXmlElement(messages->m_sxCube.c_str());
-		cube->SetDoubleAttribute(messages->m_sxSize.c_str(), *m_pfCubeLWH);
-		pConstraintsElem->LinkEndChild(cube);
+		xml_node<>* cube = doc.allocate_node(node_element, messages->m_sxCube.c_str());
+		XsdTypeUtil::setAttribute(doc, cube, messages->m_sxSize.c_str(), *m_pfCubeLWH);
+		pConstraintsElem->append_node(cube);
 	}
 
 	bool writeGeneralMin = m_pfGeneralMinAtomicDistance && (!m_pBase || !m_pBase->m_pfGeneralMinAtomicDistance || *m_pfGeneralMinAtomicDistance != *(m_pBase->m_pfGeneralMinAtomicDistance));
@@ -193,30 +181,30 @@ bool Constraints::save(TiXmlElement *pConstraintsElem, const Strings* messages) 
 	bool writeSpecificMins = specificMinDistNotInBase();
 
 	if (writeGeneralMin || writeGeneralMax || writeSpecificMins) {
-		TiXmlElement* atomicDistances = new TiXmlElement(messages->m_sxAtomicDistances.c_str());
+		xml_node<>* atomicDistances = doc.allocate_node(node_element, messages->m_sxAtomicDistances.c_str());
 		if (writeGeneralMin) {
-			TiXmlElement* generalMin = new TiXmlElement(messages->m_sxMin.c_str());
-			generalMin->SetDoubleAttribute(messages->m_sxValue.c_str(), *m_pfGeneralMinAtomicDistance);
-			atomicDistances->LinkEndChild(generalMin);
+			xml_node<>* generalMin = doc.allocate_node(node_element, messages->m_sxMin.c_str());
+			XsdTypeUtil::setAttribute(doc, generalMin, messages->m_sxValue.c_str(), *m_pfGeneralMinAtomicDistance);
+			atomicDistances->append_node(generalMin);
 		}
 		if (writeSpecificMins) {
-			TiXmlElement* min;
+			xml_node<>* min;
 			for (std::map<unsigned int, std::map<unsigned int, FLOAT> >::const_iterator i = m_mapMinAtomicDistances.begin(); i != m_mapMinAtomicDistances.end(); i++)
 				for (std::map<unsigned int, FLOAT>::const_iterator j = i->second.begin(); j != i->second.end(); j++)
 					if (!m_pBase || j->second != m_pBase->m_rgMinAtomicDistances[i->first][j->first]) {
-						min = new TiXmlElement(messages->m_sxMin.c_str());
-						min->SetDoubleAttribute(messages->m_sxValue.c_str(), j->second);
-						min->SetAttribute(messages->m_sxZ1.c_str(), i->first);
-						min->SetAttribute(messages->m_sxZ2.c_str(), j->first);
-						atomicDistances->LinkEndChild(min);
+						min = doc.allocate_node(node_element, messages->m_sxMin.c_str());
+						XsdTypeUtil::setAttribute(doc, min, messages->m_sxValue.c_str(), j->second);
+						XsdTypeUtil::setAttribute(doc, min, messages->m_sxZ1.c_str(), i->first);
+						XsdTypeUtil::setAttribute(doc, min, messages->m_sxZ2.c_str(), j->first);
+						atomicDistances->append_node(min);
 					}
 		}
 		if (writeGeneralMax) {
-			TiXmlElement* generalMax = new TiXmlElement(messages->m_sxMax.c_str());
-			generalMax->SetDoubleAttribute(messages->m_sxValue.c_str(), *m_pfGeneralMaxAtomicDistance);
-			atomicDistances->LinkEndChild(generalMax);
+			xml_node<>* generalMax = doc.allocate_node(node_element, messages->m_sxMax.c_str());
+			XsdTypeUtil::setAttribute(doc, generalMax, messages->m_sxValue.c_str(), *m_pfGeneralMaxAtomicDistance);
+			atomicDistances->append_node(generalMax);
 		}
-		pConstraintsElem->LinkEndChild(atomicDistances);
+		pConstraintsElem->append_node(atomicDistances);
 	}
 	return true;
 }

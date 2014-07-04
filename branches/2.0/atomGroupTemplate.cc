@@ -27,8 +27,9 @@ void AtomGroupTemplate::clear()
 	m_atomicNumbers.clear();
 }
 
-bool AtomGroupTemplate::loadMolecule(TiXmlElement *pMoleculeTemplateElem, const Strings* messages)
+bool AtomGroupTemplate::loadMolecule(const rapidxml::xml_node<>* pMoleculeTemplateElem, const Strings* messages)
 {
+	using namespace rapidxml;
 	clear();
 	
 	const char** values;
@@ -37,7 +38,7 @@ bool AtomGroupTemplate::loadMolecule(TiXmlElement *pMoleculeTemplateElem, const 
 	const char* molAttDefaults[]  = {"1"                         , messages->m_spCartesian.c_str()};
 	const char* formats[] = {messages->m_spCartesian.c_str()};
 	
-	XsdAttributeUtil attUtil(pMoleculeTemplateElem->Value(), molAttNames, s_molAttRequired, molAttDefaults);
+	XsdAttributeUtil attUtil(molAttNames, s_molAttRequired, molAttDefaults);
 	if (!attUtil.process(pMoleculeTemplateElem)) {
 		return false;
 	}
@@ -62,14 +63,13 @@ bool AtomGroupTemplate::loadMolecule(TiXmlElement *pMoleculeTemplateElem, const 
 	char* tempStr = new char[sText.length() + 1];
 	strncpy(text, sText.c_str(), sText.length() + 1); // make a copy since strtok is will need to modify it
 	
-	unsigned int lineNumber = pMoleculeTemplateElem->Row();
 	static const char* delimeters = "\n";
 	bool readFirstLine = false;
 	char* line = strtok(text, delimeters);
 	while (line != NULL) {
 		if (sscanf(line, "%s %lf %lf %lf", tempStr, &(c[0]), &(c[1]), &(c[2])) == 4) {
 			readFirstLine = true;
-			if (!XsdTypeUtil::getAtomicNumber(tempStr, atomicNumber, lineNumber)) {
+			if (!XsdTypeUtil::getAtomicNumber(tempStr, atomicNumber)) {
 				delete[] c;
 				delete[] text;
 				delete[] tempStr;
@@ -82,7 +82,6 @@ bool AtomGroupTemplate::loadMolecule(TiXmlElement *pMoleculeTemplateElem, const 
 			break; // data must be on consecutive lines
 		}
 		line = strtok(NULL, delimeters);
-		++lineNumber;
 	}
 	
 	delete[] c;
@@ -91,7 +90,7 @@ bool AtomGroupTemplate::loadMolecule(TiXmlElement *pMoleculeTemplateElem, const 
 	
 	if (m_atomicNumbers.size() == 0) {
 		const Strings* messagesDL = Strings::instance();
-		printf(messagesDL->m_sErrorEmptyMoleculeTemplate.c_str(), pMoleculeTemplateElem->Row(), pMoleculeTemplateElem->Value());
+		printf(messagesDL->m_sErrorEmptyMoleculeTemplate.c_str(), pMoleculeTemplateElem->name());
 		return false;
 	}
 	
@@ -102,14 +101,14 @@ bool AtomGroupTemplate::loadMolecule(TiXmlElement *pMoleculeTemplateElem, const 
 const bool    AtomGroupTemplate::s_atomAttRequired[] = {true    , true};
 const char*   AtomGroupTemplate::s_atomAttDefaults[] = {"1"     , NULL};
 
-bool AtomGroupTemplate::loadAtom(TiXmlElement *pAtomTemplateElem, const Strings* messages)
+bool AtomGroupTemplate::loadAtom(const rapidxml::xml_node<>* pAtomTemplateElem, const Strings* messages)
 {
 	clear();
 	
 	const char** values;
 	const char* atomAttNames[] = {messages->m_sxNumber.c_str(), messages->m_sxBigZ.c_str()};
 	
-	XsdAttributeUtil attUtil(pAtomTemplateElem->Value(), atomAttNames, s_atomAttRequired, s_atomAttDefaults);
+	XsdAttributeUtil attUtil(atomAttNames, s_atomAttRequired, s_atomAttDefaults);
 	if (!attUtil.process(pAtomTemplateElem)) {
 		return false;
 	}
@@ -120,7 +119,7 @@ bool AtomGroupTemplate::loadAtom(TiXmlElement *pAtomTemplateElem, const Strings*
 	}
 	
 	unsigned int z;
-	if (!XsdTypeUtil::getAtomicNumber(values[1], z, pAtomTemplateElem->Row(), atomAttNames[1], pAtomTemplateElem->Value())) {
+	if (!XsdTypeUtil::getAtomicNumber(values[1], z, atomAttNames[1], pAtomTemplateElem->name())) {
 		return false;
 	}
 	m_atomicNumbers.push_back(z);
@@ -133,20 +132,10 @@ bool AtomGroupTemplate::loadAtom(TiXmlElement *pAtomTemplateElem, const Strings*
 	return true;
 }
 
-bool AtomGroupTemplate::save(TiXmlElement *pStructureTemplate, const Strings* messages)
+bool AtomGroupTemplate::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pStructureTemplate, const Strings* messages)
 {
+	using namespace rapidxml;
 	if (m_atomicNumbers.size() > 1) {
-		TiXmlElement* pMoleculeTemplate = new TiXmlElement(messages->m_sxMoleculeTemplate.c_str());
-		pStructureTemplate->LinkEndChild(pMoleculeTemplate);
-		
-		if (m_iNumber != 1) {
-			pMoleculeTemplate->SetAttribute(messages->m_sxNumber.c_str(), m_iNumber);
-		}
-		
-		if (m_iFormat != CARTESIAN) {
-			pMoleculeTemplate->SetAttribute(messages->m_sxFormat.c_str(), messages->m_spCartesian.c_str());
-		}
-		
 		std::string textstr;
 		textstr.append("\n");
 		FLOAT* c;
@@ -155,25 +144,32 @@ bool AtomGroupTemplate::save(TiXmlElement *pStructureTemplate, const Strings* me
 			snprintf(numString, sizeof(numString), "%u", m_atomicNumbers[i]);
 			textstr.append(numString).append(" ");
 			c = m_coordinates[i];
-			doubleToString(c[0], numString);
+			XsdTypeUtil::createFloat(c[0], numString, sizeof(numString));
 			textstr.append(numString).append(" ");
-			doubleToString(c[1], numString);
+			XsdTypeUtil::createFloat(c[1], numString, sizeof(numString));
 			textstr.append(numString).append(" ");
-			doubleToString(c[2], numString);
+			XsdTypeUtil::createFloat(c[2], numString, sizeof(numString));
 			textstr.append(numString).append("\n");
 		}
-		TiXmlText* text = new TiXmlText(textstr.c_str());
-		text->SetCDATA(true); // helps protect formatting
-		pMoleculeTemplate->LinkEndChild(text);
+		rapidxml::xml_node<>* pMoleculeTemplate = doc.allocate_node(node_element, messages->m_sxMoleculeTemplate.c_str());
+		pStructureTemplate->append_node(pMoleculeTemplate);
+		size_t len = textstr.length();
+		rapidxml::xml_node<>* text = doc.allocate_node(node_cdata, NULL, doc.allocate_string(textstr.c_str(), len), 0, len);
+		pMoleculeTemplate->append_node(text);
+
+		if (m_iNumber != 1)
+			XsdTypeUtil::setAttribute(doc, pMoleculeTemplate, messages->m_sxNumber.c_str(), m_iNumber);
+
+		if (m_iFormat != CARTESIAN)
+			pMoleculeTemplate->append_attribute(doc.allocate_attribute(messages->m_sxFormat.c_str(), messages->m_spCartesian.c_str()));
 	} else {
-		TiXmlElement* pAtomTemplate = new TiXmlElement(messages->m_sxAtomTemplate.c_str());
-		pStructureTemplate->LinkEndChild(pAtomTemplate);
+		xml_node<>* pAtomTemplate = doc.allocate_node(node_element, messages->m_sxAtomTemplate.c_str());
+		pStructureTemplate->append_node(pAtomTemplate);
 		
-		if (m_iNumber != 1) {
-			pAtomTemplate->SetAttribute(messages->m_sxNumber.c_str(), m_iNumber);
-		}
+		if (m_iNumber != 1)
+			XsdTypeUtil::setAttribute(doc, pAtomTemplate, messages->m_sxNumber.c_str(), m_iNumber);
 		
-		pAtomTemplate->SetAttribute(messages->m_sxBigZ.c_str(), m_atomicNumbers[0]);
+		XsdTypeUtil::setAttribute(doc, pAtomTemplate, messages->m_sxBigZ.c_str(), m_atomicNumbers[0]);
 	}
 	
 	return true;

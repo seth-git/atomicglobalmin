@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
-#include "../tinyxml/tinyxml.h"
+#include "../rapidxml/rapidxml.hpp"
 #include "../translation/strings.h"
 
 #define XSD_ALL              1
@@ -16,42 +16,41 @@
 
 class XsdElementUtil {
 	private:
-		const char* m_sParentElement;
 		unsigned int m_type;
 		const char** m_elementNames;
 		unsigned int m_iElements;
 		const unsigned int* m_minOccurs;
 		const unsigned int* m_maxOccurs;
 		
-		TiXmlElement* m_pChoiceElement;
+		const rapidxml::xml_node<>* m_pChoiceElement;
 		unsigned int m_pChoiceIndex;
-		TiXmlElement** m_allElements;
+		const rapidxml::xml_node<>** m_allElements;
 
-		std::vector<TiXmlElement*>* m_sequenceElements; // array of vectors
+		std::vector<const rapidxml::xml_node<>*>* m_sequenceElements; // array of vectors
 		
 	public:
 
 		template <std::size_t iElements>
-		XsdElementUtil(const char* parentElement, int type, const char* (&elementNames)[iElements],
+		XsdElementUtil(int type, const char* (&elementNames)[iElements],
 		               const unsigned int (&minOccurs)[iElements], const unsigned int (&maxOccurs)[iElements])
 		{
-			init(parentElement, type, elementNames);
+			init(type, elementNames);
 			m_minOccurs = minOccurs;
 			m_maxOccurs = maxOccurs;
 		}
 
 		template <std::size_t iElements>
-		XsdElementUtil(const char* parentElement, int type, const char* (&elementNames)[iElements],
+		XsdElementUtil(int type, const char* (&elementNames)[iElements],
 		               const unsigned int (&minOccurs)[iElements])
 		{
-			init(parentElement, type, elementNames);
+			init(type, elementNames);
 			m_minOccurs = minOccurs;
 		}
 
 		template <std::size_t iElements>
-		XsdElementUtil(const char* parentElement, int type, const char* (&elementNames)[iElements])
+		XsdElementUtil(int type, const char* (&elementNames)[iElements])
 		{
-			init(parentElement, type, elementNames);
+			init(type, elementNames);
 		}
 
 		~XsdElementUtil()
@@ -59,20 +58,19 @@ class XsdElementUtil {
 			clear();
 		}
 
-		bool process(TiXmlHandle &handle);
-		TiXmlElement** getAllElements();
-		TiXmlElement* getChoiceElement();
+		bool process(const rapidxml::xml_node<>* node);
+		const rapidxml::xml_node<>** getAllElements();
+		const rapidxml::xml_node<>* getChoiceElement();
 		unsigned int getChoiceElementIndex();
-		std::vector<TiXmlElement*>* getSequenceElements(); // array of vectors
+		std::vector<const rapidxml::xml_node<>*>* getSequenceElements(); // array of vectors
 	private:
-		void printChoiceError(int lineNumber);
-		void printSequenceError();
+		void printChoiceError(const char* nodeName);
+		void printSequenceError(const char* nodeName);
 		
 		// This is needed because one constructor cannot call another or the destructor gets called too many times
 		template <std::size_t iElements>
-		void init(const char* parentElement, int type, const char* (&elementNames)[iElements])
+		void init(int type, const char* (&elementNames)[iElements])
 		{
-			m_sParentElement = parentElement;
 			m_type = type;
 			m_elementNames = elementNames;
 			m_iElements = iElements;

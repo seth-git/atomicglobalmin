@@ -63,20 +63,19 @@ const char* Perturbations::s_translationVectorAttDef[] = {"", "0", ""};
 const bool Perturbations::s_rotationAngleAttReq[] = {true,true,true};
 const char* Perturbations::s_rotationAngleAttDef[] = {"", "0", ""};
 
-bool Perturbations::loadSetup(TiXmlElement *pPerturbationsElem, const Strings* messages)
+bool Perturbations::loadSetup(const rapidxml::xml_node<>* pPerturbationsElem, const Strings* messages)
 {
+	using namespace rapidxml;
 	clear();
-	TiXmlHandle hPerturbations(0);
-	hPerturbations=TiXmlHandle(pPerturbationsElem);
 	const char* perturbationsElemNames[] = {messages->m_sxTranslationVector.c_str(), messages->m_sxRotationAngle.c_str()};
-	XsdElementUtil perturbationsElemUtil(pPerturbationsElem->Value(), XSD_ALL, perturbationsElemNames, s_perturbationsMinOccurs);
-	if (!perturbationsElemUtil.process(hPerturbations))
+	XsdElementUtil perturbationsElemUtil(XSD_ALL, perturbationsElemNames, s_perturbationsMinOccurs);
+	if (!perturbationsElemUtil.process(pPerturbationsElem))
 		return false;
-	TiXmlElement** perturbationsElements = perturbationsElemUtil.getAllElements();
+	const xml_node<>** perturbationsElements = perturbationsElemUtil.getAllElements();
 
 	if (NULL != perturbationsElements[0]) {
 		const char* translationVectorAttNames[] = {messages->m_sxStartLength.c_str(), messages->m_sxMinLength.c_str(), messages->m_sxProbability.c_str()};
-		XsdAttributeUtil translationVectorAttUtil(perturbationsElements[0]->Value(), translationVectorAttNames, s_translationVectorAttReq, s_translationVectorAttDef);
+		XsdAttributeUtil translationVectorAttUtil(translationVectorAttNames, s_translationVectorAttReq, s_translationVectorAttDef);
 		if (!translationVectorAttUtil.process(perturbationsElements[0]))
 			return false;
 		const char** translationVectorAttValues = translationVectorAttUtil.getAllAttributes();
@@ -98,7 +97,7 @@ bool Perturbations::loadSetup(TiXmlElement *pPerturbationsElem, const Strings* m
 
 	if (NULL != perturbationsElements[1]) {
 		const char* rotationAngleAttNames[] = {messages->m_sxStartDegrees.c_str(), messages->m_sxMinDegrees.c_str(), messages->m_sxProbability.c_str()};
-		XsdAttributeUtil rotationAngleAttUtil(perturbationsElements[1]->Value(), rotationAngleAttNames, s_rotationAngleAttReq, s_rotationAngleAttDef);
+		XsdAttributeUtil rotationAngleAttUtil(rotationAngleAttNames, s_rotationAngleAttReq, s_rotationAngleAttDef);
 		if (!rotationAngleAttUtil.process(perturbationsElements[1]))
 			return false;
 		const char** rotationAngleAttValues = rotationAngleAttUtil.getAllAttributes();
@@ -130,7 +129,7 @@ bool Perturbations::loadSetup(TiXmlElement *pPerturbationsElem, const Strings* m
 	if (m_pfRotationProbability != NULL)
 		fTotalProbability += *m_pfRotationProbability;
 	if (fTotalProbability != 1) {
-		printf(messages->m_sProbabilityMustTotalOne.c_str(), pPerturbationsElem->Row());
+		printf(messages->m_sProbabilityMustTotalOne.c_str(), pPerturbationsElem->name());
 		return false;
 	}
 
@@ -185,33 +184,32 @@ bool Perturbations::loadDefaults(unsigned int iStructures, bool bMoleculesPresen
 	return true;
 }
 
-bool Perturbations::saveSetup(TiXmlElement *pParentElem, const Strings* messages)
+bool Perturbations::saveSetup(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem, const Strings* messages)
 {
-	TiXmlElement* perturbations = new TiXmlElement(messages->m_sxPerturbations.c_str());
-	pParentElem->LinkEndChild(perturbations);
+	using namespace rapidxml;
+	xml_node<>* perturbations = doc.allocate_node(node_element, messages->m_sxPerturbations.c_str());
+	pParentElem->append_node(perturbations);
 
 	if (m_pfTranslationVectorStartLength != NULL) {
-		TiXmlElement* translationVector = new TiXmlElement(messages->m_sxTranslationVector.c_str());
-		perturbations->LinkEndChild(translationVector);
-		translationVector->SetDoubleAttribute(messages->m_sxStartLength.c_str(), *m_pfTranslationVectorStartLength);
-		if (*m_pfTranslationVectorMinLength != 0) {
-			translationVector->SetDoubleAttribute(messages->m_sxMinLength.c_str(), *m_pfTranslationVectorMinLength);
-		}
-		translationVector->SetDoubleAttribute(messages->m_sxProbability.c_str(), *m_pfTranslationVectorProbability);
+		xml_node<>* translationVector = doc.allocate_node(node_element, messages->m_sxTranslationVector.c_str());
+		perturbations->append_node(translationVector);
+		XsdTypeUtil::setAttribute(doc, translationVector, messages->m_sxStartLength.c_str(), *m_pfTranslationVectorStartLength);
+		if (*m_pfTranslationVectorMinLength != 0)
+			XsdTypeUtil::setAttribute(doc, translationVector, messages->m_sxMinLength.c_str(), *m_pfTranslationVectorMinLength);
+		XsdTypeUtil::setAttribute(doc, translationVector, messages->m_sxProbability.c_str(), *m_pfTranslationVectorProbability);
 	}
 
 	if (m_pfRotationStartRadians != NULL) {
-		TiXmlElement* rotationAngle = new TiXmlElement(messages->m_sxRotationAngle.c_str());
-		perturbations->LinkEndChild(rotationAngle);
-		rotationAngle->SetDoubleAttribute(messages->m_sxStartDegrees.c_str(), *m_pfRotationStartRadians * RAD_TO_DEG);
-		if (*m_pfRotationMinRadians != 0) {
-			rotationAngle->SetDoubleAttribute(messages->m_sxMinDegrees.c_str(), *m_pfRotationMinRadians * RAD_TO_DEG);
-		}
-		rotationAngle->SetDoubleAttribute(messages->m_sxProbability.c_str(), *m_pfRotationProbability);
+		xml_node<>* rotationAngle = doc.allocate_node(node_element, messages->m_sxRotationAngle.c_str());
+		perturbations->append_node(rotationAngle);
+		XsdTypeUtil::setAttribute(doc, rotationAngle, messages->m_sxStartDegrees.c_str(), *m_pfRotationStartRadians * RAD_TO_DEG);
+		if (*m_pfRotationMinRadians != 0)
+			XsdTypeUtil::setAttribute(doc, rotationAngle, messages->m_sxMinDegrees.c_str(), *m_pfRotationMinRadians * RAD_TO_DEG);
+		XsdTypeUtil::setAttribute(doc, rotationAngle, messages->m_sxProbability.c_str(), *m_pfRotationProbability);
 	}
 
 	if (m_iStartingPerturbationsPerIteration != 1)
-		perturbations->SetAttribute(messages->m_sxNumberPerIteration.c_str(), m_iStartingPerturbationsPerIteration);
+		XsdTypeUtil::setAttribute(doc, perturbations, messages->m_sxNumberPerIteration.c_str(), m_iStartingPerturbationsPerIteration);
 
 	return true;
 }

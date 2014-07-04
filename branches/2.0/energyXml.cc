@@ -16,41 +16,37 @@ void EnergyXml::clear() {
 	}
 }
 
-bool EnergyXml::load(TiXmlElement *pEnergyElem, const Strings* messages) {
+bool EnergyXml::load(const rapidxml::xml_node<>* pEnergyElem, const Strings* messages) {
 	clear();
 	const char* energyElementNames[] = {messages->m_sxInternal.c_str(), messages->m_sxExternal.c_str()};
-	XsdElementUtil energyUtil(messages->m_sxEnergy.c_str(), XSD_CHOICE, energyElementNames);
-	TiXmlHandle hChild(0);
-	hChild=TiXmlHandle(pEnergyElem);
-	if (!energyUtil.process(hChild)) {
+	XsdElementUtil energyUtil(XSD_CHOICE, energyElementNames);
+	if (!energyUtil.process(pEnergyElem))
 		return false;
-	}
 	m_bExternalEnergy = (bool)energyUtil.getChoiceElementIndex();
 	if (m_bExternalEnergy) {
-		if (!m_externalEnergyXml.load(energyUtil.getChoiceElement(), messages)) {
+		if (!m_externalEnergyXml.load(energyUtil.getChoiceElement(), messages))
 			return false;
-		}
 	} else {
-		if (!m_internalEnergyXml.load(energyUtil.getChoiceElement(), messages)) {
+		if (!m_internalEnergyXml.load(energyUtil.getChoiceElement(), messages))
 			return false;
-		}
 	}
 
 	return true;
 }
 
-bool EnergyXml::save(TiXmlElement *pParentOfEnergyElem, const Strings* messages) {
-	TiXmlElement* energy = new TiXmlElement(messages->m_sxEnergy.c_str());
-	pParentOfEnergyElem->LinkEndChild(energy);
+bool EnergyXml::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentOfEnergyElem, const Strings* messages) {
+	using namespace rapidxml;
+	xml_node<>* energy = doc.allocate_node(node_element, messages->m_sxEnergy.c_str());
+	pParentOfEnergyElem->append_node(energy);
 	if (m_bExternalEnergy) {
-		TiXmlElement* external = new TiXmlElement(messages->m_sxExternal.c_str());
-		energy->LinkEndChild(external);
-		if (!m_externalEnergyXml.save(external, messages))
+		xml_node<>* external = doc.allocate_node(node_element, messages->m_sxExternal.c_str());
+		energy->append_node(external);
+		if (!m_externalEnergyXml.save(doc, external, messages))
 			return false;
 	} else {
-		TiXmlElement* internal = new TiXmlElement(messages->m_sxInternal.c_str());
-		energy->LinkEndChild(internal);
-		if (!m_internalEnergyXml.save(internal, messages))
+		xml_node<>* internal = doc.allocate_node(node_element, messages->m_sxInternal.c_str());
+		energy->append_node(internal);
+		if (!m_internalEnergyXml.save(doc, internal, messages))
 			return false;
 	}
 

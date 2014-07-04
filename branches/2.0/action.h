@@ -43,12 +43,12 @@ public:
 
 	virtual void clear();
 
-	virtual bool load(TiXmlElement *pActionElem, const Strings* messages);
-	virtual bool save(TiXmlElement *pActionElem, const Strings* messages);
-	virtual bool loadSetup(TiXmlElement *pSetupElem, const Strings* messages) = 0;
-	virtual bool saveSetup(TiXmlElement *pSetupElem, const Strings* messages) = 0;
-	virtual bool loadResume(TiXmlElement *pResumeElem, const Strings* messages) = 0;
-	virtual bool saveResume(TiXmlElement *pResumeElem, const Strings* messages) = 0;
+	virtual bool load(const rapidxml::xml_node<>* pActionElem, const Strings* messages);
+	virtual bool save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pActionElem, const Strings* messages);
+	virtual bool loadSetup(const rapidxml::xml_node<>* pSetupElem, const Strings* messages) = 0;
+	virtual bool saveSetup(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pSetupElem, const Strings* messages) = 0;
+	virtual bool loadResume(const rapidxml::xml_node<>* pResumeElem, const Strings* messages) = 0;
+	virtual bool saveResume(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pResumeElem, const Strings* messages) = 0;
 	virtual bool run();
 	virtual bool runMaster() = 0;
 	virtual bool runSlave() = 0;

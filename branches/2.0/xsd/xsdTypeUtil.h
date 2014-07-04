@@ -7,14 +7,15 @@
 #include "xsdAttributeUtil.h"
 #include "typedef.h"
 #include "../handbook/handbook.h"
+#include <stddef.h>
 
 class XsdTypeUtil {
 	public:
-		static bool getBoolValue(const char* attributeName, const char* attributeValue, bool &result, TiXmlElement *pElem, const Strings* messages);
+		static bool getBoolValue(const char* attributeName, const char* attributeValue, bool &result, const rapidxml::xml_node<>* node, const Strings* messages);
 
 		// Templates can't be declared in .cc files
 		template <std::size_t iResponses>
-		static bool getEnumValue(const char* attributeName, const char* attributeValue, int &result, TiXmlElement *pElem,
+		static bool getEnumValue(const char* attributeName, const char* attributeValue, int &result, const rapidxml::xml_node<>* node,
 		                               const char* (&possibleValues)[iResponses], const int (&responses)[iResponses]) {
 			for (unsigned int i = 0; i < iResponses; ++i) {
 				if (strcmp(possibleValues[i], attributeValue) == 0) {
@@ -22,53 +23,64 @@ class XsdTypeUtil {
 					return true;
 				}
 			}
-			printError(attributeName, attributeValue, pElem, possibleValues, iResponses);
+			printError(attributeName, attributeValue, node, possibleValues, iResponses);
 			return false;
 		}
 
 		template <std::size_t iResponses, typename EnumType>
 		static bool getEnumValue(const char* attributeName, const char* attributeValue, EnumType &result,
-		                         TiXmlElement *pElem, const char* (&possibleValues)[iResponses]) {
+		                         const rapidxml::xml_node<>* node, const char* (&possibleValues)[iResponses]) {
 			for (unsigned int i = 0; i < iResponses; ++i) {
 				if (strcmp(possibleValues[i], attributeValue) == 0) {
 					result = static_cast<EnumType>(i);
 					return true;
 				}
 			}
-			printError(attributeName, attributeValue, pElem, possibleValues, iResponses);
+			printError(attributeName, attributeValue, node, possibleValues, iResponses);
 			return false;
 		}
 		
-		static bool checkDirectoryOrFileName(const char* sourceDir, std::string &newDir, const char* attributeName, TiXmlElement *pElem);
-		static bool getInteger(const char* value, int &result, const char* attributeName, TiXmlElement *pElem);
-		static bool getPositiveInt(const char* value, unsigned int &result, const char* attributeName, TiXmlElement *pElem);
-		static bool getNonNegativeInt(const char* value, unsigned int &result, const char* attributeName, TiXmlElement *pElem);
-		static bool getFloat(const char* value, FLOAT &result, const char* attributeName, TiXmlElement *pElem);
-		static bool getPositiveFloat(const char* value, FLOAT &result, const char* attributeName, TiXmlElement *pElem);
-		static bool getNonNegativeFloat(const char* value, FLOAT &result, const char* attributeName, TiXmlElement *pElem);
-		static bool readTimeT(const char* value, time_t &result, const char* attributeName, TiXmlElement *pElem);
+		static bool checkDirectoryOrFileName(const char* sourceDir, std::string &newDir, const char* attributeName, const rapidxml::xml_node<>* node);
+		static bool getInteger(const char* value, int &result, const char* attributeName, const rapidxml::xml_node<>* node);
+		static bool getPositiveInt(const char* value, unsigned int &result, const char* attributeName, const rapidxml::xml_node<>* node);
+		static bool getNonNegativeInt(const char* value, unsigned int &result, const char* attributeName, const rapidxml::xml_node<>* node);
+		static bool getFloat(const char* value, FLOAT &result, const char* attributeName, const rapidxml::xml_node<>* node);
+		static bool getPositiveFloat(const char* value, FLOAT &result, const char* attributeName, const rapidxml::xml_node<>* node);
+		static bool getNonNegativeFloat(const char* value, FLOAT &result, const char* attributeName, const rapidxml::xml_node<>* node);
+		static bool readTimeT(const char* value, time_t &result, const char* attributeName, const rapidxml::xml_node<>* node);
 		
-		static bool read1StrAtt(TiXmlElement *pElem, std::string &result, const char* attributeName, bool required, const char* defaultValue);
-		static bool read1DirAtt(TiXmlElement *pElem, std::string &resultDir, const char* attributeName, bool required, const char* defaultValue);
-		static bool read1BoolAtt(TiXmlElement *pElem, bool &result, const char* attributeName, bool required, const char* defaultValue, const Strings* messages);
-		static bool read1IntAtt(TiXmlElement *pElem, int &result, const char* attributeName, bool required, const char* defaultValue);
-		static bool read1PosIntAtt(TiXmlElement *pElem, unsigned int &result, const char* attributeName, bool required, const char* defaultValue);
-		static bool read1NonNegativeIntAtt(TiXmlElement *pElem, unsigned int &result, const char* attributeName, bool required, const char* defaultValue);
-		static bool read1PosFloatAtt(TiXmlElement *pElem, FLOAT &result, const char* attributeName, bool required, const char* defaultValue);
-		static bool read1NonNegativeFloatAtt(TiXmlElement *pElem, FLOAT &result, const char* attributeName, bool required, const char* defaultValue);
-		static bool read1TimeT(TiXmlElement *pElem, time_t &result, const char* attributeName, bool required, const char* defaultValue);
+		static bool read1StrAtt(const rapidxml::xml_node<>* node, std::string &result, const char* attributeName, bool required, const char* defaultValue);
+		static bool read1DirAtt(const rapidxml::xml_node<>* node, std::string &resultDir, const char* attributeName, bool required, const char* defaultValue);
+		static bool read1BoolAtt(const rapidxml::xml_node<>* node, bool &result, const char* attributeName, bool required, const char* defaultValue, const Strings* messages);
+		static bool read1IntAtt(const rapidxml::xml_node<>* node, int &result, const char* attributeName, bool required, const char* defaultValue);
+		static bool read1PosIntAtt(const rapidxml::xml_node<>* node, unsigned int &result, const char* attributeName, bool required, const char* defaultValue);
+		static bool read1NonNegativeIntAtt(const rapidxml::xml_node<>* node, unsigned int &result, const char* attributeName, bool required, const char* defaultValue);
+		static bool read1PosFloatAtt(const rapidxml::xml_node<>* node, FLOAT &result, const char* attributeName, bool required, const char* defaultValue);
+		static bool read1NonNegativeFloatAtt(const rapidxml::xml_node<>* node, FLOAT &result, const char* attributeName, bool required, const char* defaultValue);
+		static bool read1TimeT(const rapidxml::xml_node<>* node, time_t &result, const char* attributeName, bool required, const char* defaultValue);
 		
-		static bool readElementText(TiXmlElement *pElem, std::string &result);
+		static bool readElementText(const rapidxml::xml_node<>* node, std::string &result);
 		
-		static bool getAtomicNumber(const char* numberOrSymbol, unsigned int &iAtomicNumber, unsigned int line, const char* attributeName, const char* elementName);
-		static bool getAtomicNumber(const char* numberOrSymbol, unsigned int &iAtomicNumber, unsigned int line);
+		static bool getAtomicNumber(const char* numberOrSymbol, unsigned int &iAtomicNumber, const char* attributeName, const char* elementName);
+		static bool getAtomicNumber(const char* numberOrSymbol, unsigned int &iAtomicNumber);
 		
-		static bool inRange(FLOAT number, FLOAT lo, FLOAT hi, TiXmlElement *pElem, const char* attName);
+		static bool inRange(FLOAT number, FLOAT lo, FLOAT hi, const rapidxml::xml_node<>* node, const char* attName);
 
-		static void writeTimeT(time_t value, TiXmlElement *pElem, const char* attName);
-		static void writeBool(bool value, TiXmlElement *pElem, const char* attName, const Strings* messages);
+		static size_t createFloat(FLOAT value, char* buffer, size_t size);
+		static char* createFloat(FLOAT value, rapidxml::xml_document<> &doc);
+		static char* createInt(int value, rapidxml::xml_document<> &doc);
+		static char* createUnsignedInt(unsigned int value, rapidxml::xml_document<> &doc);
+
+		static char* createTimeT(time_t value, rapidxml::xml_document<> &doc);
+		static const char* createBool(bool value, const Strings* messages);
+
+		static void setAttribute(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* node, const char* attribute, unsigned int value);
+		static void setAttribute(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* node, const char* attribute, int value);
+		static void setAttribute(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* node, const char* attribute, FLOAT value);
+		static void setAttribute(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* node, const char* attribute, time_t value);
+		static void setAttribute(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* node, const char* attribute, bool value, const Strings* messages);
 	private:
-		static void printError(const char* attributeName, const char* attributeValue, TiXmlElement *pElem, const char** possibleValues, unsigned int numPossibleValues);
+		static void printError(const char* attributeName, const char* attributeValue, const rapidxml::xml_node<>* node, const char** possibleValues, unsigned int numPossibleValues);
 		
 		static const int   s_booleanResponses[];
 };

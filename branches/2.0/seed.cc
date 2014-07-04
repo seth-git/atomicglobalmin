@@ -100,14 +100,15 @@ const bool         Seed::s_dirAttRequired[]  = {true  , true    , true};
 const bool         Seed::s_enFileAttRequired[]  = {true  , true};
 //const char*      Seed::s_enFileAttDefaults[]  = {""    , ""};
 
-bool Seed::load(TiXmlElement *pSeedElem, const Strings* messages)
+bool Seed::load(const rapidxml::xml_node<>* pSeedElem, const Strings* messages)
 {
+	using namespace rapidxml;
 	clear();
 	
 	const char** values;
 	const char* attNames[]     = {messages->m_sxFreezingIterations.c_str()};
 	const char* attDefaults[]  = {"0"};
-	XsdAttributeUtil attUtil(pSeedElem->Value(), attNames, s_attRequired, attDefaults);
+	XsdAttributeUtil attUtil(attNames, s_attRequired, attDefaults);
 	if (!attUtil.process(pSeedElem))
 		return false;
 	values = attUtil.getAllAttributes();
@@ -115,12 +116,10 @@ bool Seed::load(TiXmlElement *pSeedElem, const Strings* messages)
 		return false;
 	
 	const char* elementNames[] = {messages->m_sxAgmlFile.c_str(), messages->m_sxDirectory.c_str(), messages->m_sxEnergyFile.c_str()};
-	XsdElementUtil elemUtil(pSeedElem->Value(), XSD_SEQUENCE, elementNames, s_minOccurs, s_maxOccurs);
-	TiXmlHandle handle(0);
-	handle=TiXmlHandle(pSeedElem);
-	if (!elemUtil.process(handle))
+	XsdElementUtil elemUtil(XSD_SEQUENCE, elementNames, s_minOccurs, s_maxOccurs);
+	if (!elemUtil.process(pSeedElem))
 		return false;
-	std::vector<TiXmlElement*>* elements = elemUtil.getSequenceElements();
+	std::vector<const xml_node<>*>* elements = elemUtil.getSequenceElements();
 	unsigned int i;
 	
 	if (elements[0].size() > 0) {
@@ -136,7 +135,7 @@ bool Seed::load(TiXmlElement *pSeedElem, const Strings* messages)
 		const char* sources[] = {messages->m_sxResults.c_str(), messages->m_sxPopulation.c_str()};
 		
 		for (i = 0; i < m_iAgmlFiles; ++i) {
-			XsdAttributeUtil fileAttUtil(elements[0][i]->Value(), fileAttNames, s_fileAttRequired, fileAttDefaults);
+			XsdAttributeUtil fileAttUtil(fileAttNames, s_fileAttRequired, fileAttDefaults);
 			if (!fileAttUtil.process(elements[0][i]))
 				return false;
 			values = fileAttUtil.getAllAttributes();
@@ -166,7 +165,7 @@ bool Seed::load(TiXmlElement *pSeedElem, const Strings* messages)
 		const char* dirAttDefaults[]  = {NULL                      , messages->m_spAll.c_str()   , NULL};
 		
 		for (i = 0; i < m_iDirectories; ++i) {
-			XsdAttributeUtil dirAttUtil(elements[1][i]->Value(), dirAttNames, s_dirAttRequired, dirAttDefaults);
+			XsdAttributeUtil dirAttUtil(dirAttNames, s_dirAttRequired, dirAttDefaults);
 			if (!dirAttUtil.process(elements[1][i]))
 				return false;
 			values = dirAttUtil.getAllAttributes();
@@ -194,7 +193,7 @@ bool Seed::load(TiXmlElement *pSeedElem, const Strings* messages)
 		const char* enFileAttDefaults[]  = {NULL                      , NULL};
 		
 		for (i = 0; i < m_iEnergyFiles; ++i) {
-			XsdAttributeUtil enFileAttUtil(elements[2][i]->Value(), enFileAttNames, s_enFileAttRequired, enFileAttDefaults);
+			XsdAttributeUtil enFileAttUtil(enFileAttNames, s_enFileAttRequired, enFileAttDefaults);
 			if (!enFileAttUtil.process(elements[2][i]))
 				return false;
 			values = enFileAttUtil.getAllAttributes();
@@ -209,8 +208,8 @@ bool Seed::load(TiXmlElement *pSeedElem, const Strings* messages)
 	
 	if (m_iAgmlFiles == 0 && m_iDirectories == 0 && m_iEnergyFiles == 0) {
 		const Strings* messagesDL = Strings::instance();
-		printf(messagesDL->m_sMissingChildElements3.c_str(), pSeedElem->Row(),
-				pSeedElem->Value(), messages->m_sxAgmlFile.c_str(),
+		printf(messagesDL->m_sMissingChildElements3.c_str(),
+				pSeedElem->name(), messages->m_sxAgmlFile.c_str(),
 				messages->m_sxDirectory.c_str(),
 				messages->m_sxEnergyFile.c_str());
 		return false;
@@ -219,46 +218,47 @@ bool Seed::load(TiXmlElement *pSeedElem, const Strings* messages)
 	return true;
 }
 
-bool Seed::save(TiXmlElement *pParentElem, const Strings* messages)
+bool Seed::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem, const Strings* messages)
 {
+	using namespace rapidxml;
 	unsigned int i;
-	TiXmlElement* pSeed = new TiXmlElement(messages->m_sxSeed.c_str());
-	pParentElem->LinkEndChild(pSeed);
+	xml_node<>* pSeed = doc.allocate_node(node_element, messages->m_sxSeed.c_str());
+	pParentElem->append_node(pSeed);
 	
 	if (m_iFreezingIterations != 0)
-		pSeed->SetAttribute(messages->m_sxFreezingIterations.c_str(), m_iFreezingIterations);
+		XsdTypeUtil::setAttribute(doc, pSeed, messages->m_sxFreezingIterations.c_str(), m_iFreezingIterations);
 	
 	if (m_iAgmlFiles > 0) {
 		const char* sources[] = {messages->m_sxResults.c_str(), messages->m_sxPopulation.c_str()};
 		
 		for (i = 0; i < m_iAgmlFiles; ++i) {
-			TiXmlElement* pAgmlFile = new TiXmlElement(messages->m_sxAgmlFile.c_str());
-			pSeed->LinkEndChild(pAgmlFile);
+			xml_node<>* pAgmlFile = doc.allocate_node(node_element, messages->m_sxAgmlFile.c_str());
+			pSeed->append_node(pAgmlFile);
 			
-			pAgmlFile->SetAttribute(messages->m_sxPath.c_str(), m_agmlFilePaths[i].c_str());
+			pAgmlFile->append_attribute(doc.allocate_attribute(messages->m_sxPath.c_str(), m_agmlFilePaths[i].c_str()));
 			if (!m_bUseAllFromAgmlFiles[i])
-				pAgmlFile->SetAttribute(messages->m_sxNumber.c_str(), m_numberFromAgmlFiles[i]);
+				XsdTypeUtil::setAttribute(doc, pAgmlFile, messages->m_sxNumber.c_str(), m_numberFromAgmlFiles[i]);
 			if (m_sourceInAgmlFiles[i] != RESULTS)
-				pAgmlFile->SetAttribute(messages->m_sxSource.c_str(), sources[m_sourceInAgmlFiles[i]]);
+				pAgmlFile->append_attribute(doc.allocate_attribute(messages->m_sxSource.c_str(), sources[m_sourceInAgmlFiles[i]]));
 		}
 	}
 	
 	for (i = 0; i < m_iDirectories; ++i) {
-		TiXmlElement* pDir = new TiXmlElement(messages->m_sxDirectory.c_str());
-		pSeed->LinkEndChild(pDir);
+		xml_node<>* pDir = doc.allocate_node(node_element, messages->m_sxDirectory.c_str());
+		pSeed->append_node(pDir);
 		
-		pDir->SetAttribute(messages->m_sxPath.c_str(), m_dirPaths[i].c_str());
+		pDir->append_attribute(doc.allocate_attribute(messages->m_sxPath.c_str(), m_dirPaths[i].c_str()));
 		if (!m_bUseAllFromDir[i])
-			pDir->SetAttribute(messages->m_sxNumber.c_str(), m_numberFromDir[i]);
-		pDir->SetAttribute(messages->m_sxType.c_str(), ExternalEnergy::getEnumString(m_dirFileTypes[i], messages));
+			XsdTypeUtil::setAttribute(doc, pDir, messages->m_sxNumber.c_str(), m_numberFromDir[i]);
+		pDir->append_attribute(doc.allocate_attribute(messages->m_sxType.c_str(), ExternalEnergy::getEnumString(m_dirFileTypes[i], messages)));
 	}
 	
 	for (i = 0; i < m_iEnergyFiles; ++i) {
-		TiXmlElement* pEnergyFile = new TiXmlElement(messages->m_sxEnergyFile.c_str());
-		pSeed->LinkEndChild(pEnergyFile);
+		xml_node<>* pEnergyFile = doc.allocate_node(node_element, messages->m_sxEnergyFile.c_str());
+		pSeed->append_node(pEnergyFile);
 		
-		pEnergyFile->SetAttribute(messages->m_sxPath.c_str(), m_energyFilePaths[i].c_str());
-		pEnergyFile->SetAttribute(messages->m_sxType.c_str(), ExternalEnergy::getEnumString(m_energyFileTypes[i], messages));
+		pEnergyFile->append_attribute(doc.allocate_attribute(messages->m_sxPath.c_str(), m_energyFilePaths[i].c_str()));
+		pEnergyFile->append_attribute(doc.allocate_attribute(messages->m_sxType.c_str(), ExternalEnergy::getEnumString(m_energyFileTypes[i], messages)));
 	}
 	
 	return true;

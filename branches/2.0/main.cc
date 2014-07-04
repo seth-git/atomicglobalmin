@@ -15,7 +15,6 @@ int main(int argc, char* argv[])
 		return 0;
 	if (!Handbook::init())
 		return 0;
-	TiXmlBase::SetCondenseWhiteSpace(false);
 
 	MPI_Init(&argc, &argv);
 	int iRank;

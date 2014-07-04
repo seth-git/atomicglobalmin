@@ -41,7 +41,7 @@ public:
 
 	static const char* getOutputFileExtension(Impl impl);
 
-	static bool getEnum(const char* attributeName, const char* stringValue, Impl &result, TiXmlElement *pElem, const Strings* messages);
+	static bool getEnum(const char* attributeName, const char* stringValue, Impl &result, const rapidxml::xml_node<>* pElem, const Strings* messages);
 	static const char* getEnumString(Impl enumValue, const Strings* messages);
 
 	static unsigned int s_iMaxEnergyCalcFailuresOnStructure;

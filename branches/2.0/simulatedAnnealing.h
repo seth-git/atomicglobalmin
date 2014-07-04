@@ -27,15 +27,16 @@ public:
 
 	SimulatedAnnealing(Input* input);
 	~SimulatedAnnealing();
-	bool loadSetup(TiXmlElement *pSetupElem, const Strings* messages);
-	bool saveSetup(TiXmlElement *pSimElem, const Strings* messages);
-	bool loadResume(TiXmlElement *pResumeElem, const Strings* messages);
-	bool saveResume(TiXmlElement *pResumeElem, const Strings* messages);
+	bool loadSetup(const rapidxml::xml_node<>* pSetupElem, const Strings* messages);
+	bool saveSetup(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pSimElem, const Strings* messages);
+	bool loadResume(const rapidxml::xml_node<>* pResumeElem, const Strings* messages);
+	bool saveResume(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pResumeElem, const Strings* messages);
 
 	bool runMaster();
 	bool runSlave();
 	
 private:
+	static const FLOAT s_fDefaultBoltzmannConstant;
 	static const bool s_setupAttReq[];
 	static const char* s_setupAttDef[];
 	static const unsigned int s_minOccurs[];

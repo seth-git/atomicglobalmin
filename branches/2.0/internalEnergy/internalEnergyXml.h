@@ -15,8 +15,8 @@ public:
 
 	InternalEnergyXml() {}
 
-	bool load(TiXmlElement *pInternalEnergyElem, const Strings* messages);
-	bool save(TiXmlElement *pInternalEnergyElem, const Strings* messages);
+	bool load(const rapidxml::xml_node<>* pInternalEnergyElem, const Strings* messages);
+	bool save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pInternalEnergyElem, const Strings* messages);
 
 private:
 	static const bool  s_required[];

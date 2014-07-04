@@ -41,8 +41,8 @@ public:
 
 	void setCubeLWH(FLOAT cubeLWH);
 
-	bool load(TiXmlElement *pConstraintsElem, const Strings* messages, std::map<std::string,Constraints*> &constraintsMap);
-	bool save(TiXmlElement *pConstraintsElem, const Strings* messages) const;
+	bool load(const rapidxml::xml_node<>* pConstraintsElem, const Strings* messages, std::map<std::string,Constraints*> &constraintsMap);
+	bool save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pConstraintsElem, const Strings* messages) const;
 
 	void copy(const Constraints &other);
 
@@ -101,7 +101,7 @@ private:
 	static const bool         s_minRequired[];
 	static const char*        s_minDefaultValues[];
 
-	bool addMinDist(TiXmlElement *pElem, unsigned int &timesReadGeneralMin, const Strings* messages);
+	bool addMinDist(const rapidxml::xml_node<>* pElem, unsigned int &timesReadGeneralMin, const Strings* messages);
 
 	void clear();
 	bool specificMinDistNotInBase() const;

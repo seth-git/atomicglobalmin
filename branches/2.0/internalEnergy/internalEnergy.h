@@ -24,7 +24,7 @@ public:
 
 	virtual bool localOptimization(Structure &structure) = 0;
 
-	static bool getEnum(const char* attributeName, const char* stringValue, Impl &result, TiXmlElement *pElem, const Strings* messages);
+	static bool getEnum(const char* attributeName, const char* stringValue, Impl &result, const rapidxml::xml_node<>* pElem, const Strings* messages);
 	static const char* getEnumString(Impl enumValue, const Strings* messages);
 
 protected:

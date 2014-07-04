@@ -5,13 +5,13 @@
 const bool    InternalEnergyXml::s_required[]        = {true    , false };
 //const char* InternalEnergyXml::s_defaultValues[]   = {""      , "false"};
 
-bool InternalEnergyXml::load(TiXmlElement *pInternalEnergyElem, const Strings* messages)
+bool InternalEnergyXml::load(const rapidxml::xml_node<>* pInternalEnergyElem, const Strings* messages)
 {
 	const char* attributeNames[]  = {messages->m_sxMethod.c_str(), messages->m_sxOpt.c_str()};
 	const char* defaultValues[]   = {""                          , messages->m_spFalse.c_str()};
 	const char** values;
 
-	XsdAttributeUtil attUtil(pInternalEnergyElem->Value(), attributeNames, s_required, defaultValues);
+	XsdAttributeUtil attUtil(attributeNames, s_required, defaultValues);
 	if (!attUtil.process(pInternalEnergyElem))
 		return false;
 	values = attUtil.getAllAttributes();
@@ -25,10 +25,10 @@ bool InternalEnergyXml::load(TiXmlElement *pInternalEnergyElem, const Strings* m
 	return true;
 }
 
-bool InternalEnergyXml::save(TiXmlElement *pInternalEnergyElem, const Strings* messages)
+bool InternalEnergyXml::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pInternalEnergyElem, const Strings* messages)
 {
-	pInternalEnergyElem->SetAttribute(messages->m_sxMethod.c_str(), InternalEnergy::getEnumString(m_method, messages));
+	pInternalEnergyElem->append_attribute(doc.allocate_attribute(messages->m_sxMethod.c_str(), InternalEnergy::getEnumString(m_method, messages)));
 	if (m_bLocalOptimization)
-		pInternalEnergyElem->SetAttribute(messages->m_sxOpt.c_str(), messages->m_spTrue.c_str());
+		pInternalEnergyElem->append_attribute(doc.allocate_attribute(messages->m_sxOpt.c_str(), messages->m_spTrue.c_str()));
 	return true;
 }

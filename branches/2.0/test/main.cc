@@ -11,7 +11,7 @@ void addFailedTestName(std::string &failedUnitTests, const char* failedTestName)
 int main(int argc, char* argv[])
 {
 	const char * (*tests[])() = {&testMatrixMultiplication, &ccLibReadTest, &testPlaceAtomGroupRelativeToAnother, &testInitialization,
-			&testSeeding, &testSeeding2, &testSeeding3, &testSeeding4, &testLJ7, &testUpdateAtomToCenterRanks};
+			&testSeeding, &testSeeding2, &testSeeding3, &testSeeding4, &testLJ7, &testUpdateAtomToCenterRanks, &xmlBatchTest};
 
 	if (0 != chdir("..")) {
 		printf("Failed to perform 'cd ..', errno = %d\n", errno);
@@ -23,7 +23,6 @@ int main(int argc, char* argv[])
 		return 0;
 	if (!Handbook::init())
 		return 0;
-	TiXmlBase::SetCondenseWhiteSpace(false);
 
 	std::string failedUnitTests;
 	unsigned int passedTests = 0;

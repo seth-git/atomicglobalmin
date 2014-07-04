@@ -334,6 +334,8 @@ bool Strings::init (const char* languageCode)
 		return false;
 	if (!copy(stringMap, "WritingFile", m_sWritingFile))
 		return false;
+	if (!copy(stringMap, "ErrorOpeningFile", m_sErrorOpeningFile))
+		return false;
 	if (!copy(stringMap, "pAbbrTemporary", m_spAbbrTemporary))
 		return false;
 	
@@ -402,10 +404,6 @@ bool Strings::init (const char* languageCode)
 	if (!copy(stringMap, "UnableToReadTime", m_sUnableToReadTime))
 		return false;
 	
-	if (!copy(stringMap, "Error", m_sError))
-		return false;
-	if (!copy(stringMap, "ErrorOnLine", m_sErrorOnLine))
-		return false;
 	if (!copy(stringMap, "ElementNotFound", m_sElementNotFound))
 		return false;
 	if (!copy(stringMap, "OneRootElement", m_sOneRootElement))
@@ -423,6 +421,8 @@ bool Strings::init (const char* languageCode)
 	if (!copy(stringMap, "ErrorDuplicateMinDist", m_sErrorDuplicateMinDist))
 		return false;
 	
+	if (!copy(stringMap, "ConstraintNotDefined", m_sConstraintNotDefined))
+		return false;
 	if (!copy(stringMap, "EmptyStructureTemplate", m_sEmptyStructureTemplate))
 		return false;
 	if (!copy(stringMap, "SeededStructureDoesntMatchTemplate", m_sSeededStructureDoesntMatchTemplate))

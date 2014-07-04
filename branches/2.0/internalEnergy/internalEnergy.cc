@@ -29,7 +29,7 @@ bool InternalEnergy::execute(Structure &structure) {
 		return calculateEnergy(structure);
 }
 
-bool InternalEnergy::getEnum(const char* attributeName, const char* stringValue, Impl &result, TiXmlElement *pElem, const Strings* messages) {
+bool InternalEnergy::getEnum(const char* attributeName, const char* stringValue, Impl &result, const rapidxml::xml_node<>* pElem, const Strings* messages) {
 	const char* methods[] = {messages->m_spLennardJones.c_str()};
 	return XsdTypeUtil::getEnumValue(attributeName, stringValue, result, pElem, methods);
 }

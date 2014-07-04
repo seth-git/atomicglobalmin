@@ -21,8 +21,8 @@ public:
 	~EnergyXml();
 	void clear();
 
-	bool load(TiXmlElement *pEnergyElem, const Strings* messages);
-	bool save(TiXmlElement *pParentOfEnergyElem, const Strings* messages);
+	bool load(const rapidxml::xml_node<>* pEnergyElem, const Strings* messages);
+	bool save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentOfEnergyElem, const Strings* messages);
 	Energy* getEnergy();
 
 protected:

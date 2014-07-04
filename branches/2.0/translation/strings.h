@@ -168,6 +168,7 @@ public:
 
 	std::string m_sReadingFile;
 	std::string m_sWritingFile;
+	std::string m_sErrorOpeningFile;
 	std::string m_spAbbrTemporary;
 	
 	std::string m_sDuplicateAttributes;
@@ -204,18 +205,17 @@ public:
 	std::string m_sRangeError;
 	std::string m_sUnableToReadTime;
 
-	std::string m_sError;
-	std::string m_sErrorOnLine;
 	std::string m_sElementNotFound;
 	std::string m_sOneRootElement;
 	std::string m_sTwoElementsWithSameName;
-	
+
 	std::string m_sConstraintNameMisMatch;
 
 	std::string m_sErrorZ1Z2;
 	std::string m_sErrorOneGeneralMin;
 	std::string m_sErrorDuplicateMinDist;
 	
+	std::string m_sConstraintNotDefined;
 	std::string m_sEmptyStructureTemplate;
 	std::string m_sSeededStructureDoesntMatchTemplate;
 	std::string m_sSeededStructureDoesntMatchConstraints;

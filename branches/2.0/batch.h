@@ -10,10 +10,10 @@ public:
 	unsigned int m_targetQueueSize;
 	Batch(Input* input);
 	~Batch();
-	bool loadSetup(TiXmlElement *pSetupElem, const Strings* messages);
-	bool saveSetup(TiXmlElement *pBatchElem, const Strings* messages);
-	bool loadResume(TiXmlElement *pResumeElem, const Strings* messages);
-	bool saveResume(TiXmlElement *pResumeElem, const Strings* messages);
+	bool loadSetup(const rapidxml::xml_node<>* pSetupElem, const Strings* messages);
+	bool saveSetup(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pBatchElem, const Strings* messages);
+	bool loadResume(const rapidxml::xml_node<>* pResumeElem, const Strings* messages);
+	bool saveResume(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pResumeElem, const Strings* messages);
 
 	bool runMaster();
 	bool runSlave();

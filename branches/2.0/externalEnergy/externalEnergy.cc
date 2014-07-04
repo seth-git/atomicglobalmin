@@ -203,7 +203,7 @@ const char* ExternalEnergy::getOutputFileExtension(Impl impl) {
 	}
 }
 
-bool ExternalEnergy::getEnum(const char* attributeName, const char* stringValue, Impl &result, TiXmlElement *pElem, const Strings* messages) {
+bool ExternalEnergy::getEnum(const char* attributeName, const char* stringValue, Impl &result, const rapidxml::xml_node<>* pElem, const Strings* messages) {
 	const char* methods[] = {messages->m_spADF.c_str(), messages->m_spGAMESS.c_str(), messages->m_spGAMESSUK.c_str(), messages->m_spGaussian.c_str(),
 			messages->m_spFirefly.c_str(), messages->m_spJaguar.c_str(), messages->m_spMolpro.c_str(), messages->m_spORCA.c_str()};
 	return XsdTypeUtil::getEnumValue(attributeName, stringValue, result, pElem, methods);

@@ -436,6 +436,7 @@ const char* testInitialization(void) {
 }*/
 
 const char* testPlaceAtomGroupRelativeToAnother(void) {
+	using namespace rapidxml;
 	static const char* testName = "testInitialization";
 	const char* failMessage = "Testing of initialization failed!";
 
@@ -449,10 +450,19 @@ const char* testPlaceAtomGroupRelativeToAnother(void) {
 	constraintsxml.append("      <max value='1.2' />");
 	constraintsxml.append("   </atomicDistances>");
 	constraintsxml.append("</constraints>");
-	TiXmlDocument xmlDocument;
-	xmlDocument.Parse(constraintsxml.c_str(), 0, TIXML_ENCODING_UTF8);
-	TiXmlHandle hDoc(&xmlDocument);
-	TiXmlElement* pElem=hDoc.FirstChildElement().Element();
+	char temp[constraintsxml.length()+1];
+	strncpy(temp, constraintsxml.c_str(), sizeof(temp));
+	xml_document<> doc;
+	try {
+		doc.parse<0>(temp); // We can't pass in a const char[], since rapidxml modifies the xml while parsing
+	} catch (parse_error e) {
+		printf(e.what());
+//		printf(e.where());
+		std::cout << failMessage << std::endl;
+		printf("\tReason: failed to parse constraints xml.\n");
+		return testName;
+	}
+	xml_node<>* pElem=doc.first_node();
 	Constraints constraints;
 	std::map<std::string,Constraints*> constraintsMap;
 	if (!constraints.load(pElem, Strings::instance(), constraintsMap)) {
@@ -510,6 +520,7 @@ const char* testPlaceAtomGroupRelativeToAnother(void) {
 }
 
 const char* testInitialization(void) {
+	using namespace rapidxml;
 	static const char* testName = "testInitialization";
 	const char* failMessage = "Testing of initialization failed!";
 
@@ -526,10 +537,19 @@ const char* testInitialization(void) {
 	constraintsxml.append("      <max value='2' />");
 	constraintsxml.append("   </atomicDistances>");
 	constraintsxml.append("</constraints>");
-	TiXmlDocument xmlDocument;
-	xmlDocument.Parse(constraintsxml.c_str(), 0, TIXML_ENCODING_UTF8);
-	TiXmlHandle hDoc(&xmlDocument);
-	TiXmlElement* pElem=hDoc.FirstChildElement().Element();
+	char temp[constraintsxml.length()+1];
+	strncpy(temp, constraintsxml.c_str(), sizeof(temp));
+	xml_document<> doc;
+	try {
+		doc.parse<0>(temp); // We can't pass in a const char[], since rapidxml modifies the xml while parsing
+	} catch (parse_error e) {
+		printf(e.what());
+//		printf(e.where());
+		std::cout << failMessage << std::endl;
+		printf("\tReason: failed to parse constraints xml.\n");
+		return testName;
+	}
+	xml_node<>* pElem=doc.first_node();
 	Constraints constraints;
 	std::map<std::string,Constraints*> constraintsMap;
 	if (!constraints.load(pElem, Strings::instance(), constraintsMap)) {

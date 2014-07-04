@@ -30,10 +30,10 @@ const unsigned int Batch::s_minOccurs[]    = {1                   };
 const bool Batch::s_setupAttReq[] =  {true, true};
 const char* Batch::s_setupAttDef[] = {"1" , "2"};
 
-bool Batch::loadSetup(TiXmlElement *pSetupElem, const Strings* messages)
+bool Batch::loadSetup(const rapidxml::xml_node<>* pSetupElem, const Strings* messages)
 {
 	const char* setupAttNames[] = {messages->m_sxSaveFrequency.c_str(), messages->m_sxQueueSize.c_str()};
-	XsdAttributeUtil setupAttUtil(pSetupElem->Value(), setupAttNames, s_setupAttReq, s_setupAttDef);
+	XsdAttributeUtil setupAttUtil(setupAttNames, s_setupAttReq, s_setupAttDef);
 	if (!setupAttUtil.process(pSetupElem))
 		return false;
 	const char** setupAttValues = setupAttUtil.getAllAttributes();
@@ -43,11 +43,10 @@ bool Batch::loadSetup(TiXmlElement *pSetupElem, const Strings* messages)
 		return false;
 
 	const char* elementNames[] = {messages->m_sxStructuresTemplate.c_str()};
-	XsdElementUtil setupUtil(pSetupElem->Value(), XSD_ALL, elementNames, s_minOccurs);
-	TiXmlHandle handle(pSetupElem);
-	if (!setupUtil.process(handle))
+	XsdElementUtil setupUtil(XSD_ALL, elementNames, s_minOccurs);
+	if (!setupUtil.process(pSetupElem))
 		return false;
-	TiXmlElement** setupElements = setupUtil.getAllElements();
+	const rapidxml::xml_node<>** setupElements = setupUtil.getAllElements();
 
 	if (!m_structuresTemplate.load(setupElements[0], m_constraintsMap, messages))
 		return false;
@@ -55,38 +54,39 @@ bool Batch::loadSetup(TiXmlElement *pSetupElem, const Strings* messages)
 	return true;
 }
 
-bool Batch::saveSetup(TiXmlElement *pBatchElem, const Strings* messages)
+bool Batch::saveSetup(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pBatchElem, const Strings* messages)
 {
-	TiXmlElement* setup = new TiXmlElement(messages->m_sxSetup.c_str());
-	pBatchElem->LinkEndChild(setup);
+	using namespace rapidxml;
+	xml_node<>* setup = doc.allocate_node(node_element, messages->m_sxSetup.c_str());
+	pBatchElem->append_node(setup);
 
 	if (1 != m_iSaveFrequency)
-		setup->SetAttribute(messages->m_sxSaveFrequency.c_str(), m_iSaveFrequency);
+		XsdTypeUtil::setAttribute(doc, setup, messages->m_sxSaveFrequency.c_str(), m_iSaveFrequency);
 
 	if (2 != m_targetQueueSize)
-		setup->SetAttribute(messages->m_sxQueueSize.c_str(), m_targetQueueSize);
+		XsdTypeUtil::setAttribute(doc, setup, messages->m_sxQueueSize.c_str(), m_targetQueueSize);
 
-	return m_structuresTemplate.save(setup, messages);
+	return m_structuresTemplate.save(doc, setup, messages);
 }
 
 const unsigned int Batch::s_resumeMinOccurs[] = {1, 1, 1, 1};
 const unsigned int Batch::s_structuresMinOccurs[] = {1};
 const unsigned int Batch::s_structuresMaxOccurs[] = {XSD_UNLIMITED};
 
-bool Batch::loadResume(TiXmlElement *pResumeElem, const Strings* messages)
+bool Batch::loadResume(const rapidxml::xml_node<>* pResumeElem, const Strings* messages)
 {
+	using namespace rapidxml;
 	if (pResumeElem == NULL) {
 		if (!m_structuresTemplate.initializeStructures(m_structures, m_pConstraints))
 			return false;
 		m_tPrevElapsedSeconds = 0;
 		m_bRunComplete = false;
 	} else {
-		TiXmlHandle hResume(pResumeElem);
 		const char* resumeElemNames[] = {messages->m_sxTotalEnergyCalculations.c_str(), messages->m_sxElapsedSeconds.c_str(), messages->m_sxRunComplete.c_str(), messages->m_sxStructures.c_str()};
-		XsdElementUtil resumeElemUtil(pResumeElem->Value(), XSD_ALL, resumeElemNames, s_resumeMinOccurs);
-		if (!resumeElemUtil.process(hResume))
+		XsdElementUtil resumeElemUtil(XSD_ALL, resumeElemNames, s_resumeMinOccurs);
+		if (!resumeElemUtil.process(pResumeElem))
 			return false;
-		TiXmlElement** resumeElements = resumeElemUtil.getAllElements();
+		const xml_node<>** resumeElements = resumeElemUtil.getAllElements();
 		if (!XsdTypeUtil::read1NonNegativeIntAtt(resumeElements[0], m_iEnergyCalculations, messages->m_sxValue.c_str(), true, NULL))
 			return false;
 		if (!XsdTypeUtil::read1TimeT(resumeElements[1], m_tPrevElapsedSeconds, messages->m_sxValue.c_str(), true, NULL))
@@ -94,14 +94,13 @@ bool Batch::loadResume(TiXmlElement *pResumeElem, const Strings* messages)
 		if (!XsdTypeUtil::read1BoolAtt(resumeElements[2], m_bRunComplete, messages->m_sxValue.c_str(), true, NULL, messages))
 			return false;
 
-		TiXmlHandle hStructures(resumeElements[3]);
 		const char* structuresElemNames[] = {messages->m_sxStructure.c_str()};
-		XsdElementUtil structuresElemUtil(resumeElements[3]->Value(), XSD_SEQUENCE, structuresElemNames, s_structuresMinOccurs, s_structuresMaxOccurs);
-		if (!structuresElemUtil.process(hStructures))
+		XsdElementUtil structuresElemUtil(XSD_SEQUENCE, structuresElemNames, s_structuresMinOccurs, s_structuresMaxOccurs);
+		if (!structuresElemUtil.process(resumeElements[3]))
 			return false;
-		std::vector<TiXmlElement*>* structuresElements = structuresElemUtil.getSequenceElements();
-		std::vector<TiXmlElement*>* v = &(structuresElements[0]);
-		for (std::vector<TiXmlElement*>::iterator it = v->begin(); it != v->end(); it++) {
+		std::vector<const xml_node<>*>* structuresElements = structuresElemUtil.getSequenceElements();
+		std::vector<const xml_node<>*>* v = &(structuresElements[0]);
+		for (std::vector<const xml_node<>*>::iterator it = v->begin(); it != v->end(); it++) {
 			Structure* pStructure = new Structure();
 			m_structures.push_back(pStructure);
 			if (!pStructure->load(*it, messages))
@@ -111,27 +110,28 @@ bool Batch::loadResume(TiXmlElement *pResumeElem, const Strings* messages)
 	return true;
 }
 
-bool Batch::saveResume(TiXmlElement *pBatchElem, const Strings* messages)
+bool Batch::saveResume(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pBatchElem, const Strings* messages)
 {
-	TiXmlElement* resume = new TiXmlElement(messages->m_sxResume.c_str());
-	pBatchElem->LinkEndChild(resume);
+	using namespace rapidxml;
+	xml_node<>* resume = doc.allocate_node(node_element, messages->m_sxResume.c_str());
+	pBatchElem->append_node(resume);
 
-	TiXmlElement* totalEnergyCalculations = new TiXmlElement(messages->m_sxTotalEnergyCalculations.c_str());
-	totalEnergyCalculations->SetAttribute(messages->m_sxValue.c_str(), m_iEnergyCalculations);
-	resume->LinkEndChild(totalEnergyCalculations);
+	xml_node<>* totalEnergyCalculations = doc.allocate_node(node_element, messages->m_sxTotalEnergyCalculations.c_str());
+	XsdTypeUtil::setAttribute(doc, totalEnergyCalculations, messages->m_sxValue.c_str(), m_iEnergyCalculations);
+	resume->append_node(totalEnergyCalculations);
 	
-	TiXmlElement* elapsedSeconds = new TiXmlElement(messages->m_sxElapsedSeconds.c_str());
-	XsdTypeUtil::writeTimeT(getTotalElapsedSeconds(), elapsedSeconds, messages->m_sxValue.c_str());
-	resume->LinkEndChild(elapsedSeconds);
+	xml_node<>* elapsedSeconds = doc.allocate_node(node_element, messages->m_sxElapsedSeconds.c_str());
+	XsdTypeUtil::setAttribute(doc, elapsedSeconds, messages->m_sxValue.c_str(), getTotalElapsedSeconds());
+	resume->append_node(elapsedSeconds);
 
-	TiXmlElement* runComplete = new TiXmlElement(messages->m_sxRunComplete.c_str());
-	XsdTypeUtil::writeBool(m_bRunComplete, runComplete, messages->m_sxValue.c_str(), messages);
-	resume->LinkEndChild(runComplete);
+	xml_node<>* runComplete = doc.allocate_node(node_element, messages->m_sxRunComplete.c_str());
+	XsdTypeUtil::setAttribute(doc, runComplete, messages->m_sxValue.c_str(), m_bRunComplete, messages);
+	resume->append_node(runComplete);
 
-	TiXmlElement* structures = new TiXmlElement(messages->m_sxStructures.c_str());
-	resume->LinkEndChild(structures);
+	xml_node<>* structures = doc.allocate_node(node_element, messages->m_sxStructures.c_str());
+	resume->append_node(structures);
 	for (std::list<Structure*>::iterator it = m_structures.begin(); it != m_structures.end(); it++)
-		if (!(*it)->save(structures, messages))
+		if (!(*it)->save(doc, structures, messages))
 			return false;
 
 	return true;
@@ -310,7 +310,8 @@ bool Batch::runMaster() {
 		}
 		m_bRunComplete = unassigned.empty() && iAssignments == 0;
 		if (++iSaveCount >= m_iSaveFrequency || m_bRunComplete) {
-			m_pInput->save();
+			if (!m_pInput->save())
+				return false;
 			iSaveCount = 0;
 		}
 	} while (!m_bRunComplete);

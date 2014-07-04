@@ -25,9 +25,9 @@ public:
 
 	Perturbations();
 	~Perturbations();
-	bool loadSetup(TiXmlElement *pPerturbationsElem, const Strings* messages);
+	bool loadSetup(const rapidxml::xml_node<>* pPerturbationsElem, const Strings* messages);
 	bool loadDefaults(unsigned int iStructures, bool bMoleculesPresent, Constraints* pConstraints);
-	bool saveSetup(TiXmlElement *pParentElem, const Strings* messages);
+	bool saveSetup(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem, const Strings* messages);
 
 private:
 	void clear();

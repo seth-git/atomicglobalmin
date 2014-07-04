@@ -1,10 +1,10 @@
 
 #include "xsdAttributeUtil.h"
 
-bool XsdAttributeUtil::process (TiXmlElement* pElem)
+bool XsdAttributeUtil::process (const rapidxml::xml_node<>* node)
 {
-	TiXmlAttribute* pAttrib;
-	const char* pName;
+	const char* name;
+	const char* defaultValue;
 	unsigned int i;
 	bool bMatch;
 	const Strings* messagesDL = Strings::instance();
@@ -13,37 +13,38 @@ bool XsdAttributeUtil::process (TiXmlElement* pElem)
 		m_values[i] = NULL;
 	}
 	
-	for (pAttrib=pElem->FirstAttribute(); pAttrib; pAttrib=pAttrib->Next())
+	for (rapidxml::xml_attribute<> *attr = node->first_attribute(); attr; attr = attr->next_attribute())
 	{
-		pName = pAttrib->Name();
+		name = attr->name();
 		bMatch = false;
 		for (i = 0; i < m_iAttributes; ++i) {
 			// Note: strncmp is not necessary on the next line because both strings are always null terminated.
-			// m_attributeNames[i] comes from a constant string or an std::string, and pName comes from a successfully parsed xml file.
-			if (strcmp(m_attributeNames[i], pName) == 0) {
+			// m_attributeNames[i] comes from a constant string or an std::string, and name comes from a successfully parsed xml file.
+			if (strcmp(m_attributeNames[i], name) == 0) {
 				if (m_values[i] != NULL) {
-					printf(messagesDL->m_sDuplicateAttributes.c_str(), m_attributeNames[i], pAttrib->Row(), m_sParentElement);
+					printf(messagesDL->m_sDuplicateAttributes.c_str(), name, node->name(), m_values[i], attr->value());
 					return false;
 				}
-				m_values[i] = pAttrib->Value();
+				m_values[i] = attr->value();
 				bMatch = true;
 				break;
 			}
 		}
 		if (!bMatch) {
-			printf(messagesDL->m_sUnrecognizedAttribute.c_str(), pName, pAttrib->Row(), m_sParentElement);
-			printAvailableAttributes();
+			printf(messagesDL->m_sUnrecognizedAttribute.c_str(), name, node->name());
+			printAvailableAttributes(node->name());
 			return false;
 		}
 	}
 
 	for (i = 0; i < m_iAttributes; ++i) {
 		if (m_values[i] == NULL) {
-			if (m_defaultValues[i] != NULL && m_defaultValues[i][0] != '\0') { // If the length is not zero
-				m_values[i] = m_defaultValues[i];
+			defaultValue = m_defaultValues[i];
+			if (defaultValue != NULL && defaultValue[0] != '\0') { // If the length is not zero
+				m_values[i] = defaultValue;
 				continue;
 			} else if (m_required[i]) {
-				printf(messagesDL->m_sMissingAttribute.c_str(), m_attributeNames[i], m_sParentElement, pElem->Row());
+				printf(messagesDL->m_sMissingAttribute.c_str(), m_attributeNames[i], node->name());
 				return false;
 			}
 		}
@@ -52,14 +53,14 @@ bool XsdAttributeUtil::process (TiXmlElement* pElem)
 	return true;
 }
 
-void XsdAttributeUtil::printAvailableAttributes() {
+void XsdAttributeUtil::printAvailableAttributes(const char* elementName) {
 	const Strings* messagesDL = Strings::instance();
 	std::string availableAttributes;
 	availableAttributes.append("'").append(m_attributeNames[0]).append("'");
 	for (unsigned int i = 1; i < m_iAttributes; ++i) {
 		availableAttributes.append(", '").append(m_attributeNames[i]).append("'");
 	}
-	printf(messagesDL->m_sAvailableAttributes.c_str(), m_sParentElement, availableAttributes.c_str());
+	printf(messagesDL->m_sAvailableAttributes.c_str(), elementName, availableAttributes.c_str());
 }
 
 const char** XsdAttributeUtil::getAllAttributes()
@@ -67,10 +68,10 @@ const char** XsdAttributeUtil::getAllAttributes()
 	return m_values;
 }
 
-bool XsdAttributeUtil::hasNoAttributes(TiXmlElement *pElem) {
-	if (pElem->FirstAttribute()) {
+bool XsdAttributeUtil::hasNoAttributes(const rapidxml::xml_node<>* node) {
+	if (node->first_attribute()) {
 		const Strings* messagesDL = Strings::instance();
-		printf(messagesDL->m_sMustNotContainAttributes.c_str(), pElem->Value(), pElem->Row());
+		printf(messagesDL->m_sMustNotContainAttributes.c_str(), node->name());
 		return false;
 	}
 	return true;

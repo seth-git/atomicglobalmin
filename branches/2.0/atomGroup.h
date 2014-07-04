@@ -48,8 +48,8 @@ public:
 	void setAtoms(unsigned int numAtoms, const COORDINATE4* cartesianPoints,
 			const unsigned int* atomicNumbers);
 
-	bool load(TiXmlElement *pAtomGroupElem, const Strings* messages);
-	bool save(TiXmlElement *pParentElem, const Strings* messages);
+	bool load(const rapidxml::xml_node<>* pAtomGroupElem, const Strings* messages);
+	bool save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem, const Strings* messages);
 
 	void copy(AtomGroup &atomGroup);
 

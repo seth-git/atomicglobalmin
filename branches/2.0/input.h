@@ -26,10 +26,10 @@ class Input {
 		~Input();
 		
 		bool load(const char* pFilename);
-		bool loadStr(const char* xml);
-		bool load(TiXmlDocument &xmlDocument);
+		bool loadStr(char* xml);
+		bool load(rapidxml::xml_document<> &doc);
 
-		bool save(TiXmlDocument &doc);
+		bool save(rapidxml::xml_document<> &doc);
 		bool save(const char* pFilename);
 		bool save();
 		bool save(std::string &buffer);

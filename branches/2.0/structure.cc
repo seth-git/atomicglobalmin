@@ -1,5 +1,7 @@
 
 #include "structure.h"
+#include "rapidxml/rapidxml_utils.hpp"
+#include "rapidxml/rapidxml_print.hpp"
 
 Structure::Structure() {
 	m_iNumberOfAtomGroups = 0;
@@ -74,12 +76,13 @@ const bool Structure::s_structureAttReq[] = {true,true,false};
 const unsigned int Structure::s_structureMinOccurs[] = {1};
 const unsigned int Structure::s_structureMaxOccurs[] = {XSD_UNLIMITED};
 
-bool Structure::load(TiXmlElement *pStructureElem, const Strings* messages) {
+bool Structure::load(const rapidxml::xml_node<>* pStructureElem, const Strings* messages) {
+	using namespace rapidxml;
 	clear();
 
 	const char* structureAttNames[] = {messages->m_sxEnergy.c_str(), messages->m_sxIsTransitionState.c_str(), messages->m_sxId.c_str()};
 	const char* structureAttDef[] = {"0", messages->m_spFalse.c_str(), "0"};
-	XsdAttributeUtil structureAttUtil(pStructureElem->Value(), structureAttNames, s_structureAttReq, structureAttDef);
+	XsdAttributeUtil structureAttUtil(structureAttNames, s_structureAttReq, structureAttDef);
 	if (!structureAttUtil.process(pStructureElem)) {
 		return false;
 	}
@@ -91,15 +94,13 @@ bool Structure::load(TiXmlElement *pStructureElem, const Strings* messages) {
 	if (!XsdTypeUtil::getInteger(structureAttValues[2], m_id, structureAttNames[2], pStructureElem))
 		return false;
 
-	TiXmlHandle hStructure(0);
-	hStructure=TiXmlHandle(pStructureElem);
 	const char* structureElemNames[] = {messages->m_sxAtomGroup.c_str()};
-	XsdElementUtil structureElemUtil(pStructureElem->Value(), XSD_SEQUENCE, structureElemNames, s_structureMinOccurs, s_structureMaxOccurs);
-	if (!structureElemUtil.process(hStructure)) {
+	XsdElementUtil structureElemUtil(XSD_SEQUENCE, structureElemNames, s_structureMinOccurs, s_structureMaxOccurs);
+	if (!structureElemUtil.process(pStructureElem)) {
 		return false;
 	}
-	std::vector<TiXmlElement*>* structureElements = structureElemUtil.getSequenceElements();
-	std::vector<TiXmlElement*>* atomGroups = &(structureElements[0]);
+	std::vector<const xml_node<>*>* structureElements = structureElemUtil.getSequenceElements();
+	std::vector<const xml_node<>*>* atomGroups = &(structureElements[0]);
 	m_iNumberOfAtomGroups = atomGroups->size();
 	m_atomGroups = new AtomGroup[m_iNumberOfAtomGroups];
 	m_iNumberOfAtoms = 0;
@@ -114,53 +115,53 @@ bool Structure::load(TiXmlElement *pStructureElem, const Strings* messages) {
 	return true;
 }
 
-bool Structure::loadStr(const char* xml) {
-	const Strings* messagesDL = Strings::instance();
-	TiXmlDocument xmlDocument;
-	xmlDocument.Parse(xml, 0, TIXML_ENCODING_UTF8);
-	if (xmlDocument.Error()) {
-		printf(messagesDL->m_sErrorOnLine.c_str(), xmlDocument.ErrorRow(), xmlDocument.ErrorCol(), xmlDocument.ErrorDesc());
+bool Structure::loadStr(char* xml) {
+	using namespace rapidxml;
+	xml_document<> doc;
+	try {
+		doc.parse<0>(xml);
+	} catch (parse_error e) {
+		printf("XML parsing error: %s\n", e.what());
+//		printf(e.where());
 		return false;
 	}
-	TiXmlHandle hDoc(&xmlDocument);
-	return load(hDoc.FirstChildElement().Element(), messagesDL);
+	const xml_node<>* pElem = doc.first_node();
+	const Strings* messagesDL = Strings::instance();
+	return load(pElem, messagesDL);
 }
 
-bool Structure::save(TiXmlElement *pParentElem, const Strings* messages) const {
-	TiXmlElement* structure = save(messages);
+bool Structure::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem, const Strings* messages) const {
+	rapidxml::xml_node<>* structure = save(doc, messages);
 	if (NULL == structure)
 		return false;
-	pParentElem->LinkEndChild(structure);
+	pParentElem->append_node(structure);
 	return true;
 }
 
 bool Structure::save(std::string &buffer) const {
-	TiXmlElement* structure = save(Strings::instance());
+	using namespace rapidxml;
+	xml_document<> doc;
+	xml_node<>* structure = save(doc, Strings::instance());
 	if (NULL == structure)
 		return false;
-
-	TiXmlDocument doc;
-	TiXmlDeclaration* decl = new TiXmlDeclaration( "1.0", "", "" );
-	doc.LinkEndChild(decl);
-	doc.LinkEndChild(structure);
-	TiXmlPrinter printer;
-	doc.Accept(&printer);
-	buffer = printer.CStr();
+	doc.append_node(structure);
+	rapidxml::print(std::back_inserter(buffer), doc, print_no_indenting);
 	return true;
 }
 
-TiXmlElement* Structure::save(const Strings* messages) const {
-	TiXmlElement* structure = new TiXmlElement(messages->m_sxStructure.c_str());
+rapidxml::xml_node<>* Structure::save(rapidxml::xml_document<> &doc, const Strings* messages) const {
+	using namespace rapidxml;
+	xml_node<>* structure = doc.allocate_node(node_element, messages->m_sxStructure.c_str());
 
 	if (0 != m_fEnergy)
-		structure->SetDoubleAttribute(messages->m_sxEnergy.c_str(), m_fEnergy);
+		XsdTypeUtil::setAttribute(doc, structure, messages->m_sxEnergy.c_str(), m_fEnergy);
 	if (m_bIsTransitionState)
-		structure->SetAttribute(messages->m_sxIsTransitionState.c_str(), messages->m_spTrue.c_str());
+		structure->append_attribute(doc.allocate_attribute(messages->m_sxIsTransitionState.c_str(), messages->m_spTrue.c_str()));
 	if (0 != m_id)
-		structure->SetAttribute(messages->m_sxId.c_str(), m_id);
+		XsdTypeUtil::setAttribute(doc, structure, messages->m_sxId.c_str(), m_id);
 
 	for (unsigned int i = 0; i < m_iNumberOfAtomGroups; ++i)
-		if (!m_atomGroups[i].save(structure, messages)) {
+		if (!m_atomGroups[i].save(doc, structure, messages)) {
 			delete structure;
 			return NULL;
 		}

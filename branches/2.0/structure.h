@@ -8,6 +8,8 @@
 #ifndef STRUCTURE_H_
 #define STRUCTURE_H_
 
+#include <stdio.h>
+#include <string>
 #include "xsd/xsdAttributeUtil.h"
 #include "xsd/xsdElementUtil.h"
 #include "xsd/xsdTypeUtil.h"
@@ -39,9 +41,9 @@ protected:
 public:
 	Structure();
 	~Structure();
-	bool load(TiXmlElement *pStructureElem, const Strings* messages);
-	bool loadStr(const char* xml);
-	bool save(TiXmlElement *pParentElem, const Strings* messages) const;
+	bool load(const rapidxml::xml_node<>* pStructureElem, const Strings* messages);
+	bool loadStr(char* xml);
+	bool save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem, const Strings* messages) const;
 	bool save(std::string &buffer) const;
 
 	void copy(Structure &structure);
@@ -153,7 +155,7 @@ public:
 			const unsigned int* atomicNumbers, unsigned int size);
 
 protected:
-	TiXmlElement* save(const Strings* messages) const;
+	rapidxml::xml_node<>* save(rapidxml::xml_document<> &doc, const Strings* messages) const;
 
 	void initCoordinateRefs();
 	bool atomsMatch(unsigned int numAtomGroupTemplates,

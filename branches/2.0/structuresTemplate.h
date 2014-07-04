@@ -42,8 +42,8 @@ public:
 	
 	StructuresTemplate();
 	~StructuresTemplate();
-	bool load(TiXmlElement *pStructuresTemplateElem, std::map<std::string,Constraints*> &constraintsMap, const Strings* messages);
-	bool save(TiXmlElement *pParentElem, const Strings* messages);
+	bool load(const rapidxml::xml_node<>* pStructuresTemplateElem, std::map<std::string,Constraints*> &constraintsMap, const Strings* messages);
+	bool save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem, const Strings* messages);
 
 	bool initializeStructures(std::list<Structure*> &structures, const Constraints* pActionConstraints);
 
@@ -131,7 +131,7 @@ public:
 
 protected:
 	void clear();
-	bool readInitializationType(TiXmlElement *pElem, std::map<std::string,
+	bool readInitializationType(const rapidxml::xml_node<>* pElem, std::map<std::string,
 			Constraints*> &constraintsMap, unsigned int &numberOfThisType,
 			Constraints* &pConstraints, const Strings* messages);
 
