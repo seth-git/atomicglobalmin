@@ -1,6 +1,25 @@
 
 #include "testinit.h"
+
+#include <cmath>
+#include <cstdio>
+#include <cstring>
+#include <iostream>
 #include <list>
+#include <map>
+#include <string>
+
+#include "../atomGroup.h"
+#include "../batch.h"
+#include "../constraints.h"
+#include "../externalEnergy/externalEnergy.h"
+#include "../matrix/matrix.h"
+#include "../rapidxml/rapidxml.hpp"
+#include "../seed.h"
+#include "../structure.h"
+#include "../structuresTemplate.h"
+#include "../translation/strings.h"
+#include "../xsd/typedef.h"
 
 const char* testMatrixMultiplication() {
 	static const char* testName = "testMatrixMultlipication";
@@ -40,8 +59,8 @@ const char* testMatrixMultiplication() {
 	for (unsigned int y = 0; y < MATRIX_WIDTH; ++y)
 		for (unsigned int x = 0; x < MATRIX_WIDTH; ++x)
 			if (product1[y][x] != product2[y][x]) {
-				printf(failMessage);
-				printf("\tReason: Found a difference between the unoptimized and optimized multiplication products.\n");
+				puts(failMessage);
+				puts("\tReason: Found a difference between the unoptimized and optimized multiplication products.");
 				return testName;
 			}
 	printf("  Passed!\n");
@@ -130,20 +149,20 @@ const char* ccLibReadTest()
 
 const char* testSeeding(void) {
 	static const char* testName = "testSeeding";
-	const char* failMessage = "Test of seeding failed!\n";
+	const char* failMessage = "Test of seeding failed!";
 
 	printf("\nTesting seeding...\n");
 	std::string inputFile = testFilesDir + "/testSeeding.xml";
 	Input input;
 	if (!input.load(inputFile.c_str())) {
-		printf(failMessage);
+		puts(failMessage);
 		return testName;
 	}
 
 	Batch* batch = (Batch*)input.m_pAction;
 	Structure* structure = batch->m_structures.front();
 	const unsigned int expectedAtomicNumbers[] = {1,8,1,1,8,1,1,8,1,1,8};
-	unsigned int expectedAtoms = sizeof(expectedAtomicNumbers) / sizeof(unsigned int*);
+	unsigned int expectedAtoms = sizeof(expectedAtomicNumbers) / sizeof(expectedAtomicNumbers[0]);
 	if (structure->getNumberOfAtoms() != expectedAtoms) {
 		printf("Unexpected number of atoms in seeded result. Expected: %u, actual: %u.\n", expectedAtoms, structure->getNumberOfAtoms());
 		return testName;
@@ -167,20 +186,20 @@ const char* testSeeding(void) {
 
 const char* testSeeding2(void) {
 	static const char* testName = "testSeeding2";
-	const char* failMessage = "Second test of seeding failed!\n";
+	const char* failMessage = "Second test of seeding failed!";
 
 	printf("\nPerforming second test of seeding...\n");
 	std::string inputFile = testFilesDir + "/testSeeding2.xml";
 	Input input;
 	if (!input.load(inputFile.c_str())) {
-		printf(failMessage);
+		puts(failMessage);
 		return testName;
 	}
 
 	Batch* batch = (Batch*)input.m_pAction;
 	Structure* structure = batch->m_structures.front();
 	const unsigned int expectedAtomicNumbers[] = {1,8,1,1,8};
-	unsigned int expectedAtoms = sizeof(expectedAtomicNumbers) / sizeof(unsigned int*);
+	unsigned int expectedAtoms = sizeof(expectedAtomicNumbers) / sizeof(expectedAtomicNumbers[0]);
 	if (structure->getNumberOfAtoms() != expectedAtoms) {
 		printf("Unexpected number of atoms in seeded result. Expected: %u, actual: %u.\n", expectedAtoms, structure->getNumberOfAtoms());
 		return testName;
@@ -204,13 +223,13 @@ const char* testSeeding2(void) {
 
 const char* testSeeding3(void) {
 	static const char* testName = "testSeeding3";
-	const char* failMessage = "Third test of seeding failed!\n";
+	const char* failMessage = "Third test of seeding failed!";
 
 	printf("\nPerforming third testing of seeding...\n");
 	std::string inputFile = testFilesDir + "/testSeeding3.xml";
 	Input input;
 	if (!input.load(inputFile.c_str())) {
-		printf(failMessage);
+		puts(failMessage);
 		return testName;
 	}
 
@@ -221,7 +240,7 @@ const char* testSeeding3(void) {
 		return testName;
 	Structure* pStructure2 = batch->m_structures.front();
 	const unsigned int expectedAtomicNumbers[] = {8,8,1,8,1,1,8,1,1,8,8,1};
-	unsigned int expectedAtoms = sizeof(expectedAtomicNumbers) / sizeof(unsigned int*);
+	unsigned int expectedAtoms = sizeof(expectedAtomicNumbers) / sizeof(expectedAtomicNumbers[0]);
 	if (pStructure2->getNumberOfAtoms() != expectedAtoms) {
 		printf("Unexpected number of atoms in seeded result. Expected: %u, actual: %u.\n", expectedAtoms, pStructure2->getNumberOfAtoms());
 		return testName;
@@ -253,20 +272,20 @@ const char* testSeeding3(void) {
 
 const char* testSeeding4(void) {
 	static const char* testName = "testSeeding4";
-	const char* failMessage = "Fourth test of seeding failed!\n";
+	const char* failMessage = "Fourth test of seeding failed!";
 
 	printf("\nPerforming fourth testing of seeding...\n");
 	std::string inputFile = testFilesDir + "/testSeeding4.xml";
 	Input input;
 	if (!input.load(inputFile.c_str())) {
-		printf(failMessage);
+		puts(failMessage);
 		return testName;
 	}
 
 	Batch* batch = (Batch*)input.m_pAction;
 	Structure* pStructure = batch->m_structures.front();
 	const unsigned int expectedAtomicNumbers[] = {8,1,6,1,1};
-	unsigned int expectedAtoms = sizeof(expectedAtomicNumbers) / sizeof(unsigned int*);
+	unsigned int expectedAtoms = sizeof(expectedAtomicNumbers) / sizeof(expectedAtomicNumbers[0]);
 	if (pStructure->getNumberOfAtoms() != expectedAtoms) {
 		printf("Unexpected number of atoms in seeded result. Expected: %u, actual: %u.\n", expectedAtoms, pStructure->getNumberOfAtoms());
 		return testName;
@@ -455,8 +474,8 @@ const char* testPlaceAtomGroupRelativeToAnother(void) {
 	xml_document<> doc;
 	try {
 		doc.parse<0>(temp); // We can't pass in a const char[], since rapidxml modifies the xml while parsing
-	} catch (parse_error e) {
-		printf(e.what());
+	} catch (parse_error &e) {
+		puts(e.what());
 //		printf(e.where());
 		std::cout << failMessage << std::endl;
 		printf("\tReason: failed to parse constraints xml.\n");
@@ -542,8 +561,8 @@ const char* testInitialization(void) {
 	xml_document<> doc;
 	try {
 		doc.parse<0>(temp); // We can't pass in a const char[], since rapidxml modifies the xml while parsing
-	} catch (parse_error e) {
-		printf(e.what());
+	} catch (parse_error &e) {
+		puts(e.what());
 //		printf(e.where());
 		std::cout << failMessage << std::endl;
 		printf("\tReason: failed to parse constraints xml.\n");
@@ -610,7 +629,7 @@ const char* testLJ7(void) {
 	std::string inputFile = testFilesDir + "/batchLJ7.xml";
 	Input input;
 	if (!input.load(inputFile.c_str())) {
-		printf(failMessage);
+		puts(failMessage);
 		return testName;
 	}
 

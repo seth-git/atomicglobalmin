@@ -16,6 +16,9 @@ const char* Gamess::s_optionalOutputFileExtensions[] = {"chk"};
 Gamess::Gamess(const ExternalEnergyXml* pExternalEnergyXml) : ExternalEnergy(pExternalEnergyXml) {
 }
 
+Gamess::~Gamess() {
+}
+
 bool Gamess::createInputFile(Structure &structure,
 		unsigned int populationMemberNumber, bool writeEnergyValueInHeader,
 		bool writeMetaData) {

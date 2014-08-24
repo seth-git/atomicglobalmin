@@ -10,6 +10,9 @@ const FLOAT LennardJones::b = 4 * epsilon * pow(sigma,6);
 LennardJones::LennardJones(const InternalEnergyXml* pInternalEnergyXml) : InternalEnergy(pInternalEnergyXml) {
 }
 
+LennardJones::~LennardJones() {
+}
+
 bool LennardJones::calculateEnergy(Structure &structure) {
 	unsigned int iAtoms = structure.getNumberOfAtoms();
 	unsigned int iAtomsM1 = iAtoms - 1;

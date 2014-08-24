@@ -8,6 +8,7 @@
 class LennardJones : public InternalEnergy {
 public:
 	LennardJones(const InternalEnergyXml* pInternalEnergyXml);
+	~LennardJones();
 
 	bool calculateEnergy(Structure &structure);
 	bool localOptimization(Structure &structure);

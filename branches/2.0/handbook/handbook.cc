@@ -60,7 +60,7 @@ bool Handbook::initAtomicMasses() {
 			}
 			myString = strtok(NULL, "\t"); // get the element name
 			if (myString == NULL) {
-				printf("Missing element name in %$1s.\n", fileName);
+				printf("Missing element name in %1$s.\n", fileName);
 				return false;
 			}
 			myString = strtok(NULL, "\t"); // get the element symbol
@@ -69,24 +69,24 @@ bool Handbook::initAtomicMasses() {
 		}
 
 		if (myString == NULL) {
-			printf("Missing element symbol in %$1s.\n", fileName);
+			printf("Missing element symbol in %1$s.\n", fileName);
 			return false;
 		}
 		if (sscanf(myString, "%d%s", &massNumber, tempString) != 2) {
-			printf("Unable to read element symbol in %$1s.\n", fileName);
+			printf("Unable to read element symbol in %1$s.\n", fileName);
 			return false;
 		}
 		s_rgAtomcSymbols[atomicNumber] = tempString;
 		s_symbolAtomicNumberMap[tempString] = atomicNumber;
 		myString = strtok(NULL, "\t"); // mass
 		if (myString == NULL) {
-			printf("Unable to read element mass in %$1s.\n", fileName);
+			printf("Unable to read element mass in %1$s.\n", fileName);
 			return false;
 		}
 		mass = atof(myString);
 		myString = strtok(NULL, "\t"); // abundance
 		if (myString == NULL) {
-			printf("Unable to read element abundance in %$1s.\n", fileName);
+			printf("Unable to read element abundance in %1$s.\n", fileName);
 			return false;
 		}
 		abundance = atof(myString);

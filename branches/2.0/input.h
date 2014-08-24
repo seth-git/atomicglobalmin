@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string>
 #include "action.h"
-#include "simulatedAnnealing.h"
+#include "simulatedAnnealing/simulatedAnnealing.h"
 #include "batch.h"
 
 #define SIMULATED_ANNEALING              0

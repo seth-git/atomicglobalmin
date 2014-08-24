@@ -21,6 +21,7 @@ public:
 	static const char* s_optionalOutputFileExtensions[];
 
 	Gaussian(const ExternalEnergyXml* pExternalEnergyXml);
+	~Gaussian();
 
 	bool createInputFile(Structure &structure,
 			unsigned int populationMemberNumber, bool writeEnergyValueInHeader,

@@ -26,6 +26,11 @@ Action::Action(Input* input)
 	m_pEnergy = NULL;
 	m_fResultsRmsDistance = 0;
 	m_pConstraints = NULL;
+	m_iMpiProcesses = 0;
+	m_iMaxResults = 0;
+	m_iSaveFrequency = 0;
+	m_iMpiRank = 0;
+	m_bRunComplete = false;
 }
 
 Action::~Action()

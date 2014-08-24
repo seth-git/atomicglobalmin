@@ -247,6 +247,8 @@ bool Strings::init (const char* languageCode)
 		return false;
 	if (!copy(stringMap, "xRotationAngle", m_sxRotationAngle))
 		return false;
+	if (!copy(stringMap, "xRadians", m_sxRadians))
+		return false;
 	if (!copy(stringMap, "xStartLength", m_sxStartLength))
 		return false;
 	if (!copy(stringMap, "xMinLength", m_sxMinLength))
@@ -258,6 +260,11 @@ bool Strings::init (const char* languageCode)
 	if (!copy(stringMap, "xMinDegrees", m_sxMinDegrees))
 		return false;
 	if (!copy(stringMap, "xNumberPerIteration", m_sxNumberPerIteration))
+		return false;
+	if (!copy(stringMap, "xPerturbationsPerIteration", m_sxPerturbationsPerIteration))
+		return false;
+
+	if (!copy(stringMap, "xIteration", m_sxIteration))
 		return false;
 
 	if (!copy(stringMap, "xAcceptedPertHistIt", m_sxAcceptedPertHistIt))

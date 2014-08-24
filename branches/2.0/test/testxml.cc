@@ -28,37 +28,37 @@ char* readFileToString(const char* fileName) {
 
 const char* xmlBatchTest() {
 	static const char* testName = "xmlBatchTest";
-	const char* failMessage = "Testing of batch xml read/write failed!\n";
+	const char* failMessage = "Testing of batch xml read/write failed!";
 
 	printf("\nPerforming batch xml read/write test...\n");
 	std::string inputFile = testXmlDir + "/batch.xml";
 	std::string inputFile2 = testXmlDir + "/batch2.xml";
 	Input input;
 	if (!input.load(inputFile.c_str())) {
-		printf(failMessage);
+		puts(failMessage);
 		return testName;
 	}
 
 	if (!input.save(inputFile2.c_str())) {
-		printf(failMessage);
+		puts(failMessage);
 		return testName;
 	}
 
 	char* file1Text = readFileToString(inputFile.c_str());
 	if (NULL == file1Text) {
-		printf(failMessage);
+		puts(failMessage);
 		return testName;
 	}
 	char* file2Text = readFileToString(inputFile2.c_str());
 	if (NULL == file2Text) {
-		printf(failMessage);
+		puts(failMessage);
 		return testName;
 	}
 	bool same = strcmp(file1Text, file2Text) == 0;
 	delete[] file1Text;
 	delete[] file2Text;
 	if (!same) {
-		printf(failMessage);
+		puts(failMessage);
 		printf("Error: files should be identical, but they're not: '%s' and '%s'.\n", inputFile.c_str(), inputFile2.c_str());
 		return testName;
 	}
@@ -67,7 +67,7 @@ const char* xmlBatchTest() {
 	rmCommand.append("rm ").append(inputFile2.c_str());
 	bool deleteSuccess = !system(rmCommand.c_str());
 	if (!deleteSuccess) {
-		printf(failMessage);
+		puts(failMessage);
 		printf("Unable to delete file: '%s'\n", inputFile2.c_str());
 		return testName;
 	}

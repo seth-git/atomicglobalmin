@@ -9,7 +9,7 @@ const char* testUpdateAtomToCenterRanks() {
 	Input input;
 	std::string seedFile = testFilesDir+"/rmsDist.xml";
 	if (!input.load(seedFile.c_str())) {
-		printf(failMessage);
+		puts(failMessage);
 		return testName;
 	}
 	std::list<Structure*>::iterator it = input.m_pAction->m_structures.begin();
@@ -21,14 +21,14 @@ const char* testUpdateAtomToCenterRanks() {
 	FLOAT dist = RmsDistance::calculate(*pStructure1, *pStructure2);
 	FLOAT expected = 0.9124017;
 	if (TEST_VERBOSE) {
-		printf("\nStructure 1:\n");
+		puts("\nStructure 1:");
 		pStructure1->print(Structure::PRINT_DISTANCE_MATRIX);
-		printf("Structure 2:\n");
+		puts("Structure 2:");
 		pStructure1->print(Structure::PRINT_DISTANCE_MATRIX);
-		printf("Distance: %0.7lf\n");
+		printf("Distance: %0.7lf\n", dist);
 	}
 	if (!floatsEqual(dist, expected)) {
-		printf("Testing of updateAtomToCenterRanks failed!\n");
+		puts("Testing of updateAtomToCenterRanks failed!");
 		printf("\tReason: unexpected distance value. Expected: %0.7lf au, Found: %0.7lf au\n",
 				expected, dist);
 		return testName;

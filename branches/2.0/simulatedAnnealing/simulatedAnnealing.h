@@ -2,9 +2,9 @@
 #ifndef __SIMULATED_ANNEALING_H_
 #define __SIMULATED_ANNEALING_H_
 
-#include "action.h"
-#include "perturbations.h"
-#include "structure.h"
+#include "../action.h"
+#include "saPerturbations.h"
+#include "simulatedAnnealingRun.h"
 
 class SimulatedAnnealing : public Action {
 public:
@@ -14,27 +14,29 @@ public:
 	FLOAT m_fBoltzmannConstant;
 	FLOAT m_fQuenchingFactor;
 	
-	Perturbations m_perturbations;
+	SAPerturbations m_perturbations;
 
 	FLOAT* m_pfMaxStoppingTemperature;
 	FLOAT* m_pfMaxStoppingAcceptedPerturbations; // Value between 0 and 1.0
 	unsigned int* m_piMinStoppingIterations;
 
-	unsigned int m_iSaveFrequency;
 	unsigned int m_iAcceptedPertHistIt;
 
-	FLOAT m_fTemperature;
+	std::list<SimulatedAnnealingRun*> m_runs;
 
 	SimulatedAnnealing(Input* input);
 	~SimulatedAnnealing();
 	bool loadSetup(const rapidxml::xml_node<>* pSetupElem, const Strings* messages);
 	bool saveSetup(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pSimElem, const Strings* messages);
 	bool loadResume(const rapidxml::xml_node<>* pResumeElem, const Strings* messages);
-	bool saveResume(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pResumeElem, const Strings* messages);
+	bool saveResume(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pSimElem, const Strings* messages);
 
 	bool runMaster();
 	bool runSlave();
-	
+
+protected:
+	bool verifyNotFinished();
+
 private:
 	static const FLOAT s_fDefaultBoltzmannConstant;
 	static const bool s_setupAttReq[];

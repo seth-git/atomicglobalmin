@@ -22,7 +22,7 @@
 		<xs:element name="setup" type="simulatedAnnealingSetupType"/>
 		<xs:element name="constraints" type="constraintsType" minOccurs="0" maxOccurs="unbounded"/>
 		<xs:element name="energy" type="energyType"/>
-		<xs:element name="resume" type="simulatedAnnealingResumeType" minOccurs="0"/>
+		<xs:element name="resume" type="simulatedAnnealingResumeType" minOccurs="0" maxOccurs="unbounded"/>
 		<xs:element name="results" type="resultsType" minOccurs="0"/>
 	</xs:sequence>
 	<xs:attribute name="constraints" type="xs:string"/>
@@ -202,7 +202,7 @@
 		</xs:element>
 		<xs:element name="perturbationsPerIteration">
 			<xs:complexType>
-				<xs:attribute name="value" type="positiveDecimal" use="required"/>
+				<xs:attribute name="value" type="positiveDecimal" default="1"/>
 			</xs:complexType>
 		</xs:element>
 		<xs:element name="acceptedPerturbationHistory">
@@ -234,7 +234,7 @@
 				<xs:attribute name="value" type="xs:boolean" use="required"/>
 			</xs:complexType>
 		</xs:element>
-		<xs:element name="structures" type="structuresType"/>
+		<xs:element name="structure" type="structureType"/>
 	</xs:all>
 </xs:complexType>
 
@@ -310,46 +310,47 @@
 
 <xs:complexType name="structuresType">
 	<xs:sequence>
-		<xs:element name="structure" minOccurs="1" maxOccurs="unbounded">
+		<xs:element name="structure" type="structureType" minOccurs="1" maxOccurs="unbounded"/>
+	</xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="structureType">
+	<xs:sequence>
+		<xs:element name="atomGroup" minOccurs="1" maxOccurs="unbounded">
 			<xs:complexType>
 				<xs:sequence>
-					<xs:element name="atomGroup" minOccurs="1" maxOccurs="unbounded">
+					<xs:element name="translation" minOccurs="0" maxOccurs="1">
 						<xs:complexType>
-							<xs:sequence>
-								<xs:element name="translation" minOccurs="0" maxOccurs="1">
-									<xs:complexType>
-										<xs:attribute name="x" type="xs:double" use="required"/>
-										<xs:attribute name="y" type="xs:double" use="required"/>
-										<xs:attribute name="z" type="xs:double" use="required"/>
-									</xs:complexType>
-								</xs:element>
-								<xs:element name="radianAngles" minOccurs="0" maxOccurs="1">
-									<xs:complexType>
-										<xs:attribute name="x" type="nonNegativeDecimal" use="required"/>
-										<xs:attribute name="y" type="nonNegativeDecimal" use="required"/>
-										<xs:attribute name="z" type="nonNegativeDecimal" use="required"/>
-									</xs:complexType>
-								</xs:element>
-								<xs:element name="atom" minOccurs="1" maxOccurs="unbounded">
-									<xs:complexType>
-										<xs:attribute name="Z" type="xs:positiveInteger" use="required"/>
-										<xs:attribute name="x" type="xs:double" use="required"/>
-										<xs:attribute name="y" type="xs:double" use="required"/>
-										<xs:attribute name="z" type="xs:double" use="required"/>
-									</xs:complexType>
-								</xs:element>
-							</xs:sequence>
-							<xs:attribute name="frozen" type="xs:boolean" default="false"/>
+							<xs:attribute name="x" type="xs:double" use="required"/>
+							<xs:attribute name="y" type="xs:double" use="required"/>
+							<xs:attribute name="z" type="xs:double" use="required"/>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="radianAngles" minOccurs="0" maxOccurs="1">
+						<xs:complexType>
+							<xs:attribute name="x" type="nonNegativeDecimal" use="required"/>
+							<xs:attribute name="y" type="nonNegativeDecimal" use="required"/>
+							<xs:attribute name="z" type="nonNegativeDecimal" use="required"/>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="atom" minOccurs="1" maxOccurs="unbounded">
+						<xs:complexType>
+							<xs:attribute name="Z" type="xs:positiveInteger" use="required"/>
+							<xs:attribute name="x" type="xs:double" use="required"/>
+							<xs:attribute name="y" type="xs:double" use="required"/>
+							<xs:attribute name="z" type="xs:double" use="required"/>
 						</xs:complexType>
 					</xs:element>
 				</xs:sequence>
-				<xs:attribute name="energy" type="xs:double" default="0"/>
-				<xs:attribute name="isTransitionState" type="xs:boolean" default="false"/>
-				<xs:attribute name="id" type="xs:integer" default="0"/>
+				<xs:attribute name="frozen" type="xs:boolean" default="false"/>
 			</xs:complexType>
 		</xs:element>
 	</xs:sequence>
+	<xs:attribute name="energy" type="xs:double" default="0"/>
+	<xs:attribute name="isTransitionState" type="xs:boolean" default="false"/>
+	<xs:attribute name="id" type="xs:integer" default="0"/>
 </xs:complexType>
+
 
 <xs:complexType name="randomSearchType">
 	<xs:sequence>

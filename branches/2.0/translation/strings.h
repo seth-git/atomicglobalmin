@@ -120,12 +120,16 @@ public:
 
 	std::string m_sxTranslationVector;
 	std::string m_sxRotationAngle;
+	std::string m_sxRadians;
 	std::string m_sxStartLength;
 	std::string m_sxMinLength;
 	std::string m_sxProbability;
 	std::string m_sxStartDegrees;
 	std::string m_sxMinDegrees;
 	std::string m_sxNumberPerIteration;
+	std::string m_sxPerturbationsPerIteration;
+
+	std::string m_sxIteration;
 
 	std::string m_sxAcceptedPertHistIt;
 

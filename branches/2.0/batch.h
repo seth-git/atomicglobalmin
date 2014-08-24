@@ -13,7 +13,7 @@ public:
 	bool loadSetup(const rapidxml::xml_node<>* pSetupElem, const Strings* messages);
 	bool saveSetup(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pBatchElem, const Strings* messages);
 	bool loadResume(const rapidxml::xml_node<>* pResumeElem, const Strings* messages);
-	bool saveResume(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pResumeElem, const Strings* messages);
+	bool saveResume(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pBatchElem, const Strings* messages);
 
 	bool runMaster();
 	bool runSlave();

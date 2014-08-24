@@ -21,6 +21,7 @@ public:
 	static const char* s_optionalOutputFileExtensions[];
 
 	Gamess(const ExternalEnergyXml* pExternalEnergyXml);
+	~Gamess();
 
 	bool createInputFile(Structure &structure,
 			unsigned int populationMemberNumber, bool writeEnergyValueInHeader,

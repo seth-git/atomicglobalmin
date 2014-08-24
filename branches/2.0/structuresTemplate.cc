@@ -824,7 +824,7 @@ StructuresTemplate::InitResult StructuresTemplate::placeAtomGroupRelativeToAnoth
 
 		const FLOAT* atom1; // atom in agToPlace closest to the otherAg (closest to atom2)
 		const FLOAT* atom2; // atom in the otherAg closest to agToPlace (closest to atom1)
-		FLOAT minDistanceBetweenAtoms;
+		FLOAT minDistanceBetweenAtoms = 0;
 		getClosestAtoms(*agToPlace, *otherAg, constraints, atom1, atom2, minDistanceBetweenAtoms);
 
 		#if INIT_DEBUG == 2

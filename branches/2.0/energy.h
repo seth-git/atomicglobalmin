@@ -7,6 +7,7 @@
 class Energy {
 public:
 	Energy() {}
+	virtual ~Energy() {};
 
 	virtual bool setup() = 0;
 	virtual bool execute(Structure &structure) = 0;

@@ -20,6 +20,9 @@ Gaussian::Gaussian(const ExternalEnergyXml* pExternalEnergyXml) : ExternalEnergy
 	getCheckpointFileName();
 }
 
+Gaussian::~Gaussian() {
+}
+
 void Gaussian::getCheckpointFileName()
 {
 	std::string lowerHeader = m_pExternalEnergyXml->m_sHeader;

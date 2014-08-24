@@ -18,6 +18,7 @@ public:
 	enum Impl {ADF, GAMESS, GAMESS_UK, GAUSSIAN, FIREFLY, JAGUAR, MOLPRO, ORCA};
 
 	ExternalEnergy(const ExternalEnergyXml* pExternalEnergyXml);
+	virtual ~ExternalEnergy() {};
 
 	static ExternalEnergy* instance(Impl impl, const ExternalEnergyXml* pExternalEnergyXml);
 

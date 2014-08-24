@@ -1,6 +1,7 @@
 
 #include "simulatedAnnealing.h"
-#include "input.h"
+#include "../input.h"
+#include <algorithm>
 
 SimulatedAnnealing::SimulatedAnnealing(Input* input) : Action(input)
 {
@@ -9,6 +10,10 @@ SimulatedAnnealing::SimulatedAnnealing(Input* input) : Action(input)
 	m_pfMaxStoppingTemperature = NULL;
 	m_pfMaxStoppingAcceptedPerturbations = NULL;
 	m_piMinStoppingIterations = NULL;
+	m_iDecreaseTemperatureAfterIt = 0;
+	m_iAcceptedPertHistIt = 0;
+	m_fBoltzmannConstant = 0;
+	m_fQuenchingFactor = 1;
 }
 
 SimulatedAnnealing::~SimulatedAnnealing()
@@ -39,6 +44,9 @@ void SimulatedAnnealing::clear()
 		delete m_piMinStoppingIterations;
 		m_piMinStoppingIterations = NULL;
 	}
+	for (std::list<SimulatedAnnealingRun*>::iterator it = m_runs.begin(); it != m_runs.end(); it++)
+		delete *it;
+	m_runs.clear();
 }
 
 //const char*      SimulatedAnnealing::s_elementNames[] = {"structuresTemplate", "temperature", "annealingSchedule", "perturbations", "stop"};
@@ -226,43 +234,63 @@ bool SimulatedAnnealing::loadResume(const rapidxml::xml_node<>* pResumeElem, con
 	if (pResumeElem == NULL) {
 		if (!m_structuresTemplate.initializeStructures(m_structures, m_pConstraints))
 			return false;
-		if (m_pfStartingTemperature != NULL)
-			m_fTemperature = *m_pfStartingTemperature;
-		else
-			m_fTemperature = 1000000;
+		for (std::list<Structure*>::iterator it = m_structures.begin(); it != m_structures.end(); it++) {
+			SimulatedAnnealingRun* run = new SimulatedAnnealingRun(this, *it);
+			m_runs.push_back(run);
+			run->init();
+		}
 	} else {
-
+		Structure* pStructure = new Structure();
+		m_structures.push_back(pStructure);
+		SimulatedAnnealingRun* run = new SimulatedAnnealingRun(this, pStructure);
+		m_runs.push_back(run);
+		if (!run->loadResume(pResumeElem, messages))
+			return false;
 	}
 	return true;
 }
 
 bool SimulatedAnnealing::saveResume(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pSimElem, const Strings* messages)
 {
-	using namespace rapidxml;
-	xml_node<>* resume = doc.allocate_node(node_element, messages->m_sxResume.c_str());
-	pSimElem->append_node(resume);
-
-	xml_node<>* totalEnergyCalculations = doc.allocate_node(node_element, messages->m_sxTotalEnergyCalculations.c_str());
-	XsdTypeUtil::setAttribute(doc, totalEnergyCalculations, messages->m_sxValue.c_str(), m_iEnergyCalculations);
-	resume->append_node(totalEnergyCalculations);
-	
-	xml_node<>* elapsedSeconds = doc.allocate_node(node_element, messages->m_sxElapsedSeconds.c_str());
-	XsdTypeUtil::setAttribute(doc, elapsedSeconds, messages->m_sxValue.c_str(), getTotalElapsedSeconds());
-	resume->append_node(elapsedSeconds);
-
-	xml_node<>* structures = doc.allocate_node(node_element, messages->m_sxStructures.c_str());
-	resume->append_node(structures);
-	for (std::list<Structure*>::iterator it = m_structures.begin(); it != m_structures.end(); it++)
-		if (!(*it)->save(doc, structures, messages))
+	for (std::list<SimulatedAnnealingRun*>::iterator it = m_runs.begin(); it != m_runs.end(); it++)
+		if (!(*it)->saveResume(doc, pSimElem, messages))
 			return false;
+	return true;
+}
 
+bool SimulatedAnnealing::verifyNotFinished() {
+	m_bRunComplete = true;
+	for (std::list<SimulatedAnnealingRun*>::iterator run = m_runs.begin(); run != m_runs.end(); ++run)
+		if (!(*run)->m_bRunComplete) {
+			m_bRunComplete = false;
+			break;
+		}
+	if (m_bRunComplete) {
+		printf("All runs have been completed.\n");
+		return false;
+	}
 	return true;
 }
 
 bool SimulatedAnnealing::runMaster() {
+	if (!verifyNotFinished())
+		return false;
+	if (!Action::run())
+		return false;
+
+	std::vector<SimulatedAnnealingRun*> runs(m_runs.size());
+	for (std::list<SimulatedAnnealingRun*>::iterator it = m_runs.begin(); it != m_runs.end(); ++it)
+		runs.push_back(*it);
+	sort(runs.begin(), runs.end(), SimulatedAnnealingRun::iterationComparator);
+
 	return true;
 }
 
 bool SimulatedAnnealing::runSlave() {
+	if (!verifyNotFinished())
+		return false;
+	if (!Action::run())
+		return false;
+
 	return true;
 }

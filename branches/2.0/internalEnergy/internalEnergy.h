@@ -12,6 +12,7 @@ public:
 	enum Impl {LENNARD_JONES};
 
 	InternalEnergy(const InternalEnergyXml* pInternalEnergyXml);
+	virtual ~InternalEnergy() {};
 
 	static InternalEnergy* instance(Impl impl, const InternalEnergyXml* pInternalEnergyXml);
 
