@@ -18,7 +18,6 @@ class Input {
 	public:
 		std::string m_sFileName;
 		std::string m_sVersion;
-		std::string m_sLanguageCode; // 2 characters long
 		int m_iAction; // SIMULATED_ANNEALING, RANDOM_SEARCH, PARTICLE_SWARM_OPTIMIZATION, etc.
 		Action *m_pAction;
 		
@@ -36,14 +35,14 @@ class Input {
 		const char* getXml();
 		bool run(const char* fileName);
 	private:
-		const Strings*            m_messages; // messages for m_sLanguageCode
-		
 		static const char*        s_agml;
 		
 		static const char*        s_attributeNames[];
 		static const bool         s_required[];
 		static const char*        s_defaultValues[];
 		
+		static const char* s_actionElementNames[];
+
 		void clear();
 };
 

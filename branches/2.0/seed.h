@@ -44,8 +44,8 @@ public:
 	
 	Seed();
 	~Seed();
-	bool load(const rapidxml::xml_node<>* pSeedElem, const Strings* messages);
-	bool save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem, const Strings* messages);
+	bool load(const rapidxml::xml_node<>* pSeedElem);
+	bool save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem);
 
 	/**************************************************************************
 	 * Purpose: Call this function to read the seeded structures.

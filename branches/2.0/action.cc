@@ -55,13 +55,13 @@ void Action::clear() {
 	m_fResultsRmsDistance = 0;
 }
 
-bool Action::load(const rapidxml::xml_node<>* pActionElem, const Strings* messages)
+bool Action::load(const rapidxml::xml_node<>* pActionElem)
 {
 	using namespace rapidxml;
+	using namespace strings;
 	clear();
-	const Strings* messagesDL = Strings::instance();
 	
-	const char* attributeNames[] = {messages->m_sxConstraints.c_str()};
+	const char* attributeNames[] = {xConstraints};
 	const char** attributeValues;
 	XsdAttributeUtil attUtil(attributeNames, s_required, s_defaultValues);
 	if (!attUtil.process(pActionElem)) {
@@ -71,7 +71,7 @@ bool Action::load(const rapidxml::xml_node<>* pActionElem, const Strings* messag
 	const char* constraintsName = attributeValues[0];
 	
 	unsigned int i, j;
-	const char* elementNames[] = {messages->m_sxSetup.c_str(), messages->m_sxConstraints.c_str(), messages->m_sxEnergy.c_str(), messages->m_sxResume.c_str(), messages->m_sxResults.c_str()};
+	const char* elementNames[] = {xSetup, xConstraints, xEnergy, xResume, xResults};
 	XsdElementUtil actionUtil(XSD_SEQUENCE, elementNames, s_minOccurs, s_maxOccurs);
 	if (!actionUtil.process(pActionElem))
 		return false;
@@ -80,13 +80,13 @@ bool Action::load(const rapidxml::xml_node<>* pActionElem, const Strings* messag
 	Constraints* pConstraints;
 	for (std::vector<const xml_node<>*>::iterator it = actionElements[1].begin(); it != actionElements[1].end(); ++it) {
 		pConstraints = new Constraints();
-		if (!pConstraints->load(*it, messages, m_constraintsMap)) {
+		if (!pConstraints->load(*it, m_constraintsMap)) {
 			delete pConstraints;
 			return false;
 		}
 		for (j = 0; j < m_constraints.size(); ++j) {
 			if (m_constraints[j]->m_sName == pConstraints->m_sName) {
-				printf(messagesDL->m_sTwoElementsWithSameName.c_str(), elementNames[1], pConstraints->m_sName.c_str());
+				printf(TwoElementsWithSameName, elementNames[1], pConstraints->m_sName.c_str());
 				delete pConstraints;
 				return false;
 			}
@@ -97,29 +97,29 @@ bool Action::load(const rapidxml::xml_node<>* pActionElem, const Strings* messag
 	if (constraintsName != NULL) {
 		m_pConstraints = m_constraintsMap[constraintsName];
 		if (m_pConstraints == NULL) {
-			printf(messagesDL->m_sConstraintNotDefined.c_str(), pActionElem->name(), messages->m_sxConstraints.c_str(), constraintsName);
+			printf(ConstraintNotDefined, pActionElem->name(), xConstraints, constraintsName);
 			return false;
 		}
 	}
 	
-	if (!loadSetup(actionElements[0][0], messages)) // Do this after loading constraints
+	if (!loadSetup(actionElements[0][0])) // Do this after loading constraints
 		return false;
 	
-	if (!energyXml.load(actionElements[2][0], messages))
+	if (!energyXml.load(actionElements[2][0]))
 		return false;
 
 	if (actionElements[3].size() > 0) {
 		for (i = 0; i < actionElements[3].size(); ++i)
-			if (!loadResume(actionElements[3][i], messages))
+			if (!loadResume(actionElements[3][i]))
 				return false;
 	} else {
-		if (!loadResume(NULL, messages))
+		if (!loadResume(NULL))
 			return false;
 	}
 	
 	if (actionElements[4].size() > 0) {
 		const xml_node<>* resultsElem = actionElements[4][0];
-		const char* resultsElementNames[] = {messages->m_sxStructure.c_str()};
+		const char* resultsElementNames[] = {xStructure};
 		XsdElementUtil resultsUtil(XSD_SEQUENCE, resultsElementNames, s_resultsMinOccurs, s_resultsMaxOccurs);
 		if (!resultsUtil.process(resultsElem))
 			return false;
@@ -128,11 +128,11 @@ bool Action::load(const rapidxml::xml_node<>* pActionElem, const Strings* messag
 		for (std::vector<const xml_node<>*>::iterator it = structureElements->begin(); it != structureElements->end(); ++it) {
 			pStructure = new Structure();
 			m_results.push_back(pStructure);
-			if (!pStructure->load(*it, messages))
+			if (!pStructure->load(*it))
 				return false;
 		}
 
-		const char* resultsAttributeNames[] = {messages->m_sxMaxSize.c_str(), messages->m_sxRmsDistance.c_str()};
+		const char* resultsAttributeNames[] = {xMaxSize, xRmsDistance};
 		XsdAttributeUtil resultsAttUtil(resultsAttributeNames, s_resultsRequired, s_resultsDefaultValues);
 		if (!resultsAttUtil.process(resultsElem))
 			return false;
@@ -155,41 +155,42 @@ bool Action::load(const rapidxml::xml_node<>* pActionElem, const Strings* messag
 	return true;
 }
 
-bool Action::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pActionElem, const Strings* messages)
+bool Action::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pActionElem)
 {
 	using namespace rapidxml;
+	using namespace strings;
 	xml_attribute<>* attr;
 	if (m_pConstraints != NULL) {
-		attr = doc.allocate_attribute(messages->m_sxConstraints.c_str(), m_pConstraints->m_sName.c_str());
+		attr = doc.allocate_attribute(xConstraints, m_pConstraints->m_sName.c_str());
 		pActionElem->append_attribute(attr);
 	}
 	
-	if (!saveSetup(doc, pActionElem, messages))
+	if (!saveSetup(doc, pActionElem))
 		return false;
 	
 	xml_node<>* constraints;
 	for (unsigned int i = 0; i < m_constraints.size(); ++i) {
-		constraints = doc.allocate_node(node_element, messages->m_sxConstraints.c_str());
+		constraints = doc.allocate_node(node_element, xConstraints);
 		pActionElem->append_node(constraints);
-		if (!m_constraints[i]->save(doc, constraints, messages))
+		if (!m_constraints[i]->save(doc, constraints))
 			return false;
 	}
 	
-	if (!energyXml.save(doc, pActionElem, messages))
+	if (!energyXml.save(doc, pActionElem))
 		return false;
 	
-	if (!saveResume(doc, pActionElem, messages))
+	if (!saveResume(doc, pActionElem))
 		return false;
 	
-	xml_node<>* results = doc.allocate_node(node_element, messages->m_sxResults.c_str());
+	xml_node<>* results = doc.allocate_node(node_element, xResults);
 	pActionElem->append_node(results);
 	
 	if (m_structures.size() != m_iMaxResults)
-		XsdTypeUtil::setAttribute(doc, results, messages->m_sxMaxSize.c_str(), m_iMaxResults);
+		XsdTypeUtil::setAttribute(doc, results, xMaxSize, m_iMaxResults);
 	if (0 != m_fResultsRmsDistance)
-		XsdTypeUtil::setAttribute(doc, results, messages->m_sxRmsDistance.c_str(), m_fResultsRmsDistance);
+		XsdTypeUtil::setAttribute(doc, results, xRmsDistance, m_fResultsRmsDistance);
 	for (std::list<Structure*>::iterator it = m_results.begin(); it != m_results.end(); it++)
-		if (!(*it)->save(doc, results, messages))
+		if (!(*it)->save(doc, results))
 			return false;
 
 	return true;

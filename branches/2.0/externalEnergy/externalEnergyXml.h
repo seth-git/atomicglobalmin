@@ -27,8 +27,8 @@ public:
 	ExternalEnergyXml();
 	~ExternalEnergyXml();
 
-	bool load(const rapidxml::xml_node<>* pExternalElem, const Strings* messages);
-	bool save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pExternalElem, const Strings* messages);
+	bool load(const rapidxml::xml_node<>* pExternalElem);
+	bool save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pExternalElem);
 
 private:
 	void clear();
@@ -42,7 +42,7 @@ private:
 
 	static const bool         s_resRequired[];
 
-	bool readResultsDir(const rapidxml::xml_node<>* pElem, const Strings* messages);
+	bool readResultsDir(const rapidxml::xml_node<>* pElem);
 };
 
 #endif

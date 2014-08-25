@@ -67,13 +67,14 @@ void StructuresTemplate::clear()
 }
 
 bool StructuresTemplate::load(const rapidxml::xml_node<>* pStructuresTemplateElem,
-		std::map<std::string, Constraints*> &constraintsMap, const Strings* messages) {
+		std::map<std::string, Constraints*> &constraintsMap) {
 	using namespace rapidxml;
+	using namespace strings;
 	clear();
 	
 	unsigned int i;
 	const char** values;
-	const char* attributeNames[]  = {messages->m_sxConstraints.c_str()};
+	const char* attributeNames[]  = {xConstraints};
 	XsdAttributeUtil attUtil(attributeNames, s_attRequired, s_attDefaults);
 	if (!attUtil.process(pStructuresTemplateElem)) {
 		return false;
@@ -82,68 +83,66 @@ bool StructuresTemplate::load(const rapidxml::xml_node<>* pStructuresTemplateEle
 	if (values[0] != NULL) {
 		m_pConstraints = constraintsMap[values[0]];
 		if (m_pConstraints == NULL) {
-			const Strings* messagesDL = Strings::instance();
-			printf(messagesDL->m_sConstraintNotDefined.c_str(), pStructuresTemplateElem->name(), messages->m_sxConstraints.c_str(), values[0]);
+			printf(ConstraintNotDefined, pStructuresTemplateElem->name(), xConstraints, values[0]);
 			return false;
 		}
 	}
 	
-	const char* elementNames[] = {messages->m_sxStructureTemplate.c_str(), messages->m_sxLinear.c_str(), messages->m_sxPlanar.c_str(), messages->m_sxThreeD.c_str(), messages->m_sxBondRotationalSearch.c_str(), messages->m_sxSeed.c_str()};
+	const char* elementNames[] = {xStructureTemplate, xLinear, xPlanar, xThreeD, xBondRotationalSearch, xSeed};
 	XsdElementUtil ptUtil(XSD_ALL, elementNames, s_minOccurs);
 	if (!ptUtil.process(pStructuresTemplateElem))
 		return false;
 	const xml_node<>** ptElements = ptUtil.getAllElements();
 	
 	if (ptElements[0] != NULL) {
-		const char* popTempElementNames[] = {messages->m_sxMoleculeTemplate.c_str(), messages->m_sxAtomTemplate.c_str()};
+		const char* popTempElementNames[] = {xMoleculeTemplate, xAtomTemplate};
 		XsdElementUtil mtUtil(XSD_SEQUENCE, popTempElementNames, s_popTempMinOccurs, s_popTempMaxOccurs);
 		if (!mtUtil.process(ptElements[0]))
 			return false;
 		std::vector<const xml_node<>*>* templates = mtUtil.getSequenceElements();
 		m_iAtomGroupTemplates = templates[0].size() + templates[1].size();
 		if (m_iAtomGroupTemplates == 0) {
-			const Strings* messagesDL = Strings::instance();
-			printf(messagesDL->m_sEmptyStructureTemplate.c_str(), ptElements[0]->name(), messages->m_sxMoleculeTemplate.c_str(), messages->m_sxAtomTemplate.c_str());
+			printf(EmptyStructureTemplate, ptElements[0]->name(), xMoleculeTemplate, xAtomTemplate);
 			return false;
 		}
 		m_atomGroupTemplates = new AtomGroupTemplate[m_iAtomGroupTemplates];
 		for (i = 0; i < templates[0].size(); ++i)
-			if (!m_atomGroupTemplates[i].loadMolecule(templates[0][i], messages))
+			if (!m_atomGroupTemplates[i].loadMolecule(templates[0][i]))
 				return false;
 		for (i = 0; i < templates[1].size(); ++i)
-			if (!m_atomGroupTemplates[i+templates[0].size()].loadAtom(templates[1][i], messages))
+			if (!m_atomGroupTemplates[i+templates[0].size()].loadAtom(templates[1][i]))
 				return false;
 	}
 	
 	if (ptElements[1] != NULL)
-		if (!readInitializationType(ptElements[1], constraintsMap, m_iLinear, m_pLinearConstraints, messages))
+		if (!readInitializationType(ptElements[1], constraintsMap, m_iLinear, m_pLinearConstraints))
 			return false;
 	
 	if (ptElements[2] != NULL)
-		if (!readInitializationType(ptElements[2], constraintsMap, m_iPlanar, m_pPlanarConstraints, messages))
+		if (!readInitializationType(ptElements[2], constraintsMap, m_iPlanar, m_pPlanarConstraints))
 			return false;
 	
 	if (ptElements[3] != NULL)
-		if (!readInitializationType(ptElements[3], constraintsMap, m_i3D, m_p3DConstraints, messages))
+		if (!readInitializationType(ptElements[3], constraintsMap, m_i3D, m_p3DConstraints))
 			return false;
 	
 	if (ptElements[4] != NULL) {
 		m_bondRotationalSearchAngle = new FLOAT;
-		if (!XsdTypeUtil::read1PosFloatAtt(ptElements[4], *m_bondRotationalSearchAngle, messages->m_sxDegrees.c_str(), true, NULL))
+		if (!XsdTypeUtil::read1PosFloatAtt(ptElements[4], *m_bondRotationalSearchAngle, xDegrees, true, NULL))
 			return false;
-		if (!XsdTypeUtil::inRange(*m_bondRotationalSearchAngle, 0, 360, ptElements[4], messages->m_sxDegrees.c_str()))
+		if (!XsdTypeUtil::inRange(*m_bondRotationalSearchAngle, 0, 360, ptElements[4], xDegrees))
 			return false;
 		*m_bondRotationalSearchAngle *= DEG_TO_RAD;
 	}
 	
 	if (ptElements[5] != NULL) {
 		m_pSeed = new Seed();
-		if (!m_pSeed->load(ptElements[5], messages))
+		if (!m_pSeed->load(ptElements[5]))
 			return false;
 	}
 
 	if (m_atomGroupTemplates == NULL && m_pSeed == NULL) {
-		printf("The %1$s element must contain either a %2$s element or a %3$s element.", messages->m_sxStructuresTemplate.c_str(), messages->m_sxStructureTemplate.c_str(), messages->m_sxSeed.c_str());
+		printf("The %1$s element must contain either a %2$s element or a %3$s element.", xStructuresTemplate, xStructureTemplate, xSeed);
 		return false;
 	}
 
@@ -154,9 +153,10 @@ bool StructuresTemplate::load(const rapidxml::xml_node<>* pStructuresTemplateEle
 const bool    StructuresTemplate::s_initTypeAttRequired[] = {true    , false};
 const char*   StructuresTemplate::s_initTypeAttDefaults[] = {NULL    , NULL};
 
-bool StructuresTemplate::readInitializationType(const rapidxml::xml_node<>* pElem, std::map<std::string,Constraints*> &constraintsMap, unsigned int &numberOfThisType, Constraints* &pConstraints, const Strings* messages) {
+bool StructuresTemplate::readInitializationType(const rapidxml::xml_node<>* pElem, std::map<std::string,Constraints*> &constraintsMap, unsigned int &numberOfThisType, Constraints* &pConstraints) {
+	using namespace strings;
 	const char** values;
-	const char* attributeNames[] = {messages->m_sxNumber.c_str(), messages->m_sxConstraints.c_str()};
+	const char* attributeNames[] = {xNumber, xConstraints};
 	XsdAttributeUtil attUtil(attributeNames, s_initTypeAttRequired, s_initTypeAttDefaults);
 	if (!attUtil.process(pElem)) {
 		return false;
@@ -169,65 +169,65 @@ bool StructuresTemplate::readInitializationType(const rapidxml::xml_node<>* pEle
 	if (values[1] != NULL) {
 		pConstraints = constraintsMap[values[1]];
 		if (pConstraints == NULL) {
-			const Strings* messagesDL = Strings::instance();
-			printf(messagesDL->m_sConstraintNotDefined.c_str(), pElem->name(), messages->m_sxConstraints.c_str(), values[1]);
+			printf(ConstraintNotDefined, pElem->name(), xConstraints, values[1]);
 			return false;
 		}
 	}
 	return true;
 }
 
-bool StructuresTemplate::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem, const Strings* messages)
+bool StructuresTemplate::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem)
 {
 	using namespace rapidxml;
+	using namespace strings;
 	unsigned int i;
-	xml_node<>* structuresTemplate = doc.allocate_node(node_element, messages->m_sxStructuresTemplate.c_str());
+	xml_node<>* structuresTemplate = doc.allocate_node(node_element, xStructuresTemplate);
 	pParentElem->append_node(structuresTemplate);
 	
 	if (m_pConstraints != NULL)
-		structuresTemplate->append_attribute(doc.allocate_attribute(messages->m_sxConstraints.c_str(), m_pConstraints->m_sName.c_str()));
+		structuresTemplate->append_attribute(doc.allocate_attribute(xConstraints, m_pConstraints->m_sName.c_str()));
 	
 	if (m_iAtomGroupTemplates > 0) {
-		xml_node<>* structureTemplate = doc.allocate_node(node_element, messages->m_sxStructureTemplate.c_str());
+		xml_node<>* structureTemplate = doc.allocate_node(node_element, xStructureTemplate);
 		structuresTemplate->append_node(structureTemplate);
 		
 		for (i = 0; i < m_iAtomGroupTemplates; ++i)
-			if (!m_atomGroupTemplates[i].save(doc, structureTemplate, messages))
+			if (!m_atomGroupTemplates[i].save(doc, structureTemplate))
 				return false;
 	}
 	
 	if (m_iLinear > 0) {
-		xml_node<>* linear = doc.allocate_node(node_element, messages->m_sxLinear.c_str());
+		xml_node<>* linear = doc.allocate_node(node_element, xLinear);
 		structuresTemplate->append_node(linear);
-		XsdTypeUtil::setAttribute(doc, linear, messages->m_sxNumber.c_str(), m_iLinear);
+		XsdTypeUtil::setAttribute(doc, linear, xNumber, m_iLinear);
 		if (m_pLinearConstraints != NULL)
-			linear->append_attribute(doc.allocate_attribute(messages->m_sxConstraints.c_str(), m_pLinearConstraints->m_sName.c_str()));
+			linear->append_attribute(doc.allocate_attribute(xConstraints, m_pLinearConstraints->m_sName.c_str()));
 	}
 	
 	if (m_iPlanar > 0) {
-		xml_node<>* planar = doc.allocate_node(node_element, messages->m_sxPlanar.c_str());
+		xml_node<>* planar = doc.allocate_node(node_element, xPlanar);
 		structuresTemplate->append_node(planar);
-		XsdTypeUtil::setAttribute(doc, planar, messages->m_sxNumber.c_str(), m_iPlanar);
+		XsdTypeUtil::setAttribute(doc, planar, xNumber, m_iPlanar);
 		if (m_pPlanarConstraints != NULL)
-			planar->append_attribute(doc.allocate_attribute(messages->m_sxConstraints.c_str(), m_pPlanarConstraints->m_sName.c_str()));
+			planar->append_attribute(doc.allocate_attribute(xConstraints, m_pPlanarConstraints->m_sName.c_str()));
 	}
 	
 	if (m_i3D > 0) {
-		xml_node<>* threeD = doc.allocate_node(node_element, messages->m_sxThreeD.c_str());
+		xml_node<>* threeD = doc.allocate_node(node_element, xThreeD);
 		structuresTemplate->append_node(threeD);
-		XsdTypeUtil::setAttribute(doc, threeD, messages->m_sxNumber.c_str(), m_i3D);
+		XsdTypeUtil::setAttribute(doc, threeD, xNumber, m_i3D);
 		if (m_p3DConstraints != NULL)
-			threeD->append_attribute(doc.allocate_attribute(messages->m_sxConstraints.c_str(), m_p3DConstraints->m_sName.c_str()));
+			threeD->append_attribute(doc.allocate_attribute(xConstraints, m_p3DConstraints->m_sName.c_str()));
 	}
 	
 	if (m_bondRotationalSearchAngle != NULL) {
-		xml_node<>* bondRotationalSearch = doc.allocate_node(node_element, messages->m_sxBondRotationalSearch.c_str());
+		xml_node<>* bondRotationalSearch = doc.allocate_node(node_element, xBondRotationalSearch);
 		structuresTemplate->append_node(bondRotationalSearch);
-		XsdTypeUtil::setAttribute(doc, bondRotationalSearch, messages->m_sxDegrees.c_str(), *m_bondRotationalSearchAngle * RAD_TO_DEG);
+		XsdTypeUtil::setAttribute(doc, bondRotationalSearch, xDegrees, *m_bondRotationalSearchAngle * RAD_TO_DEG);
 	}
 	
 	if (m_pSeed != NULL)
-		if (!m_pSeed->save(doc, structuresTemplate, messages))
+		if (!m_pSeed->save(doc, structuresTemplate))
 			return false;
 	
 	return true;
@@ -441,8 +441,7 @@ bool StructuresTemplate::ensureCompatibile(Structure &structure,
 		}
 		return true;
 	} else {
-		const Strings* messagesDL = Strings::instance();
-		printf(messagesDL->m_sSeededStructureDoesntMatchTemplate.c_str(), structureNumber);
+		printf(strings::SeededStructureDoesntMatchTemplate, structureNumber);
 		return false;
 	}
 
@@ -451,6 +450,7 @@ bool StructuresTemplate::ensureCompatibile(Structure &structure,
 
 bool StructuresTemplate::initializeStructures(std::list<Structure*> &structures,
 		const Constraints* pActionConstraints) {
+	using namespace strings;
 	unsigned int i;
 	Constraints combinedConstraints;
 	Constraints* pTempConstraints = NULL;
@@ -476,8 +476,7 @@ bool StructuresTemplate::initializeStructures(std::list<Structure*> &structures,
 			if (!ensureCompatibile(*pStructure, i, combinedConstraints))
 				return false;
 			if (!combinedConstraints.validate(*pStructure)) {
-				const Strings* messagesDL = Strings::instance();
-				printf(messagesDL->m_sSeededStructureDoesntMatchConstraints.c_str(), i);
+				printf(SeededStructureDoesntMatchConstraints, i);
 				return false;
 			}
 			++i;

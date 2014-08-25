@@ -15,12 +15,15 @@ public:
 
 	InternalEnergyXml() {}
 
-	bool load(const rapidxml::xml_node<>* pInternalEnergyElem, const Strings* messages);
-	bool save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pInternalEnergyElem, const Strings* messages);
+	bool load(const rapidxml::xml_node<>* pInternalEnergyElem);
+	bool save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pInternalEnergyElem);
 
 private:
+	static const char* s_attributeNames[];
 	static const bool  s_required[];
+	static const char* s_defaultValues[];
 	static const int   s_methodConstants[];
+
 };
 
 #endif

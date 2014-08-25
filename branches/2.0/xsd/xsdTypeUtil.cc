@@ -1,25 +1,25 @@
 
 #include "xsdTypeUtil.h"
 
-//const char* XsdTypeUtil::s_booleanValues[] = {"true", "false"};
-const int  XsdTypeUtil::s_booleanResponses[] = {1     , 0};
+using namespace strings;
 
-bool XsdTypeUtil::getBoolValue(const char* attributeName, const char* attributeValue, bool &result, const rapidxml::xml_node<>* node, const Strings* messages) {
-	const char* booleanValues[] = {messages->m_spTrue.c_str(), messages->m_spFalse.c_str()};
+const char* XsdTypeUtil::s_booleanValues[] = {pFalse, pTrue};
+const int  XsdTypeUtil::s_booleanResponses[] = {0, 1};
+
+bool XsdTypeUtil::getBoolValue(const char* attributeName, const char* attributeValue, bool &result, const rapidxml::xml_node<>* node) {
 	int val;
-	if (!getEnumValue(attributeName, attributeValue, val, node, booleanValues, s_booleanResponses))
+	if (!getEnumValue(attributeName, attributeValue, val, node, s_booleanValues, s_booleanResponses))
 		return false;
 	result = (bool)val;
 	return true;
 }
 
 void XsdTypeUtil::printError(const char* attributeName, const char* attributeValue, const rapidxml::xml_node<>* node, const char** possibleValues, unsigned int numPossibleValues) {
-	const Strings* messagesDL = Strings::instance();
 	std::string possibleValuesConcatenated;
 	possibleValuesConcatenated.append("'").append(possibleValues[0]).append("'");
 	for (unsigned int i = 1; i < numPossibleValues; ++i)
 		possibleValuesConcatenated.append(", '").append(possibleValues[i]).append("'");
-	printf(messagesDL->m_sUnrecognizedAttributeValue.c_str(), attributeValue, attributeName, node->name(), possibleValuesConcatenated.c_str());
+	printf(UnrecognizedAttributeValue, attributeValue, attributeName, node->name(), possibleValuesConcatenated.c_str());
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -36,8 +36,7 @@ bool XsdTypeUtil::checkDirectoryOrFileName(const char* sourceDir, std::string &n
 	int dirLength;
 
 	if (sourceDirLength == 0) {
-		const Strings* messagesDL = Strings::instance();
-		printf(messagesDL->m_sErrorEmptyPath.c_str(), attributeName, node->name());
+		printf(ErrorEmptyPath, attributeName, node->name());
 		return false;
 	}
 
@@ -70,8 +69,7 @@ bool XsdTypeUtil::checkDirectoryOrFileName(const char* sourceDir, std::string &n
 bool XsdTypeUtil::getInteger(const char* value, int &result, const char* attributeName, const rapidxml::xml_node<>* node)
 {
 	if (sscanf(value, "%d", &result) != 1) {
-		const Strings* messagesDL = Strings::instance();
-		printf(messagesDL->m_sUnableToReadInteger.c_str(), value, attributeName, node->name());
+		printf(UnableToReadInteger, value, attributeName, node->name());
 		return false;
 	}
 	return true;
@@ -83,13 +81,11 @@ bool XsdTypeUtil::getPositiveInt(const char* value, unsigned int &result, const 
 	if (!getInteger(value, signedResult, attributeName, node))
 		return false;
 	if (signedResult == 0) {
-		const Strings* messagesDL = Strings::instance();
-		printf(messagesDL->m_sZeroNotAllowed.c_str(), attributeName, node->name());
+		printf(ZeroNotAllowed, attributeName, node->name());
 		return false;
 	}
 	if (signedResult < 0) {
-		const Strings* messagesDL = Strings::instance();
-		printf(messagesDL->m_sNegativeNotAllowed.c_str(), value, attributeName, node->name());
+		printf(NegativeNotAllowed, value, attributeName, node->name());
 		return false;
 	}
 	result = (unsigned int)signedResult;
@@ -102,8 +98,7 @@ bool XsdTypeUtil::getNonNegativeInt(const char* value, unsigned int &result, con
 	if (!getInteger(value, signedResult, attributeName, node))
 		return false;
 	if (signedResult < 0) {
-		const Strings* messagesDL = Strings::instance();
-		printf(messagesDL->m_sNegativeNotAllowed.c_str(), value, attributeName, node->name());
+		printf(NegativeNotAllowed, value, attributeName, node->name());
 		return false;
 	}
 	result = (unsigned int)signedResult;
@@ -113,8 +108,7 @@ bool XsdTypeUtil::getNonNegativeInt(const char* value, unsigned int &result, con
 bool XsdTypeUtil::getFloat(const char* value, FLOAT &result, const char* attributeName, const rapidxml::xml_node<>* node)
 {
 	if (sscanf(value, "%lf", &result) != 1) {
-		const Strings* messagesDL = Strings::instance();
-		printf(messagesDL->m_sUnableToReadPositiveFloat.c_str(), value, attributeName, node->name());
+		printf(UnableToReadPositiveFloat, value, attributeName, node->name());
 		return false;
 	}
 	return true;
@@ -123,18 +117,15 @@ bool XsdTypeUtil::getFloat(const char* value, FLOAT &result, const char* attribu
 bool XsdTypeUtil::getPositiveFloat(const char* value, FLOAT &result, const char* attributeName, const rapidxml::xml_node<>* node)
 {
 	if (sscanf(value, "%lf", &result) != 1) {
-		const Strings* messagesDL = Strings::instance();
-		printf(messagesDL->m_sUnableToReadPositiveFloat.c_str(), value, attributeName, node->name());
+		printf(UnableToReadPositiveFloat, value, attributeName, node->name());
 		return false;
 	}
 	if (result == 0) {
-		const Strings* messagesDL = Strings::instance();
-		printf(messagesDL->m_sZeroNotAllowed.c_str(), attributeName, node->name());
+		printf(ZeroNotAllowed, attributeName, node->name());
 		return false;
 	}
 	if (result < 0) {
-		const Strings* messagesDL = Strings::instance();
-		printf(messagesDL->m_sNegativeNotAllowed.c_str(), value, attributeName, node->name());
+		printf(NegativeNotAllowed, value, attributeName, node->name());
 		return false;
 	}
 	return true;
@@ -143,13 +134,11 @@ bool XsdTypeUtil::getPositiveFloat(const char* value, FLOAT &result, const char*
 bool XsdTypeUtil::getNonNegativeFloat(const char* value, FLOAT &result, const char* attributeName, const rapidxml::xml_node<>* node)
 {
 	if (sscanf(value, "%lf", &result) != 1) {
-		const Strings* messagesDL = Strings::instance();
-		printf(messagesDL->m_sUnableToReadFloat.c_str(), value, attributeName, node->name());
+		printf(UnableToReadFloat, value, attributeName, node->name());
 		return false;
 	}
 	if (result < 0) {
-		const Strings* messagesDL = Strings::instance();
-		printf(messagesDL->m_sNegativeNotAllowed.c_str(), value, attributeName, node->name());
+		printf(NegativeNotAllowed, value, attributeName, node->name());
 		return false;
 	}
 	return true;
@@ -158,8 +147,7 @@ bool XsdTypeUtil::getNonNegativeFloat(const char* value, FLOAT &result, const ch
 bool XsdTypeUtil::readTimeT(const char* value, time_t &result, const char* attributeName, const rapidxml::xml_node<>* node) {
 	long long num;
 	if (sscanf(value, "%lld", &num) != 1) {
-		const Strings* messagesDL = Strings::instance();
-		printf(messagesDL->m_sUnableToReadTime.c_str(), value, attributeName, node->name());
+		printf(UnableToReadTime, value, attributeName, node->name());
 		return false;
 	}
 	result = num;
@@ -196,11 +184,11 @@ bool XsdTypeUtil::read1DirAtt(const rapidxml::xml_node<>* node, std::string &res
 	return checkDirectoryOrFileName(values[0], resultDir, attributeName, node);
 }
 
-bool XsdTypeUtil::read1BoolAtt(const rapidxml::xml_node<>* node, bool &result, const char* attributeName, bool required, const char* defaultValue, const Strings* messages) {
+bool XsdTypeUtil::read1BoolAtt(const rapidxml::xml_node<>* node, bool &result, const char* attributeName, bool required, const char* defaultValue) {
 	std::string resultStr;
 	if (!read1StrAtt(node, resultStr, attributeName, required, defaultValue))
 		return false;
-	return getBoolValue(attributeName, resultStr.c_str(), result, node, messages);
+	return getBoolValue(attributeName, resultStr.c_str(), result, node);
 }
 
 
@@ -282,11 +270,10 @@ bool XsdTypeUtil::read1TimeT(const rapidxml::xml_node<>* node, time_t &result, c
 bool XsdTypeUtil::readElementText(const rapidxml::xml_node<>* node, std::string &result) {
 	char* text = node->first_node()->value();
 	if (text == NULL) {
-		const Strings* messagesDL = Strings::instance();
-		printf(messagesDL->m_sUnableToReadElementText.c_str(), node->name());
+		printf(UnableToReadElementText, node->name());
 		return false;
 	}
-	result = Strings::trim(text);
+	result = trim(text);
 	return true;
 }
 
@@ -295,28 +282,25 @@ bool XsdTypeUtil::getAtomicNumber(const char* numberOrSymbol, unsigned int &iAto
 	iAtomicNumber = Handbook::getAtomicNumber(numberOrSymbol); // look for symbol
 	if (iAtomicNumber == 0) {
 		if (sscanf(numberOrSymbol, "%d", &signedNumber) != 1) { // look for number
-			const Strings* messagesDL = Strings::instance();
 			if (attributeName != NULL && elementName != NULL)
-				printf(messagesDL->m_sErrorReadingAtomicNumber.c_str(), numberOrSymbol, attributeName, elementName);
+				printf(ErrorReadingAtomicNumber, numberOrSymbol, attributeName, elementName);
 			else
-				printf(messagesDL->m_sErrorReadingAtomicNumber2.c_str(), numberOrSymbol);
+				printf(ErrorReadingAtomicNumber2, numberOrSymbol);
 			return false;
 		}
 		if (signedNumber <= 0) {
-			const Strings* messagesDL = Strings::instance();
 			if (attributeName != NULL && elementName != NULL)
-				printf(messagesDL->m_sErrorReadingAtomicNumber.c_str(), numberOrSymbol, attributeName, elementName);
+				printf(ErrorReadingAtomicNumber, numberOrSymbol, attributeName, elementName);
 			else
-				printf(messagesDL->m_sErrorReadingAtomicNumber2.c_str(), numberOrSymbol);
+				printf(ErrorReadingAtomicNumber2, numberOrSymbol);
 			return false;
 		}
 		iAtomicNumber = signedNumber;
 		if (iAtomicNumber > MAX_ATOMIC_NUMBERS) {
-			const Strings* messagesDL = Strings::instance();
 			if (attributeName != NULL && elementName != NULL)
-				printf(messagesDL->m_sErrorAtomicNumOverMax.c_str(), attributeName, elementName, iAtomicNumber, MAX_ATOMIC_NUMBERS);
+				printf(ErrorAtomicNumOverMax, attributeName, elementName, iAtomicNumber, MAX_ATOMIC_NUMBERS);
 			else
-				printf(messagesDL->m_sErrorAtomicNumOverMax2.c_str(), iAtomicNumber, MAX_ATOMIC_NUMBERS);
+				printf(ErrorAtomicNumOverMax2, iAtomicNumber, MAX_ATOMIC_NUMBERS);
 			return false;
 		}
 	}
@@ -329,11 +313,10 @@ bool XsdTypeUtil::getAtomicNumber(const char* numberOrSymbol, unsigned int &iAto
 
 bool XsdTypeUtil::inRange(FLOAT number, FLOAT lo, FLOAT hi, const rapidxml::xml_node<>* node, const char* attName) {
 	if (number < lo || number > hi) {
-		const Strings* messagesDL = Strings::instance();
 		char loStr[100], hiStr[100];
 		createFloat(lo, loStr, sizeof(loStr));
 		createFloat(hi, hiStr, sizeof(hiStr));
-		printf(messagesDL->m_sRangeError.c_str(), attName, node->name(), loStr, hiStr);
+		printf(RangeError, attName, node->name(), loStr, hiStr);
 		return false;
 	}
 	return true;
@@ -384,9 +367,8 @@ char* XsdTypeUtil::createTimeT(time_t value, rapidxml::xml_document<> &doc) {
 	return doc.allocate_string(buffer);
 }
 
-const char* XsdTypeUtil::createBool(bool value, const Strings* messages) {
-	const char* booleanValues[] = {messages->m_spFalse.c_str(), messages->m_spTrue.c_str()};
-	return booleanValues[(unsigned int)value];
+const char* XsdTypeUtil::createBool(bool value) {
+	return s_booleanValues[(unsigned int)value];
 }
 
 void XsdTypeUtil::setAttribute(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* node, const char* attribute, unsigned int value) {
@@ -412,6 +394,35 @@ void XsdTypeUtil::setAttribute(rapidxml::xml_document<> &doc, rapidxml::xml_node
 	node->append_attribute(doc.allocate_attribute(attribute, createTimeT(value, doc)));
 }
 
-void XsdTypeUtil::setAttribute(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* node, const char* attribute, bool value, const Strings* messages) {
-	node->append_attribute(doc.allocate_attribute(attribute, createBool(value, messages)));
+void XsdTypeUtil::setAttribute(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* node, const char* attribute, bool value) {
+	node->append_attribute(doc.allocate_attribute(attribute, createBool(value)));
+}
+
+const std::string XsdTypeUtil::trim(const std::string& pString)
+{
+	static const std::string& pWhitespace = " \t\n\r";
+    const size_t beginStr = pString.find_first_not_of(pWhitespace);
+    if (beginStr == std::string::npos)
+    {
+        // no content
+        return "";
+    }
+
+    const size_t endStr = pString.find_last_not_of(pWhitespace);
+    const size_t range = endStr - beginStr + 1;
+
+    return pString.substr(beginStr, range);
+}
+
+const std::string XsdTypeUtil::trim(const char * pCharArr)
+{
+	const std::string& pString = pCharArr;
+	return trim(pString);
+}
+
+const char * XsdTypeUtil::getTrueFalseParam(bool value) {
+	if (value)
+		return pTrue;
+	else
+		return pFalse;
 }

@@ -11,8 +11,6 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 
-	if (!Strings::init())
-		return 0;
 	if (!Handbook::init())
 		return 0;
 

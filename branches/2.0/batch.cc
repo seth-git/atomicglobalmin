@@ -30,9 +30,10 @@ const unsigned int Batch::s_minOccurs[]    = {1                   };
 const bool Batch::s_setupAttReq[] =  {true, true};
 const char* Batch::s_setupAttDef[] = {"1" , "2"};
 
-bool Batch::loadSetup(const rapidxml::xml_node<>* pSetupElem, const Strings* messages)
+bool Batch::loadSetup(const rapidxml::xml_node<>* pSetupElem)
 {
-	const char* setupAttNames[] = {messages->m_sxSaveFrequency.c_str(), messages->m_sxQueueSize.c_str()};
+	using namespace strings;
+	const char* setupAttNames[] = {xSaveFrequency, xQueueSize};
 	XsdAttributeUtil setupAttUtil(setupAttNames, s_setupAttReq, s_setupAttDef);
 	if (!setupAttUtil.process(pSetupElem))
 		return false;
@@ -42,59 +43,61 @@ bool Batch::loadSetup(const rapidxml::xml_node<>* pSetupElem, const Strings* mes
 	if (!XsdTypeUtil::getPositiveInt(setupAttValues[1], m_targetQueueSize, setupAttNames[1], pSetupElem))
 		return false;
 
-	const char* elementNames[] = {messages->m_sxStructuresTemplate.c_str()};
+	const char* elementNames[] = {xStructuresTemplate};
 	XsdElementUtil setupUtil(XSD_ALL, elementNames, s_minOccurs);
 	if (!setupUtil.process(pSetupElem))
 		return false;
 	const rapidxml::xml_node<>** setupElements = setupUtil.getAllElements();
 
-	if (!m_structuresTemplate.load(setupElements[0], m_constraintsMap, messages))
+	if (!m_structuresTemplate.load(setupElements[0], m_constraintsMap))
 		return false;
 
 	return true;
 }
 
-bool Batch::saveSetup(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pBatchElem, const Strings* messages)
+bool Batch::saveSetup(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pBatchElem)
 {
 	using namespace rapidxml;
-	xml_node<>* setup = doc.allocate_node(node_element, messages->m_sxSetup.c_str());
+	using namespace strings;
+	xml_node<>* setup = doc.allocate_node(node_element, xSetup);
 	pBatchElem->append_node(setup);
 
 	if (1 != m_iSaveFrequency)
-		XsdTypeUtil::setAttribute(doc, setup, messages->m_sxSaveFrequency.c_str(), m_iSaveFrequency);
+		XsdTypeUtil::setAttribute(doc, setup, xSaveFrequency, m_iSaveFrequency);
 
 	if (2 != m_targetQueueSize)
-		XsdTypeUtil::setAttribute(doc, setup, messages->m_sxQueueSize.c_str(), m_targetQueueSize);
+		XsdTypeUtil::setAttribute(doc, setup, xQueueSize, m_targetQueueSize);
 
-	return m_structuresTemplate.save(doc, setup, messages);
+	return m_structuresTemplate.save(doc, setup);
 }
 
 const unsigned int Batch::s_resumeMinOccurs[] = {1, 1, 1, 1};
 const unsigned int Batch::s_structuresMinOccurs[] = {1};
 const unsigned int Batch::s_structuresMaxOccurs[] = {XSD_UNLIMITED};
 
-bool Batch::loadResume(const rapidxml::xml_node<>* pResumeElem, const Strings* messages)
+bool Batch::loadResume(const rapidxml::xml_node<>* pResumeElem)
 {
 	using namespace rapidxml;
+	using namespace strings;
 	if (pResumeElem == NULL) {
 		if (!m_structuresTemplate.initializeStructures(m_structures, m_pConstraints))
 			return false;
 		m_tPrevElapsedSeconds = 0;
 		m_bRunComplete = false;
 	} else {
-		const char* resumeElemNames[] = {messages->m_sxTotalEnergyCalculations.c_str(), messages->m_sxElapsedSeconds.c_str(), messages->m_sxRunComplete.c_str(), messages->m_sxStructures.c_str()};
+		const char* resumeElemNames[] = {xTotalEnergyCalculations, xElapsedSeconds, xRunComplete, xStructures};
 		XsdElementUtil resumeElemUtil(XSD_ALL, resumeElemNames, s_resumeMinOccurs);
 		if (!resumeElemUtil.process(pResumeElem))
 			return false;
 		const xml_node<>** resumeElements = resumeElemUtil.getAllElements();
-		if (!XsdTypeUtil::read1NonNegativeIntAtt(resumeElements[0], m_iEnergyCalculations, messages->m_sxValue.c_str(), true, NULL))
+		if (!XsdTypeUtil::read1NonNegativeIntAtt(resumeElements[0], m_iEnergyCalculations, xValue, true, NULL))
 			return false;
-		if (!XsdTypeUtil::read1TimeT(resumeElements[1], m_tPrevElapsedSeconds, messages->m_sxValue.c_str(), true, NULL))
+		if (!XsdTypeUtil::read1TimeT(resumeElements[1], m_tPrevElapsedSeconds, xValue, true, NULL))
 			return false;
-		if (!XsdTypeUtil::read1BoolAtt(resumeElements[2], m_bRunComplete, messages->m_sxValue.c_str(), true, NULL, messages))
+		if (!XsdTypeUtil::read1BoolAtt(resumeElements[2], m_bRunComplete, xValue, true, NULL))
 			return false;
 
-		const char* structuresElemNames[] = {messages->m_sxStructure.c_str()};
+		const char* structuresElemNames[] = {xStructure};
 		XsdElementUtil structuresElemUtil(XSD_SEQUENCE, structuresElemNames, s_structuresMinOccurs, s_structuresMaxOccurs);
 		if (!structuresElemUtil.process(resumeElements[3]))
 			return false;
@@ -103,35 +106,36 @@ bool Batch::loadResume(const rapidxml::xml_node<>* pResumeElem, const Strings* m
 		for (std::vector<const xml_node<>*>::iterator it = v->begin(); it != v->end(); it++) {
 			Structure* pStructure = new Structure();
 			m_structures.push_back(pStructure);
-			if (!pStructure->load(*it, messages))
+			if (!pStructure->load(*it))
 				return false;
 		}
 	}
 	return true;
 }
 
-bool Batch::saveResume(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pBatchElem, const Strings* messages)
+bool Batch::saveResume(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pBatchElem)
 {
 	using namespace rapidxml;
-	xml_node<>* resume = doc.allocate_node(node_element, messages->m_sxResume.c_str());
+	using namespace strings;
+	xml_node<>* resume = doc.allocate_node(node_element, xResume);
 	pBatchElem->append_node(resume);
 
-	xml_node<>* totalEnergyCalculations = doc.allocate_node(node_element, messages->m_sxTotalEnergyCalculations.c_str());
-	XsdTypeUtil::setAttribute(doc, totalEnergyCalculations, messages->m_sxValue.c_str(), m_iEnergyCalculations);
+	xml_node<>* totalEnergyCalculations = doc.allocate_node(node_element, xTotalEnergyCalculations);
+	XsdTypeUtil::setAttribute(doc, totalEnergyCalculations, xValue, m_iEnergyCalculations);
 	resume->append_node(totalEnergyCalculations);
 	
-	xml_node<>* elapsedSeconds = doc.allocate_node(node_element, messages->m_sxElapsedSeconds.c_str());
-	XsdTypeUtil::setAttribute(doc, elapsedSeconds, messages->m_sxValue.c_str(), getTotalElapsedSeconds());
+	xml_node<>* elapsedSeconds = doc.allocate_node(node_element, xElapsedSeconds);
+	XsdTypeUtil::setAttribute(doc, elapsedSeconds, xValue, getTotalElapsedSeconds());
 	resume->append_node(elapsedSeconds);
 
-	xml_node<>* runComplete = doc.allocate_node(node_element, messages->m_sxRunComplete.c_str());
-	XsdTypeUtil::setAttribute(doc, runComplete, messages->m_sxValue.c_str(), m_bRunComplete, messages);
+	xml_node<>* runComplete = doc.allocate_node(node_element, xRunComplete);
+	XsdTypeUtil::setAttribute(doc, runComplete, xValue, m_bRunComplete);
 	resume->append_node(runComplete);
 
-	xml_node<>* structures = doc.allocate_node(node_element, messages->m_sxStructures.c_str());
+	xml_node<>* structures = doc.allocate_node(node_element, xStructures);
 	resume->append_node(structures);
 	for (std::list<Structure*>::iterator it = m_structures.begin(); it != m_structures.end(); it++)
-		if (!(*it)->save(doc, structures, messages))
+		if (!(*it)->save(doc, structures))
 			return false;
 
 	return true;

@@ -21,9 +21,9 @@ public:
 	FLOAT m_fRotationProbability;
 
 	SAPerturbations();
-	bool loadSetup(const rapidxml::xml_node<>* pPerturbationsElem, const Strings* messages);
+	bool loadSetup(const rapidxml::xml_node<>* pPerturbationsElem);
 	bool loadDefaults(unsigned int iStructures, bool bMoleculesPresent, Constraints* pConstraints);
-	bool saveSetup(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem, const Strings* messages);
+	bool saveSetup(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem);
 
 private:
 	static const unsigned int s_perturbationsMinOccurs[];

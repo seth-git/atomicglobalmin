@@ -3,7 +3,10 @@
 
 #include "../translation/strings.h"
 #include "../xsd/typedef.h"
+#include <iostream>
+#include <stdio.h>
 #include <stdlib.h>
+#include <map>
 
 class Handbook {
 public:

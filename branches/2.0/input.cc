@@ -6,8 +6,6 @@
 Input::Input()
 {
 	m_iAction = -1;
-	m_sLanguageCode = Strings::s_sDefaultLanguageCode;
-	m_messages = Strings::instance();
 	m_pAction = NULL;
 }
 
@@ -25,9 +23,9 @@ void Input::clear() {
 
 bool Input::load(const char* pFilename) {
 	using namespace rapidxml;
+	using namespace strings;
 	m_sFileName = pFilename;
-	const Strings* messagesDL = Strings::instance();
-	printf(messagesDL->m_sReadingFile.c_str(), pFilename);
+	printf(ReadingFile, pFilename);
 	file<> xmlFile(pFilename);
 	return loadStr(xmlFile.data());
 }
@@ -47,24 +45,25 @@ bool Input::loadStr(char* xml) {
 
 const char* Input::s_agml = "agml";
 
-const char* Input::s_attributeNames[]   = {"version", "language", "xmlns"                                           , "xmlns:xsi"                                , "xsi:schemaLocation"};
-const bool  Input::s_required[]         = {true     , false     , false                                             , false                                      , false };
-const char* Input::s_defaultValues[]    = {""       , "en"      , "http://sourceforge.net/projects/atomicglobalmin/", "http://www.w3.org/2001/XMLSchema-instance", "http://sourceforge.net/projects/atomicglobalmin/ agml.xsd"};
+const char* Input::s_attributeNames[]   = {"version", "xmlns"                                           , "xmlns:xsi"                                , "xsi:schemaLocation"};
+const bool  Input::s_required[]         = {true     , false                                             , false                                      , false };
+const char* Input::s_defaultValues[]    = {""       , "http://sourceforge.net/projects/atomicglobalmin/", "http://www.w3.org/2001/XMLSchema-instance", "http://sourceforge.net/projects/atomicglobalmin/ agml.xsd"};
+
+const char* Input::s_actionElementNames[] = {strings::xSimulatedAnnealing, strings::xRandomSearch, strings::xParticleSwarmOptimization, strings::xGeneticAlgorithm, strings::xBatch};
 
 bool Input::load(rapidxml::xml_document<> &doc)
 {
 	using namespace rapidxml;
+	using namespace strings;
 	clear();
 	const xml_node<>* pElem = doc.first_node();
 	if (!pElem || strcmp(s_agml,pElem->name()) != 0) {
-		const Strings* messagesDL = Strings::instance();
-		printf(messagesDL->m_sElementNotFound.c_str(), s_agml);
+		printf(ElementNotFound, s_agml);
 		return false;
 	}
 
 	if (pElem->next_sibling()) {
-		const Strings* messagesDL = Strings::instance();
-		puts(messagesDL->m_sOneRootElement.c_str());
+		puts(OneRootElement);
 		return false;
 	}
 	
@@ -74,13 +73,8 @@ bool Input::load(rapidxml::xml_document<> &doc)
 		return false;
 	rootAttributeValues = rootAttUtil.getAllAttributes();
 	m_sVersion = rootAttributeValues[0];
-	m_sLanguageCode = rootAttributeValues[1];
-	m_messages = Strings::instance(m_sLanguageCode);
-	if (NULL == m_messages)
-		return false;
 	
-	const char* actionElementNames[] = {m_messages->m_sxSimulatedAnnealing.c_str(), m_messages->m_sxRandomSearch.c_str(), m_messages->m_sxParticleSwarmOptimization.c_str(), m_messages->m_sxGeneticAlgorithm.c_str(), m_messages->m_sxBatch.c_str()};
-	XsdElementUtil agmlUtil(XSD_CHOICE, actionElementNames);
+	XsdElementUtil agmlUtil(XSD_CHOICE, s_actionElementNames);
 	if (!agmlUtil.process(pElem))
 		return false;
 	pElem = agmlUtil.getChoiceElement();
@@ -98,15 +92,13 @@ bool Input::load(rapidxml::xml_document<> &doc)
 		break;
 	}
 	
-	return m_pAction->load(pElem, m_messages);
+	return m_pAction->load(pElem);
 }
 
 bool Input::save(rapidxml::xml_document<> &doc)
 {
 	using namespace rapidxml;
-	const Strings* messagesDL = Strings::instance();
-	m_messages = messagesDL;
-	m_sLanguageCode = Strings::s_sDefaultLanguageCode;
+	using namespace strings;
 
 	xml_node<>* decl = doc.allocate_node(node_declaration);
 	decl->append_attribute(doc.allocate_attribute("version", "1.0"));
@@ -117,16 +109,15 @@ bool Input::save(rapidxml::xml_document<> &doc)
 	doc.append_node(agml);
 
 	agml->append_attribute(doc.allocate_attribute(s_attributeNames[0], m_sVersion.c_str()));
-	agml->append_attribute(doc.allocate_attribute(s_attributeNames[1], m_sLanguageCode.c_str()));
+	agml->append_attribute(doc.allocate_attribute(s_attributeNames[1], s_defaultValues[1]));
 	agml->append_attribute(doc.allocate_attribute(s_attributeNames[2], s_defaultValues[2]));
 	agml->append_attribute(doc.allocate_attribute(s_attributeNames[3], s_defaultValues[3]));
-	agml->append_attribute(doc.allocate_attribute(s_attributeNames[4], s_defaultValues[4]));
 
 	if (NULL != m_pAction) {
-		const char* actionElementNames[] = {m_messages->m_sxSimulatedAnnealing.c_str(), m_messages->m_sxRandomSearch.c_str(), m_messages->m_sxParticleSwarmOptimization.c_str(), m_messages->m_sxGeneticAlgorithm.c_str(), m_messages->m_sxBatch.c_str()};
+		const char* actionElementNames[] = {xSimulatedAnnealing, xRandomSearch, xParticleSwarmOptimization, xGeneticAlgorithm, xBatch};
 		xml_node<>* action = doc.allocate_node(node_element, actionElementNames[m_iAction]);
 		agml->append_node(action);
-		if (!m_pAction->save(doc, action, m_messages))
+		if (!m_pAction->save(doc, action))
 			return false;
 	}
 	return true;
@@ -141,19 +132,19 @@ bool Input::save(const char* pFilename)
 bool Input::save()
 {
 	using namespace rapidxml;
-	const Strings* messagesDL = Strings::instance();
-	printf(messagesDL->m_sWritingFile.c_str(), m_sFileName.c_str());
+	using namespace strings;
+	printf(WritingFile, m_sFileName.c_str());
 
 	xml_document<> doc;
 	if (!save(doc))
 		return false;
 
 	std::string temporaryFileName;
-	temporaryFileName.append(m_sFileName).append(".").append(messagesDL->m_spAbbrTemporary);
+	temporaryFileName.append(m_sFileName).append(".").append(pAbbrTemporary);
 
 	FILE *f = fopen(temporaryFileName.c_str(), "w");
 	if (f == NULL) {
-	    printf(messagesDL->m_sErrorOpeningFile.c_str(), temporaryFileName.c_str());
+	    printf(ErrorOpeningFile, temporaryFileName.c_str());
 	    return false;
 	}
 

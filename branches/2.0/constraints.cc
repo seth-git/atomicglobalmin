@@ -51,17 +51,17 @@ void Constraints::setCubeLWH(FLOAT cubeLWH) {
 	*m_pfHalfCubeLWH = cubeLWH * 0.5;
 }
 
-bool Constraints::load(const rapidxml::xml_node<>* pConstraintsElem, const Strings* messages,
+bool Constraints::load(const rapidxml::xml_node<>* pConstraintsElem,
                        std::map<std::string, Constraints*> &constraintsMap) {
 	using namespace rapidxml;
-	const Strings* messagesDL = Strings::instance();
-	const char* elementNames[] = { messages->m_sxCube.c_str(), messages->m_sxAtomicDistances.c_str() };
-	const char* distElementNames[] = { messages->m_sxMin.c_str(), messages->m_sxMax.c_str() };
+	using namespace strings;
+	const char* elementNames[] = { xCube, xAtomicDistances };
+	const char* distElementNames[] = { xMin, xMax };
 	XsdElementUtil constraintUtil(XSD_ALL, elementNames, s_minOccurs);
 
 	clear();
 
-	const char* valueAttNames[] = { messages->m_sxName.c_str(), messages->m_sxBase.c_str() };
+	const char* valueAttNames[] = { xName, xBase };
 	const char** values;
 	XsdAttributeUtil valueUtil(valueAttNames, s_required, s_defaultValues);
 	if (!valueUtil.process(pConstraintsElem))
@@ -71,7 +71,7 @@ bool Constraints::load(const rapidxml::xml_node<>* pConstraintsElem, const Strin
 	if (values[1] != NULL) {
 		Constraints* other = constraintsMap[values[1]];
 		if (other == NULL) {
-			printf(messagesDL->m_sConstraintNameMisMatch.c_str(), pConstraintsElem->name(), valueAttNames[0], values[0], messages->m_sxBase.c_str(), values[1]);
+			printf(ConstraintNameMisMatch, pConstraintsElem->name(), valueAttNames[0], values[0], xBase, values[1]);
 			return false;
 		}
 		copy(*other);
@@ -88,7 +88,7 @@ bool Constraints::load(const rapidxml::xml_node<>* pConstraintsElem, const Strin
 			m_pfCubeLWH = new FLOAT;
 			m_pfHalfCubeLWH = new FLOAT;
 		}
-		if (!XsdTypeUtil::read1PosFloatAtt(constraintElements[0], *m_pfCubeLWH, messages->m_sxSize.c_str(), true, NULL))
+		if (!XsdTypeUtil::read1PosFloatAtt(constraintElements[0], *m_pfCubeLWH, xSize, true, NULL))
 			return false;
 		*m_pfHalfCubeLWH = *m_pfCubeLWH * 0.5;
 	}
@@ -103,12 +103,12 @@ bool Constraints::load(const rapidxml::xml_node<>* pConstraintsElem, const Strin
 		distElements = distUtil.getSequenceElements();
 		unsigned int timesReadGeneralMin = 0;
 		for (i = 0; i < distElements[0].size(); ++i)
-			if (!addMinDist(distElements[0][i], timesReadGeneralMin, messages))
+			if (!addMinDist(distElements[0][i], timesReadGeneralMin))
 				return false;
 		for (i = 0; i < distElements[1].size(); ++i) { // Should be only one
 			if (!m_pfGeneralMaxAtomicDistance)
 				m_pfGeneralMaxAtomicDistance = new FLOAT;
-			if (!XsdTypeUtil::read1PosFloatAtt(distElements[1][i], *m_pfGeneralMaxAtomicDistance, messages->m_sxValue.c_str(), true, NULL)) {
+			if (!XsdTypeUtil::read1PosFloatAtt(distElements[1][i], *m_pfGeneralMaxAtomicDistance, xValue, true, NULL)) {
 				return false;
 			}
 		}
@@ -117,24 +117,23 @@ bool Constraints::load(const rapidxml::xml_node<>* pConstraintsElem, const Strin
 	return true;
 }
 
-bool Constraints::addMinDist(const rapidxml::xml_node<>* pElem, unsigned int &timesReadGeneralMin, const Strings* messages) {
-	const char* minAttributeNames[] = {messages->m_sxValue.c_str(), messages->m_sxZ1.c_str(), messages->m_sxZ2.c_str() };
+bool Constraints::addMinDist(const rapidxml::xml_node<>* pElem, unsigned int &timesReadGeneralMin) {
+	using namespace strings;
+	const char* minAttributeNames[] = {xValue, xZ1, xZ2 };
 	const char** values;
-	const Strings* messagesDL = Strings::instance();
-
 	XsdAttributeUtil attUtil(minAttributeNames, s_minRequired, s_minDefaultValues);
 	if (!attUtil.process(pElem))
 		return false;
 	values = attUtil.getAllAttributes();
 
 	if ((values[1] == NULL && values[2] != NULL) || (values[1] != NULL && values[2] == NULL)) {
-		printf(messagesDL->m_sErrorZ1Z2.c_str(), pElem->name(), minAttributeNames[1], minAttributeNames[2]);
+		printf(ErrorZ1Z2, pElem->name(), minAttributeNames[1], minAttributeNames[2]);
 		return false;
 	}
 
 	if (values[1] == NULL) {
 		if (timesReadGeneralMin >= 1) {
-			printf(messagesDL->m_sErrorOneGeneralMin.c_str(), pElem->name(), minAttributeNames[1], minAttributeNames[2]);
+			printf(ErrorOneGeneralMin, pElem->name(), minAttributeNames[1], minAttributeNames[2]);
 			return false;
 		}
 		if (!m_pfGeneralMinAtomicDistance)
@@ -154,7 +153,7 @@ bool Constraints::addMinDist(const rapidxml::xml_node<>* pElem, unsigned int &ti
 		if (!XsdTypeUtil::getAtomicNumber(values[2], j, minAttributeNames[2], pElem->name()))
 			return false;
 		if (m_rgMinAtomicDistances[i][j] != -1) {
-			printf(messagesDL->m_sErrorDuplicateMinDist.c_str(), pElem->name(), minAttributeNames[1], i, minAttributeNames[2], j);
+			printf(ErrorDuplicateMinDist, pElem->name(), minAttributeNames[1], i, minAttributeNames[2], j);
 			return false;
 		}
 		if (!XsdTypeUtil::getPositiveFloat(values[0], m_rgMinAtomicDistances[i][j], minAttributeNames[0], pElem))
@@ -165,14 +164,15 @@ bool Constraints::addMinDist(const rapidxml::xml_node<>* pElem, unsigned int &ti
 	return true;
 }
 
-bool Constraints::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pConstraintsElem, const Strings* messages) const {
+bool Constraints::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pConstraintsElem) const {
 	using namespace rapidxml;
-	pConstraintsElem->append_attribute(doc.allocate_attribute(messages->m_sxName.c_str(), m_sName.c_str()));
+	using namespace strings;
+	pConstraintsElem->append_attribute(doc.allocate_attribute(xName, m_sName.c_str()));
 	if (m_pBase)
-		pConstraintsElem->append_attribute(doc.allocate_attribute(messages->m_sxBase.c_str(), m_pBase->m_sName.c_str()));
+		pConstraintsElem->append_attribute(doc.allocate_attribute(xBase, m_pBase->m_sName.c_str()));
 	if (m_pfCubeLWH && (!m_pBase || !m_pBase->m_pfCubeLWH || *m_pfCubeLWH != *(m_pBase->m_pfCubeLWH))) {
-		xml_node<>* cube = doc.allocate_node(node_element, messages->m_sxCube.c_str());
-		XsdTypeUtil::setAttribute(doc, cube, messages->m_sxSize.c_str(), *m_pfCubeLWH);
+		xml_node<>* cube = doc.allocate_node(node_element, xCube);
+		XsdTypeUtil::setAttribute(doc, cube, xSize, *m_pfCubeLWH);
 		pConstraintsElem->append_node(cube);
 	}
 
@@ -181,10 +181,10 @@ bool Constraints::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pCon
 	bool writeSpecificMins = specificMinDistNotInBase();
 
 	if (writeGeneralMin || writeGeneralMax || writeSpecificMins) {
-		xml_node<>* atomicDistances = doc.allocate_node(node_element, messages->m_sxAtomicDistances.c_str());
+		xml_node<>* atomicDistances = doc.allocate_node(node_element, xAtomicDistances);
 		if (writeGeneralMin) {
-			xml_node<>* generalMin = doc.allocate_node(node_element, messages->m_sxMin.c_str());
-			XsdTypeUtil::setAttribute(doc, generalMin, messages->m_sxValue.c_str(), *m_pfGeneralMinAtomicDistance);
+			xml_node<>* generalMin = doc.allocate_node(node_element, xMin);
+			XsdTypeUtil::setAttribute(doc, generalMin, xValue, *m_pfGeneralMinAtomicDistance);
 			atomicDistances->append_node(generalMin);
 		}
 		if (writeSpecificMins) {
@@ -192,16 +192,16 @@ bool Constraints::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pCon
 			for (std::map<unsigned int, std::map<unsigned int, FLOAT> >::const_iterator i = m_mapMinAtomicDistances.begin(); i != m_mapMinAtomicDistances.end(); i++)
 				for (std::map<unsigned int, FLOAT>::const_iterator j = i->second.begin(); j != i->second.end(); j++)
 					if (!m_pBase || j->second != m_pBase->m_rgMinAtomicDistances[i->first][j->first]) {
-						min = doc.allocate_node(node_element, messages->m_sxMin.c_str());
-						XsdTypeUtil::setAttribute(doc, min, messages->m_sxValue.c_str(), j->second);
-						XsdTypeUtil::setAttribute(doc, min, messages->m_sxZ1.c_str(), i->first);
-						XsdTypeUtil::setAttribute(doc, min, messages->m_sxZ2.c_str(), j->first);
+						min = doc.allocate_node(node_element, xMin);
+						XsdTypeUtil::setAttribute(doc, min, xValue, j->second);
+						XsdTypeUtil::setAttribute(doc, min, xZ1, i->first);
+						XsdTypeUtil::setAttribute(doc, min, xZ2, j->first);
 						atomicDistances->append_node(min);
 					}
 		}
 		if (writeGeneralMax) {
-			xml_node<>* generalMax = doc.allocate_node(node_element, messages->m_sxMax.c_str());
-			XsdTypeUtil::setAttribute(doc, generalMax, messages->m_sxValue.c_str(), *m_pfGeneralMaxAtomicDistance);
+			xml_node<>* generalMax = doc.allocate_node(node_element, xMax);
+			XsdTypeUtil::setAttribute(doc, generalMax, xValue, *m_pfGeneralMaxAtomicDistance);
 			atomicDistances->append_node(generalMax);
 		}
 		pConstraintsElem->append_node(atomicDistances);

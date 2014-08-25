@@ -21,9 +21,9 @@ public:
 	
 	AtomGroupTemplate();
 	~AtomGroupTemplate();
-	bool loadMolecule(const rapidxml::xml_node<>* pMoleculeTemplateElem, const Strings* messages);
-	bool loadAtom(const rapidxml::xml_node<>* node, const Strings* messages);
-	bool save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* parentNode, const Strings* messages);
+	bool loadMolecule(const rapidxml::xml_node<>* pMoleculeTemplateElem);
+	bool loadAtom(const rapidxml::xml_node<>* node);
+	bool save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* parentNode);
 	bool init(Structure &structure);
 	bool atomicNumbersMatch(const AtomGroup &atomGroup) const;
 	bool atomicNumbersMatch(const unsigned int* structureAtomicNumbers,

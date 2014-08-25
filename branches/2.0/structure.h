@@ -41,9 +41,9 @@ protected:
 public:
 	Structure();
 	~Structure();
-	bool load(const rapidxml::xml_node<>* pStructureElem, const Strings* messages);
+	bool load(const rapidxml::xml_node<>* pStructureElem);
 	bool loadStr(char* xml);
-	bool save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem, const Strings* messages) const;
+	bool save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem) const;
 	bool save(std::string &buffer) const;
 
 	void copy(Structure &structure);
@@ -155,7 +155,7 @@ public:
 			const unsigned int* atomicNumbers, unsigned int size);
 
 protected:
-	rapidxml::xml_node<>* save(rapidxml::xml_document<> &doc, const Strings* messages) const;
+	rapidxml::xml_node<>* save(rapidxml::xml_document<> &doc) const;
 
 	void initCoordinateRefs();
 	bool atomsMatch(unsigned int numAtomGroupTemplates,

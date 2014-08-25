@@ -12,17 +12,18 @@ const char* SAPerturbations::s_translationVectorAttDef[] = {"", "0", ""};
 const bool SAPerturbations::s_rotationAngleAttReq[] = {true,true,true};
 const char* SAPerturbations::s_rotationAngleAttDef[] = {"", "0", ""};
 
-bool SAPerturbations::loadSetup(const rapidxml::xml_node<>* pPerturbationsElem, const Strings* messages)
+bool SAPerturbations::loadSetup(const rapidxml::xml_node<>* pPerturbationsElem)
 {
 	using namespace rapidxml;
-	const char* perturbationsElemNames[] = {messages->m_sxTranslationVector.c_str(), messages->m_sxRotationAngle.c_str()};
+	using namespace strings;
+	const char* perturbationsElemNames[] = {xTranslationVector, xRotationAngle};
 	XsdElementUtil perturbationsElemUtil(XSD_ALL, perturbationsElemNames, s_perturbationsMinOccurs);
 	if (!perturbationsElemUtil.process(pPerturbationsElem))
 		return false;
 	const xml_node<>** perturbationsElements = perturbationsElemUtil.getAllElements();
 
 	if (NULL != perturbationsElements[0]) {
-		const char* translationVectorAttNames[] = {messages->m_sxStartLength.c_str(), messages->m_sxMinLength.c_str(), messages->m_sxProbability.c_str()};
+		const char* translationVectorAttNames[] = {xStartLength, xMinLength, xProbability};
 		XsdAttributeUtil translationVectorAttUtil(translationVectorAttNames, s_translationVectorAttReq, s_translationVectorAttDef);
 		if (!translationVectorAttUtil.process(perturbationsElements[0]))
 			return false;
@@ -43,7 +44,7 @@ bool SAPerturbations::loadSetup(const rapidxml::xml_node<>* pPerturbationsElem, 
 	}
 
 	if (NULL != perturbationsElements[1]) {
-		const char* rotationAngleAttNames[] = {messages->m_sxStartDegrees.c_str(), messages->m_sxMinDegrees.c_str(), messages->m_sxProbability.c_str()};
+		const char* rotationAngleAttNames[] = {xStartDegrees, xMinDegrees, xProbability};
 		XsdAttributeUtil rotationAngleAttUtil(rotationAngleAttNames, s_rotationAngleAttReq, s_rotationAngleAttDef);
 		if (!rotationAngleAttUtil.process(perturbationsElements[1]))
 			return false;
@@ -73,11 +74,11 @@ bool SAPerturbations::loadSetup(const rapidxml::xml_node<>* pPerturbationsElem, 
 	fTotalProbability += m_fTranslationVectorProbability;
 	fTotalProbability += m_fRotationProbability;
 	if (fTotalProbability != 1) {
-		printf(messages->m_sProbabilityMustTotalOne.c_str(), pPerturbationsElem->name());
+		printf(ProbabilityMustTotalOne, pPerturbationsElem->name());
 		return false;
 	}
 
-	if (!XsdTypeUtil::read1PosIntAtt(pPerturbationsElem, m_iStartingPerturbationsPerIteration, messages->m_sxNumberPerIteration.c_str(), true, "1"))
+	if (!XsdTypeUtil::read1PosIntAtt(pPerturbationsElem, m_iStartingPerturbationsPerIteration, xNumberPerIteration, true, "1"))
 		return false;
 
 	return true;
@@ -118,32 +119,33 @@ bool SAPerturbations::loadDefaults(unsigned int iStructures, bool bMoleculesPres
 	return true;
 }
 
-bool SAPerturbations::saveSetup(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem, const Strings* messages)
+bool SAPerturbations::saveSetup(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem)
 {
 	using namespace rapidxml;
-	xml_node<>* perturbations = doc.allocate_node(node_element, messages->m_sxPerturbations.c_str());
+	using namespace strings;
+	xml_node<>* perturbations = doc.allocate_node(node_element, xPerturbations);
 	pParentElem->append_node(perturbations);
 
 	if (m_fTranslationVectorProbability != 0) {
-		xml_node<>* translationVector = doc.allocate_node(node_element, messages->m_sxTranslationVector.c_str());
+		xml_node<>* translationVector = doc.allocate_node(node_element, xTranslationVector);
 		perturbations->append_node(translationVector);
-		XsdTypeUtil::setAttribute(doc, translationVector, messages->m_sxStartLength.c_str(), m_fTranslationVectorStartLength);
+		XsdTypeUtil::setAttribute(doc, translationVector, xStartLength, m_fTranslationVectorStartLength);
 		if (m_fTranslationVectorMinLength != 0)
-			XsdTypeUtil::setAttribute(doc, translationVector, messages->m_sxMinLength.c_str(), m_fTranslationVectorMinLength);
-		XsdTypeUtil::setAttribute(doc, translationVector, messages->m_sxProbability.c_str(), m_fTranslationVectorProbability);
+			XsdTypeUtil::setAttribute(doc, translationVector, xMinLength, m_fTranslationVectorMinLength);
+		XsdTypeUtil::setAttribute(doc, translationVector, xProbability, m_fTranslationVectorProbability);
 	}
 
 	if (m_fRotationProbability != 0) {
-		xml_node<>* rotationAngle = doc.allocate_node(node_element, messages->m_sxRotationAngle.c_str());
+		xml_node<>* rotationAngle = doc.allocate_node(node_element, xRotationAngle);
 		perturbations->append_node(rotationAngle);
-		XsdTypeUtil::setAttribute(doc, rotationAngle, messages->m_sxStartDegrees.c_str(), m_fRotationStartRadians * RAD_TO_DEG);
+		XsdTypeUtil::setAttribute(doc, rotationAngle, xStartDegrees, m_fRotationStartRadians * RAD_TO_DEG);
 		if (m_fRotationMinRadians != 0)
-			XsdTypeUtil::setAttribute(doc, rotationAngle, messages->m_sxMinDegrees.c_str(), m_fRotationMinRadians * RAD_TO_DEG);
-		XsdTypeUtil::setAttribute(doc, rotationAngle, messages->m_sxProbability.c_str(), m_fRotationProbability);
+			XsdTypeUtil::setAttribute(doc, rotationAngle, xMinDegrees, m_fRotationMinRadians * RAD_TO_DEG);
+		XsdTypeUtil::setAttribute(doc, rotationAngle, xProbability, m_fRotationProbability);
 	}
 
 	if (m_iStartingPerturbationsPerIteration != 1)
-		XsdTypeUtil::setAttribute(doc, perturbations, messages->m_sxNumberPerIteration.c_str(), m_iStartingPerturbationsPerIteration);
+		XsdTypeUtil::setAttribute(doc, perturbations, xNumberPerIteration, m_iStartingPerturbationsPerIteration);
 
 	return true;
 }

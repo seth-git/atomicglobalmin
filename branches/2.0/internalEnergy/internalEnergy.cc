@@ -15,8 +15,7 @@ InternalEnergy* InternalEnergy::instance(Impl impl,
 	case LENNARD_JONES:
 		return new LennardJones(pInternalEnergyXml);
 	default:
-		Strings* messagesDL = Strings::instance();
-		printf("There is no method for creating '%1$s' input files. ", getEnumString(impl, messagesDL));
+		printf("There is no method for creating '%1$s' input files. ", getEnumString(impl));
 		printf("Please create a new class for this method that extends InternalEnergyMethod.\n");
 		return NULL;
 	}
@@ -29,12 +28,14 @@ bool InternalEnergy::execute(Structure &structure) {
 		return calculateEnergy(structure);
 }
 
-bool InternalEnergy::getEnum(const char* attributeName, const char* stringValue, Impl &result, const rapidxml::xml_node<>* pElem, const Strings* messages) {
-	const char* methods[] = {messages->m_spLennardJones.c_str()};
+bool InternalEnergy::getEnum(const char* attributeName, const char* stringValue, Impl &result, const rapidxml::xml_node<>* pElem) {
+	using namespace strings;
+	const char* methods[] = {pLennardJones};
 	return XsdTypeUtil::getEnumValue(attributeName, stringValue, result, pElem, methods);
 }
 
-const char* InternalEnergy::getEnumString(Impl enumValue, const Strings* messages) {
-	const char* methods[] = {messages->m_spLennardJones.c_str()};
+const char* InternalEnergy::getEnumString(Impl enumValue) {
+	using namespace strings;
+	const char* methods[] = {pLennardJones};
 	return methods[enumValue];
 }

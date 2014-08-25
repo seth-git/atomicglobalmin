@@ -76,12 +76,13 @@ const bool Structure::s_structureAttReq[] = {true,true,false};
 const unsigned int Structure::s_structureMinOccurs[] = {1};
 const unsigned int Structure::s_structureMaxOccurs[] = {XSD_UNLIMITED};
 
-bool Structure::load(const rapidxml::xml_node<>* pStructureElem, const Strings* messages) {
+bool Structure::load(const rapidxml::xml_node<>* pStructureElem) {
 	using namespace rapidxml;
+	using namespace strings;
 	clear();
 
-	const char* structureAttNames[] = {messages->m_sxEnergy.c_str(), messages->m_sxIsTransitionState.c_str(), messages->m_sxId.c_str()};
-	const char* structureAttDef[] = {"0", messages->m_spFalse.c_str(), "0"};
+	const char* structureAttNames[] = {xEnergy, xIsTransitionState, xId};
+	const char* structureAttDef[] = {"0", pFalse, "0"};
 	XsdAttributeUtil structureAttUtil(structureAttNames, s_structureAttReq, structureAttDef);
 	if (!structureAttUtil.process(pStructureElem)) {
 		return false;
@@ -89,12 +90,12 @@ bool Structure::load(const rapidxml::xml_node<>* pStructureElem, const Strings* 
 	const char** structureAttValues = structureAttUtil.getAllAttributes();
 	if (!XsdTypeUtil::getFloat(structureAttValues[0], m_fEnergy, structureAttNames[0], pStructureElem))
 		return false;
-	if (!XsdTypeUtil::getBoolValue(structureAttNames[1], structureAttValues[1], m_bIsTransitionState, pStructureElem, messages))
+	if (!XsdTypeUtil::getBoolValue(structureAttNames[1], structureAttValues[1], m_bIsTransitionState, pStructureElem))
 		return false;
 	if (!XsdTypeUtil::getInteger(structureAttValues[2], m_id, structureAttNames[2], pStructureElem))
 		return false;
 
-	const char* structureElemNames[] = {messages->m_sxAtomGroup.c_str()};
+	const char* structureElemNames[] = {xAtomGroup};
 	XsdElementUtil structureElemUtil(XSD_SEQUENCE, structureElemNames, s_structureMinOccurs, s_structureMaxOccurs);
 	if (!structureElemUtil.process(pStructureElem)) {
 		return false;
@@ -105,7 +106,7 @@ bool Structure::load(const rapidxml::xml_node<>* pStructureElem, const Strings* 
 	m_atomGroups = new AtomGroup[m_iNumberOfAtomGroups];
 	m_iNumberOfAtoms = 0;
 	for (unsigned int i = 0; i < m_iNumberOfAtomGroups; ++i) {
-		if (!m_atomGroups[i].load((*atomGroups)[i], messages))
+		if (!m_atomGroups[i].load((*atomGroups)[i]))
 			return false;
 		m_iNumberOfAtoms += m_atomGroups[i].getNumberOfAtoms();
 	}
@@ -126,12 +127,11 @@ bool Structure::loadStr(char* xml) {
 		return false;
 	}
 	const xml_node<>* pElem = doc.first_node();
-	const Strings* messagesDL = Strings::instance();
-	return load(pElem, messagesDL);
+	return load(pElem);
 }
 
-bool Structure::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem, const Strings* messages) const {
-	rapidxml::xml_node<>* structure = save(doc, messages);
+bool Structure::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem) const {
+	rapidxml::xml_node<>* structure = save(doc);
 	if (NULL == structure)
 		return false;
 	pParentElem->append_node(structure);
@@ -141,7 +141,7 @@ bool Structure::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParen
 bool Structure::save(std::string &buffer) const {
 	using namespace rapidxml;
 	xml_document<> doc;
-	xml_node<>* structure = save(doc, Strings::instance());
+	xml_node<>* structure = save(doc);
 	if (NULL == structure)
 		return false;
 	doc.append_node(structure);
@@ -149,19 +149,20 @@ bool Structure::save(std::string &buffer) const {
 	return true;
 }
 
-rapidxml::xml_node<>* Structure::save(rapidxml::xml_document<> &doc, const Strings* messages) const {
+rapidxml::xml_node<>* Structure::save(rapidxml::xml_document<> &doc) const {
 	using namespace rapidxml;
-	xml_node<>* structure = doc.allocate_node(node_element, messages->m_sxStructure.c_str());
+	using namespace strings;
+	xml_node<>* structure = doc.allocate_node(node_element, xStructure);
 
 	if (0 != m_fEnergy)
-		XsdTypeUtil::setAttribute(doc, structure, messages->m_sxEnergy.c_str(), m_fEnergy);
+		XsdTypeUtil::setAttribute(doc, structure, xEnergy, m_fEnergy);
 	if (m_bIsTransitionState)
-		structure->append_attribute(doc.allocate_attribute(messages->m_sxIsTransitionState.c_str(), messages->m_spTrue.c_str()));
+		structure->append_attribute(doc.allocate_attribute(xIsTransitionState, pTrue));
 	if (0 != m_id)
-		XsdTypeUtil::setAttribute(doc, structure, messages->m_sxId.c_str(), m_id);
+		XsdTypeUtil::setAttribute(doc, structure, xId, m_id);
 
 	for (unsigned int i = 0; i < m_iNumberOfAtomGroups; ++i)
-		if (!m_atomGroups[i].save(doc, structure, messages)) {
+		if (!m_atomGroups[i].save(doc, structure)) {
 			delete structure;
 			return NULL;
 		}

@@ -25,8 +25,7 @@ ExternalEnergy* ExternalEnergy::instance(Impl impl,
 	case GAMESS:
 		return new Gamess(pExternalEnergyXml);
 	default:
-		Strings* messagesDL = Strings::instance();
-		printf("There is no method for creating '%1$s' input files. ", getEnumString(impl, messagesDL));
+		printf("There is no method for creating '%1$s' input files. ", getEnumString(impl));
 		printf("Please create a new class for this method that extends ExternalEnergyMethod.\n");
 		return NULL;
 	}
@@ -196,22 +195,23 @@ const char* ExternalEnergy::getOutputFileExtension(Impl impl) {
 	case GAMESS:
 		return Gamess::s_sOutputFileExtension;
 	default:
-		Strings* messagesDL = Strings::instance();
-		printf("Unknown output file extension for method: %s. ", getEnumString(impl, messagesDL));
+		printf("Unknown output file extension for method: %s. ", getEnumString(impl));
 		printf("Please create a new class for this method that extends ExternalEnergyMethod.\n");
 		return NULL;
 	}
 }
 
-bool ExternalEnergy::getEnum(const char* attributeName, const char* stringValue, Impl &result, const rapidxml::xml_node<>* pElem, const Strings* messages) {
-	const char* methods[] = {messages->m_spADF.c_str(), messages->m_spGAMESS.c_str(), messages->m_spGAMESSUK.c_str(), messages->m_spGaussian.c_str(),
-			messages->m_spFirefly.c_str(), messages->m_spJaguar.c_str(), messages->m_spMolpro.c_str(), messages->m_spORCA.c_str()};
+bool ExternalEnergy::getEnum(const char* attributeName, const char* stringValue, Impl &result, const rapidxml::xml_node<>* pElem) {
+	using namespace strings;
+	const char* methods[] = {pADF, pGAMESS, pGAMESSUK, pGaussian,
+			pFirefly, pJaguar, pMolpro, pORCA};
 	return XsdTypeUtil::getEnumValue(attributeName, stringValue, result, pElem, methods);
 }
 
-const char* ExternalEnergy::getEnumString(Impl enumValue, const Strings* messages) {
-	const char* methods[] = {messages->m_spADF.c_str(), messages->m_spGAMESS.c_str(), messages->m_spGAMESSUK.c_str(), messages->m_spGaussian.c_str(),
-			messages->m_spFirefly.c_str(), messages->m_spJaguar.c_str(), messages->m_spMolpro.c_str(), messages->m_spORCA.c_str()};
+const char* ExternalEnergy::getEnumString(Impl enumValue) {
+	using namespace strings;
+	const char* methods[] = {pADF, pGAMESS, pGAMESSUK, pGaussian,
+			pFirefly, pJaguar, pMolpro, pORCA};
 	return methods[enumValue];
 }
 

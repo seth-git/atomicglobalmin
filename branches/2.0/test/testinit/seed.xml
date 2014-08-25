@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<agml version="2.0" language="en" xmlns="http://sourceforge.net/projects/atomicglobalmin/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://sourceforge.net/projects/atomicglobalmin/ ../../xsd/agml.xsd">
+<agml version="2.0" xmlns="http://sourceforge.net/projects/atomicglobalmin/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://sourceforge.net/projects/atomicglobalmin/ ../../xsd/agml.xsd">
     <batch>
         <setup>
             <structuresTemplate>

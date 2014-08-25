@@ -1,5 +1,6 @@
 
 #include "handbook.h"
+#include <fstream>
 
 std::string Handbook::s_rgAtomcSymbols[MAX_ATOMIC_NUMBERS+1];
 FLOAT Handbook::s_rgAtomicMasses[MAX_ATOMIC_NUMBERS+1];
@@ -12,6 +13,8 @@ bool Handbook::init() {
 }
 
 bool Handbook::initAtomicMasses() {
+	using std::ifstream;
+
 	char fileLine[500];
 	char* myString;
 	char tempString[100];

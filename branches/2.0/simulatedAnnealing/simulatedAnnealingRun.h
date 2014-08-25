@@ -25,10 +25,8 @@ public:
 
 	void init();
 
-	bool loadResume(const rapidxml::xml_node<>* pResumeElem,
-			const Strings* messages);
-	bool saveResume(rapidxml::xml_document<> &doc,
-			rapidxml::xml_node<>* pSimElem, const Strings* messages);
+	bool loadResume(const rapidxml::xml_node<>* pResumeElem);
+	bool saveResume(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pSimElem);
 
 	static bool iterationComparator(const SimulatedAnnealingRun* a, const SimulatedAnnealingRun* b) { return a->m_iIteration > b->m_iIteration; }
 

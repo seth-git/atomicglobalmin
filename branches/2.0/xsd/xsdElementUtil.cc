@@ -3,12 +3,12 @@
 
 bool XsdElementUtil::process (const rapidxml::xml_node<>* node)
 {
+	using namespace strings;
 	const rapidxml::xml_node<>* child;
 	const char *name;
 	unsigned int i;
 	bool bMatch;
-	const Strings* messagesDL = Strings::instance();
-
+	
 	clear();
 	switch(m_type) {
 		case XSD_ALL:
@@ -23,7 +23,7 @@ bool XsdElementUtil::process (const rapidxml::xml_node<>* node)
 				for (i = 0; i < m_iElements; ++i) {
 					if (strcmp(m_elementNames[i], name) == 0) {
 						if (m_allElements[i] != NULL) {
-							printf(messagesDL->m_sMaxOf1ElementExceeded.c_str(), name, node->name());
+							printf(MaxOf1ElementExceeded, name, node->name());
 							return false;
 						}
 						m_allElements[i] = child;
@@ -32,14 +32,14 @@ bool XsdElementUtil::process (const rapidxml::xml_node<>* node)
 					}
 				}
 				if (!bMatch) {
-					printf(messagesDL->m_sUnrecognizedElement.c_str(), name, node->name());
+					printf(UnrecognizedElement, name, node->name());
 					return false;
 				}
 			}
 
 			for (i = 0; i < m_iElements; ++i) {
 				if (m_allElements[i] == NULL && m_minOccurs[i] == 1) {
-					printf(messagesDL->m_sElementNumNot1.c_str(), m_elementNames[i], node->name());
+					printf(ElementNumNot1, m_elementNames[i], node->name());
 					return false;
 				}
 			}
@@ -67,7 +67,7 @@ bool XsdElementUtil::process (const rapidxml::xml_node<>* node)
 			m_pChoiceElement = child;
 			child = child->next_sibling();
 			if (child) {
-				printf(messagesDL->m_sElementRequiresExactly1Child.c_str(), node->name());
+				printf(ElementRequiresExactly1Child, node->name());
 				return false;
 			}
 			break;
@@ -81,23 +81,23 @@ bool XsdElementUtil::process (const rapidxml::xml_node<>* node)
 				while (strcmp(m_elementNames[i], name) != 0) {
 					if (m_sequenceElements[i].size() < m_minOccurs[i]) {
 						if (m_minOccurs[i] > 1) {
-							printf(messagesDL->m_sElementRequiresNChildren.c_str(), m_minOccurs[i], m_elementNames[i], node->name());
+							printf(ElementRequiresNChildren, m_minOccurs[i], m_elementNames[i], node->name());
 						} else if (m_minOccurs[i] > 0) {
-							printf(messagesDL->m_sElementRequires1ChildMin.c_str(), m_elementNames[i], node->name());
+							printf(ElementRequires1ChildMin, m_elementNames[i], node->name());
 						}
 						printSequenceError(node->name());
 						return false;
 					}
 					++i;
 					if (i >= m_iElements) {
-						printf(messagesDL->m_sMisplacedElement.c_str(), name, node->name());
+						printf(MisplacedElement, name, node->name());
 						printSequenceError(node->name());
 						return false;
 					}
 				}
 
 				if (m_maxOccurs[i] != XSD_UNLIMITED && m_sequenceElements[i].size() == m_maxOccurs[i]) {
-					printf(messagesDL->m_sMaxElementsExceeded.c_str(), m_maxOccurs[i], name, node->name());
+					printf(MaxElementsExceeded, m_maxOccurs[i], name, node->name());
 					return false;
 				}
 				m_sequenceElements[i].push_back(child);
@@ -113,19 +113,19 @@ bool XsdElementUtil::process (const rapidxml::xml_node<>* node)
 }
 
 void XsdElementUtil::printChoiceError(const char* nodeName) {
-	const Strings* messagesDL = Strings::instance();
+	using namespace strings;
 	std::string choiceElements;
 	choiceElements.append("'").append(m_elementNames[0]).append("'");
 	for (unsigned int i = 1; i < m_iElements; ++i) {
 		choiceElements.append(", '").append(m_elementNames[i]).append("'");
 	}
-	printf(messagesDL->m_sChoiceError.c_str(), nodeName, choiceElements.c_str());
+	printf(ChoiceError, nodeName, choiceElements.c_str());
 }
 
 void XsdElementUtil::printSequenceError(const char* nodeName) {
-	const Strings* messagesDL = Strings::instance();
+	using namespace strings;
 	if (m_iElements > 1) {
-		printf(messagesDL->m_sChoiceElementOrder.c_str(), nodeName);
+		printf(ChoiceElementOrder, nodeName);
 		for (unsigned int i = 0; i < m_iElements; ++i) {
 			printf("%u. %s", i+1, m_elementNames[i]);
 			if (m_minOccurs[i] == m_maxOccurs[i] && m_maxOccurs[i] != XSD_UNLIMITED) {
@@ -133,7 +133,7 @@ void XsdElementUtil::printSequenceError(const char* nodeName) {
 			} else {
 				printf(" (%u-", m_minOccurs[i]);
 				if (m_maxOccurs[i] == XSD_UNLIMITED) {
-					printf("%s)", messagesDL->m_spUnlimited.c_str());
+					printf("%s)", pUnlimited);
 				} else {
 					printf("%u)", m_maxOccurs[i]);
 				}

@@ -11,7 +11,7 @@
 
 class XsdTypeUtil {
 	public:
-		static bool getBoolValue(const char* attributeName, const char* attributeValue, bool &result, const rapidxml::xml_node<>* node, const Strings* messages);
+		static bool getBoolValue(const char* attributeName, const char* attributeValue, bool &result, const rapidxml::xml_node<>* node);
 
 		// Templates can't be declared in .cc files
 		template <std::size_t iResponses>
@@ -51,7 +51,7 @@ class XsdTypeUtil {
 		
 		static bool read1StrAtt(const rapidxml::xml_node<>* node, std::string &result, const char* attributeName, bool required, const char* defaultValue);
 		static bool read1DirAtt(const rapidxml::xml_node<>* node, std::string &resultDir, const char* attributeName, bool required, const char* defaultValue);
-		static bool read1BoolAtt(const rapidxml::xml_node<>* node, bool &result, const char* attributeName, bool required, const char* defaultValue, const Strings* messages);
+		static bool read1BoolAtt(const rapidxml::xml_node<>* node, bool &result, const char* attributeName, bool required, const char* defaultValue);
 		static bool read1IntAtt(const rapidxml::xml_node<>* node, int &result, const char* attributeName, bool required, const char* defaultValue);
 		static bool read1PosIntAtt(const rapidxml::xml_node<>* node, unsigned int &result, const char* attributeName, bool required, const char* defaultValue);
 		static bool read1NonNegativeIntAtt(const rapidxml::xml_node<>* node, unsigned int &result, const char* attributeName, bool required, const char* defaultValue);
@@ -72,16 +72,22 @@ class XsdTypeUtil {
 		static char* createUnsignedInt(unsigned int value, rapidxml::xml_document<> &doc);
 
 		static char* createTimeT(time_t value, rapidxml::xml_document<> &doc);
-		static const char* createBool(bool value, const Strings* messages);
+		static const char* createBool(bool value);
 
 		static void setAttribute(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* node, const char* attribute, unsigned int value);
 		static void setAttribute(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* node, const char* attribute, int value);
 		static void setAttribute(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* node, const char* attribute, FLOAT value);
 		static void setAttribute(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* node, const char* attribute, time_t value);
-		static void setAttribute(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* node, const char* attribute, bool value, const Strings* messages);
+		static void setAttribute(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* node, const char* attribute, bool value);
+
+		static const std::string trim(const std::string& pString);
+		static const std::string trim(const char * pCharArr);
+		static const char * getTrueFalseParam(bool value);
+
 	private:
 		static void printError(const char* attributeName, const char* attributeValue, const rapidxml::xml_node<>* node, const char** possibleValues, unsigned int numPossibleValues);
-		
+
+		static const char* s_booleanValues[];
 		static const int   s_booleanResponses[];
 };
 

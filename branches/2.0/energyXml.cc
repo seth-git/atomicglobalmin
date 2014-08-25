@@ -16,37 +16,39 @@ void EnergyXml::clear() {
 	}
 }
 
-bool EnergyXml::load(const rapidxml::xml_node<>* pEnergyElem, const Strings* messages) {
+bool EnergyXml::load(const rapidxml::xml_node<>* pEnergyElem) {
+	using namespace strings;
 	clear();
-	const char* energyElementNames[] = {messages->m_sxInternal.c_str(), messages->m_sxExternal.c_str()};
+	const char* energyElementNames[] = {xInternal, xExternal};
 	XsdElementUtil energyUtil(XSD_CHOICE, energyElementNames);
 	if (!energyUtil.process(pEnergyElem))
 		return false;
 	m_bExternalEnergy = (bool)energyUtil.getChoiceElementIndex();
 	if (m_bExternalEnergy) {
-		if (!m_externalEnergyXml.load(energyUtil.getChoiceElement(), messages))
+		if (!m_externalEnergyXml.load(energyUtil.getChoiceElement()))
 			return false;
 	} else {
-		if (!m_internalEnergyXml.load(energyUtil.getChoiceElement(), messages))
+		if (!m_internalEnergyXml.load(energyUtil.getChoiceElement()))
 			return false;
 	}
 
 	return true;
 }
 
-bool EnergyXml::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentOfEnergyElem, const Strings* messages) {
+bool EnergyXml::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentOfEnergyElem) {
 	using namespace rapidxml;
-	xml_node<>* energy = doc.allocate_node(node_element, messages->m_sxEnergy.c_str());
+	using namespace strings;
+	xml_node<>* energy = doc.allocate_node(node_element, xEnergy);
 	pParentOfEnergyElem->append_node(energy);
 	if (m_bExternalEnergy) {
-		xml_node<>* external = doc.allocate_node(node_element, messages->m_sxExternal.c_str());
+		xml_node<>* external = doc.allocate_node(node_element, xExternal);
 		energy->append_node(external);
-		if (!m_externalEnergyXml.save(doc, external, messages))
+		if (!m_externalEnergyXml.save(doc, external))
 			return false;
 	} else {
-		xml_node<>* internal = doc.allocate_node(node_element, messages->m_sxInternal.c_str());
+		xml_node<>* internal = doc.allocate_node(node_element, xInternal);
 		energy->append_node(internal);
-		if (!m_internalEnergyXml.save(doc, internal, messages))
+		if (!m_internalEnergyXml.save(doc, internal))
 			return false;
 	}
 

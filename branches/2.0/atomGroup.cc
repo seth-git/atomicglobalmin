@@ -117,15 +117,16 @@ const char* AtomGroup::s_atomAttDef[] = {"", "", "", ""};
 const bool AtomGroup::s_coordinateAttReq[] = {true,true,true};
 const char* AtomGroup::s_coordinateAttDef[] = {"", "", ""};
 
-bool AtomGroup::load(const rapidxml::xml_node<>* pAtomGroupElem, const Strings* messages)
+bool AtomGroup::load(const rapidxml::xml_node<>* pAtomGroupElem)
 {
 	using namespace rapidxml;
+	using namespace strings;
 	clear();
 
-	if (!XsdTypeUtil::read1BoolAtt(pAtomGroupElem, m_bFrozen, messages->m_sxFrozen.c_str(), false, "false", messages))
+	if (!XsdTypeUtil::read1BoolAtt(pAtomGroupElem, m_bFrozen, xFrozen, false, "false"))
 		return false;
 
-	const char* atomGroupElemNames[] = {messages->m_sxTranslation.c_str(), messages->m_sxRadianAngles.c_str(), messages->m_sxAtom.c_str()};
+	const char* atomGroupElemNames[] = {xTranslation, xRadianAngles, xAtom};
 	XsdElementUtil atomGroupElemUtil(XSD_SEQUENCE, atomGroupElemNames, s_atomGroupMinOccurs, s_atomGroupMaxOccurs);
 	if (!atomGroupElemUtil.process(pAtomGroupElem)) {
 		return false;
@@ -137,7 +138,7 @@ bool AtomGroup::load(const rapidxml::xml_node<>* pAtomGroupElem, const Strings* 
 	m_localPoints = new COORDINATE4[m_iNumberOfAtoms];
 	m_globalPoints = new COORDINATE4[m_iNumberOfAtoms];
 
-	const char* atomAttNames[] = {messages->m_sxBigZ.c_str(), messages->m_sxX.c_str(), messages->m_sxY.c_str(), messages->m_sxZ.c_str()};
+	const char* atomAttNames[] = {xBigZ, xX, xY, xZ};
 
 	if (m_iNumberOfAtoms == 1) {
 		std::fill_n(m_localPoints[0], 3, 0);
@@ -158,7 +159,7 @@ bool AtomGroup::load(const rapidxml::xml_node<>* pAtomGroupElem, const Strings* 
 				return false;
 		} while (attNum < 3);
 	} else if (m_iNumberOfAtoms > 1) {
-		const char* coordinateAttNames[] = {messages->m_sxX.c_str(), messages->m_sxY.c_str(), messages->m_sxZ.c_str()};
+		const char* coordinateAttNames[] = {xX, xY, xZ};
 		unsigned int i;
 		if (1 == atomGroupElements[0].size()) {
 			const xml_node<>* pTranslationElem = atomGroupElements[0][0];
@@ -211,43 +212,44 @@ bool AtomGroup::load(const rapidxml::xml_node<>* pAtomGroupElem, const Strings* 
 	return true;
 }
 
-bool AtomGroup::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem, const Strings* messages) {
+bool AtomGroup::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem) {
 	using namespace rapidxml;
-	xml_node<>* atomGroup = doc.allocate_node(node_element, messages->m_sxAtomGroup.c_str());
+	using namespace strings;
+	xml_node<>* atomGroup = doc.allocate_node(node_element, xAtomGroup);
 	pParentElem->append_node(atomGroup);
 
 	if (m_bFrozen)
-		atomGroup->append_attribute(doc.allocate_attribute(messages->m_sxFrozen.c_str(), messages->m_spTrue.c_str()));
+		atomGroup->append_attribute(doc.allocate_attribute(xFrozen, pTrue));
 
 	if (m_iNumberOfAtoms == 1) {
-		xml_node<>* atom = doc.allocate_node(node_element, messages->m_sxAtom.c_str());
+		xml_node<>* atom = doc.allocate_node(node_element, xAtom);
 		atomGroup->append_node(atom);
-		XsdTypeUtil::setAttribute(doc, atom, messages->m_sxBigZ.c_str(), m_atomicNumbers[0]);
-		XsdTypeUtil::setAttribute(doc, atom, messages->m_sxX.c_str(), m_centerOfMass[0]);
-		XsdTypeUtil::setAttribute(doc, atom, messages->m_sxY.c_str(), m_centerOfMass[1]);
-		XsdTypeUtil::setAttribute(doc, atom, messages->m_sxZ.c_str(), m_centerOfMass[2]);
+		XsdTypeUtil::setAttribute(doc, atom, xBigZ, m_atomicNumbers[0]);
+		XsdTypeUtil::setAttribute(doc, atom, xX, m_centerOfMass[0]);
+		XsdTypeUtil::setAttribute(doc, atom, xY, m_centerOfMass[1]);
+		XsdTypeUtil::setAttribute(doc, atom, xZ, m_centerOfMass[2]);
 	} else if (m_iNumberOfAtoms > 1) {
-		xml_node<>* translation = doc.allocate_node(node_element, messages->m_sxTranslation.c_str());
+		xml_node<>* translation = doc.allocate_node(node_element, xTranslation);
 		atomGroup->append_node(translation);
-		XsdTypeUtil::setAttribute(doc, translation, messages->m_sxX.c_str(), m_centerOfMass[0]);
-		XsdTypeUtil::setAttribute(doc, translation, messages->m_sxY.c_str(), m_centerOfMass[1]);
-		XsdTypeUtil::setAttribute(doc, translation, messages->m_sxZ.c_str(), m_centerOfMass[2]);
+		XsdTypeUtil::setAttribute(doc, translation, xX, m_centerOfMass[0]);
+		XsdTypeUtil::setAttribute(doc, translation, xY, m_centerOfMass[1]);
+		XsdTypeUtil::setAttribute(doc, translation, xZ, m_centerOfMass[2]);
 
-		xml_node<>* radianAngles = doc.allocate_node(node_element, messages->m_sxRadianAngles.c_str());
+		xml_node<>* radianAngles = doc.allocate_node(node_element, xRadianAngles);
 		atomGroup->append_node(radianAngles);
-		XsdTypeUtil::setAttribute(doc, radianAngles, messages->m_sxX.c_str(), m_angles[0]);
-		XsdTypeUtil::setAttribute(doc, radianAngles, messages->m_sxY.c_str(), m_angles[1]);
-		XsdTypeUtil::setAttribute(doc, radianAngles, messages->m_sxZ.c_str(), m_angles[2]);
+		XsdTypeUtil::setAttribute(doc, radianAngles, xX, m_angles[0]);
+		XsdTypeUtil::setAttribute(doc, radianAngles, xY, m_angles[1]);
+		XsdTypeUtil::setAttribute(doc, radianAngles, xZ, m_angles[2]);
 
 		FLOAT* temp;
 		for (unsigned int i = 0; i < m_iNumberOfAtoms; ++i) {
-			xml_node<>* atom = doc.allocate_node(node_element, messages->m_sxAtom.c_str());
+			xml_node<>* atom = doc.allocate_node(node_element, xAtom);
 			atomGroup->append_node(atom);
-			XsdTypeUtil::setAttribute(doc, atom, messages->m_sxBigZ.c_str(), m_atomicNumbers[i]);
+			XsdTypeUtil::setAttribute(doc, atom, xBigZ, m_atomicNumbers[i]);
 			temp = m_localPoints[i];
-			XsdTypeUtil::setAttribute(doc, atom, messages->m_sxX.c_str(), temp[0]);
-			XsdTypeUtil::setAttribute(doc, atom, messages->m_sxY.c_str(), temp[1]);
-			XsdTypeUtil::setAttribute(doc, atom, messages->m_sxZ.c_str(), temp[2]);
+			XsdTypeUtil::setAttribute(doc, atom, xX, temp[0]);
+			XsdTypeUtil::setAttribute(doc, atom, xY, temp[1]);
+			XsdTypeUtil::setAttribute(doc, atom, xZ, temp[2]);
 		}
 	}
 

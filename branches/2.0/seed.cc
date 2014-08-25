@@ -100,13 +100,14 @@ const bool         Seed::s_dirAttRequired[]  = {true  , true    , true};
 const bool         Seed::s_enFileAttRequired[]  = {true  , true};
 //const char*      Seed::s_enFileAttDefaults[]  = {""    , ""};
 
-bool Seed::load(const rapidxml::xml_node<>* pSeedElem, const Strings* messages)
+bool Seed::load(const rapidxml::xml_node<>* pSeedElem)
 {
 	using namespace rapidxml;
+	using namespace strings;
 	clear();
 	
 	const char** values;
-	const char* attNames[]     = {messages->m_sxFreezingIterations.c_str()};
+	const char* attNames[]     = {xFreezingIterations};
 	const char* attDefaults[]  = {"0"};
 	XsdAttributeUtil attUtil(attNames, s_attRequired, attDefaults);
 	if (!attUtil.process(pSeedElem))
@@ -115,7 +116,7 @@ bool Seed::load(const rapidxml::xml_node<>* pSeedElem, const Strings* messages)
 	if (!XsdTypeUtil::getNonNegativeInt(values[0], m_iFreezingIterations, attNames[0], pSeedElem))
 		return false;
 	
-	const char* elementNames[] = {messages->m_sxAgmlFile.c_str(), messages->m_sxDirectory.c_str(), messages->m_sxEnergyFile.c_str()};
+	const char* elementNames[] = {xAgmlFile, xDirectory, xEnergyFile};
 	XsdElementUtil elemUtil(XSD_SEQUENCE, elementNames, s_minOccurs, s_maxOccurs);
 	if (!elemUtil.process(pSeedElem))
 		return false;
@@ -129,10 +130,10 @@ bool Seed::load(const rapidxml::xml_node<>* pSeedElem, const Strings* messages)
 		m_numberFromAgmlFiles = new unsigned int[m_iAgmlFiles];
 		m_sourceInAgmlFiles = new SeedSource[m_iAgmlFiles];
 		
-		const char* fileAttNames[]     = {messages->m_sxPath.c_str(), messages->m_sxNumber.c_str(), messages->m_sxSource.c_str()};
-		const char* fileAttDefaults[]  = {NULL                      , messages->m_spAll.c_str()   , messages->m_sxResults.c_str()};
+		const char* fileAttNames[]     = {xPath, xNumber, xSource};
+		const char* fileAttDefaults[]  = {NULL                      , pAll   , xResults};
 		
-		const char* sources[] = {messages->m_sxResults.c_str(), messages->m_sxPopulation.c_str()};
+		const char* sources[] = {xResults, xPopulation};
 		
 		for (i = 0; i < m_iAgmlFiles; ++i) {
 			XsdAttributeUtil fileAttUtil(fileAttNames, s_fileAttRequired, fileAttDefaults);
@@ -143,7 +144,7 @@ bool Seed::load(const rapidxml::xml_node<>* pSeedElem, const Strings* messages)
 			if (!XsdTypeUtil::checkDirectoryOrFileName(values[0], m_agmlFilePaths[i], fileAttNames[0], elements[0][i]))
 				return false;
 			
-			m_bUseAllFromAgmlFiles[i] = (messages->m_spAll.compare(values[1]) == 0); // are the two strings equal
+			m_bUseAllFromAgmlFiles[i] = (strcmp(pAll, values[1]) == 0); // are the two strings equal
 			
 			if (!m_bUseAllFromAgmlFiles[i])
 				if (!XsdTypeUtil::getPositiveInt(values[1], m_numberFromAgmlFiles[i], fileAttNames[1], elements[0][i]))
@@ -161,8 +162,8 @@ bool Seed::load(const rapidxml::xml_node<>* pSeedElem, const Strings* messages)
 		m_numberFromDir = new unsigned int[m_iDirectories];
 		m_dirFileTypes = new ExternalEnergy::Impl[m_iDirectories];
 		
-		const char* dirAttNames[]     = {messages->m_sxPath.c_str(), messages->m_sxNumber.c_str(), messages->m_sxType.c_str()};
-		const char* dirAttDefaults[]  = {NULL                      , messages->m_spAll.c_str()   , NULL};
+		const char* dirAttNames[]     = {xPath, xNumber, xType};
+		const char* dirAttDefaults[]  = {NULL                      , pAll   , NULL};
 		
 		for (i = 0; i < m_iDirectories; ++i) {
 			XsdAttributeUtil dirAttUtil(dirAttNames, s_dirAttRequired, dirAttDefaults);
@@ -173,13 +174,13 @@ bool Seed::load(const rapidxml::xml_node<>* pSeedElem, const Strings* messages)
 			if (!XsdTypeUtil::checkDirectoryOrFileName(values[0], m_dirPaths[i], dirAttNames[0], elements[1][i]))
 				return false;
 			
-			m_bUseAllFromDir[i] = (messages->m_spAll.compare(values[1]) == 0); // are the two strings equal
+			m_bUseAllFromDir[i] = (strcmp(pAll, values[1]) == 0); // are the two strings equal
 			
 			if (!m_bUseAllFromDir[i])
 				if (!XsdTypeUtil::getPositiveInt(values[1], m_numberFromDir[i], dirAttNames[1], elements[1][i]))
 					return false;
 			
-			if (!ExternalEnergy::getEnum(dirAttNames[2], values[2], m_dirFileTypes[i], elements[1][i], messages))
+			if (!ExternalEnergy::getEnum(dirAttNames[2], values[2], m_dirFileTypes[i], elements[1][i]))
 				return false;
 		}
 	}
@@ -189,7 +190,7 @@ bool Seed::load(const rapidxml::xml_node<>* pSeedElem, const Strings* messages)
 		m_energyFilePaths = new std::string[m_iEnergyFiles];
 		m_energyFileTypes = new ExternalEnergy::Impl[m_iEnergyFiles];
 		
-		const char* enFileAttNames[]     = {messages->m_sxPath.c_str(), messages->m_sxType.c_str()};
+		const char* enFileAttNames[]     = {xPath, xType};
 		const char* enFileAttDefaults[]  = {NULL                      , NULL};
 		
 		for (i = 0; i < m_iEnergyFiles; ++i) {
@@ -201,64 +202,64 @@ bool Seed::load(const rapidxml::xml_node<>* pSeedElem, const Strings* messages)
 			if (!XsdTypeUtil::checkDirectoryOrFileName(values[0], m_energyFilePaths[i], enFileAttNames[0], elements[2][i]))
 				return false;
 			
-			if (!ExternalEnergy::getEnum(enFileAttNames[1], values[1], m_energyFileTypes[i], elements[2][i], messages))
+			if (!ExternalEnergy::getEnum(enFileAttNames[1], values[1], m_energyFileTypes[i], elements[2][i]))
 				return false;
 		}
 	}
 	
 	if (m_iAgmlFiles == 0 && m_iDirectories == 0 && m_iEnergyFiles == 0) {
-		const Strings* messagesDL = Strings::instance();
-		printf(messagesDL->m_sMissingChildElements3.c_str(),
-				pSeedElem->name(), messages->m_sxAgmlFile.c_str(),
-				messages->m_sxDirectory.c_str(),
-				messages->m_sxEnergyFile.c_str());
+		printf(MissingChildElements3,
+				pSeedElem->name(), xAgmlFile,
+				xDirectory,
+				xEnergyFile);
 		return false;
 	}
 	
 	return true;
 }
 
-bool Seed::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem, const Strings* messages)
+bool Seed::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem)
 {
 	using namespace rapidxml;
+	using namespace strings;
 	unsigned int i;
-	xml_node<>* pSeed = doc.allocate_node(node_element, messages->m_sxSeed.c_str());
+	xml_node<>* pSeed = doc.allocate_node(node_element, xSeed);
 	pParentElem->append_node(pSeed);
 	
 	if (m_iFreezingIterations != 0)
-		XsdTypeUtil::setAttribute(doc, pSeed, messages->m_sxFreezingIterations.c_str(), m_iFreezingIterations);
+		XsdTypeUtil::setAttribute(doc, pSeed, xFreezingIterations, m_iFreezingIterations);
 	
 	if (m_iAgmlFiles > 0) {
-		const char* sources[] = {messages->m_sxResults.c_str(), messages->m_sxPopulation.c_str()};
+		const char* sources[] = {xResults, xPopulation};
 		
 		for (i = 0; i < m_iAgmlFiles; ++i) {
-			xml_node<>* pAgmlFile = doc.allocate_node(node_element, messages->m_sxAgmlFile.c_str());
+			xml_node<>* pAgmlFile = doc.allocate_node(node_element, xAgmlFile);
 			pSeed->append_node(pAgmlFile);
 			
-			pAgmlFile->append_attribute(doc.allocate_attribute(messages->m_sxPath.c_str(), m_agmlFilePaths[i].c_str()));
+			pAgmlFile->append_attribute(doc.allocate_attribute(xPath, m_agmlFilePaths[i].c_str()));
 			if (!m_bUseAllFromAgmlFiles[i])
-				XsdTypeUtil::setAttribute(doc, pAgmlFile, messages->m_sxNumber.c_str(), m_numberFromAgmlFiles[i]);
+				XsdTypeUtil::setAttribute(doc, pAgmlFile, xNumber, m_numberFromAgmlFiles[i]);
 			if (m_sourceInAgmlFiles[i] != RESULTS)
-				pAgmlFile->append_attribute(doc.allocate_attribute(messages->m_sxSource.c_str(), sources[m_sourceInAgmlFiles[i]]));
+				pAgmlFile->append_attribute(doc.allocate_attribute(xSource, sources[m_sourceInAgmlFiles[i]]));
 		}
 	}
 	
 	for (i = 0; i < m_iDirectories; ++i) {
-		xml_node<>* pDir = doc.allocate_node(node_element, messages->m_sxDirectory.c_str());
+		xml_node<>* pDir = doc.allocate_node(node_element, xDirectory);
 		pSeed->append_node(pDir);
 		
-		pDir->append_attribute(doc.allocate_attribute(messages->m_sxPath.c_str(), m_dirPaths[i].c_str()));
+		pDir->append_attribute(doc.allocate_attribute(xPath, m_dirPaths[i].c_str()));
 		if (!m_bUseAllFromDir[i])
-			XsdTypeUtil::setAttribute(doc, pDir, messages->m_sxNumber.c_str(), m_numberFromDir[i]);
-		pDir->append_attribute(doc.allocate_attribute(messages->m_sxType.c_str(), ExternalEnergy::getEnumString(m_dirFileTypes[i], messages)));
+			XsdTypeUtil::setAttribute(doc, pDir, xNumber, m_numberFromDir[i]);
+		pDir->append_attribute(doc.allocate_attribute(xType, ExternalEnergy::getEnumString(m_dirFileTypes[i])));
 	}
 	
 	for (i = 0; i < m_iEnergyFiles; ++i) {
-		xml_node<>* pEnergyFile = doc.allocate_node(node_element, messages->m_sxEnergyFile.c_str());
+		xml_node<>* pEnergyFile = doc.allocate_node(node_element, xEnergyFile);
 		pSeed->append_node(pEnergyFile);
 		
-		pEnergyFile->append_attribute(doc.allocate_attribute(messages->m_sxPath.c_str(), m_energyFilePaths[i].c_str()));
-		pEnergyFile->append_attribute(doc.allocate_attribute(messages->m_sxType.c_str(), ExternalEnergy::getEnumString(m_energyFileTypes[i], messages)));
+		pEnergyFile->append_attribute(doc.allocate_attribute(xPath, m_energyFilePaths[i].c_str()));
+		pEnergyFile->append_attribute(doc.allocate_attribute(xType, ExternalEnergy::getEnumString(m_energyFileTypes[i])));
 	}
 	
 	return true;

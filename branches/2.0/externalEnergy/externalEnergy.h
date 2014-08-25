@@ -12,6 +12,7 @@ class ExternalEnergyXml; // Forward declaration
 
 #include "../energy.h"
 #include "../xsd/xsdTypeUtil.h"
+#include <fstream>
 
 class ExternalEnergy : public Energy {
 public:
@@ -42,8 +43,8 @@ public:
 
 	static const char* getOutputFileExtension(Impl impl);
 
-	static bool getEnum(const char* attributeName, const char* stringValue, Impl &result, const rapidxml::xml_node<>* pElem, const Strings* messages);
-	static const char* getEnumString(Impl enumValue, const Strings* messages);
+	static bool getEnum(const char* attributeName, const char* stringValue, Impl &result, const rapidxml::xml_node<>* pElem);
+	static const char* getEnumString(Impl enumValue);
 
 	static unsigned int s_iMaxEnergyCalcFailuresOnStructure;
 

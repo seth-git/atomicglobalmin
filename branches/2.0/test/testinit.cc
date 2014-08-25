@@ -303,7 +303,7 @@ const char* testSeeding4(void) {
 		}
 	}
 
-	printf("Third test of seeding succeeded!\n");
+	printf("Fourth test of seeding succeeded!\n");
 	return NULL;
 }
 /*
@@ -484,7 +484,7 @@ const char* testPlaceAtomGroupRelativeToAnother(void) {
 	xml_node<>* pElem=doc.first_node();
 	Constraints constraints;
 	std::map<std::string,Constraints*> constraintsMap;
-	if (!constraints.load(pElem, Strings::instance(), constraintsMap)) {
+	if (!constraints.load(pElem, constraintsMap)) {
 		std::cout << failMessage << std::endl;
 		printf("\tReason: failed to initialize test constraints.\n");
 		return testName;
@@ -571,7 +571,7 @@ const char* testInitialization(void) {
 	xml_node<>* pElem=doc.first_node();
 	Constraints constraints;
 	std::map<std::string,Constraints*> constraintsMap;
-	if (!constraints.load(pElem, Strings::instance(), constraintsMap)) {
+	if (!constraints.load(pElem, constraintsMap)) {
 		std::cout << failMessage << std::endl;
 		printf("\tReason: failed to initialize test constraints.\n");
 		return testName;

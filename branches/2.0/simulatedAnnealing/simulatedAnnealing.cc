@@ -62,21 +62,22 @@ const char* SimulatedAnnealing::s_stopAttDef[] = {"", "", ""};
 const bool SimulatedAnnealing::s_setupAttReq[] = {true,true};
 const char* SimulatedAnnealing::s_setupAttDef[] = {"1", "200"};
 
-bool SimulatedAnnealing::loadSetup(const rapidxml::xml_node<>* pSetupElem, const Strings* messages)
+bool SimulatedAnnealing::loadSetup(const rapidxml::xml_node<>* pSetupElem)
 {
 	using namespace rapidxml;
+	using namespace strings;
 	clear();
-	const char* elementNames[] = {messages->m_sxStructuresTemplate.c_str(), messages->m_sxTemperature.c_str(), messages->m_sxAnnealingSchedule.c_str(), messages->m_sxPerturbations.c_str(), messages->m_sxStop.c_str()};
+	const char* elementNames[] = {xStructuresTemplate, xTemperature, xAnnealingSchedule, xPerturbations, xStop};
 	XsdElementUtil setupUtil(XSD_ALL, elementNames, s_minOccurs);
 	if (!setupUtil.process(pSetupElem))
 		return false;
 	const xml_node<>** setupElements = setupUtil.getAllElements();
 	
-	if (!m_structuresTemplate.load(setupElements[0], m_constraintsMap, messages))
+	if (!m_structuresTemplate.load(setupElements[0], m_constraintsMap))
 		return false;
 	
 	if (setupElements[1] != NULL) {
-		const char* setupElemNames[] = {messages->m_sxKelvin.c_str(), messages->m_sxAcceptedPerturbations.c_str()};
+		const char* setupElemNames[] = {xKelvin, xAcceptedPerturbations};
 		XsdElementUtil tempElemUtil(XSD_CHOICE, setupElemNames);
 		if (!tempElemUtil.process(setupElements[1]))
 			return false;
@@ -85,18 +86,18 @@ bool SimulatedAnnealing::loadSetup(const rapidxml::xml_node<>* pSetupElem, const
 
 		if (tempChoiceIndex == 0) {
 			m_pfStartingTemperature = new FLOAT;
-			if (!XsdTypeUtil::read1PosFloatAtt(tempChoiceElem, *m_pfStartingTemperature, messages->m_sxValue.c_str(), true, NULL))
+			if (!XsdTypeUtil::read1PosFloatAtt(tempChoiceElem, *m_pfStartingTemperature, xValue, true, NULL))
 				return false;
 		} else {
 			m_pfPercentAcceptedPerturbations = new FLOAT;
-			if (!XsdTypeUtil::read1PosFloatAtt(tempChoiceElem, *m_pfPercentAcceptedPerturbations, messages->m_sxPercent.c_str(), true, NULL))
+			if (!XsdTypeUtil::read1PosFloatAtt(tempChoiceElem, *m_pfPercentAcceptedPerturbations, xPercent, true, NULL))
 				return false;
-			if (!XsdTypeUtil::inRange(*m_pfPercentAcceptedPerturbations, 0, 100, tempChoiceElem, messages->m_sxPercent.c_str()))
+			if (!XsdTypeUtil::inRange(*m_pfPercentAcceptedPerturbations, 0, 100, tempChoiceElem, xPercent))
 				return false;
 			*m_pfPercentAcceptedPerturbations *= 0.01;
 		}
 
-		const char* tempAttNames[] = {messages->m_sxDecreaseAfterIteration.c_str(), messages->m_sxBoltzmannConstant.c_str()};
+		const char* tempAttNames[] = {xDecreaseAfterIteration, xBoltzmannConstant};
 		XsdAttributeUtil tempAttUtil(tempAttNames, s_tempAttReq, s_tempAttDef);
 		if (!tempAttUtil.process(setupElements[1]))
 			return false;
@@ -115,14 +116,14 @@ bool SimulatedAnnealing::loadSetup(const rapidxml::xml_node<>* pSetupElem, const
 	}
 
 	if (setupElements[2] != NULL) {
-		if (!XsdTypeUtil::read1PosFloatAtt(setupElements[2], m_fQuenchingFactor, messages->m_sxQuenchingFactor.c_str(), true, NULL))
+		if (!XsdTypeUtil::read1PosFloatAtt(setupElements[2], m_fQuenchingFactor, xQuenchingFactor, true, NULL))
 			return false;
 	} else {
 		m_fQuenchingFactor = 0.9995;
 	}
 
 	if (setupElements[3] != NULL) {
-		if (!m_perturbations.loadSetup(setupElements[3], messages))
+		if (!m_perturbations.loadSetup(setupElements[3]))
 			return false;
 	} else {
 		bool moleculesPresent = false;
@@ -135,7 +136,7 @@ bool SimulatedAnnealing::loadSetup(const rapidxml::xml_node<>* pSetupElem, const
 	}
 
 	if (setupElements[4] != NULL) {
-		const char* stopAttNames[] = {messages->m_sxMaxTemperature.c_str(), messages->m_sxMaxAcceptedPerturbations.c_str(), messages->m_sxMinIterations.c_str()};
+		const char* stopAttNames[] = {xMaxTemperature, xMaxAcceptedPerturbations, xMinIterations};
 		XsdAttributeUtil stopAttUtil(stopAttNames, s_stopAttReq, s_stopAttDef);
 		if (!stopAttUtil.process(setupElements[4])) {
 			return false;
@@ -165,7 +166,7 @@ bool SimulatedAnnealing::loadSetup(const rapidxml::xml_node<>* pSetupElem, const
 		*m_pfMaxStoppingAcceptedPerturbations = 0.1;
 	}
 
-	const char* setupAttNames[] = {messages->m_sxSaveFrequency.c_str(), messages->m_sxAcceptedPertHistIt.c_str()};
+	const char* setupAttNames[] = {xSaveFrequency, xAcceptedPertHistIt};
 	XsdAttributeUtil setupAttUtil(setupAttNames, s_setupAttReq, s_setupAttDef);
 	if (!setupAttUtil.process(pSetupElem)) {
 		return false;
@@ -179,57 +180,58 @@ bool SimulatedAnnealing::loadSetup(const rapidxml::xml_node<>* pSetupElem, const
 	return true;
 }
 
-bool SimulatedAnnealing::saveSetup(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pSimElem, const Strings* messages)
+bool SimulatedAnnealing::saveSetup(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pSimElem)
 {
 	using namespace rapidxml;
-	xml_node<>* setup = doc.allocate_node(node_element, messages->m_sxSetup.c_str());
+	using namespace strings;
+	xml_node<>* setup = doc.allocate_node(node_element, xSetup);
 	pSimElem->append_node(setup);
 	
-	if (!m_structuresTemplate.save(doc, setup, messages))
+	if (!m_structuresTemplate.save(doc, setup))
 		return false;
 	
-	xml_node<>* temperature = doc.allocate_node(node_element, messages->m_sxTemperature.c_str());
+	xml_node<>* temperature = doc.allocate_node(node_element, xTemperature);
 	setup->append_node(temperature);
 	if (m_pfStartingTemperature != NULL) {
-		xml_node<>* kelvin = doc.allocate_node(node_element, messages->m_sxKelvin.c_str());
+		xml_node<>* kelvin = doc.allocate_node(node_element, xKelvin);
 		temperature->append_node(kelvin);
-		XsdTypeUtil::setAttribute(doc, kelvin, messages->m_sxValue.c_str(), *m_pfStartingTemperature);
+		XsdTypeUtil::setAttribute(doc, kelvin, xValue, *m_pfStartingTemperature);
 	} else if (m_pfPercentAcceptedPerturbations != NULL) {
-		xml_node<>* acceptedPert = doc.allocate_node(node_element, messages->m_sxAcceptedPerturbations.c_str());
+		xml_node<>* acceptedPert = doc.allocate_node(node_element, xAcceptedPerturbations);
 		temperature->append_node(acceptedPert);
-		XsdTypeUtil::setAttribute(doc, acceptedPert, messages->m_sxPercent.c_str(), *m_pfPercentAcceptedPerturbations * 100.0);
+		XsdTypeUtil::setAttribute(doc, acceptedPert, xPercent, *m_pfPercentAcceptedPerturbations * 100.0);
 	}
 	if (m_iDecreaseTemperatureAfterIt != 1)
-		XsdTypeUtil::setAttribute(doc, temperature, messages->m_sxDecreaseAfterIteration.c_str(), m_iDecreaseTemperatureAfterIt);
+		XsdTypeUtil::setAttribute(doc, temperature, xDecreaseAfterIteration, m_iDecreaseTemperatureAfterIt);
 	if (m_fBoltzmannConstant != s_fDefaultBoltzmannConstant)
-		XsdTypeUtil::setAttribute(doc, temperature, messages->m_sxBoltzmannConstant.c_str(), m_fBoltzmannConstant);
+		XsdTypeUtil::setAttribute(doc, temperature, xBoltzmannConstant, m_fBoltzmannConstant);
 
-	xml_node<>* annealingSchedule = doc.allocate_node(node_element, messages->m_sxAnnealingSchedule.c_str());
+	xml_node<>* annealingSchedule = doc.allocate_node(node_element, xAnnealingSchedule);
 	setup->append_node(annealingSchedule);
-	XsdTypeUtil::setAttribute(doc, annealingSchedule, messages->m_sxQuenchingFactor.c_str(), m_fQuenchingFactor);
+	XsdTypeUtil::setAttribute(doc, annealingSchedule, xQuenchingFactor, m_fQuenchingFactor);
 
-	if (!m_perturbations.saveSetup(doc, setup, messages))
+	if (!m_perturbations.saveSetup(doc, setup))
 		return false;
 	
 	if (m_pfMaxStoppingTemperature != NULL || m_pfMaxStoppingAcceptedPerturbations != NULL || m_piMinStoppingIterations != NULL) {
-		xml_node<>* stop = doc.allocate_node(node_element, messages->m_sxStop.c_str());
+		xml_node<>* stop = doc.allocate_node(node_element, xStop);
 		setup->append_node(stop);
 		if (m_pfMaxStoppingTemperature != NULL)
-			XsdTypeUtil::setAttribute(doc, stop, messages->m_sxMaxTemperature.c_str(), *m_pfMaxStoppingTemperature);
+			XsdTypeUtil::setAttribute(doc, stop, xMaxTemperature, *m_pfMaxStoppingTemperature);
 		if (m_pfMaxStoppingAcceptedPerturbations != NULL)
-			XsdTypeUtil::setAttribute(doc, stop, messages->m_sxMaxAcceptedPerturbations.c_str(), *m_pfMaxStoppingAcceptedPerturbations * 100);
+			XsdTypeUtil::setAttribute(doc, stop, xMaxAcceptedPerturbations, *m_pfMaxStoppingAcceptedPerturbations * 100);
 		if (m_piMinStoppingIterations != NULL)
-			XsdTypeUtil::setAttribute(doc, stop, messages->m_sxMinIterations.c_str(), *m_piMinStoppingIterations);
+			XsdTypeUtil::setAttribute(doc, stop, xMinIterations, *m_piMinStoppingIterations);
 	}
 	if (m_iSaveFrequency != 1)
-		XsdTypeUtil::setAttribute(doc, setup, messages->m_sxSaveFrequency.c_str(), m_iSaveFrequency);
+		XsdTypeUtil::setAttribute(doc, setup, xSaveFrequency, m_iSaveFrequency);
 	if (m_iAcceptedPertHistIt != 200)
-		XsdTypeUtil::setAttribute(doc, setup, messages->m_sxAcceptedPertHistIt.c_str(), m_iAcceptedPertHistIt);
+		XsdTypeUtil::setAttribute(doc, setup, xAcceptedPertHistIt, m_iAcceptedPertHistIt);
 
 	return true;
 }
 
-bool SimulatedAnnealing::loadResume(const rapidxml::xml_node<>* pResumeElem, const Strings* messages)
+bool SimulatedAnnealing::loadResume(const rapidxml::xml_node<>* pResumeElem)
 {
 	if (pResumeElem == NULL) {
 		if (!m_structuresTemplate.initializeStructures(m_structures, m_pConstraints))
@@ -244,16 +246,16 @@ bool SimulatedAnnealing::loadResume(const rapidxml::xml_node<>* pResumeElem, con
 		m_structures.push_back(pStructure);
 		SimulatedAnnealingRun* run = new SimulatedAnnealingRun(this, pStructure);
 		m_runs.push_back(run);
-		if (!run->loadResume(pResumeElem, messages))
+		if (!run->loadResume(pResumeElem))
 			return false;
 	}
 	return true;
 }
 
-bool SimulatedAnnealing::saveResume(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pSimElem, const Strings* messages)
+bool SimulatedAnnealing::saveResume(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pSimElem)
 {
 	for (std::list<SimulatedAnnealingRun*>::iterator it = m_runs.begin(); it != m_runs.end(); it++)
-		if (!(*it)->saveResume(doc, pSimElem, messages))
+		if (!(*it)->saveResume(doc, pSimElem))
 			return false;
 	return true;
 }
