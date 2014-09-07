@@ -69,8 +69,11 @@
 </xs:complexType>
 <xs:complexType name="externalCalcType">
 	<xs:all>
-		<xs:element name="sharedDirectory" type="dirType"/>
-		<xs:element name="localDirectory" type="dirType" minOccurs="0"/>
+		<xs:element name="temporaryDirectory">
+			<xs:complexType>
+				<xs:attribute name="path" type="xs:string" use="required"/>
+			</xs:complexType>
+		</xs:element>
 		<xs:element name="resultsDirectory" minOccurs="0">
 			<xs:complexType>
 				<xs:attribute name="path" type="xs:string" use="required"/>
@@ -78,24 +81,10 @@
 				<xs:attribute name="filePrefix" type="xs:string" default="best"/>
 			</xs:complexType>
 		</xs:element>
-		<xs:element name="charge">
-			<xs:complexType>
-				<xs:attribute name="value" type="xs:integer" use="required"/>
-			</xs:complexType>
-		</xs:element>
-		<xs:element name="multiplicity">
-			<xs:complexType>
-				<xs:attribute name="value" type="xs:positiveInteger" use="required"/>
-			</xs:complexType>
-		</xs:element>
-		<xs:element name="header" type="xs:string"/>
-		<xs:element name="footer" type="xs:string" minOccurs="0"/>
+		<xs:element name="header" type="xs:string" />
 	</xs:all>
 	<xs:attribute name="method" type="externalEnergyMethods" use="required"/>
 	<xs:attribute name="transitionStateSearch" type="xs:boolean" default="false"/>
-</xs:complexType>
-<xs:complexType name="dirType">
-	<xs:attribute name="path" type="xs:string" use="required"/>
 </xs:complexType>
 <xs:simpleType name="internalEnergyMethods">
 	<xs:restriction base="xs:string">

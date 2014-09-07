@@ -215,3 +215,49 @@ const char* ExternalEnergy::getEnumString(Impl enumValue) {
 	return methods[enumValue];
 }
 
+void ExternalEnergy::replace(std::string src, const char symbol, std::map<const char*, const char*, cmp_str> &map, std::string &dest) {
+	const char* c = src.c_str();
+	const char* r;
+	std::string temp;
+	size_t i = 0;
+	bool stop;
+	while (c[i] != '\0') {
+		if (c[i] == symbol) {
+			if (i != 0) {
+				dest.append(c, i);
+				c += i;
+				i = 0;
+			}
+			++c;
+			stop = false;
+			do {
+				switch (c[i]) {
+				case ' ':
+				case '\t':
+				case '\n':
+				case '\r':
+				case '\f':
+				case '\0':
+					stop = true;
+					break;
+				default:
+					++i;
+				}
+			} while (!stop);
+			if (i > 0) {
+				temp = "";
+				temp.append(c, i);
+				r = map[temp.c_str()];
+				if (NULL != r)
+					dest.append(r);
+				c += i;
+				i = 0;
+			}
+			continue;
+		}
+		++i;
+	}
+	if (0 != i)
+		dest.append(c, i);
+}
+

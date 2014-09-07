@@ -26,13 +26,10 @@ char* readFileToString(const char* fileName) {
 	return string;
 }
 
-const char* xmlBatchTest() {
-	static const char* testName = "xmlBatchTest";
-	const char* failMessage = "Testing of batch xml read/write failed!";
-
-	printf("\nPerforming batch xml read/write test...\n");
-	std::string inputFile = testXmlDir + "/batch.xml";
-	std::string inputFile2 = testXmlDir + "/batch2.xml";
+const char* xmlTest(const char* testName, const char* failMessage, const char* fileName, const char* fileName2) {
+	printf("\nPerforming test: %s...\n", testName);
+	std::string inputFile = testXmlDir + "/" + fileName;
+	std::string inputFile2 = testXmlDir + "/" + fileName2;
 	Input input;
 	if (!input.load(inputFile.c_str())) {
 		puts(failMessage);
@@ -72,6 +69,19 @@ const char* xmlBatchTest() {
 		return testName;
 	}
 
-	printf("Batch xml read/write test succeeded!\n");
+	printf("Test succeeded: %s!\n", testName);
 	return NULL;
 }
+
+const char* xmlBatchTest() {
+	static const char* testName = "BatchXml";
+	const char* failMessage = "Testing of batch xml read/write failed!";
+	return xmlTest(testName, failMessage, "batch.xml", "batch2.xml");
+}
+
+const char* xmlSimTest() {
+	static const char* testName = "SimulatedAnnealingXml";
+	const char* failMessage = "Testing of simulated annealing xml read/write failed!";
+	return xmlTest(testName, failMessage, "LJ7_Sim.xml", "LJ7_Sim2.xml");
+}
+

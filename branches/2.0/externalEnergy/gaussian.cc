@@ -7,31 +7,32 @@
 
 #include "gaussian.h"
 #include "externalEnergyXml.h"
+#include <list>
+#include <set>
 
-const char* Gaussian::s_sPathToExecutable = "/Full/path/to/Gaussian/executable";
-const char* Gaussian::s_sInputFileExtension = "com";
-const char* Gaussian::s_sOutputFileExtension = "log";
+const char Gaussian::s_sPathToExecutable[] = "/Full/path/to/Gaussian/executable";
+const char Gaussian::s_sInputFileExtension[] = "com";
+const char Gaussian::s_sOutputFileExtension[] = "log";
 const char* Gaussian::s_optionalOutputFileExtensions[] = {"chk"};
 
 bool Gaussian::s_bGetStandardOrientation = false;
 bool Gaussian::s_bRequireNormalTermination = false;
 
 Gaussian::Gaussian(const ExternalEnergyXml* pExternalEnergyXml) : ExternalEnergy(pExternalEnergyXml) {
-	getCheckpointFileName();
+	searchForCheckPointFile();
 }
 
 Gaussian::~Gaussian() {
 }
 
-void Gaussian::getCheckpointFileName()
-{
-	std::string lowerHeader = m_pExternalEnergyXml->m_sHeader;
-	std::transform(lowerHeader.begin(), lowerHeader.end(), lowerHeader.begin(), ::tolower);
+void Gaussian::searchForCheckPointFile() {
+	std::string lowerHeader;
+	lowerHeader.resize(m_pExternalEnergyXml->m_sHeader.length()+1);
+	std::transform(m_pExternalEnergyXml->m_sHeader.begin(), m_pExternalEnergyXml->m_sHeader.end(), lowerHeader.begin(), ::tolower);
 
 	std::string::size_type pos;
 	const char *header;
-	char fileName[500];
-	unsigned int fileNameLength;
+	unsigned int i;
 
 	m_sCheckPointFileName = "";
 	pos = lowerHeader.find("% chk");
@@ -39,24 +40,23 @@ void Gaussian::getCheckpointFileName()
 		pos = lowerHeader.find("%chk");
 	if (pos != std::string::npos) { // if we found it
 		// find the beginning of the name
-		header = m_pExternalEnergyXml->m_sHeader.c_str();
-		header = &header[pos];
-		while (*header != '=')
+		header = m_pExternalEnergyXml->m_sHeader.c_str() + pos;
+		while (*header != '=') {
 			++header;
-		while ((*header != '\0') && !isFileCharacter(*header))
+			if (header == '\0')
+				return;
+		}
+		while (!isFileCharacter(*header)) {
 			++header;
-		if (*header == '\0')
-			return;
-		fileNameLength = 1;
-		while (isFileCharacter(header[fileNameLength]) && fileNameLength < sizeof(fileName))
-			++fileNameLength;
+			if (header == '\0')
+				return;
+		}
+		i = 1;
+		while (isFileCharacter(header[i]))
+			++i;
 
-		strncpy(fileName,header,fileNameLength);
-		fileName[fileNameLength] = '\0';
-		m_sCheckPointFileName = fileName;
+		m_sCheckPointFileName.append(header,i).append(".").append(s_optionalOutputFileExtensions[0]);
 	}
-
-	m_bSemiEmpirical = ((lowerHeader.find("#p") != std::string::npos) || (lowerHeader.find("# p") != std::string::npos));
 }
 
 bool Gaussian::isFileCharacter(char character)
@@ -67,47 +67,40 @@ bool Gaussian::isFileCharacter(char character)
 		    (character == '.') || (character == ',') || (character == '_'));
 }
 
-bool Gaussian::createInputFile(Structure &structure,
-		unsigned int populationMemberNumber, bool writeEnergyValueInHeader,
-		bool writeMetaData) {
-/*	std::string header = m_pExternalEnergy->m_sHeader;
-	std::string footer = m_pExternalEnergy->m_sFooter;
-	std::string::size_type pos;
-
-	std::string fullCheckPointFileName;
-	if (m_sCheckPointFileName.length() > 0) {
-		fullCheckPointFileName.append(m_sCheckPointFileName).append(populationMemberNumber);
-		pos = header.find(m_sCheckPointFileName);
-		header.replace(pos,s_checkPointFileName.length(), fullCheckPointFileName);
-		if (footer.length() > 0) {
-			pos = footer.find(m_sCheckPointFileName);
-			if (pos != string::npos) // If we found it
-				footer.replace(pos,m_sCheckPointFileName.length(), fullCheckPointFileName);
+bool Gaussian::createInputFile(const char* inputFileName, const Structure &structure) {
+	std::string atoms;
+	unsigned int i, j;
+	unsigned int n = structure.getNumberOfAtoms();
+	const unsigned int* atomicNumbers = structure.getAtomicNumbers();
+	const COORDINATE4* const* coordinates = structure.getAtomCoordinates();
+	const FLOAT* coordinate;
+	char buffer[100];
+	size_t len;
+	atoms.reserve(n*80);
+	for (i = 0; i < n; ++i) {
+		snprintf(buffer, sizeof(buffer), "%u", atomicNumbers[i]);
+		atoms.append(buffer);
+		coordinate = *coordinates[i];
+		for (j = 0; j < 3; ++j) {
+			len = XsdTypeUtil::createFloat(coordinate[j], buffer, sizeof(buffer));
+			atoms.append(" ").append(buffer, len);
 		}
+		atoms.append("\n");
 	}
 
-	FILE *fp = fopen(structure.getInputEnergyFile(), "w");
+	std::map<const char*, const char*, cmp_str> map;
+	map[strings::pAtoms] = atoms.c_str();
+	std::string header;
+	header.reserve(m_pExternalEnergyXml->m_sHeader.length()*2 + atoms.length()*2);
+	replace(m_pExternalEnergyXml->m_sHeader, '!', map, header);
+
+	FILE *fp = fopen(inputFileName, "w");
 	if (fp == NULL) {
-		printf("Unable to write to file: %1$s\n", structure.getInputEnergyFile());
+		printf(strings::ErrorWritingFile, inputFileName);
 		return false;
 	}
-	fprintf(fp, "%s\n", header.c_str());
-	if (writeEnergyValueInHeader) {
-		char energyStr[100];
-		XsdTypeUtil::doubleToString(structure.getEnergy(), energyStr);
-		fprintf(fp, "This is a computer generated structure with energy: %s\n\n", energyStr);
-	} else {
-		fprintf(fp, "This is a computer generated structure.\n\n", energyStr);
-	}
-	fprintf(fp, "%d %u\n", m_pExternalEnergy->m_iCharge, m_pExternalEnergy->m_iMultiplicity);
-
-//	structure.writeCoordinatesToInputFileWithAtomicNumbers(fout);
-
-	fprintf(fp, "\n");
-
-	if (footer.length() > 0)
-		fprintf(fp, "%s\nTitle\n\n\d \u\n", footer.c_str(), m_pExternalEnergy->m_iCharge, m_pExternalEnergy->m_iMultiplicity);
-	fclose(fp);*/
+	fputs(header.c_str(), fp);
+	fclose(fp);
 	return true;
 }
 

@@ -14,15 +14,11 @@ public:
 	bool m_bTransitionStateSearch;
 	ExternalEnergy::Impl m_method;
 	ExternalEnergy* m_pMethodImpl;
-	std::string m_sSharedDir;
-	std::string m_sLocalDir;
+	std::string m_sTemporaryDir;
 	std::string m_sResultsDir;
 	unsigned int m_iMaxResultsFiles;
 	std::string m_sResultsFilePrefix;
-	int m_iCharge;
-	unsigned int m_iMultiplicity;
 	std::string m_sHeader;
-	std::string m_sFooter;
 
 	ExternalEnergyXml();
 	~ExternalEnergyXml();
@@ -32,7 +28,9 @@ public:
 
 private:
 	void clear();
+	static const char*        s_attributeNames[];
 	static const bool         s_required[];
+	static const char*        s_defaultValues[];
 
 	static const char*        s_elementNames[];
 	static const unsigned int s_minOccurs[];
@@ -40,7 +38,9 @@ private:
 	static const char*        s_methods[];
 	static const int          s_methodConstants[];
 
+	static const char*        s_resAttributeNames[];
 	static const bool         s_resRequired[];
+	static const char*        s_resDefaultValues[];
 
 	bool readResultsDir(const rapidxml::xml_node<>* pElem);
 };

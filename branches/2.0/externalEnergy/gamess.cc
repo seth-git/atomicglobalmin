@@ -8,9 +8,9 @@
 #include "gamess.h"
 #include "externalEnergyXml.h"
 
-const char* Gamess::s_sPathToExecutable = "/Full/path/to/Gamess/executable";
-const char* Gamess::s_sInputFileExtension = "com";
-const char* Gamess::s_sOutputFileExtension = "log";
+const char Gamess::s_sPathToExecutable[] = "/Full/path/to/Gamess/executable";
+const char Gamess::s_sInputFileExtension[] = "com";
+const char Gamess::s_sOutputFileExtension[] = "log";
 const char* Gamess::s_optionalOutputFileExtensions[] = {"chk"};
 
 Gamess::Gamess(const ExternalEnergyXml* pExternalEnergyXml) : ExternalEnergy(pExternalEnergyXml) {
@@ -19,9 +19,7 @@ Gamess::Gamess(const ExternalEnergyXml* pExternalEnergyXml) : ExternalEnergy(pEx
 Gamess::~Gamess() {
 }
 
-bool Gamess::createInputFile(Structure &structure,
-		unsigned int populationMemberNumber, bool writeEnergyValueInHeader,
-		bool writeMetaData) {
+bool Gamess::createInputFile(const char* inputFileName, const Structure &structure) {
 	return true;
 }
 

@@ -6,6 +6,14 @@ SimulatedAnnealingRun::SimulatedAnnealingRun(const SimulatedAnnealing* sharedDat
 {
 	m_sharedData = sharedData;
 	m_pStructure = pStructure;
+	m_fTranslationVectorLength = 0;
+	m_fRotationRadians = 0;
+	m_iIteration = 0;
+	m_fPerturbationsPerIteration = 1;
+	m_fTemperature = 0;
+	m_bRunComplete = false;
+	m_tPrevElapsedSeconds = 0;
+	m_iEnergyCalculations = 0;
 }
 
 void SimulatedAnnealingRun::init() {
@@ -21,24 +29,24 @@ void SimulatedAnnealingRun::init() {
 	m_bRunComplete = false;
 }
 
+const char* SimulatedAnnealingRun::s_resumeElemNames[] = {
+		strings::xTemperature,
+		strings::xTranslationVector,
+		strings::xRotationAngle,
+		strings::xPerturbationsPerIteration,
+		strings::xIteration,
+		strings::xTotalEnergyCalculations,
+		strings::xElapsedSeconds,
+		strings::xRunComplete,
+		strings::xStructure
+};
 const unsigned int SimulatedAnnealingRun::s_resumeMinOccurs[] = {1,0,0,0,1,1,1,1,1};
 
 bool SimulatedAnnealingRun::loadResume(const rapidxml::xml_node<>* pResumeElem) {
 	using namespace rapidxml;
 	using namespace strings;
 
-	const char * resumeElemNames[] = {
-			xTemperature,
-			xTranslationVector,
-			xRotationAngle,
-			xPerturbationsPerIteration,
-			xIteration,
-			xTotalEnergyCalculations,
-			xElapsedSeconds,
-			xRunComplete,
-			xStructure
-	};
-	XsdElementUtil resumeElementUtil(XSD_ALL, resumeElemNames, s_resumeMinOccurs);
+	XsdElementUtil resumeElementUtil(XSD_ALL, s_resumeElemNames, s_resumeMinOccurs);
 	if (!resumeElementUtil.process(pResumeElem))
 		return false;
 	const xml_node<>** resumeElements = resumeElementUtil.getAllElements();
@@ -74,13 +82,13 @@ bool SimulatedAnnealingRun::loadResume(const rapidxml::xml_node<>* pResumeElem) 
 	} else {
 		m_fPerturbationsPerIteration = 1;
 	}
-	if (!XsdTypeUtil::read1NonNegativeIntAtt(resumeElements[4], m_iIteration, xIteration, true, NULL))
+	if (!XsdTypeUtil::read1NonNegativeIntAtt(resumeElements[4], m_iIteration, xValue, true, NULL))
 		return false;
-	if (!XsdTypeUtil::read1NonNegativeIntAtt(resumeElements[5], m_iEnergyCalculations, xTotalEnergyCalculations, true, NULL))
+	if (!XsdTypeUtil::read1NonNegativeIntAtt(resumeElements[5], m_iEnergyCalculations, xValue, true, NULL))
 		return false;
-	if (!XsdTypeUtil::read1TimeT(resumeElements[6], m_tPrevElapsedSeconds, xElapsedSeconds, true, NULL))
+	if (!XsdTypeUtil::read1TimeT(resumeElements[6], m_tPrevElapsedSeconds, xValue, true, NULL))
 		return false;
-	if (!XsdTypeUtil::read1BoolAtt(resumeElements[7], m_bRunComplete, xRunComplete, true, NULL))
+	if (!XsdTypeUtil::read1BoolAtt(resumeElements[7], m_bRunComplete, xValue, true, NULL))
 		return false;
 	if (!m_pStructure->load(resumeElements[8]))
 		return false;
@@ -95,22 +103,22 @@ bool SimulatedAnnealingRun::saveResume(rapidxml::xml_document<> &doc,
 	xml_node<>* resume = doc.allocate_node(node_element, xResume);
 	pSimElem->append_node(resume);
 
-	xml_node<>* temperature = doc.allocate_node(node_element, xTemperature, NULL, sizeof(xTemperature));
+	xml_node<>* temperature = doc.allocate_node(node_element, xTemperature);
 	resume->append_node(temperature);
 	XsdTypeUtil::setAttribute(doc, temperature, xValue, m_fTemperature);
 
 	if (0 != m_sharedData->m_perturbations.m_fTranslationVectorProbability) {
-		xml_node<>* translationVector = doc.allocate_node(node_element, xTranslationVector, NULL, sizeof(xTranslationVector));
+		xml_node<>* translationVector = doc.allocate_node(node_element, xTranslationVector);
 		resume->append_node(translationVector);
 		XsdTypeUtil::setAttribute(doc, translationVector, xValue, m_fTranslationVectorLength);
 	}
 	if (0 != m_sharedData->m_perturbations.m_fRotationProbability) {
-		xml_node<>* rotationAngle = doc.allocate_node(node_element, xRotationAngle, NULL, sizeof(xRotationAngle));
+		xml_node<>* rotationAngle = doc.allocate_node(node_element, xRotationAngle);
 		resume->append_node(rotationAngle);
 		XsdTypeUtil::setAttribute(doc, rotationAngle, xRadians, m_fRotationRadians);
 	}
 	if (1 != m_sharedData->m_perturbations.m_iStartingPerturbationsPerIteration) {
-		xml_node<>* perturbationsPerIteration = doc.allocate_node(node_element, xPerturbationsPerIteration, NULL, sizeof(xPerturbationsPerIteration));
+		xml_node<>* perturbationsPerIteration = doc.allocate_node(node_element, xPerturbationsPerIteration);
 		resume->append_node(perturbationsPerIteration);
 		XsdTypeUtil::setAttribute(doc, perturbationsPerIteration, xValue, m_fPerturbationsPerIteration);
 	}

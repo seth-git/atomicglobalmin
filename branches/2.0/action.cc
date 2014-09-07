@@ -5,9 +5,9 @@
 const bool    Action::s_required[]       = {false};
 const char*   Action::s_defaultValues[]  = {""};
 
-//const char*      Action::s_elementNames[] = {"setup", "constraints", "energy", "resume", "results"};
-const unsigned int Action::s_minOccurs[]    = {1      , 0            , 1       , 0       , 0        };
-const unsigned int Action::s_maxOccurs[]    = {1      , XSD_UNLIMITED, 1       , 1       , 1        };
+//const char*      Action::s_elementNames[] = {"setup", "constraints", "energy", "resume"     , "results"};
+const unsigned int Action::s_minOccurs[]    = {1      , 0            , 1       , 0            , 0        };
+const unsigned int Action::s_maxOccurs[]    = {1      , XSD_UNLIMITED, 1       , XSD_UNLIMITED, 1        };
 
 //const char*      Action::s_resultsElementNames[] = {"structure"};
 const unsigned int Action::s_resultsMinOccurs[]    = {0};
@@ -36,6 +36,39 @@ Action::Action(Input* input)
 Action::~Action()
 {
 	clear();
+}
+
+void Action::mpiCleanup() {
+	// Delete all send requests
+	MPI_Status status;
+	int flag;
+	for (std::list<SendRequestPair>::iterator it = m_sendRequests.begin(); it != m_sendRequests.end(); ++it) {
+		MPI_Test(it->second, &flag, &status);
+		if (!flag) {
+			MPI_Cancel(it->second);
+			MPI_Request_free(it->second);
+		}
+		delete it->first;
+		delete it->second;
+	}
+	m_sendRequests.clear();
+}
+
+void Action::deleteCompletedSendRequests() {
+	MPI_Status status;
+	int flag;
+	std::list<SendRequestPair>::iterator pairIt, pairIt2;
+	pairIt = m_sendRequests.begin();
+	while (m_sendRequests.end() != pairIt) {
+		pairIt2 = pairIt;
+		++pairIt;
+		MPI_Test(pairIt2->second, &flag, &status);
+		if (flag) {
+			m_sendRequests.erase(pairIt2);
+			delete pairIt2->first;
+			delete pairIt2->second;
+		}
+	}
 }
 
 void Action::clear() {
@@ -101,7 +134,7 @@ bool Action::load(const rapidxml::xml_node<>* pActionElem)
 			return false;
 		}
 	}
-	
+
 	if (!loadSetup(actionElements[0][0])) // Do this after loading constraints
 		return false;
 	
@@ -201,19 +234,15 @@ time_t Action::getTotalElapsedSeconds() {
 }
 
 bool Action::run() {
-	if (m_bRunComplete) {
-		printf("This run has already been completed.\n");
-		return false;
-	}
-	m_tStartTime = time (NULL);
-	m_pEnergy = energyXml.getEnergy();
-	if (NULL == m_pEnergy)
-		return false;
 	int temp;
 	MPI_Comm_rank(MPI_COMM_WORLD, &temp);
 	m_iMpiRank = (unsigned int)temp;
 	MPI_Comm_size(MPI_COMM_WORLD, &temp);
 	m_iMpiProcesses = (unsigned int)temp;
+	m_tStartTime = time (NULL);
+	m_pEnergy = energyXml.getEnergy();
+	if (NULL == m_pEnergy)
+		return false;
 	return true;
 }
 

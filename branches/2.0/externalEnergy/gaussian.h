@@ -15,17 +15,15 @@
 
 class Gaussian : public ExternalEnergy {
 public:
-	static const char* s_sPathToExecutable;
-	static const char* s_sInputFileExtension;
-	static const char* s_sOutputFileExtension;
+	static const char s_sPathToExecutable[];
+	static const char s_sInputFileExtension[];
+	static const char s_sOutputFileExtension[];
 	static const char* s_optionalOutputFileExtensions[];
 
 	Gaussian(const ExternalEnergyXml* pExternalEnergyXml);
 	~Gaussian();
 
-	bool createInputFile(Structure &structure,
-			unsigned int populationMemberNumber, bool writeEnergyValueInHeader,
-			bool writeMetaData);
+	bool createInputFile(const char* inputFileName, const Structure &structure);
 
 	static bool readOutputFile(const char* outputFile, Structure &structure, bool readGeometry);
 
@@ -34,12 +32,12 @@ public:
 	bool clear() { return true; }
 
 private:
+	void searchForCheckPointFile();
+
 	static bool s_bGetStandardOrientation;
 	static bool s_bRequireNormalTermination;
 	std::string m_sCheckPointFileName;
-	bool m_bSemiEmpirical;
 
-	void getCheckpointFileName();
 	bool isFileCharacter(char character);
 };
 

@@ -28,11 +28,12 @@ public:
 	bool loadResume(const rapidxml::xml_node<>* pResumeElem);
 	bool saveResume(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pSimElem);
 
-	static bool iterationComparator(const SimulatedAnnealingRun* a, const SimulatedAnnealingRun* b) { return a->m_iIteration > b->m_iIteration; }
+	static bool iterationComparator(const SimulatedAnnealingRun* a, const SimulatedAnnealingRun* b) { return a->m_iIteration < b->m_iIteration; }
 
 protected:
 	time_t getTotalElapsedSeconds();
 
+	static const char* s_resumeElemNames[];
 	static const unsigned int s_resumeMinOccurs[];
 };
 

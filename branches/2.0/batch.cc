@@ -4,24 +4,12 @@
 
 Batch::Batch(Input* input) : Action(input)
 {
+	m_targetQueueSize = 0;
 }
 
 Batch::~Batch()
 {
-	clear();
-
-	MPI_Status status;
-	int flag;
-	for (std::list<SendRequestPair>::iterator it = m_sendRequests.begin(); it != m_sendRequests.end(); ++it) {
-		MPI_Test(it->second, &flag, &status);
-		if (!flag) {
-			MPI_Cancel(it->second);
-			MPI_Request_free(it->second);
-		}
-		delete it->first;
-		delete it->second;
-	}
-	m_sendRequests.clear();
+	// Note: clear is called from the Action class
 }
 
 //const char*      Batch::s_elementNames[] = {"structuresTemplate"};
@@ -142,6 +130,10 @@ bool Batch::saveResume(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pBat
 }
 
 bool Batch::runMaster() {
+	if (m_bRunComplete) {
+		puts("This run has already been completed.");
+		return true;
+	}
 	if (!Action::run())
 		return false;
 
@@ -198,7 +190,6 @@ bool Batch::runMaster() {
 
 	char* xml;
 	bool success;
-	int flag;
 	MPI_Status status;
 	unsigned int iEnergyCalcFailures = 0;
 	unsigned int iFailedProcesses = 0;
@@ -229,17 +220,7 @@ bool Batch::runMaster() {
 			}
 		}
 
-		pairIt = m_sendRequests.begin();
-		while (m_sendRequests.end() != pairIt) {
-			pairIt2 = pairIt;
-			++pairIt;
-			MPI_Test(pairIt2->second, &flag, &status);
-			if (flag) {
-				m_sendRequests.erase(pairIt2);
-				delete pairIt2->first;
-				delete pairIt2->second;
-			}
-		}
+		deleteCompletedSendRequests();
 
 		#if MPI_DEBUG
 			printf("Master checking for messages.\n");
@@ -271,7 +252,7 @@ bool Batch::runMaster() {
 					FLOAT percentFailed = (FLOAT)iFailedProcesses / (FLOAT)m_iMpiProcesses;
 					if (percentFailed > s_fMaxMPIProcessFailures) {
 						#if MPI_DEBUG
-							printf("More than %0.0lf% of processes failed. Sending die signal to other processes and exiting.\n", s_fMaxMPIProcessFailures * 100);
+							printf("More than %0.0lf%% of processes failed. Sending die signal to other processes and exiting.\n", s_fMaxMPIProcessFailures * 100);
 						#endif
 						for (unsigned int i = 1; i < m_iMpiProcesses; ++i)
 							MPI_Send(0, 0, MPI_INT, i, DIE_TAG, MPI_COMM_WORLD);
@@ -337,6 +318,8 @@ void Batch::processResult(Structure* structure) {
 }
 
 bool Batch::runSlave() {
+	if (m_bRunComplete)
+		return true;
 	if (!Action::run())
 		return false;
 
@@ -406,13 +389,12 @@ bool Batch::runSlave() {
 				}
 			#if MPI_DEBUG
 			} else {
-				printf("Slave %d did not receive a message.\n", m_iMpiRank, status.MPI_TAG);
+				printf("Slave %d did not receive a message.\n", m_iMpiRank);
 			#endif
 			}
 		} while (messageReceived && !receivedFinishMessage);
-		if (queue.empty()) {
+		if (queue.empty())
 			break;
-		}
 		id = queue.front();
 		queue.pop_front();
 		pStructure = structureMap[id];

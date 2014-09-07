@@ -23,9 +23,7 @@ public:
 
 	static ExternalEnergy* instance(Impl impl, const ExternalEnergyXml* pExternalEnergyXml);
 
-	virtual bool createInputFile(Structure &structure,
-			unsigned int populationMemberNumber, bool resetInputFileName,
-			bool writeMetaData) = 0;
+	virtual bool createInputFile(const char* inputFileName, const Structure &structure) = 0;
 
 	static void readOutputFile(const char* outputFile, FLOAT &energy,
 			Structure* pStructure, bool &openedFile, bool &readEnergy,
@@ -37,9 +35,9 @@ public:
 
 	static bool readOutputFileWithCCLib(const char* fileName, Structure &structure, bool readGeometry);
 
-	virtual bool setup() = 0;
+	virtual bool setup() = 0; // Call this in preparation for calling execute
 	virtual bool execute(Structure &structure) = 0;
-	virtual bool clear() = 0;
+	virtual bool clear() = 0; // Call this when execute will no longer be called and before the process terminates
 
 	static const char* getOutputFileExtension(Impl impl);
 
@@ -47,6 +45,22 @@ public:
 	static const char* getEnumString(Impl enumValue);
 
 	static unsigned int s_iMaxEnergyCalcFailuresOnStructure;
+
+	struct cmp_str {
+		bool operator()(char const *a, char const *b) { return std::strcmp(a, b) < 0; }
+	};
+
+	/**************************************************************************
+	 * Purpose: Perform replacements in src putting the result in dest.
+	 * Parameters: src - the source string
+	 *             symbol - a character indicating a replacement is found
+	 *                This method loads the string that comes after the symbol,
+	 *                and searches for it as a key in the map. It then replaces
+	 *                the symbol and the key with the value from the map.
+	 *             map - pairs of search and replacement strings (see above).
+	 *             dest - Results are appended here.
+	 */
+	static void replace(std::string src, const char symbol, std::map<const char*, const char*, cmp_str> &map, std::string &dest);
 
 protected:
 	const ExternalEnergyXml* m_pExternalEnergyXml;

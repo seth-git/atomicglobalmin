@@ -326,27 +326,26 @@ size_t XsdTypeUtil::createFloat(FLOAT value, char* buffer, size_t size) {
 	snprintf(buffer, size, "%0.15f", value);
 
 	// Remove trailing zeros
-	size_t len = 0;
-	while (buffer[len] != '\0')
-		++len;
-	--len;
-	while (buffer[len] == '0') {
-		buffer[len] = '\0';
-		--len;
-		if (buffer[len] == '.') {
-			buffer[len] = '\0';
-			--len;
+	size_t i = 0;
+	while (buffer[i] != '\0')
+		++i;
+	--i;
+	while (buffer[i] == '0') {
+		buffer[i] = '\0';
+		--i;
+		if (buffer[i] == '.') {
+			buffer[i] = '\0';
+			--i;
 			break;
 		}
 	}
-	len += 2; // include the '\0' character
-	return len;
+	return i+1; // don't include the '\0' character
 }
 
 char* XsdTypeUtil::createFloat(FLOAT value, rapidxml::xml_document<> &doc) {
 	char buffer[100];
 	size_t len = createFloat(value, buffer, sizeof(buffer));
-	return doc.allocate_string(buffer, len);
+	return doc.allocate_string(buffer, len+1);
 }
 
 char* XsdTypeUtil::createInt(int value, rapidxml::xml_document<> &doc) {

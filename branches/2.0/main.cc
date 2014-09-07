@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
 	}
 
 	if (!Handbook::init())
-		return 0;
+		return 1;
 
 	MPI_Init(&argc, &argv);
 	int iRank;
@@ -20,9 +20,9 @@ int main(int argc, char* argv[])
 	int returnValue;
 	Input input;
 	if (!Random::init(iRank))
-		returnValue = 0;
+		returnValue = 1;
 	else
-		returnValue = (int)input.run(argv[1]);
+		returnValue = (int)!input.run(argv[1]);
 	MPI_Finalize();
 	return returnValue;
 }

@@ -1,0 +1,1025 @@
+<?xml version="1.0" encoding="utf-8"?>
+<agml version="2.0" xmlns="http://sourceforge.net/projects/atomicglobalmin/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://sourceforge.net/projects/atomicglobalmin/ agml.xsd">
+	<simulatedAnnealing constraints="const">
+		<setup saveFrequency="10">
+			<structuresTemplate constraints="const">
+				<structureTemplate>
+					<atomTemplate number="7" Z="2"/>
+				</structureTemplate>
+				<threeD number="32"/>
+			</structuresTemplate>
+			<temperature decreaseAfterIteration="200">
+				<acceptedPerturbations percent="90"/>
+			</temperature>
+			<annealingSchedule quenchingFactor="0.9995"/>
+			<perturbations>
+				<translationVector startLength="0.5" minLength="0.1" probability="1"/>
+			</perturbations>
+			<stop maxAcceptedPerturbations="10"/>
+		</setup>
+		<constraints name="const">
+			<cube size="5.5"/>
+			<atomicDistances>
+				<min value="1"/>
+				<max value="1.5"/>
+			</atomicDistances>
+		</constraints>
+		<energy>
+			<internal method="Lennard Jones"/>
+		</energy>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="1">
+				<atomGroup>
+					<atom Z="2" x="-1.001166735125739" y="0.128927551198887" z="-0.101129444724842"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.844844895723547" y="0.847255362046535" z="0.944330176525828"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.964368332469653" y="-0.139717594564969" z="-0.615429439045267"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0" y="0" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.122859422124528" y="1.587957272356056" z="1.19640080301019"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.708100164779804" y="1.030453434090683" z="0.430470378294417"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.85710604026108" y="0.38228837595121" z="0.758317132283751"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="2">
+				<atomGroup>
+					<atom Z="2" x="-0.383500228605155" y="2.113902832109575" z="-0.046284265545695"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.41556662120626" y="1.369723755191968" z="0.345419926466739"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.077411870420808" y="-0.321106845943038" z="-1.445202013227337"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0" y="0" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.329408072910459" y="1.07553479097454" z="0.05079653767289"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.102066807814112" y="-0.085309929529248" z="0.208618824712303"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.485557842918674" y="-0.407557760168082" z="0.826786669498254"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="3">
+				<atomGroup>
+					<atom Z="2" x="-1.341730226093451" y="0.200620737557662" z="0.116040384191449"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.167827252819646" y="0.833909068532572" z="-0.606529196966062"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.265705403296045" y="-1.305070900923539" z="-0.423205951979937"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0" y="0" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.362373110161198" y="-2.179134271567954" z="-0.597047137288739"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.464259661426714" y="-1.048487271332548" z="-0.010982260308296"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.717256631363786" y="-2.258287781164744" z="-0.319407402855132"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="4">
+				<atomGroup>
+					<atom Z="2" x="0.920298689468881" y="1.495591371464789" z="0.079702484120296"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.71564075042986" y="0.75618564067802" z="0.908374190289673"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.110870283522494" y="-1.560050573231264" z="0.108760123886738"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.071513434934317" y="-0.252029165435831" z="-0.031715416057205"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.698643942665569" y="0.756891837316403" z="0.890160624293315"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0" y="0" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.25394201210802" y="-0.901806061520236" z="-0.697506318079288"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="5">
+				<atomGroup>
+					<atom Z="2" x="2.295078216828277" y="-0.202721902165559" z="-0.482782358690814"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.76561319823773" y="0.367280521156424" z="-0.669838845350696"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.350235523239944" y="0.06973837941578" z="0.051679777578934"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.283061213998239" y="0.538917098752333" z="-0.794664404649436"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.117728252424894" y="-1.214718030579738" z="0.65102772651767"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0" y="0" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.559990139506215" y="1.437938457920921" z="-0.362000267927409"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="6">
+				<atomGroup>
+					<atom Z="2" x="-0.955067044412919" y="0.386910016199212" z="0.167459692586294"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0" y="0" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.663651947323194" y="0.457866529826423" z="1.2065650444139"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.117248044283115" y="0.730868187326939" z="2.176386668775719"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.428427130320615" y="0.457405221635073" z="1.169778301387308"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.197615761479585" y="0.788841292558011" z="2.181762456916642"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.651246668240766" y="0.033499313280441" z="1.30278663112575"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="7">
+				<atomGroup>
+					<atom Z="2" x="0" y="0" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.040572757742064" y="-0.299786398949514" z="1.540289023630632"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.728632826145913" y="1.430456713296514" z="0.900433059071486"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.732633074613731" y="0.749387312364537" z="0.717432055478638"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.272786783025201" y="-0.203973977867369" z="-0.118918929369245"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.024213975486219" y="-0.170005692223735" z="1.343236844575132"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.064958882492648" y="0.193571263569833" z="-1.258214887822102"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="8">
+				<atomGroup>
+					<atom Z="2" x="0.282783374609226" y="-0.462662221913222" z="2.273018499618715"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0" y="0" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.008608632102693" y="-0.666614359772488" z="1.021711040374014"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.451326028851009" y="-0.143947694826215" z="0.151903171885321"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.744654024095501" y="0.369187342069896" z="-1.190602507119241"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="2.223255643349296" y="-0.657910259600416" z="0.975486933675787"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="2.112970964165108" y="0.319680224778985" z="-1.315632781684481"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="9">
+				<atomGroup>
+					<atom Z="2" x="0.408123561164675" y="-1.037694467151316" z="-0.624926923221782"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.056202257912383" y="-1.960562034001531" z="-1.145625423291035"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.845094880216417" y="-1.044811144915801" z="-0.59544628097794"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.139191619487819" y="-1.885045993495402" z="0.034669933250351"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0" y="0" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.249980940047585" y="-0.104527308442327" z="-0.060715146811113"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.005760656127435" y="0.001421794727076" z="0.009707276389567"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="10">
+				<atomGroup>
+					<atom Z="2" x="-1.406631800962987" y="0.44410421552456" z="-1.173880000624631"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.386358003464856" y="0.121122470494265" z="0.964297923363871"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="2.392032874421312" y="0.400949582045687" z="0.448492861036194"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.113564668800796" y="0.033927107833426" z="-0.005871863084421"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.11874182902574" y="0.039499266516175" z="-0.133558321260499"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.751241358753505" y="0.412415002146065" z="-1.061381796822589"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.406631800962987" y="0" z="0"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="11">
+				<atomGroup>
+					<atom Z="2" x="-0.15881506556304" y="1.327400996553425" z="-0.105529973678227"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.405885951325516" y="0.006137287147581" z="-0.138221769237002"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.445021383529777" y="0.70291081590223" z="-0.912817378500354"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0" y="0" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.882286604164139" y="1.314803754029886" z="1.571691203836516"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.821863685018148" y="0.744911611903583" z="0.910888298006341"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="2.40192814067327" y="0.932804706725955" z="-0.394031606063003"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="12">
+				<atomGroup>
+					<atom Z="2" x="-0.293315819679609" y="1.051308779870173" z="1.977659496390788"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.556135287971455" y="0.414829717081211" z="-2.690731225545221"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.229698384740044" y="-0.087826170691002" z="-1.713710106727955"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.563498830198954" y="-0.784514173701182" z="2.690731225545221"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.529813347155535" y="0.342696422994744" z="-0.486120310268617"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.454912994213275" y="0.277646044705167" z="0.84806557061019"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0" y="0" z="1.920493649101907"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="13">
+				<atomGroup>
+					<atom Z="2" x="0" y="0" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.144623123420818" y="1.157080772190834" z="-0.828315456575442"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-2.091735572055076" y="0.305776572795006" z="-0.670036400861783"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.364785485564247" y="0.214737340044013" z="0.32722939320829"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.785557078057183" y="0.315989950887506" z="-0.685248386903325"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.801979241272426" y="0.995466697620154" z="-1.980980630339431"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.664056754774916" y="1.667124789690431" z="0.085952545374017"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="14">
+				<atomGroup>
+					<atom Z="2" x="0.300527642604628" y="-0.700274103244225" z="-0.865553271312876"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.065233959731965" y="-1.38955380046049" z="-0.784641209136609"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.264612850497784" y="-1.281897782485345" z="0.043507225266968"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-2.345960522657711" y="-0.271717262474018" z="-1.063504460226929"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.933793965745932" y="-1.002451089651" z="0.898013292693463"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0" y="0" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.234468405971279" y="0.208475551551312" z="-0.785308127425758"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="15">
+				<atomGroup>
+					<atom Z="2" x="-2.001825597701427" y="-1.745892622070958" z="-1.211830328863982"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.534151241956801" y="-0.874204732820604" z="-0.339509004995436"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.440907414524272" y="0.42451400400898" z="-0.49564496413169"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.868086967961319" y="1.674792017208001" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.236513257915905" y="-0.653691597563924" z="-0.057296850041304"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="2.001825597701427" y="1.745892622070958" z="0.134291226030015"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.007628667935424" y="1.431752585983223" z="-0.787251218431271"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="16">
+				<atomGroup>
+					<atom Z="2" x="1.901518006843772" y="-0.493223675123754" z="-0.590761287878127"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.094767743284019" y="-1.740986493951213" z="0.217834813617263"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.74550963027193" y="-1.136716468597193" z="-0.093743764245866"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.668188333614935" y="-1.07169767274314" z="-0.08545701814809"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.33307669050521" y="0.168121071367249" z="-0.099069091370022"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.635559595554759" y="0.52337732511853" z="-1.154995913420973"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0" y="0" z="0"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="17">
+				<atomGroup>
+					<atom Z="2" x="0" y="0" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.092989965170869" y="0.695536035644141" z="-0.766053476499384"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.838233458463935" y="-0.178522762933415" z="-1.094088398763036"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.94380768909682" y="1.329038754158325" z="0.035789607877793"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.30456661098992" y="-1.041478578680823" z="-0.313446679358351"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.064821276314569" y="1.249920555649282" z="0.603724653066821"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.146717315420074" y="0.098460326698742" z="-0.039081841764447"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="18">
+				<atomGroup>
+					<atom Z="2" x="-0.745446853289192" y="0.211737037905197" z="-0.12296884156687"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.274238361594856" y="-0.262815976958453" z="-0.112364214514004"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.52425413104897" y="-0.241911999859595" z="0.893435837323946"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.132417834234977" y="0.555472474117414" z="-0.197698305546817"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.719872964182661" y="1.455997766826088" z="0.583421397727219"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0" y="-1.455997766826088" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.557135425566404" y="-0.696070195503098" z="-1.123015637464993"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="19">
+				<atomGroup>
+					<atom Z="2" x="-0.687233232432307" y="-0.817787882052816" z="-0.459282900129805"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-2.650821582652634" y="-0.847999847901146" z="-1.436077169261446"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0" y="0" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.973981237619106" y="0.320284673135919" z="-1.407369506350254"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.76731457387805" y="-1.786472485188547" z="-0.782473716987218"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.175628878034917" y="0.183147935322204" z="-0.610730264326305"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.387017579942357" y="-0.915317162605823" z="-1.527702057067686"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="20">
+				<atomGroup>
+					<atom Z="2" x="0.207584743505438" y="0.11950140774939" z="1.342557497124995"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.591000193808473" y="0" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.537880885147021" y="0.343039612856559" z="0.178025398099007"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.201391016774069" y="-1.014064361267753" z="1.797323642024324"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.952416474696465" y="1.487314284585096" z="0.077400468728936"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.591000193808473" y="-0.860005407794981" z="1.576955605461837"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.422118457880805" y="0.819272929672474" z="0.980863103065896"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="21">
+				<atomGroup>
+					<atom Z="2" x="0.710933482346946" y="0.210390831921556" z="-0.467294646980748"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.27889092669293" y="0.561149522460233" z="-1.418162025012217"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.634055113881688" y="0.084029393973949" z="-0.328150516634885"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.665852116247645" y="0" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.826200869031515" y="0.939387570911585" z="-1.197338332545193"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.717041694054649" y="1.153409171976782" z="-0.516770523926718"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.717041694054649" y="0.214439349829299" z="-0.468140326877513"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="22">
+				<atomGroup>
+					<atom Z="2" x="0" y="0" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.517917221869369" y="-0.082629476785648" z="-0.967063342177882"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.914600260935153" y="0.055975798496682" z="0.721999594853399"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.09343396183633" y="0.942514789661182" z="-1.491881581943942"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.553848968895526" y="0.948954575563177" z="-0.521600711953382"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-2.392704529717072" y="0.067123671406009" z="0.69027196725418"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.462112641742905" y="1.114865959044463" z="-0.124950366631851"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="23">
+				<atomGroup>
+					<atom Z="2" x="-0.445547118234759" y="-0.200022131114183" z="-0.62990569741468"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.650130873927031" y="0.249224653942845" z="-1.870778378624096"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.25055144636554" y="1.950230223861943" z="-2.319612895771805"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.530297898896968" y="0.835747460378238" z="-2.356872702582239"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.610042656436594" y="-0.23791167047633" z="-2.070910363857511"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.072864832371687" y="-0.232685289939429" z="0.689458968888057"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0" y="0" z="1.870778378624096"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="24">
+				<atomGroup>
+					<atom Z="2" x="-0.116221966285502" y="-1.17162955566033" z="-2.548400410507435"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.68932076718075" y="-0.566371446809182" z="-1.305649329929206"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.473380066859725" y="-0.756700836180501" z="-1.854220950900975"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.844776441242018" y="-0.323833019544754" z="-2.299613246042735"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.844776441242018" y="0" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.787448589567791" y="-0.279646551716544" z="-2.3052249690753"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.771641224067301" y="-0.107337708898967" z="-0.425722266824246"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="25">
+				<atomGroup>
+					<atom Z="2" x="0" y="0" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.726219216378541" y="-0.823768626958372" z="0.033524413814321"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="2.560851607344205" y="1.492803714826529" z="-1.172997517368658"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.314525607247756" y="0.091209246380423" z="0.065295080231581"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.536680738485866" y="1.145381584530737" z="-0.731131665428729"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="2.29930119089545" y="-0.626297511130968" z="-0.460254135369323"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="2.329942722942752" y="-0.095283015206763" z="0.400943788774168"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="26">
+				<atomGroup>
+					<atom Z="2" x="0.195249774920781" y="0.005716445020828" z="0.034842349622859"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.031373639174246" y="-0.893439811013181" z="0.678171844377862"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.356775843975312" y="-0.755503200349591" z="0.848432683693534"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.461707353546578" y="-1.304050581405182" z="-0.200936645931562"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.628829581057305" y="-1.946407943762784" z="-1.070627169231705"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.324212294627016" y="-1.372290277389504" z="-0.236090036942202"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.461707353546578" y="0" z="0"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="27">
+				<atomGroup>
+					<atom Z="2" x="-1.064390178110754" y="1.882042625723427" z="-0.725167902558728"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.897496662812843" y="1.354926425830761" z="0.62932002914337"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.99367149141756" y="1.436140535495626" z="-1.600774422211992"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0" y="0" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.591831743101813" y="0.170660592059471" z="1.35680064984901"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.213553223458144" y="1.794399449896191" z="-0.996916219913857"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.353701520983024" y="0.172661773833542" z="0.403676186090309"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="28">
+				<atomGroup>
+					<atom Z="2" x="0.034296084111533" y="-1.283288745996197" z="-0.072862182977691"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.025273360436395" y="-1.649386456593382" z="1.31051506616011"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0" y="0" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.336381243215799" y="1.069347699964628" z="-0.360951770420189"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.956077424740159" y="0.764700345776272" z="0.595083550645286"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.409851003840607" y="-1.972056623188308" z="0.687568781534962"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.761561349924828" y="-1.8528208994746" z="0.156702533422892"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="29">
+				<atomGroup>
+					<atom Z="2" x="-1.325831626163484" y="-0.570649625061114" z="0.060364988109952"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.231089543029108" y="-0.28263721781747" z="-0.344012595873219"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0" y="0" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.936794145987422" y="-1.517032342186828" z="0.034174210924343"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.069482412838089" y="0.278199497671637" z="0.561609253515007"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.279538156406496" y="-1.28203030462017" z="-0.484843369325852"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.463553760496163" y="-0.593167470035943" z="0.888316001624993"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="30">
+				<atomGroup>
+					<atom Z="2" x="-0.301207106393043" y="1.752857765951969" z="-0.474391477115706"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.97780595257392" y="0.989301586561826" z="-0.880793612720443"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="1.010023433881667" y="1.505705567265432" z="0.835903788728414"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0" y="0" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.19793695155162" y="1.823585897481964" z="-0.95074770403229"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.089621596408262" y="-0.502145530589322" z="-1.284918409332093"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.859802725484452" y="1.122805647048037" z="-0.279510314000762"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="31">
+				<atomGroup>
+					<atom Z="2" x="1.030283323183006" y="-0.880322668782405" z="-0.601529208803761"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.26089559548068" y="-0.714622740214562" z="-1.648135732375954"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.994453130633168" y="-0.249947491460149" z="0.085233917827976"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.762549451640141" y="0.630622722276056" z="0.769267872449875"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0" y="0" z="0"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.35345116012097" y="-1.890500496071472" z="1.108452220684533"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.737801941933592" y="-1.018381201626493" z="0.445474287506406"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<resume>
+			<temperature value="1000000"/>
+			<translationVector value="0.5"/>
+			<iteration value="0"/>
+			<totalEnergyCalculations value="0"/>
+			<elapsedSeconds value="0"/>
+			<runComplete value="false"/>
+			<structure id="32">
+				<atomGroup>
+					<atom Z="2" x="-1.259897765491375" y="0.063351938952788" z="0.048042956762505"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.591539301436589" y="-0.952796708609974" z="-0.62465801133059"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-1.291019689912704" y="-0.66838850865948" z="-1.525332639081593"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.143523967108676" y="-1.154633961696233" z="0.314551640335066"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="-0.523498188254457" y="1.231054697926415" z="0.183911174110504"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0.586176794100365" y="0.656004054541575" z="0.558093987558024"/>
+				</atomGroup>
+				<atomGroup>
+					<atom Z="2" x="0" y="0" z="0"/>
+				</atomGroup>
+			</structure>
+		</resume>
+		<results/>
+	</simulatedAnnealing>
+</agml>
+

@@ -10,5 +10,6 @@
 const std::string testXmlDir = "test/xml";
 
 const char* xmlBatchTest();
+const char* xmlSimTest();
 
 #endif

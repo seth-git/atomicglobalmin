@@ -21,9 +21,6 @@ public:
 protected:
 	void processResult(Structure* structure);
 
-	typedef std::pair<int*,MPI_Request*> SendRequestPair;
-	std::list<SendRequestPair> m_sendRequests;
-
 	static const unsigned int s_minOccurs[];
 	static const bool s_setupAttReq[];
 	static const char* s_setupAttDef[];

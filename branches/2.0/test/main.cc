@@ -11,16 +11,19 @@ void addFailedTestName(std::string &failedUnitTests, const char* failedTestName)
 int main(int argc, char* argv[])
 {
 	const char * (*tests[])() = {&testMatrixMultiplication, &ccLibReadTest, &testPlaceAtomGroupRelativeToAnother, &testInitialization,
-			&testSeeding, &testSeeding2, &testSeeding3, &testSeeding4, &testLJ7, &testUpdateAtomToCenterRanks, &xmlBatchTest};
+		&testSeeding, &testSeeding2, &testSeeding3, &testSeeding4, &testLJ7, &gaussianTest, &testUpdateAtomToCenterRanks, &xmlBatchTest, &xmlSimTest};
+
+	Input::s_bCompactXml = false;
 
 	if (0 != chdir("..")) {
 		printf("Failed to perform 'cd ..', errno = %d\n", errno);
+		return 1;
 	}
 
 	if (!Random::init(1))
-		return 0;
+		return 1;
 	if (!Handbook::init())
-		return 0;
+		return 1;
 
 	std::string failedUnitTests;
 	unsigned int passedTests = 0;

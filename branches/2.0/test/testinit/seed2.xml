@@ -28,13 +28,15 @@
         </constraints>
         <energy>
             <external method="Gaussian">
-                <sharedDirectory path="path" />
+                <temporaryDirectory path="path" />
                 <resultsDirectory path="path" maxFiles="100" filePrefix="res" />
-                <charge value="0" />
-                <multiplicity value="1" />
                 <header>
                     <![CDATA[% mem=2000MB
-# B3LYP/6-311++G(d,p) scfcon=4 scfcyc=300 scf=direct]]>
+# B3LYP/6-311++G(d,p) scfcon=4 scfcyc=300 scf=direct
+
+0 1
+!atoms
+]]>
 </header>
             </external>
         </energy>

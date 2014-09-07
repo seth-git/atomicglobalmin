@@ -5,6 +5,7 @@
 #include "../action.h"
 #include "saPerturbations.h"
 #include "simulatedAnnealingRun.h"
+#include "../xsd/mpiUtils.h"
 
 class SimulatedAnnealing : public Action {
 public:
@@ -35,19 +36,29 @@ public:
 	bool runSlave();
 
 protected:
-	bool verifyNotFinished();
+	void calculateRunComplete();
+	void clear();
+	void findRuns(const int* structureIds, unsigned int numStructureIds, std::list<SimulatedAnnealingRun*> &results);
 
-private:
 	static const FLOAT s_fDefaultBoltzmannConstant;
 	static const bool s_setupAttReq[];
 	static const char* s_setupAttDef[];
+
+	static const char* s_elementNames[];
 	static const unsigned int s_minOccurs[];
+
+	static const char* s_setupElemNames[];
+
+	static const char* s_tempAttNames[];
 	static const bool s_tempAttReq[];
 	static const char* s_tempAttDef[];
+
+	static const char* s_stopAttNames[];
 	static const bool s_stopAttReq[];
 	static const char* s_stopAttDef[];
-	
-	void clear();
+
+	typedef std::pair<int*,MPI_Request*> SendRequestPair;
+	std::list<SendRequestPair> m_sendRequests;
 };
 
 #endif

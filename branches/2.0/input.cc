@@ -2,6 +2,8 @@
 #include "input.h"
 #include "rapidxml/rapidxml_utils.hpp"
 #include "rapidxml/rapidxml_print.hpp"
+
+bool Input::s_bCompactXml = false;
 		
 Input::Input()
 {
@@ -149,7 +151,10 @@ bool Input::save()
 	}
 
 	std::string s;
-	print(std::back_inserter(s), doc, 0);
+	if (s_bCompactXml)
+		print(std::back_inserter(s), doc, print_no_indenting);
+	else
+		print(std::back_inserter(s), doc, 0);
 	fputs(s.c_str(), f);
 	fclose(f);
 
@@ -171,6 +176,7 @@ bool Input::run(const char* fileName) {
 	int iMpiProcesses;
 	MPI_Comm_rank(MPI_COMM_WORLD, &iRank);
 	MPI_Comm_size(MPI_COMM_WORLD, &iMpiProcesses);
+	bool normalTermination = false;
 	if (0 == iRank) {
 		if (!load(fileName)) {
 			int size = 0;
@@ -187,7 +193,7 @@ bool Input::run(const char* fileName) {
 			MPI_Bcast(&temp, 1, MPI_INT, 0, MPI_COMM_WORLD);
 			MPI_Bcast((void*)xml.c_str(), xml.length()+1, MPI_CHAR, 0, MPI_COMM_WORLD);
 		}
-		return m_pAction->runMaster();
+		normalTermination = m_pAction->runMaster();
 	} else {
 		char* xml;
 		int size;
@@ -205,6 +211,8 @@ bool Input::run(const char* fileName) {
 		delete[] xml; // Always delete
 		if (!success)
 			return false;
-		return m_pAction->runSlave();
+		normalTermination = m_pAction->runSlave();
 	}
+	m_pAction->mpiCleanup();
+	return normalTermination;
 }

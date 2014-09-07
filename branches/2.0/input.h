@@ -34,12 +34,15 @@ class Input {
 		bool save(std::string &buffer);
 		const char* getXml();
 		bool run(const char* fileName);
+
+		static bool s_bCompactXml;
+
 	private:
-		static const char*        s_agml;
+		static const char* s_agml;
 		
-		static const char*        s_attributeNames[];
-		static const bool         s_required[];
-		static const char*        s_defaultValues[];
+		static const char* s_attributeNames[];
+		static const bool  s_required[];
+		static const char* s_defaultValues[];
 		
 		static const char* s_actionElementNames[];
 

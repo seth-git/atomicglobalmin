@@ -15,17 +15,15 @@
 
 class Gamess : public ExternalEnergy {
 public:
-	static const char* s_sPathToExecutable;
-	static const char* s_sInputFileExtension;
-	static const char* s_sOutputFileExtension;
+	static const char s_sPathToExecutable[];
+	static const char s_sInputFileExtension[];
+	static const char s_sOutputFileExtension[];
 	static const char* s_optionalOutputFileExtensions[];
 
 	Gamess(const ExternalEnergyXml* pExternalEnergyXml);
 	~Gamess();
 
-	bool createInputFile(Structure &structure,
-			unsigned int populationMemberNumber, bool writeEnergyValueInHeader,
-			bool writeMetaData);
+	bool createInputFile(const char* inputFileName, const Structure &structure);
 
 	bool setup() { return true; }
 	bool execute(Structure &structure);

@@ -34,11 +34,11 @@
                 <temporaryDirectory path="path" />
                 <resultsDirectory path="path" maxFiles="100" filePrefix="res" />
                 <header>
-                    <![CDATA[% mem=2000MB
+% mem=2000MB
 # B3LYP/6-311++G(d,p) scfcon=4 scfcyc=300 scf=direct
 
 -1 1
-!atoms]]>
+!atoms
 </header>
             </external>
         </energy>

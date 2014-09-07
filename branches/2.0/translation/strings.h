@@ -6,201 +6,199 @@
 #include <string.h>
 
 namespace strings {
-	const char * const xSimulatedAnnealing = "simulatedAnnealing";
-	const char * const xRandomSearch = "randomSearch";
-	const char * const xParticleSwarmOptimization = "particleSwarmOptimization";
-	const char * const xGeneticAlgorithm = "geneticAlgorithm";
-	const char * const xBatch = "batch";
-	const char * const xSetup = "setup";
-	const char * const xConstraints = "constraints";
-	const char * const xEnergy = "energy";
-	const char * const xResume = "resume";
-	const char * const xResults = "results";
-	const char * const xInternal = "internal";
-	const char * const xExternal = "external";
-	const char * const xCube = "cube";
-	const char * const xAtomicDistances = "atomicDistances";
-	const char * const xMin = "min";
-	const char * const xMax = "max";
-	const char * const xName = "name";
-	const char * const xBase = "base";
-	const char * const xSize = "size";
-	const char * const xValue = "value";
-	const char * const xZ1 = "Z1";
-	const char * const xZ2 = "Z2";
-	const char * const xMethod = "method";
-	const char * const xTransitionStateSearch = "transitionStateSearch";
-	const char * const xSharedDirectory = "sharedDirectory";
-	const char * const xLocalDirectory = "localDirectory";
-	const char * const xResultsDirectory = "resultsDirectory";
-	const char * const xCharge = "charge";
-	const char * const xMultiplicity = "multiplicity";
-	const char * const xHeader = "header";
-	const char * const xFooter = "footer";
-	const char * const xPath = "path";
-	const char * const xMaxFiles = "maxFiles";
-	const char * const xFilePrefix = "filePrefix";
-	const char * const xMaster = "master";
-	const char * const xOpt = "opt";
+	const char xSimulatedAnnealing[] = "simulatedAnnealing";
+	const char xRandomSearch[] = "randomSearch";
+	const char xParticleSwarmOptimization[] = "particleSwarmOptimization";
+	const char xGeneticAlgorithm[] = "geneticAlgorithm";
+	const char xBatch[] = "batch";
+	const char xSetup[] = "setup";
+	const char xConstraints[] = "constraints";
+	const char xEnergy[] = "energy";
+	const char xResume[] = "resume";
+	const char xResults[] = "results";
+	const char xInternal[] = "internal";
+	const char xExternal[] = "external";
+	const char xCube[] = "cube";
+	const char xAtomicDistances[] = "atomicDistances";
+	const char xMin[] = "min";
+	const char xMax[] = "max";
+	const char xName[] = "name";
+	const char xBase[] = "base";
+	const char xSize[] = "size";
+	const char xValue[] = "value";
+	const char xZ1[] = "Z1";
+	const char xZ2[] = "Z2";
+	const char xMethod[] = "method";
+	const char xTransitionStateSearch[] = "transitionStateSearch";
+	const char xTemporaryDirectory[] = "temporaryDirectory";
+	const char xResultsDirectory[] = "resultsDirectory";
+	const char xHeader[] = "header";
+	const char xPath[] = "path";
+	const char xMaxFiles[] = "maxFiles";
+	const char xFilePrefix[] = "filePrefix";
+	const char xMaster[] = "master";
+	const char xOpt[] = "opt";
 
-	const char * const xStructuresTemplate = "structuresTemplate";
-	const char * const xTemperature = "temperature";
-	const char * const xAnnealingSchedule = "annealingSchedule";
-	const char * const xPerturbations = "perturbations";
-	const char * const xStop = "stop";
+	const char xStructuresTemplate[] = "structuresTemplate";
+	const char xTemperature[] = "temperature";
+	const char xAnnealingSchedule[] = "annealingSchedule";
+	const char xPerturbations[] = "perturbations";
+	const char xStop[] = "stop";
 
-	const char * const xDecreaseAfterIteration = "decreaseAfterIteration";
-	const char * const xMaxTemperature = "maxTemperature";
-	const char * const xMaxAcceptedPerturbations = "maxAcceptedPerturbations";
-	const char * const xMinIterations = "minIterations";
-	const char * const xSaveFrequency = "saveFrequency";
-	const char * const xQueueSize = "queueSize";
+	const char xDecreaseAfterIteration[] = "decreaseAfterIteration";
+	const char xMaxTemperature[] = "maxTemperature";
+	const char xMaxAcceptedPerturbations[] = "maxAcceptedPerturbations";
+	const char xMinIterations[] = "minIterations";
+	const char xSaveFrequency[] = "saveFrequency";
+	const char xQueueSize[] = "queueSize";
 
-	const char * const xStructureTemplate = "structureTemplate";
-	const char * const xLinear = "linear";
-	const char * const xPlanar = "planar";
-	const char * const xThreeD = "threeD";
-	const char * const xBondRotationalSearch = "bondRotationalSearch";
-	const char * const xSeed = "seed";
+	const char xStructureTemplate[] = "structureTemplate";
+	const char xLinear[] = "linear";
+	const char xPlanar[] = "planar";
+	const char xThreeD[] = "threeD";
+	const char xBondRotationalSearch[] = "bondRotationalSearch";
+	const char xSeed[] = "seed";
 
-	const char * const xMoleculeTemplate = "moleculeTemplate";
-	const char * const xAtomTemplate = "atomTemplate";
-	const char * const xNumber = "number";
-	const char * const xFormat = "format";
-	const char * const xDegrees = "degrees";
-	const char * const xType = "type";
+	const char xMoleculeTemplate[] = "moleculeTemplate";
+	const char xAtomTemplate[] = "atomTemplate";
+	const char xNumber[] = "number";
+	const char xFormat[] = "format";
+	const char xDegrees[] = "degrees";
+	const char xType[] = "type";
 
-	const char * const xAgmlFile = "agmlFile";
-	const char * const xDirectory = "directory";
-	const char * const xEnergyFile = "energyFile";
-	const char * const xFreezingIterations = "freezingIterations";
+	const char xAgmlFile[] = "agmlFile";
+	const char xDirectory[] = "directory";
+	const char xEnergyFile[] = "energyFile";
+	const char xFreezingIterations[] = "freezingIterations";
 
-	const char * const xSource = "source";
-	const char * const xPopulation = "population";
+	const char xSource[] = "source";
+	const char xPopulation[] = "population";
 
-	const char * const xKelvin = "kelvin";
-	const char * const xAcceptedPerturbations = "acceptedPerturbations";
-	const char * const xPercent = "percent";
+	const char xKelvin[] = "kelvin";
+	const char xAcceptedPerturbations[] = "acceptedPerturbations";
+	const char xPercent[] = "percent";
 
-	const char * const xBoltzmannConstant = "boltzmannConstant";
-	const char * const xQuenchingFactor = "quenchingFactor";
+	const char xBoltzmannConstant[] = "boltzmannConstant";
+	const char xQuenchingFactor[] = "quenchingFactor";
 
-	const char * const xTranslationVector = "translationVector";
-	const char * const xRotationAngle = "rotationAngle";
-	const char * const xRadians = "radians";
-	const char * const xStartLength = "startLength";
-	const char * const xMinLength = "minLength";
-	const char * const xProbability = "probability";
-	const char * const xStartDegrees = "startDegrees";
-	const char * const xMinDegrees = "minDegrees";
-	const char * const xNumberPerIteration = "numberPerIteration";
-	const char * const xPerturbationsPerIteration = "perturbationsPerIteration";
-	const char * const xIteration = "iteration";
+	const char xTranslationVector[] = "translationVector";
+	const char xRotationAngle[] = "rotationAngle";
+	const char xRadians[] = "radians";
+	const char xStartLength[] = "startLength";
+	const char xMinLength[] = "minLength";
+	const char xProbability[] = "probability";
+	const char xStartDegrees[] = "startDegrees";
+	const char xMinDegrees[] = "minDegrees";
+	const char xNumberPerIteration[] = "numberPerIteration";
+	const char xPerturbationsPerIteration[] = "perturbationsPerIteration";
+	const char xIteration[] = "iteration";
 
-	const char * const xAcceptedPertHistIt = "acceptedPertHistIt";
+	const char xAcceptedPertHistIt[] = "acceptedPertHistIt";
 
-	const char * const xTotalEnergyCalculations = "totalEnergyCalculations";
-	const char * const xElapsedSeconds = "elapsedSeconds";
-	const char * const xRunComplete = "runComplete";
-	const char * const xStructures = "structures";
-	const char * const xStructure = "structure";
-	const char * const xIsTransitionState = "isTransitionState";
-	const char * const xId = "id";
-	const char * const xAtomGroup = "atomGroup";
-	const char * const xFrozen = "frozen";
-	const char * const xTranslation = "translation";
-	const char * const xRadianAngles = "radianAngles";
-	const char * const xAtom = "atom";
-	const char * const xX = "x";
-	const char * const xY = "y";
-	const char * const xZ = "z";
-	const char * const xBigZ = "Z";
+	const char xTotalEnergyCalculations[] = "totalEnergyCalculations";
+	const char xElapsedSeconds[] = "elapsedSeconds";
+	const char xRunComplete[] = "runComplete";
+	const char xStructures[] = "structures";
+	const char xStructure[] = "structure";
+	const char xIsTransitionState[] = "isTransitionState";
+	const char xId[] = "id";
+	const char xAtomGroup[] = "atomGroup";
+	const char xFrozen[] = "frozen";
+	const char xTranslation[] = "translation";
+	const char xRadianAngles[] = "radianAngles";
+	const char xAtom[] = "atom";
+	const char xX[] = "x";
+	const char xY[] = "y";
+	const char xZ[] = "z";
+	const char xBigZ[] = "Z";
 
-	const char * const xMaxSize = "maxSize";
-	const char * const xRmsDistance = "rmsDistance";
+	const char xMaxSize[] = "maxSize";
+	const char xRmsDistance[] = "rmsDistance";
 
-	const char * const pADF = "ADF";
-	const char * const pGAMESS = "GAMESS";
-	const char * const pGAMESSUK = "GAMESS-UK";
-	const char * const pGaussian = "Gaussian";
-	const char * const pFirefly = "Firefly";
-	const char * const pJaguar = "Jaguar";
-	const char * const pMolpro = "Molpro";
-	const char * const pORCA = "ORCA";
-	const char * const pBest = "best";
-	const char * const pTrue = "true";
-	const char * const pFalse = "false";
-	const char * const pLennardJones = "Lennard Jones";
-	const char * const pCartesian = "Cartesian";
-	const char * const pAll = "All";
+	const char pADF[] = "ADF";
+	const char pGAMESS[] = "GAMESS";
+	const char pGAMESSUK[] = "GAMESS-UK";
+	const char pGaussian[] = "Gaussian";
+	const char pFirefly[] = "Firefly";
+	const char pJaguar[] = "Jaguar";
+	const char pMolpro[] = "Molpro";
+	const char pORCA[] = "ORCA";
+	const char pBest[] = "best";
+	const char pTrue[] = "true";
+	const char pFalse[] = "false";
+	const char pLennardJones[] = "Lennard Jones";
+	const char pCartesian[] = "Cartesian";
+	const char pAll[] = "All";
+	const char pAtoms[] = "atoms";
 
-	const char * const ReadingFile = "Reading file: %1$s\n";
-	const char * const WritingFile = "Writing file: %1$s\n";
-	const char * const ErrorOpeningFile = "Error opening file: %1$s\n";
-	const char * const pAbbrTemporary = "temp";
+	const char ReadingFile[] = "Reading file: %1$s\n";
+	const char WritingFile[] = "Writing file: %1$s\n";
+	const char ErrorOpeningFile[] = "Error opening file: %1$s\n";
+	const char ErrorWritingFile[] = "Error writing file: %1$s\n";
+	const char pAbbrTemporary[] = "temp";
 
 	// Error messages in xsdAttributeUtil.cc
-	const char * const DuplicateAttributes = "Duplicate attribute '%1$s' found for element '%2$s' with values '%3$s' and '%4$s'.\n";
-	const char * const UnrecognizedAttribute = "Unrecognized attribute '%1$s' found in the element '%2$s'.\n";
-	const char * const MissingAttribute = "The attribute '%1$s' is required on the element '%2$s'.\n";
-	const char * const MustNotContainAttributes = "The '%1$s' element must not contain any attributes.\n";
-	const char * const AvailableAttributes = "Available attributes on the element '%1$s' can be: %2$s.\n";
+	const char DuplicateAttributes[] = "Duplicate attribute '%1$s' found for element '%2$s' with values '%3$s' and '%4$s'.\n";
+	const char UnrecognizedAttribute[] = "Unrecognized attribute '%1$s' found in the element '%2$s'.\n";
+	const char MissingAttribute[] = "The attribute '%1$s' is required on the element '%2$s'.\n";
+	const char MustNotContainAttributes[] = "The '%1$s' element must not contain any attributes.\n";
+	const char AvailableAttributes[] = "Available attributes on the element '%1$s' can be: %2$s.\n";
 
 	// Error messages in xsdElementUtil.cc
-	const char * const MaxOf1ElementExceeded = "More than one element '%1$s' can't be inside an '%2$s' element.\n";
-	const char * const UnrecognizedElement = "Unrecognized element '%1$s' inside an element '%2$s'.\n";
-	const char * const ElementNumNot1 = "There must be one '%1$s' element inside each element '%2$s'.\n";
-	const char * const ElementRequiresExactly1Child = "The '%1$s' element cannot contain more than one child element.\n";
-	const char * const ElementRequiresNChildren = "There must be at least %1$u '%2$s' elements inside the '%3$s' element.\n";
-	const char * const ElementRequires1ChildMin = "There must be at least one '%1$s' element inside the '%2$s' element.\n";
-	const char * const MisplacedElement = "Unrecognized or misplaced '%1$s' element inside the '%2$s' element.\n";
-	const char * const MaxElementsExceeded = "There can't be more than %1$u '%2$s' element(s) inside the '%3$s' element.\n";
-	const char * const ChoiceError = "The element '%1$s' must contain one of these elements: %2$s.\n";
-	const char * const ChoiceElementOrder = "Elements inside the '%1$s' element must be listed in this order:\n";
-	const char * const pUnlimited = "unlimited";
+	const char MaxOf1ElementExceeded[] = "More than one element '%1$s' can't be inside an '%2$s' element.\n";
+	const char UnrecognizedElement[] = "Unrecognized element '%1$s' inside an element '%2$s'.\n";
+	const char ElementNumNot1[] = "There must be one '%1$s' element inside each element '%2$s'.\n";
+	const char ElementRequiresExactly1Child[] = "The '%1$s' element cannot contain more than one child element.\n";
+	const char ElementRequiresNChildren[] = "There must be at least %1$u '%2$s' elements inside the '%3$s' element.\n";
+	const char ElementRequires1ChildMin[] = "There must be at least one '%1$s' element inside the '%2$s' element.\n";
+	const char MisplacedElement[] = "Unrecognized or misplaced '%1$s' element inside the '%2$s' element.\n";
+	const char MaxElementsExceeded[] = "There can't be more than %1$u '%2$s' element(s) inside the '%3$s' element.\n";
+	const char ChoiceError[] = "The element '%1$s' must contain one of these elements: %2$s.\n";
+	const char ChoiceElementOrder[] = "Elements inside the '%1$s' element must be listed in this order:\n";
+	const char pUnlimited[] = "unlimited";
 
 	// Error messages in xsdTypeUtil.cc
-	const char * const UnrecognizedAttributeValue = "The value '%1$s' is unrecognized for the attribute '%2$s' on the element '%3$s'. Possible values are %4$s.\n";
-	const char * const UnableToReadInteger = "Unable to read integer '%1$s' from attribute '%2$s' in element '%3$s'.\n";
-	const char * const UnableToReadPositiveInteger = "Unable to read positive integer '%1$s' from attribute '%2$s' in element '%3$s'.\n";
-	const char * const ZeroNotAllowed = "Zero is not allowed for the attribute '%1$s' in the element '%2$s'.\n";
-	const char * const UnableToReadFloat = "Unable to read real number '%1$s' from attribute '%2$s' in element '%3$s'.\n";
-	const char * const UnableToReadPositiveFloat = "Unable to read positive real number '%1$s' from attribute '%2$s' in element '%3$s'.\n";
-	const char * const NegativeNotAllowed = "Negative numbers such as %1$s are not allowed for the attribute '%2$s' in the element '%3$s'.\n";
-	const char * const UnableToReadElementText = "The element '%1$s' requires closing and opening tags with text in between (<%1$s>Text</%1$s>).\n";
-	const char * const ErrorReadingAtomicNumber = "Error reading an atomic number '%1$s' on the attribute '%2$s' on the element '%3$s'.\n";
-	const char * const ErrorReadingAtomicNumber2 = "Error reading the atomic number: '%1$s'.\n";
-	const char * const ErrorAtomicNumOverMax = "An atomic number '%1$s' in the element '%2$s' is %3$u, which is greater than the maximum of %4$u.\n";
-	const char * const ErrorAtomicNumOverMax2 = "An atomic number %1$u is greater than the maximum of %2$u.\n";
-	const char * const ErrorEmptyPath = "There is an empty directory or file for the '%1$s' attribute on the '%2$s' element.\n";
-	const char * const RangeError = "The '%1$s' attribute on the '%2$s' element must be in the range [%3$s,%4$s].\n";
-	const char * const UnableToReadTime = "Unable to read time '%1$s' from attribute '%2$s' in element '%3$s'.\n";
+	const char UnrecognizedAttributeValue[] = "The value '%1$s' is unrecognized for the attribute '%2$s' on the element '%3$s'. Possible values are %4$s.\n";
+	const char UnableToReadInteger[] = "Unable to read integer '%1$s' from attribute '%2$s' in element '%3$s'.\n";
+	const char UnableToReadPositiveInteger[] = "Unable to read positive integer '%1$s' from attribute '%2$s' in element '%3$s'.\n";
+	const char ZeroNotAllowed[] = "Zero is not allowed for the attribute '%1$s' in the element '%2$s'.\n";
+	const char UnableToReadFloat[] = "Unable to read real number '%1$s' from attribute '%2$s' in element '%3$s'.\n";
+	const char UnableToReadPositiveFloat[] = "Unable to read positive real number '%1$s' from attribute '%2$s' in element '%3$s'.\n";
+	const char NegativeNotAllowed[] = "Negative numbers such as %1$s are not allowed for the attribute '%2$s' in the element '%3$s'.\n";
+	const char UnableToReadElementText[] = "The element '%1$s' requires closing and opening tags with text in between (<%1$s>Text</%1$s>).\n";
+	const char ErrorReadingAtomicNumber[] = "Error reading an atomic number '%1$s' on the attribute '%2$s' on the element '%3$s'.\n";
+	const char ErrorReadingAtomicNumber2[] = "Error reading the atomic number: '%1$s'.\n";
+	const char ErrorAtomicNumOverMax[] = "An atomic number '%1$s' in the element '%2$s' is %3$u, which is greater than the maximum of %4$u.\n";
+	const char ErrorAtomicNumOverMax2[] = "An atomic number %1$u is greater than the maximum of %2$u.\n";
+	const char ErrorEmptyPath[] = "There is an empty directory or file for the '%1$s' attribute on the '%2$s' element.\n";
+	const char RangeError[] = "The '%1$s' attribute on the '%2$s' element must be in the range [%3$s,%4$s].\n";
+	const char UnableToReadTime[] = "Unable to read time '%1$s' from attribute '%2$s' in element '%3$s'.\n";
 
 	// Error messages in input.cc
-	const char * const ElementNotFound = "The '%1$s' element was not found.\n";
-	const char * const OneRootElement = "There can be only one root element.";
-	const char * const TwoElementsWithSameName = "Two elements '%1$s' have the same name '%2$s'.\n";
+	const char ElementNotFound[] = "The '%1$s' element was not found.\n";
+	const char OneRootElement[] = "There can be only one root element.";
+	const char TwoElementsWithSameName[] = "Two elements '%1$s' have the same name '%2$s'.\n";
 
 	// Error messages in action.cc
-	const char * const ConstraintNameMisMatch = "On the %1$s element with %2$s '%3$s', the %4$s %1$s '%5$s' have not been defined.\n";
+	const char ConstraintNameMisMatch[] = "On the %1$s element with %2$s '%3$s', the %4$s %1$s '%5$s' have not been defined.\n";
 
 	// Error messages in constraints.cc
-	const char * const ErrorZ1Z2 = "In the element '%1$s', '%2$s' and '%3$s' must both be included or both must be excluded.\n";
-	const char * const ErrorOneGeneralMin = "A second element '%1$s' was found without '%2$s' and '%3$s'.  There can be only one general minimum distance constraint.\n";
-	const char * const ErrorDuplicateMinDist = "The minimum distance('%1$s') between %2$s=%3$u and %4$s=%5$u has already been set.\n";
+	const char ErrorZ1Z2[] = "In the element '%1$s', '%2$s' and '%3$s' must both be included or both must be excluded.\n";
+	const char ErrorOneGeneralMin[] = "A second element '%1$s' was found without '%2$s' and '%3$s'.  There can be only one general minimum distance constraint.\n";
+	const char ErrorDuplicateMinDist[] = "The minimum distance('%1$s') between %2$s=%3$u and %4$s=%5$u has already been set.\n";
 
 	// Error messages in structuresTemplate.cc
-	const char * const ConstraintNotDefined = "On the element %1$s, the %2$s '%3$s' have not been defined.\n";
-	const char * const EmptyStructureTemplate = "The '%1$s' element must contain one or more '%2$s' or '%3$s' elements.\n";
-	const char * const SeededStructureDoesntMatchTemplate = "Seeded structure %u is not compatible with the structuresTemplate.\n";
-	const char * const SeededStructureDoesntMatchConstraints = "Seeded structure %u does not meet the constraints.\n";
+	const char ConstraintNotDefined[] = "On the element %1$s, the %2$s '%3$s' have not been defined.\n";
+	const char EmptyStructureTemplate[] = "The '%1$s' element must contain one or more '%2$s' or '%3$s' elements.\n";
+	const char SeededStructureDoesntMatchTemplate[] = "Seeded structure %u is not compatible with the structuresTemplate.\n";
+	const char SeededStructureDoesntMatchConstraints[] = "Seeded structure %u does not meet the constraints.\n";
 
 	// Error messages in atomGroupTemplate.cc
-	const char * const ErrorEmptyMoleculeTemplate = "Please specify at least one atom in the format 'ATOMIC_NUMBER_OR_SYMBOL x y z' between <%1$s></%1$s> tags.\n";
-	const char * const MissingChildElements3 = "The element '%1$s' must contain at least one of these elements: '%2$s', '%3$s', or '%4$s'.\n";
+	const char ErrorEmptyMoleculeTemplate[] = "Please specify at least one atom in the format 'ATOMIC_NUMBER_OR_SYMBOL x y z' between <%1$s></%1$s> tags.\n";
+	const char MissingChildElements3[] = "The element '%1$s' must contain at least one of these elements: '%2$s', '%3$s', or '%4$s'.\n";
 
 	// Error messages in perturbations.cc
-	const char * const ProbabilityMustTotalOne = "In the element '%1$s', the total probability of each perturbation type must total 1.0.\n";
+	const char ProbabilityMustTotalOne[] = "In the element '%1$s', the total probability of each perturbation type must total 1.0.\n";
 }
 
 #endif

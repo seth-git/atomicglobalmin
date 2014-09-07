@@ -18,7 +18,7 @@ SimulatedAnnealing::SimulatedAnnealing(Input* input) : Action(input)
 
 SimulatedAnnealing::~SimulatedAnnealing()
 {
-	clear();
+	// Note: clear is called from the Action class
 }
 
 void SimulatedAnnealing::clear()
@@ -49,16 +49,20 @@ void SimulatedAnnealing::clear()
 	m_runs.clear();
 }
 
-//const char*      SimulatedAnnealing::s_elementNames[] = {"structuresTemplate", "temperature", "annealingSchedule", "perturbations", "stop"};
-const unsigned int SimulatedAnnealing::s_minOccurs[]    = {1                   , 0            , 0                  , 0              , 0     };
+const char* SimulatedAnnealing::s_elementNames[] = {strings::xStructuresTemplate, strings::xTemperature, strings::xAnnealingSchedule, strings::xPerturbations, strings::xStop};
+const unsigned int SimulatedAnnealing::s_minOccurs[] = {1                       , 0                    , 0                          , 0                      , 0 };
+
+const char* SimulatedAnnealing::s_setupElemNames[] = {strings::xKelvin, strings::xAcceptedPerturbations};
 
 const bool SimulatedAnnealing::s_tempAttReq[] = {true,true};
 const char* SimulatedAnnealing::s_tempAttDef[] = {"1", "3.16689e-6"};
 const FLOAT SimulatedAnnealing::s_fDefaultBoltzmannConstant = 3.16689e-6;
 
+const char* SimulatedAnnealing::s_stopAttNames[] = {strings::xMaxTemperature, strings::xMaxAcceptedPerturbations, strings::xMinIterations};
 const bool SimulatedAnnealing::s_stopAttReq[] = {false,false,false};
 const char* SimulatedAnnealing::s_stopAttDef[] = {"", "", ""};
 
+const char* SimulatedAnnealing::s_tempAttNames[] = {strings::xDecreaseAfterIteration, strings::xBoltzmannConstant};
 const bool SimulatedAnnealing::s_setupAttReq[] = {true,true};
 const char* SimulatedAnnealing::s_setupAttDef[] = {"1", "200"};
 
@@ -66,9 +70,7 @@ bool SimulatedAnnealing::loadSetup(const rapidxml::xml_node<>* pSetupElem)
 {
 	using namespace rapidxml;
 	using namespace strings;
-	clear();
-	const char* elementNames[] = {xStructuresTemplate, xTemperature, xAnnealingSchedule, xPerturbations, xStop};
-	XsdElementUtil setupUtil(XSD_ALL, elementNames, s_minOccurs);
+	XsdElementUtil setupUtil(XSD_ALL, s_elementNames, s_minOccurs);
 	if (!setupUtil.process(pSetupElem))
 		return false;
 	const xml_node<>** setupElements = setupUtil.getAllElements();
@@ -77,8 +79,7 @@ bool SimulatedAnnealing::loadSetup(const rapidxml::xml_node<>* pSetupElem)
 		return false;
 	
 	if (setupElements[1] != NULL) {
-		const char* setupElemNames[] = {xKelvin, xAcceptedPerturbations};
-		XsdElementUtil tempElemUtil(XSD_CHOICE, setupElemNames);
+		XsdElementUtil tempElemUtil(XSD_CHOICE, s_setupElemNames);
 		if (!tempElemUtil.process(setupElements[1]))
 			return false;
 		unsigned int tempChoiceIndex = tempElemUtil.getChoiceElementIndex();
@@ -97,14 +98,13 @@ bool SimulatedAnnealing::loadSetup(const rapidxml::xml_node<>* pSetupElem)
 			*m_pfPercentAcceptedPerturbations *= 0.01;
 		}
 
-		const char* tempAttNames[] = {xDecreaseAfterIteration, xBoltzmannConstant};
-		XsdAttributeUtil tempAttUtil(tempAttNames, s_tempAttReq, s_tempAttDef);
+		XsdAttributeUtil tempAttUtil(s_tempAttNames, s_tempAttReq, s_tempAttDef);
 		if (!tempAttUtil.process(setupElements[1]))
 			return false;
 		const char** tempAttValues = tempAttUtil.getAllAttributes();
-		if (!XsdTypeUtil::getPositiveInt(tempAttValues[0], m_iDecreaseTemperatureAfterIt, tempAttNames[0], setupElements[1]))
+		if (!XsdTypeUtil::getPositiveInt(tempAttValues[0], m_iDecreaseTemperatureAfterIt, s_tempAttNames[0], setupElements[1]))
 			return false;
-		if (!XsdTypeUtil::getPositiveFloat(tempAttValues[1], m_fBoltzmannConstant, tempAttNames[1], setupElements[1]))
+		if (!XsdTypeUtil::getPositiveFloat(tempAttValues[1], m_fBoltzmannConstant, s_tempAttNames[1], setupElements[1]))
 			return false;
 		if (NULL != m_pfPercentAcceptedPerturbations && m_iDecreaseTemperatureAfterIt == 1)
 			m_iDecreaseTemperatureAfterIt = 200;
@@ -136,28 +136,27 @@ bool SimulatedAnnealing::loadSetup(const rapidxml::xml_node<>* pSetupElem)
 	}
 
 	if (setupElements[4] != NULL) {
-		const char* stopAttNames[] = {xMaxTemperature, xMaxAcceptedPerturbations, xMinIterations};
-		XsdAttributeUtil stopAttUtil(stopAttNames, s_stopAttReq, s_stopAttDef);
+		XsdAttributeUtil stopAttUtil(s_stopAttNames, s_stopAttReq, s_stopAttDef);
 		if (!stopAttUtil.process(setupElements[4])) {
 			return false;
 		}
 		const char** stopAttValues = stopAttUtil.getAllAttributes();
 		if (stopAttValues[0] != NULL && stopAttValues[0][0] != '\0') {
 			m_pfMaxStoppingTemperature = new FLOAT;
-			if (!XsdTypeUtil::getPositiveFloat(stopAttValues[0], *m_pfMaxStoppingTemperature, stopAttNames[0], setupElements[4]))
+			if (!XsdTypeUtil::getPositiveFloat(stopAttValues[0], *m_pfMaxStoppingTemperature, s_stopAttNames[0], setupElements[4]))
 				return false;
 		}
 		if (stopAttValues[1] != NULL && stopAttValues[1][0] != '\0') {
 			m_pfMaxStoppingAcceptedPerturbations = new FLOAT;
-			if (!XsdTypeUtil::getNonNegativeFloat(stopAttValues[1], *m_pfMaxStoppingAcceptedPerturbations, stopAttNames[1], setupElements[4]))
+			if (!XsdTypeUtil::getNonNegativeFloat(stopAttValues[1], *m_pfMaxStoppingAcceptedPerturbations, s_stopAttNames[1], setupElements[4]))
 				return false;
 			*m_pfMaxStoppingAcceptedPerturbations *= 0.01;
-			if (!XsdTypeUtil::inRange(*m_pfMaxStoppingAcceptedPerturbations, 0, 1, setupElements[4], stopAttNames[1]))
+			if (!XsdTypeUtil::inRange(*m_pfMaxStoppingAcceptedPerturbations, 0, 1, setupElements[4], s_stopAttNames[1]))
 				return false;
 		}
 		if (stopAttValues[2] != NULL && stopAttValues[2][0] != '\0') {
 			m_piMinStoppingIterations = new unsigned int;
-			if (!XsdTypeUtil::getPositiveInt(stopAttValues[2], *m_piMinStoppingIterations, stopAttNames[2], setupElements[4]))
+			if (!XsdTypeUtil::getPositiveInt(stopAttValues[2], *m_piMinStoppingIterations, s_stopAttNames[2], setupElements[4]))
 				return false;
 		}
 	}
@@ -260,39 +259,137 @@ bool SimulatedAnnealing::saveResume(rapidxml::xml_document<> &doc, rapidxml::xml
 	return true;
 }
 
-bool SimulatedAnnealing::verifyNotFinished() {
+void SimulatedAnnealing::calculateRunComplete() {
 	m_bRunComplete = true;
 	for (std::list<SimulatedAnnealingRun*>::iterator run = m_runs.begin(); run != m_runs.end(); ++run)
 		if (!(*run)->m_bRunComplete) {
 			m_bRunComplete = false;
-			break;
+			return;
 		}
-	if (m_bRunComplete) {
-		printf("All runs have been completed.\n");
-		return false;
-	}
-	return true;
 }
 
 bool SimulatedAnnealing::runMaster() {
-	if (!verifyNotFinished())
+	calculateRunComplete();
+	if (m_bRunComplete) {
+		puts("All runs have been completed.");
 		return false;
+	}
 	if (!Action::run())
 		return false;
 
-	std::vector<SimulatedAnnealingRun*> runs(m_runs.size());
+	// This code divides up the runs between the MPI processes.
+	// Where the number of runs is divisible by the number of processes, each process has the same number of runs.
+	// Otherwise, processes with the fewest runs will have runs with the smallest iteration numbers.
+	std::vector<SimulatedAnnealingRun*> runs;
 	for (std::list<SimulatedAnnealingRun*>::iterator it = m_runs.begin(); it != m_runs.end(); ++it)
-		runs.push_back(*it);
+		if (!(*it)->m_bRunComplete)
+			runs.push_back(*it);
 	sort(runs.begin(), runs.end(), SimulatedAnnealingRun::iterationComparator);
+
+	unsigned int minSize = runs.size() / m_iMpiProcesses;
+	unsigned int excess = runs.size() % m_iMpiProcesses;
+	unsigned int numberOfAssignments[m_iMpiProcesses];
+	memset(numberOfAssignments, 0, sizeof(numberOfAssignments));
+	int assignments[m_iMpiProcesses][minSize+1];
+	unsigned int i;
+	int j;
+	std::vector<SimulatedAnnealingRun*>::iterator runsIt = runs.begin();
+	for (i = 0; i < minSize; ++i)
+		for (j = m_iMpiProcesses-1; j >= 0; --j) {
+			assignments[j][i] = (*runsIt)->m_pStructure->getId();
+			++runsIt;
+			++numberOfAssignments[j];
+		}
+	for (i = 1; i <= excess; ++i) {
+		assignments[i][minSize] = (*runsIt)->m_pStructure->getId();
+		++runsIt;
+		++numberOfAssignments[i];
+	}
+
+	#if MPI_DEBUG
+		puts("Structure Id's assigned to each MPI process:");
+		for (i = 0; i < m_iMpiProcesses; ++i) {
+			const int* assignment = assignments[i];
+			int iAssignment = numberOfAssignments[i];
+
+			printf("Process %u: ", i);
+			for (j = 0; j < iAssignment; ++j) {
+				if (j > 0)
+					printf(", ");
+				printf("%u", assignment[j]);
+			}
+			printf("\n");
+		}
+	#endif
+
+	SendRequestPair sendPair;
+	for (i = 1; i < m_iMpiProcesses; ++i) {
+		const int* assignment = assignments[i];
+		unsigned long int iAssignments = numberOfAssignments[i];
+		if (iAssignments > 0) {
+			sendPair.first = new int[iAssignments];
+			memcpy(sendPair.first, assignment, iAssignments*sizeof(int));
+			sendPair.second = new MPI_Request;
+			MPI_Isend(sendPair.first, iAssignments, MPI_INT, i, WORK_TAG, MPI_COMM_WORLD, sendPair.second);
+			m_sendRequests.push_back(sendPair);
+		} else {
+			MPI_Send(0, 0, MPI_INT, i, FINISH_TAG, MPI_COMM_WORLD);
+		}
+	}
+
+	std::list<SimulatedAnnealingRun*> assignment;
+	findRuns(assignments[0], numberOfAssignments[0], assignment);
+
+	mpiCleanup();
+	//	int flag;
+	//	MPI_Status status;
 
 	return true;
 }
 
+void SimulatedAnnealing::findRuns(const int* structureIds, unsigned int numStructureIds, std::list<SimulatedAnnealingRun*> &results) {
+	int id;
+	for (unsigned int i = 0; i < numStructureIds; ++i) {
+		id = structureIds[i];
+		for (std::list<SimulatedAnnealingRun*>::iterator it = m_runs.begin(); it != m_runs.end(); ++it)
+			if (id == (*it)->m_pStructure->getId()) {
+				results.push_back(*it);
+				break;
+			}
+	}
+}
+
 bool SimulatedAnnealing::runSlave() {
-	if (!verifyNotFinished())
-		return false;
+	calculateRunComplete();
+	if (m_bRunComplete)
+		return true;
 	if (!Action::run())
 		return false;
+
+	int* structureIds = NULL;
+	int iStructureIds;
+	MPI_Status status;
+	std::list<SimulatedAnnealingRun*> assignment;
+
+	MpiUtil::receiveArray(0, structureIds, iStructureIds, status, true);
+	if (status.MPI_TAG == WORK_TAG) {
+		findRuns(structureIds, (unsigned int)iStructureIds, assignment);
+		#if MPI_DEBUG
+			printf("Slave %d received an assignment: ", m_iMpiRank);
+			for (std::list<SimulatedAnnealingRun*>::iterator it = assignment.begin(); it != assignment.end(); ++it) {
+				if (it != assignment.begin())
+					printf(", ");
+				printf("%d", (*it)->m_pStructure->getId());
+			}
+			puts("");
+		#endif
+		delete[] structureIds;
+	} else {
+		#if MPI_DEBUG
+			printf("Slave %d received the finish message.\n", m_iMpiRank);
+		#endif
+		return true;
+	}
 
 	return true;
 }
