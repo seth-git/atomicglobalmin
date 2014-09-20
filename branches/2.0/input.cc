@@ -213,6 +213,5 @@ bool Input::run(const char* fileName) {
 			return false;
 		normalTermination = m_pAction->runSlave();
 	}
-	m_pAction->mpiCleanup();
 	return normalTermination;
 }

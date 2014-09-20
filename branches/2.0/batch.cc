@@ -12,27 +12,25 @@ Batch::~Batch()
 	// Note: clear is called from the Action class
 }
 
-//const char*      Batch::s_elementNames[] = {"structuresTemplate"};
-const unsigned int Batch::s_minOccurs[]    = {1                   };
+const char*     Batch::s_elementNames[] = {strings::xStructuresTemplate};
+const unsigned int Batch::s_minOccurs[] = {1};
 
+const char* Batch::s_setupAttNames[] = {strings::xSaveFrequency, strings::xQueueSize};
 const bool Batch::s_setupAttReq[] =  {true, true};
-const char* Batch::s_setupAttDef[] = {"1" , "2"};
+const char* Batch::s_setupAttDef[] = {"1" , "3"};
 
 bool Batch::loadSetup(const rapidxml::xml_node<>* pSetupElem)
 {
-	using namespace strings;
-	const char* setupAttNames[] = {xSaveFrequency, xQueueSize};
-	XsdAttributeUtil setupAttUtil(setupAttNames, s_setupAttReq, s_setupAttDef);
+	XsdAttributeUtil setupAttUtil(s_setupAttNames, s_setupAttReq, s_setupAttDef);
 	if (!setupAttUtil.process(pSetupElem))
 		return false;
 	const char** setupAttValues = setupAttUtil.getAllAttributes();
-	if (!XsdTypeUtil::getPositiveInt(setupAttValues[0], m_iSaveFrequency, setupAttNames[0], pSetupElem))
+	if (!XsdTypeUtil::getPositiveInt(setupAttValues[0], m_iSaveFrequency, s_setupAttNames[0], pSetupElem))
 		return false;
-	if (!XsdTypeUtil::getPositiveInt(setupAttValues[1], m_targetQueueSize, setupAttNames[1], pSetupElem))
+	if (!XsdTypeUtil::getPositiveInt(setupAttValues[1], m_targetQueueSize, s_setupAttNames[1], pSetupElem))
 		return false;
 
-	const char* elementNames[] = {xStructuresTemplate};
-	XsdElementUtil setupUtil(XSD_ALL, elementNames, s_minOccurs);
+	XsdElementUtil setupUtil(XSD_ALL, s_elementNames, s_minOccurs);
 	if (!setupUtil.process(pSetupElem))
 		return false;
 	const rapidxml::xml_node<>** setupElements = setupUtil.getAllElements();
@@ -53,7 +51,7 @@ bool Batch::saveSetup(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pBatc
 	if (1 != m_iSaveFrequency)
 		XsdTypeUtil::setAttribute(doc, setup, xSaveFrequency, m_iSaveFrequency);
 
-	if (2 != m_targetQueueSize)
+	if (3 != m_targetQueueSize)
 		XsdTypeUtil::setAttribute(doc, setup, xQueueSize, m_targetQueueSize);
 
 	return m_structuresTemplate.save(doc, setup);
@@ -137,56 +135,10 @@ bool Batch::runMaster() {
 	if (!Action::run())
 		return false;
 
-	unsigned int queueSize;
-	unsigned int i, j;
-
-	queueSize = m_structures.size() / m_iMpiProcesses;
-	if (m_structures.size() % m_iMpiProcesses > 0)
-		++queueSize;
-	if (queueSize > m_targetQueueSize)
-		queueSize = m_targetQueueSize;
-
-	unsigned int numberToAssign = queueSize * (m_iMpiProcesses-1);
-	if (numberToAssign > m_structures.size())
-		numberToAssign = m_structures.size();
-
-	if (m_structures.size() >= m_iMpiProcesses && numberToAssign == m_structures.size())
-		--numberToAssign; // Reserve one for the master
-
-	#if MPI_DEBUG
-		printf("Target queue size: %d, Queue size: %d, Number to assign: %d.\n", m_targetQueueSize, queueSize, numberToAssign);
-	#endif
-
 	std::list<Structure*> unassigned;
-	for (std::list<Structure*>::iterator it = m_structures.begin(); it != m_structures.end(); ++it)
-		unassigned.push_back(*it);
-
-	Structure* pStructure;
 	std::map<int,Structure*> assignments[m_iMpiProcesses];
-	unsigned int iAssignments = 0;
-	SendRequestPair sendPair;
-	int id;
-	j = 1;
-	for (i = 1; i <= numberToAssign; ++i) {
-		pStructure = unassigned.front();
-		unassigned.pop_front();
-		id = pStructure->getId();
-		#if MPI_DEBUG
-			printf("Sending slave %d structure %d.\n", j, id);
-		#endif
-
-		sendPair.first = new int;
-		*(sendPair.first) = id;
-		sendPair.second = new MPI_Request;
-		MPI_Isend(sendPair.first, 1, MPI_INT, j, WORK_TAG, MPI_COMM_WORLD, sendPair.second);
-		m_sendRequests.push_back(sendPair);
-		assignments[j][id] = pStructure;
-		++iAssignments;
-
-		++j;
-		if (j >= m_iMpiProcesses)
-			j = 1;
-	}
+	unsigned int iAssignments;
+	getInitialAssignments(unassigned, assignments, iAssignments);
 
 	char* xml;
 	bool success;
@@ -195,7 +147,9 @@ bool Batch::runMaster() {
 	unsigned int iFailedProcesses = 0;
 	unsigned int iSaveCount = 0;
 	std::map<int,bool> sentFinishMessage;
-	std::list<SendRequestPair>::iterator pairIt, pairIt2;
+	MpiUtil mpiUtil;
+	Structure* pStructure;
+	int id;
 	do {
 		if (!unassigned.empty()) {
 			pStructure = unassigned.front();
@@ -220,7 +174,7 @@ bool Batch::runMaster() {
 			}
 		}
 
-		deleteCompletedSendRequests();
+		mpiUtil.completeNonBlockingSends();
 
 		#if MPI_DEBUG
 			printf("Master checking for messages.\n");
@@ -280,16 +234,13 @@ bool Batch::runMaster() {
 				assignments[status.MPI_SOURCE][id] = pStructure;
 				++iAssignments;
 
-				sendPair.first = new int;
-				*(sendPair.first) = id;
-				sendPair.second = new MPI_Request;
-				MPI_Isend(sendPair.first, 1, MPI_INT, status.MPI_SOURCE, WORK_TAG, MPI_COMM_WORLD, sendPair.second);
-				m_sendRequests.push_back(sendPair);
+				mpiUtil.nonBlockingSend(&id, 1, status.MPI_SOURCE, WORK_TAG);
 			} else if (sentFinishMessage.find(status.MPI_SOURCE) == sentFinishMessage.end()) {
 				#if MPI_DEBUG
 					printf("There are no more structures. Sending slave %d the finish tag.\n", status.MPI_SOURCE);
 				#endif
-				MPI_Send(0, 0, MPI_INT, status.MPI_SOURCE, FINISH_TAG, MPI_COMM_WORLD);
+
+				mpiUtil.nonBlockingSend(0, 0, status.MPI_SOURCE, FINISH_TAG);
 				sentFinishMessage[status.MPI_SOURCE] = true;
 			}
 		}
@@ -302,19 +253,6 @@ bool Batch::runMaster() {
 	} while (!m_bRunComplete);
 
 	return true;
-}
-
-void Batch::processResult(Structure* structure) {
-	for (std::list<Structure*>::iterator it = m_structures.begin(); it != m_structures.end(); it++) {
-		if ((*it)->getId() == structure->getId()) {
-			if (*it != structure)
-				delete *it;
-			m_structures.erase(it);
-			break;
-		}
-	}
-	updateResults(structure);
-	++m_iEnergyCalculations;
 }
 
 bool Batch::runSlave() {
@@ -337,6 +275,8 @@ bool Batch::runSlave() {
 	bool initiateReceive = true;
 	bool receivedFinishMessage = false;
 	std::list<int> queue;
+
+	getInitialAssignments(queue);
 
 	while (true) {
 		do {
@@ -428,4 +368,71 @@ bool Batch::runSlave() {
 	}
 
 	return true;
+}
+
+void Batch::getInitialAssignments(std::list<Structure*> &unassigned, std::map<int,Structure*>* assignments, unsigned int &iAssignments) {
+	unsigned int queueSize;
+	unsigned int i, j;
+
+	queueSize = m_structures.size() / m_iMpiProcesses;
+	if (m_structures.size() % m_iMpiProcesses > 0)
+		++queueSize;
+	if (queueSize > m_targetQueueSize)
+		queueSize = m_targetQueueSize;
+
+	unsigned int numberToAssign = queueSize * (m_iMpiProcesses-1);
+	if (numberToAssign > m_structures.size())
+		numberToAssign = m_structures.size();
+
+	if (m_structures.size() >= m_iMpiProcesses && numberToAssign == m_structures.size())
+		--numberToAssign; // Reserve one for the master
+
+	#if MPI_DEBUG
+		if (m_iMpiRank == 0)
+			printf("Target queue size: %d, Queue size: %d, Number to assign: %d.\n", m_targetQueueSize, queueSize, numberToAssign);
+	#endif
+
+	for (std::list<Structure*>::iterator it = m_structures.begin(); it != m_structures.end(); ++it)
+		unassigned.push_back(*it);
+
+	Structure* pStructure;
+	iAssignments = 0;
+	int id;
+	j = 1;
+	for (i = 1; i <= numberToAssign; ++i) {
+		pStructure = unassigned.front();
+		unassigned.pop_front();
+		id = pStructure->getId();
+
+		assignments[j][id] = pStructure;
+		++iAssignments;
+
+		++j;
+		if (j >= m_iMpiProcesses)
+			j = 1;
+	}
+}
+
+void Batch::getInitialAssignments(std::list<int> &queue) {
+	std::list<Structure*> unassigned;
+	std::map<int,Structure*> assignments[m_iMpiProcesses];
+	unsigned int iAssignments;
+	getInitialAssignments(unassigned, assignments, iAssignments);
+	std::map<int,Structure*>* pAssignments = &(assignments[m_iMpiRank]);
+	for (std::map<int,Structure*>::const_iterator it = pAssignments->begin(); it != pAssignments->end(); ++it) {
+		queue.push_back(it->second->getId());
+	}
+}
+
+void Batch::processResult(Structure* structure) {
+	for (std::list<Structure*>::iterator it = m_structures.begin(); it != m_structures.end(); it++) {
+		if ((*it)->getId() == structure->getId()) {
+			if (*it != structure)
+				delete *it;
+			m_structures.erase(it);
+			break;
+		}
+	}
+	updateResults(structure);
+	++m_iEnergyCalculations;
 }

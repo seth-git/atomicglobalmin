@@ -340,7 +340,6 @@ bool SimulatedAnnealing::runMaster() {
 	std::list<SimulatedAnnealingRun*> assignment;
 	findRuns(assignments[0], numberOfAssignments[0], assignment);
 
-	mpiCleanup();
 	//	int flag;
 	//	MPI_Status status;
 

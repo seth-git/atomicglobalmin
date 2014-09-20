@@ -38,39 +38,6 @@ Action::~Action()
 	clear();
 }
 
-void Action::mpiCleanup() {
-	// Delete all send requests
-	MPI_Status status;
-	int flag;
-	for (std::list<SendRequestPair>::iterator it = m_sendRequests.begin(); it != m_sendRequests.end(); ++it) {
-		MPI_Test(it->second, &flag, &status);
-		if (!flag) {
-			MPI_Cancel(it->second);
-			MPI_Request_free(it->second);
-		}
-		delete it->first;
-		delete it->second;
-	}
-	m_sendRequests.clear();
-}
-
-void Action::deleteCompletedSendRequests() {
-	MPI_Status status;
-	int flag;
-	std::list<SendRequestPair>::iterator pairIt, pairIt2;
-	pairIt = m_sendRequests.begin();
-	while (m_sendRequests.end() != pairIt) {
-		pairIt2 = pairIt;
-		++pairIt;
-		MPI_Test(pairIt2->second, &flag, &status);
-		if (flag) {
-			m_sendRequests.erase(pairIt2);
-			delete pairIt2->first;
-			delete pairIt2->second;
-		}
-	}
-}
-
 void Action::clear() {
 	for (unsigned int i = 0; i < m_constraints.size(); ++i) {
 		delete m_constraints[i];
@@ -286,3 +253,4 @@ void Action::checkResults(Structure* pStructure, std::list<Structure*>::iterator
 		m_results.pop_back();
 	}
 }
+

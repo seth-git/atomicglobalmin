@@ -19,9 +19,13 @@ public:
 	bool runSlave();
 
 protected:
+	void getInitialAssignments(std::list<Structure*> &unassigned, std::map<int,Structure*>* assignments, unsigned int &iAssignments);
+	void getInitialAssignments(std::list<int> &queue);
 	void processResult(Structure* structure);
 
+	static const char* s_elementNames[];
 	static const unsigned int s_minOccurs[];
+	static const char* s_setupAttNames[];
 	static const bool s_setupAttReq[];
 	static const char* s_setupAttDef[];
 	static const unsigned int s_resumeMinOccurs[];

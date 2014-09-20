@@ -52,20 +52,15 @@ public:
 	virtual bool run();
 	virtual bool runMaster() = 0;
 	virtual bool runSlave() = 0;
-	virtual void mpiCleanup();
 
 protected:
 	void updateResults(Structure &structure);
 	void updateResults(Structure* pStructure);
 	void checkResults(Structure* pStructure, std::list<Structure*>::iterator resultsIt);
-	void deleteCompletedSendRequests();
 
 	Input* m_pInput;
 	unsigned int m_iMpiRank;
 	unsigned int m_iMpiProcesses;
-
-	typedef std::pair<int*,MPI_Request*> SendRequestPair;
-	std::list<SendRequestPair> m_sendRequests;
 
 	time_t getTotalElapsedSeconds();
 

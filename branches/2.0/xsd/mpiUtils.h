@@ -3,6 +3,7 @@
 #define __MPI_UTILS_H__
 
 #include <mpi.h>
+#include <list>
 
 #define DIE_TAG                   1
 #define WORK_TAG                  2
@@ -15,6 +16,10 @@
 class MpiUtil {
 public:
 	MpiUtil() {}
+	~MpiUtil();
+
+	void nonBlockingSend(const int* arr, int length, int dest, int tag);
+	void completeNonBlockingSends();
 
 	/**************************************************************************
 	 * Purpose: to receive an xml message
@@ -35,6 +40,10 @@ public:
 	 * Returns: 1 if a message was received (always the case for blocking)
 	 */
 	static int receiveArray(int source, int* &int_buf, int &buffer_size, MPI_Status& status, bool blocking);
+
+protected:
+	typedef std::pair<int*,MPI_Request*> IntSendRequestPair;
+	std::list<IntSendRequestPair> m_intSendRequests;
 };
 
 #endif

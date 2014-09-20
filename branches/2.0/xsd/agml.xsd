@@ -606,7 +606,7 @@
 					<xs:element name="structuresTemplate" type="structuresTemplateType"/>
 				</xs:all>
 				<xs:attribute name="saveFrequency" type="xs:positiveInteger" default="1"/>
-				<xs:attribute name="queueSize" type="xs:positiveInteger" default="2"/>
+				<xs:attribute name="queueSize" type="xs:positiveInteger" default="3"/>
 			</xs:complexType>
 		</xs:element>
 		<xs:element name="constraints" type="constraintsType" minOccurs="0" maxOccurs="unbounded"/>
