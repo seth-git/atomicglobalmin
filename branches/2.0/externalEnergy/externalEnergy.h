@@ -12,11 +12,15 @@ class ExternalEnergyXml; // Forward declaration
 
 #include "../energy.h"
 #include "../xsd/xsdTypeUtil.h"
+#include "fileUtils.h"
 #include <fstream>
+#include <sstream>
 
 class ExternalEnergy : public Energy {
 public:
 	enum Impl {ADF, GAMESS, GAMESS_UK, GAUSSIAN, FIREFLY, JAGUAR, MOLPRO, ORCA};
+
+	static bool s_bReadGeometry;
 
 	ExternalEnergy(const ExternalEnergyXml* pExternalEnergyXml);
 	virtual ~ExternalEnergy() {};
@@ -35,9 +39,11 @@ public:
 
 	static bool readOutputFileWithCCLib(const char* fileName, Structure &structure, bool readGeometry);
 
-	virtual bool setup() = 0; // Call this in preparation for calling execute
+	static bool fileExists(const char* fileName);
+
+	virtual bool setup(); // Call this in preparation for calling execute
 	virtual bool execute(Structure &structure) = 0;
-	virtual bool clear() = 0; // Call this when execute will no longer be called and before the process terminates
+	virtual bool cleanup(); // Call this when execute will no longer be called and before the process terminates
 
 	static const char* getOutputFileExtension(Impl impl);
 
@@ -50,20 +56,19 @@ public:
 		bool operator()(char const *a, char const *b) { return std::strcmp(a, b) < 0; }
 	};
 
-	/**************************************************************************
-	 * Purpose: Perform replacements in src putting the result in dest.
-	 * Parameters: src - the source string
-	 *             symbol - a character indicating a replacement is found
-	 *                This method loads the string that comes after the symbol,
-	 *                and searches for it as a key in the map. It then replaces
-	 *                the symbol and the key with the value from the map.
-	 *             map - pairs of search and replacement strings (see above).
-	 *             dest - Results are appended here.
-	 */
-	static void replace(std::string src, const char symbol, std::map<const char*, const char*, cmp_str> &map, std::string &dest);
+	static void replace(std::string &str, const std::string &find, const std::string &replace);
+
+	template < class T >
+	static std::string ToString(const T &arg) {
+		std::ostringstream out;
+		out << arg;
+		return out.str();
+	}
 
 protected:
 	const ExternalEnergyXml* m_pExternalEnergyXml;
+	std::string m_sCalcDirectory;
+	bool m_bMoveFilesToResultsDir;
 
 private:
 	static const char* cclibPythonScript;

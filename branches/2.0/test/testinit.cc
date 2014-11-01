@@ -20,7 +20,6 @@
 #include "../structuresTemplate.h"
 #include "../translation/strings.h"
 #include "../xsd/typedef.h"
-#include "../externalEnergy/gaussian.h"
 
 const char* testMatrixMultiplication() {
 	static const char* testName = "testMatrixMultlipication";
@@ -647,25 +646,5 @@ const char* testLJ7(void) {
 	}
 
 	printf("LJ7 initialization test succeeded!\n");
-	return NULL;
-}
-
-const char* gaussianTest() {
-	static const char* testName = "gaussianInput";
-	const char* failMessage = "Testing Gaussian input file generation failed.";
-
-	printf("\nPerforming Gaussian input test...\n");
-	std::string inputFile = testFilesDir + "/batchGaussian.xml";
-	Input input;
-	if (!input.load(inputFile.c_str())) {
-		puts(failMessage);
-		return testName;
-	}
-
-	Gaussian* gaussian = (Gaussian*)input.m_pAction->energyXml.getEnergy();
-	std::string gaussianFile = testFilesDir + "/gaussian.com";
-	gaussian->createInputFile(gaussianFile.c_str(), **(input.m_pAction->m_structures.begin()));
-
-	printf("Gaussian input test succeeded!\n");
 	return NULL;
 }

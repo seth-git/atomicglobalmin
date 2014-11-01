@@ -1,9 +1,3 @@
-/*
- * gaussian.h
- *
- *  Created on: Dec 31, 2012
- *      Author: sethcall
- */
 
 #ifndef GAUSSIAN_H_
 #define GAUSSIAN_H_
@@ -23,20 +17,21 @@ public:
 	Gaussian(const ExternalEnergyXml* pExternalEnergyXml);
 	~Gaussian();
 
+	static bool m_sRenameCheckpointFile;
+
 	bool createInputFile(const char* inputFileName, const Structure &structure);
 
 	static bool readOutputFile(const char* outputFile, Structure &structure, bool readGeometry);
 
-	bool setup() { return true; }
 	bool execute(Structure &structure);
-	bool clear() { return true; }
 
 private:
 	void searchForCheckPointFile();
 
 	static bool s_bGetStandardOrientation;
 	static bool s_bRequireNormalTermination;
-	std::string m_sCheckPointFileName;
+	static const std::string s_sAtomsReplacement;
+	std::string m_sCheckPointFileExpression;
 
 	bool isFileCharacter(char character);
 };

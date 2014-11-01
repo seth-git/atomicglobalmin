@@ -71,7 +71,9 @@ void Structure::clear() {
 	}
 }
 
-const bool Structure::s_structureAttReq[] = {true,true,false};
+const char* Structure::s_structureAttNames[] = {strings::xEnergy, strings::xIsTransitionState, strings::xId, strings::xFilePrefix};
+const bool Structure::s_structureAttReq[] =    {true            ,true                        ,false        , false};
+const char* Structure::s_structureAttDef[] =   {"0"             , strings::pFalse            , "0"         , NULL};
 
 const unsigned int Structure::s_structureMinOccurs[] = {1};
 const unsigned int Structure::s_structureMaxOccurs[] = {XSD_UNLIMITED};
@@ -81,18 +83,16 @@ bool Structure::load(const rapidxml::xml_node<>* pStructureElem) {
 	using namespace strings;
 	clear();
 
-	const char* structureAttNames[] = {xEnergy, xIsTransitionState, xId};
-	const char* structureAttDef[] = {"0", pFalse, "0"};
-	XsdAttributeUtil structureAttUtil(structureAttNames, s_structureAttReq, structureAttDef);
+	XsdAttributeUtil structureAttUtil(s_structureAttNames, s_structureAttReq, s_structureAttDef);
 	if (!structureAttUtil.process(pStructureElem)) {
 		return false;
 	}
 	const char** structureAttValues = structureAttUtil.getAllAttributes();
-	if (!XsdTypeUtil::getFloat(structureAttValues[0], m_fEnergy, structureAttNames[0], pStructureElem))
+	if (!XsdTypeUtil::getFloat(structureAttValues[0], m_fEnergy, s_structureAttNames[0], pStructureElem))
 		return false;
-	if (!XsdTypeUtil::getBoolValue(structureAttNames[1], structureAttValues[1], m_bIsTransitionState, pStructureElem))
+	if (!XsdTypeUtil::getBoolValue(s_structureAttNames[1], structureAttValues[1], m_bIsTransitionState, pStructureElem))
 		return false;
-	if (!XsdTypeUtil::getInteger(structureAttValues[2], m_id, structureAttNames[2], pStructureElem))
+	if (!XsdTypeUtil::getInteger(structureAttValues[2], m_id, s_structureAttNames[2], pStructureElem))
 		return false;
 
 	const char* structureElemNames[] = {xAtomGroup};
@@ -160,6 +160,8 @@ rapidxml::xml_node<>* Structure::save(rapidxml::xml_document<> &doc) const {
 		structure->append_attribute(doc.allocate_attribute(xIsTransitionState, pTrue));
 	if (0 != m_id)
 		XsdTypeUtil::setAttribute(doc, structure, xId, m_id);
+	if (0 != m_sFilePrefix.length())
+		structure->append_attribute(doc.allocate_attribute(xFilePrefix, m_sFilePrefix.c_str(), sizeof(xFilePrefix)-1, m_sFilePrefix.length()));
 
 	for (unsigned int i = 0; i < m_iNumberOfAtomGroups; ++i)
 		if (!m_atomGroups[i].save(doc, structure)) {

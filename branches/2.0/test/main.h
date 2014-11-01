@@ -5,6 +5,7 @@
 #include "testinit.h"
 #include "testxml.h"
 #include "testRmsDistance.h"
+#include "testMisc.h"
 #include <unistd.h>
 
 #endif

@@ -17,6 +17,8 @@
 #include "atomGroup.h"
 
 class Structure {
+public:
+	std::string m_sFilePrefix;
 protected:
 	unsigned int m_iNumberOfAtomGroups;
 	AtomGroup* m_atomGroups;
@@ -34,7 +36,10 @@ protected:
 
 	unsigned int* m_atomToCenterRanks; // An array used in RMS distance calculations;
 
+	static const char* s_structureAttNames[];
 	static const bool s_structureAttReq[];
+	static const char* s_structureAttDef[];
+
 	static const unsigned int s_structureMinOccurs[];
 	static const unsigned int s_structureMaxOccurs[];
 

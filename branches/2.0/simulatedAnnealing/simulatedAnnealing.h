@@ -38,7 +38,7 @@ public:
 protected:
 	void calculateRunComplete();
 	void clear();
-	void findRuns(const int* structureIds, unsigned int numStructureIds, std::list<SimulatedAnnealingRun*> &results);
+	void getAssignment(std::list<SimulatedAnnealingRun*> &assignment);
 
 	static const FLOAT s_fDefaultBoltzmannConstant;
 	static const bool s_setupAttReq[];

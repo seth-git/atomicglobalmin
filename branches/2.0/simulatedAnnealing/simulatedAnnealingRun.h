@@ -30,7 +30,16 @@ public:
 
 	static bool iterationComparator(const SimulatedAnnealingRun* a, const SimulatedAnnealingRun* b) { return a->m_iIteration < b->m_iIteration; }
 
+	/**************************************************************************
+	 * Purpose: This method performs a perturbation of the m_pStructure, then
+	 *    calculates the energy of that structure and updates the temperature.
+	 * Returns: True if the perturbation was accepted.
+	 */
+	bool performIteration();
+
 protected:
+	Structure m_structureBackup;
+
 	time_t getTotalElapsedSeconds();
 
 	static const char* s_resumeElemNames[];

@@ -50,13 +50,16 @@ public:
 	virtual bool loadResume(const rapidxml::xml_node<>* pResumeElem) = 0;
 	virtual bool saveResume(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pActionElem) = 0;
 	virtual bool run();
+	virtual bool cleanupRun();
 	virtual bool runMaster() = 0;
 	virtual bool runSlave() = 0;
 
 protected:
 	void updateResults(Structure &structure);
 	void updateResults(Structure* pStructure);
-	void checkResults(Structure* pStructure, std::list<Structure*>::iterator resultsIt);
+	void checkResults(Structure* pStructure, std::list<Structure*>::iterator resultsIt, unsigned int insertionIndex);
+	void renameResultsFiles();
+	void deleteStructureFiles(Structure &structure);
 
 	Input* m_pInput;
 	unsigned int m_iMpiRank;

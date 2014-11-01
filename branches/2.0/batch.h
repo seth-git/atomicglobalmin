@@ -20,7 +20,7 @@ public:
 
 protected:
 	void getInitialAssignments(std::list<Structure*> &unassigned, std::map<int,Structure*>* assignments, unsigned int &iAssignments);
-	void getInitialAssignments(std::list<int> &queue);
+	void getInitialAssignment(std::list<int> &queue);
 	void processResult(Structure* structure);
 
 	static const char* s_elementNames[];

@@ -9,9 +9,13 @@
 #include "externalEnergyXml.h"
 #include "gaussian.h"
 #include "gamess.h"
+#include <mpi.h>
+#include <unistd.h>
 
-const char* ExternalEnergy::cclibPythonScript = "/home/sethcall/Chemistry/cclib-1.0.1/atomicGlobalMin.py";
+const char* ExternalEnergy::cclibPythonScript = "/path/to/cclib/atomicGlobalMin.py";
 unsigned int ExternalEnergy::s_iMaxEnergyCalcFailuresOnStructure = 2;
+
+bool ExternalEnergy::s_bReadGeometry = true;
 
 ExternalEnergy::ExternalEnergy(const ExternalEnergyXml* pExternalEnergyXml) : Energy() {
 	m_pExternalEnergyXml = pExternalEnergyXml;
@@ -215,49 +219,48 @@ const char* ExternalEnergy::getEnumString(Impl enumValue) {
 	return methods[enumValue];
 }
 
-void ExternalEnergy::replace(std::string src, const char symbol, std::map<const char*, const char*, cmp_str> &map, std::string &dest) {
-	const char* c = src.c_str();
-	const char* r;
-	std::string temp;
-	size_t i = 0;
-	bool stop;
-	while (c[i] != '\0') {
-		if (c[i] == symbol) {
-			if (i != 0) {
-				dest.append(c, i);
-				c += i;
-				i = 0;
-			}
-			++c;
-			stop = false;
-			do {
-				switch (c[i]) {
-				case ' ':
-				case '\t':
-				case '\n':
-				case '\r':
-				case '\f':
-				case '\0':
-					stop = true;
-					break;
-				default:
-					++i;
-				}
-			} while (!stop);
-			if (i > 0) {
-				temp = "";
-				temp.append(c, i);
-				r = map[temp.c_str()];
-				if (NULL != r)
-					dest.append(r);
-				c += i;
-				i = 0;
-			}
-			continue;
-		}
-		++i;
+void ExternalEnergy::replace(std::string &str, const std::string &find, const std::string &replace) {
+	size_t pos = 0;
+	while ((pos = str.find(find, pos)) != std::string::npos) {
+		str.replace(pos, find.length(), replace);
+		pos += find.length();
 	}
-	if (0 != i)
-		dest.append(c, i);
+}
+
+bool ExternalEnergy::setup() {
+	using namespace std;
+	int rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	m_sCalcDirectory = "";
+	if (m_pExternalEnergyXml->m_sTemporaryDir.length() > 0) {
+		m_sCalcDirectory.append(m_pExternalEnergyXml->m_sTemporaryDir.c_str())
+			.append("/").append(strings::pResults, sizeof(strings::pResults)-1)
+			.append(ToString(rank)).append("_").append(ToString(getpid()));
+		if (!FileUtils::exists(m_sCalcDirectory.c_str()))
+			if (!FileUtils::makeDirectory(m_sCalcDirectory.c_str()))
+				return false;
+	} else {
+		m_sCalcDirectory = m_pExternalEnergyXml->m_sResultsDir;
+	}
+	m_bMoveFilesToResultsDir =
+			m_pExternalEnergyXml->m_sTemporaryDir.length() > 0 &&
+			m_pExternalEnergyXml->m_sResultsDir.length() > 0;
+
+	if (chdir(m_sCalcDirectory.c_str()) == -1) {
+		printf("Couldn't cd to directory: '%s'.\n", m_sCalcDirectory.c_str());
+		return false;
+	}
+	return true;
+}
+
+bool ExternalEnergy::cleanup() {
+	if (m_pExternalEnergyXml->m_sTemporaryDir.length() > 0) {
+		if (chdir("..") == -1) {
+			printf("Couldn't cd out of directory: '%s'.\n", m_sCalcDirectory.c_str());
+			return false;
+		}
+		return FileUtils::deleteFile(m_sCalcDirectory.c_str());
+	}
+	return true;
 }
 

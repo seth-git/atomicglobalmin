@@ -16,7 +16,7 @@ public:
 	ExternalEnergy* m_pMethodImpl;
 	std::string m_sTemporaryDir;
 	std::string m_sResultsDir;
-	unsigned int m_iMaxResultsFiles;
+	unsigned int m_iMaxResultFiles;
 	std::string m_sResultsFilePrefix;
 	std::string m_sHeader;
 

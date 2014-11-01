@@ -142,7 +142,7 @@ bool Input::save()
 		return false;
 
 	std::string temporaryFileName;
-	temporaryFileName.append(m_sFileName).append(".").append(pAbbrTemporary);
+	temporaryFileName.append(m_sFileName).append(".").append(pTemp);
 
 	FILE *f = fopen(temporaryFileName.c_str(), "w");
 	if (f == NULL) {
@@ -194,6 +194,7 @@ bool Input::run(const char* fileName) {
 			MPI_Bcast((void*)xml.c_str(), xml.length()+1, MPI_CHAR, 0, MPI_COMM_WORLD);
 		}
 		normalTermination = m_pAction->runMaster();
+		normalTermination = normalTermination && m_pAction->cleanupRun();
 	} else {
 		char* xml;
 		int size;
@@ -212,6 +213,7 @@ bool Input::run(const char* fileName) {
 		if (!success)
 			return false;
 		normalTermination = m_pAction->runSlave();
+		normalTermination = normalTermination && m_pAction->cleanupRun();
 	}
 	return normalTermination;
 }

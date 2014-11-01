@@ -277,6 +277,29 @@ bool SimulatedAnnealing::runMaster() {
 	if (!Action::run())
 		return false;
 
+	std::list<SimulatedAnnealingRun*> assignment;
+	getAssignment(assignment);
+
+	return true;
+}
+
+bool SimulatedAnnealing::runSlave() {
+	calculateRunComplete();
+	if (m_bRunComplete)
+		return true;
+	if (!Action::run())
+		return false;
+
+	std::list<SimulatedAnnealingRun*> assignment;
+	getAssignment(assignment);
+
+	if (assignment.empty())
+		return true;
+
+	return true;
+}
+
+void SimulatedAnnealing::getAssignment(std::list<SimulatedAnnealingRun*> &assignment) {
 	// This code divides up the runs between the MPI processes.
 	// Where the number of runs is divisible by the number of processes, each process has the same number of runs.
 	// Otherwise, processes with the fewest runs will have runs with the smallest iteration numbers.
@@ -290,105 +313,41 @@ bool SimulatedAnnealing::runMaster() {
 	unsigned int excess = runs.size() % m_iMpiProcesses;
 	unsigned int numberOfAssignments[m_iMpiProcesses];
 	memset(numberOfAssignments, 0, sizeof(numberOfAssignments));
-	int assignments[m_iMpiProcesses][minSize+1];
-	unsigned int i;
-	int j;
+	SimulatedAnnealingRun* assignments[m_iMpiProcesses][minSize+1];
+	unsigned int i, j;
 	std::vector<SimulatedAnnealingRun*>::iterator runsIt = runs.begin();
 	for (i = 0; i < minSize; ++i)
 		for (j = m_iMpiProcesses-1; j >= 0; --j) {
-			assignments[j][i] = (*runsIt)->m_pStructure->getId();
+			assignments[j][i] = *runsIt;
 			++runsIt;
 			++numberOfAssignments[j];
 		}
 	for (i = 1; i <= excess; ++i) {
-		assignments[i][minSize] = (*runsIt)->m_pStructure->getId();
+		assignments[i][minSize] = *runsIt;
 		++runsIt;
 		++numberOfAssignments[i];
 	}
 
 	#if MPI_DEBUG
-		puts("Structure Id's assigned to each MPI process:");
-		for (i = 0; i < m_iMpiProcesses; ++i) {
-			const int* assignment = assignments[i];
-			int iAssignment = numberOfAssignments[i];
+		if (0 == m_iMpiRank) {
+			puts("Structure Id's assigned to each MPI process:");
+			for (i = 0; i < m_iMpiProcesses; ++i) {
+				SimulatedAnnealingRun* assignment = *(assignments[i]);
+				unsigned int iAssignment = numberOfAssignments[i];
 
-			printf("Process %u: ", i);
-			for (j = 0; j < iAssignment; ++j) {
-				if (j > 0)
-					printf(", ");
-				printf("%u", assignment[j]);
+				printf("Process %u: ", i);
+				for (j = 0; j < iAssignment; ++j) {
+					if (j > 0)
+						printf(", ");
+					printf("%d", assignment[j].m_pStructure->getId());
+				}
+				printf("\n");
 			}
-			printf("\n");
 		}
 	#endif
 
-	SendRequestPair sendPair;
-	for (i = 1; i < m_iMpiProcesses; ++i) {
-		const int* assignment = assignments[i];
-		unsigned long int iAssignments = numberOfAssignments[i];
-		if (iAssignments > 0) {
-			sendPair.first = new int[iAssignments];
-			memcpy(sendPair.first, assignment, iAssignments*sizeof(int));
-			sendPair.second = new MPI_Request;
-			MPI_Isend(sendPair.first, iAssignments, MPI_INT, i, WORK_TAG, MPI_COMM_WORLD, sendPair.second);
-			m_sendRequests.push_back(sendPair);
-		} else {
-			MPI_Send(0, 0, MPI_INT, i, FINISH_TAG, MPI_COMM_WORLD);
-		}
-	}
-
-	std::list<SimulatedAnnealingRun*> assignment;
-	findRuns(assignments[0], numberOfAssignments[0], assignment);
-
-	//	int flag;
-	//	MPI_Status status;
-
-	return true;
-}
-
-void SimulatedAnnealing::findRuns(const int* structureIds, unsigned int numStructureIds, std::list<SimulatedAnnealingRun*> &results) {
-	int id;
-	for (unsigned int i = 0; i < numStructureIds; ++i) {
-		id = structureIds[i];
-		for (std::list<SimulatedAnnealingRun*>::iterator it = m_runs.begin(); it != m_runs.end(); ++it)
-			if (id == (*it)->m_pStructure->getId()) {
-				results.push_back(*it);
-				break;
-			}
-	}
-}
-
-bool SimulatedAnnealing::runSlave() {
-	calculateRunComplete();
-	if (m_bRunComplete)
-		return true;
-	if (!Action::run())
-		return false;
-
-	int* structureIds = NULL;
-	int iStructureIds;
-	MPI_Status status;
-	std::list<SimulatedAnnealingRun*> assignment;
-
-	MpiUtil::receiveArray(0, structureIds, iStructureIds, status, true);
-	if (status.MPI_TAG == WORK_TAG) {
-		findRuns(structureIds, (unsigned int)iStructureIds, assignment);
-		#if MPI_DEBUG
-			printf("Slave %d received an assignment: ", m_iMpiRank);
-			for (std::list<SimulatedAnnealingRun*>::iterator it = assignment.begin(); it != assignment.end(); ++it) {
-				if (it != assignment.begin())
-					printf(", ");
-				printf("%d", (*it)->m_pStructure->getId());
-			}
-			puts("");
-		#endif
-		delete[] structureIds;
-	} else {
-		#if MPI_DEBUG
-			printf("Slave %d received the finish message.\n", m_iMpiRank);
-		#endif
-		return true;
-	}
-
-	return true;
+	SimulatedAnnealingRun** pAssignment = assignments[m_iMpiRank];
+	unsigned int n = numberOfAssignments[m_iMpiRank];
+	for (i = 0; i < n; ++i)
+		assignment.push_back(pAssignment[i]);
 }

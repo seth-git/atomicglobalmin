@@ -252,6 +252,7 @@ bool Batch::runMaster() {
 		}
 	} while (!m_bRunComplete);
 
+	renameResultsFiles();
 	return true;
 }
 
@@ -276,7 +277,7 @@ bool Batch::runSlave() {
 	bool receivedFinishMessage = false;
 	std::list<int> queue;
 
-	getInitialAssignments(queue);
+	getInitialAssignment(queue);
 
 	while (true) {
 		do {
@@ -413,7 +414,7 @@ void Batch::getInitialAssignments(std::list<Structure*> &unassigned, std::map<in
 	}
 }
 
-void Batch::getInitialAssignments(std::list<int> &queue) {
+void Batch::getInitialAssignment(std::list<int> &queue) {
 	std::list<Structure*> unassigned;
 	std::map<int,Structure*> assignments[m_iMpiProcesses];
 	unsigned int iAssignments;

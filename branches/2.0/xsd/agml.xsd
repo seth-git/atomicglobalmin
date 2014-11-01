@@ -69,7 +69,7 @@
 </xs:complexType>
 <xs:complexType name="externalCalcType">
 	<xs:all>
-		<xs:element name="temporaryDirectory">
+		<xs:element name="temporaryDirectory" minOccurs="0">
 			<xs:complexType>
 				<xs:attribute name="path" type="xs:string" use="required"/>
 			</xs:complexType>
@@ -338,6 +338,7 @@
 	<xs:attribute name="energy" type="xs:double" default="0"/>
 	<xs:attribute name="isTransitionState" type="xs:boolean" default="false"/>
 	<xs:attribute name="id" type="xs:integer" default="0"/>
+	<xs:attribute name="filePrefix" type="xs:string"/>
 </xs:complexType>
 
 

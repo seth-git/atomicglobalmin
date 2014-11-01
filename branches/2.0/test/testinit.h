@@ -26,6 +26,4 @@ const char* testInitialization();
 
 const char* testLJ7();
 
-const char* gaussianTest();
-
 #endif

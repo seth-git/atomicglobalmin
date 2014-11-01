@@ -129,13 +129,15 @@ namespace strings {
 	const char pLennardJones[] = "Lennard Jones";
 	const char pCartesian[] = "Cartesian";
 	const char pAll[] = "All";
-	const char pAtoms[] = "atoms";
 
 	const char ReadingFile[] = "Reading file: %1$s\n";
 	const char WritingFile[] = "Writing file: %1$s\n";
 	const char ErrorOpeningFile[] = "Error opening file: %1$s\n";
 	const char ErrorWritingFile[] = "Error writing file: %1$s\n";
-	const char pAbbrTemporary[] = "temp";
+	const char pTemp[] = "temp";
+	const char pResults[] = "results";
+	const char pInput[] = "input";
+	const char pResult[] = "result";
 
 	// Error messages in xsdAttributeUtil.cc
 	const char DuplicateAttributes[] = "Duplicate attribute '%1$s' found for element '%2$s' with values '%3$s' and '%4$s'.\n";
@@ -199,6 +201,11 @@ namespace strings {
 
 	// Error messages in perturbations.cc
 	const char ProbabilityMustTotalOne[] = "In the element '%1$s', the total probability of each perturbation type must total 1.0.\n";
+
+	// Error messages in externalEnergyXml.cc
+	const char ErrorMissingEnergyDir[] = "In the '%1$s' element, please specify either a '%2$s' or a '%3$s'.\n";
+
+	const char UnableToExecuteCommand[] = "Unable to execute command: '%1$s'.\n";
 }
 
 #endif

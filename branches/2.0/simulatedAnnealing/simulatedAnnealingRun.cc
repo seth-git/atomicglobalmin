@@ -148,3 +148,7 @@ bool SimulatedAnnealingRun::saveResume(rapidxml::xml_document<> &doc,
 time_t SimulatedAnnealingRun::getTotalElapsedSeconds() {
 	return m_tPrevElapsedSeconds + (time (NULL) - m_sharedData->m_tStartTime);
 }
+
+bool SimulatedAnnealingRun::performIteration() {
+	return true;
+}

@@ -210,6 +210,15 @@ bool Action::run() {
 	m_pEnergy = energyXml.getEnergy();
 	if (NULL == m_pEnergy)
 		return false;
+	if (!m_pEnergy->setup())
+		return false;
+	return true;
+}
+
+bool Action::cleanupRun() {
+	if (NULL != m_pEnergy)
+		if (!m_pEnergy->cleanup())
+			return false;
 	return true;
 }
 
@@ -223,17 +232,23 @@ void Action::updateResults(Structure &structure) {
 }
 
 void Action::updateResults(Structure* pStructure) {
-	for (std::list<Structure*>::iterator it = m_results.begin(); it != m_results.end(); it++)
+	unsigned int index = 0;
+	for (std::list<Structure*>::iterator it = m_results.begin(); it != m_results.end(); it++) {
 		if (pStructure->getEnergy() <= (*it)->getEnergy()) {
 			m_results.insert(it, pStructure);
-			checkResults(pStructure, it);
+			checkResults(pStructure, it, index);
 			return;
 		}
+		++index;
+	}
 	m_results.push_back(pStructure);
-	checkResults(pStructure, m_results.end());
+	checkResults(pStructure, m_results.end(), m_results.size()-1);
 }
 
-void Action::checkResults(Structure* pStructure, std::list<Structure*>::iterator resultsIt) {
+void Action::checkResults(Structure* pStructure, std::list<Structure*>::iterator resultsIt, unsigned int insertionIndex) {
+	std::list<Structure*>::iterator insertionPointIt = resultsIt;
+	--insertionPointIt;
+
 	if (0 != m_fResultsRmsDistance) {
 		std::list<Structure*>::iterator tempIt;
 		RmsDistance::updateAtomToCenterRanks(*pStructure);
@@ -241,6 +256,7 @@ void Action::checkResults(Structure* pStructure, std::list<Structure*>::iterator
 			if (RmsDistance::calculate(*pStructure,**resultsIt) < m_fResultsRmsDistance) {
 				tempIt = resultsIt;
 				++resultsIt;
+				deleteStructureFiles(**tempIt);
 				delete *tempIt;
 				m_results.erase(tempIt);
 			} else {
@@ -249,8 +265,59 @@ void Action::checkResults(Structure* pStructure, std::list<Structure*>::iterator
 		}
 	}
 	if (m_results.size() > m_iMaxResults) {
-		delete m_results.back();
+		Structure* structure = m_results.back();
+		deleteStructureFiles(*structure);
+		delete structure;
 		m_results.pop_back();
+	}
+	// Check our maximum files limit
+	if (energyXml.m_bExternalEnergy && energyXml.m_externalEnergyXml.m_sResultsDir.length() > 0) {
+		unsigned int maxFiles = energyXml.m_externalEnergyXml.m_iMaxResultFiles;
+		if (insertionIndex >= maxFiles) {
+			deleteStructureFiles(**insertionPointIt);
+		} else {
+			std::list<Structure*>::iterator it = insertionPointIt;
+			unsigned int index = insertionIndex;
+			while (it != m_results.end()) {
+				if (index == maxFiles) {
+					deleteStructureFiles(**it);
+					break;
+				}
+				++it;
+				++index;
+			}
+		}
 	}
 }
 
+void Action::deleteStructureFiles(Structure &structure) {
+	if (structure.m_sFilePrefix.length() == 0)
+		return;
+	std::string fullPath = energyXml.m_externalEnergyXml.m_sResultsDir + "/" + structure.m_sFilePrefix;
+	FileUtils::deletePrefixFiles(fullPath);
+	structure.m_sFilePrefix = "";
+}
+
+void Action::renameResultsFiles() {
+	if (!energyXml.m_bExternalEnergy || energyXml.m_externalEnergyXml.m_sResultsDir.length() == 0)
+		return;
+	Structure* structure;
+	unsigned int count = 0;
+	std::string start = energyXml.m_externalEnergyXml.m_sResultsFilePrefix;
+	std::string prefix;
+	std::string* dir = &(energyXml.m_externalEnergyXml.m_sResultsDir);
+	unsigned int max = energyXml.m_externalEnergyXml.m_iMaxResultFiles;
+	for (std::list<Structure*>::iterator it = m_results.begin(); it != m_results.end(); it++) {
+		structure = *it;
+		++count;
+		if (count > max)
+			return;
+		if (structure->m_sFilePrefix.length() == 0)
+			continue;
+		prefix = start + ExternalEnergy::ToString(count);
+		if (prefix != structure->m_sFilePrefix) {
+			FileUtils::changeFilePrefix(structure->m_sFilePrefix, prefix.c_str(), *dir);
+			structure->m_sFilePrefix = prefix;
+		}
+	}
+}

@@ -6,7 +6,7 @@ const bool         ExternalEnergyXml::s_required[]     = {true            , fals
 const char*      ExternalEnergyXml::s_defaultValues[]  = {""              , strings::pFalse};
 
 const char* ExternalEnergyXml::s_elementNames[] = {strings::xTemporaryDirectory, strings::xResultsDirectory, strings::xHeader};
-const unsigned int ExternalEnergyXml::s_minOccurs[] = {1                       , 0                         , 1};
+const unsigned int ExternalEnergyXml::s_minOccurs[] = {0                       , 0                         , 1};
 
 ExternalEnergyXml::ExternalEnergyXml() {
 }
@@ -18,7 +18,7 @@ ExternalEnergyXml::~ExternalEnergyXml() {
 void ExternalEnergyXml::clear() {
 	m_sTemporaryDir = "";
 	m_sResultsDir = "";
-	m_iMaxResultsFiles = 0;
+	m_iMaxResultFiles = 0;
 	m_sResultsFilePrefix = "";
 	m_sHeader = "";
 }
@@ -46,12 +46,18 @@ bool ExternalEnergyXml::load(const rapidxml::xml_node<>* pExternalElem)
 		return false;
 	const xml_node<>** extElements = extUtil.getAllElements();
 	
-	if (!XsdTypeUtil::read1DirAtt(extElements[0], m_sTemporaryDir, xPath, true, NULL))
-		return false;
+	if (extElements[0] != NULL)
+		if (!XsdTypeUtil::read1DirAtt(extElements[0], m_sTemporaryDir, xPath, true, NULL))
+			return false;
 	
 	if (extElements[1] != NULL)
 		if (!readResultsDir(extElements[1]))
 			return false;
+
+	if (m_sTemporaryDir.length() == 0 && m_sResultsDir.length() == 0) {
+		printf(strings::ErrorMissingEnergyDir, strings::xExternal, strings::xTemporaryDirectory, strings::xResultsDirectory);
+		return false;
+	}
 
 	if (!XsdTypeUtil::readElementText(extElements[2], m_sHeader))
 		return false;
@@ -68,7 +74,7 @@ bool ExternalEnergyXml::readResultsDir(const rapidxml::xml_node<>* pElem) {
 	
 	if (pElem == NULL) {
 		m_sResultsDir == "";
-		m_iMaxResultsFiles = 0;
+		m_iMaxResultFiles = 0;
 		m_sResultsFilePrefix = "";
 		return true;
 	}
@@ -80,7 +86,7 @@ bool ExternalEnergyXml::readResultsDir(const rapidxml::xml_node<>* pElem) {
 
 	if (!XsdTypeUtil::checkDirectoryOrFileName(values[0], m_sResultsDir, s_resAttributeNames[0], pElem))
 		return false;
-	if (!XsdTypeUtil::getPositiveInt(values[1], m_iMaxResultsFiles, s_resAttributeNames[1], pElem))
+	if (!XsdTypeUtil::getPositiveInt(values[1], m_iMaxResultFiles, s_resAttributeNames[1], pElem))
 		return false;
 	m_sResultsFilePrefix = values[2];
 	return true;
@@ -94,16 +100,17 @@ bool ExternalEnergyXml::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>
 	if (m_bTransitionStateSearch)
 		pExternalElem->append_attribute(doc.allocate_attribute(xTransitionStateSearch, XsdTypeUtil::getTrueFalseParam(m_bTransitionStateSearch)));
 	
-	xml_node<>* temporaryDir = doc.allocate_node(node_element, xTemporaryDirectory, NULL, sizeof(xTemporaryDirectory)-1);
-	pExternalElem->append_node(temporaryDir);
-	temporaryDir->append_attribute(doc.allocate_attribute(xPath, m_sTemporaryDir.c_str(), sizeof(xPath)-1, m_sTemporaryDir.length()));
-	
+	if (m_sTemporaryDir.length() > 0) {
+		xml_node<>* temporaryDir = doc.allocate_node(node_element, xTemporaryDirectory, NULL, sizeof(xTemporaryDirectory)-1);
+		pExternalElem->append_node(temporaryDir);
+		temporaryDir->append_attribute(doc.allocate_attribute(xPath, m_sTemporaryDir.c_str(), sizeof(xPath)-1, m_sTemporaryDir.length()));
+	}
 	if (m_sResultsDir.length() > 0) {
 		xml_node<>* resultsDir = doc.allocate_node(node_element, xResultsDirectory, NULL, sizeof(xResultsDirectory)-1);
 		pExternalElem->append_node(resultsDir);
 		resultsDir->append_attribute(doc.allocate_attribute(xPath, m_sResultsDir.c_str(), sizeof(xPath)-1, m_sResultsDir.length()));
-		if (m_iMaxResultsFiles != 1)
-			XsdTypeUtil::setAttribute(doc, resultsDir, xMaxFiles, m_iMaxResultsFiles);
+		if (m_iMaxResultFiles != 1)
+			XsdTypeUtil::setAttribute(doc, resultsDir, xMaxFiles, m_iMaxResultFiles);
 		if (m_sResultsFilePrefix.compare(pBest) != 0)
 			resultsDir->append_attribute(doc.allocate_attribute(xFilePrefix, m_sResultsFilePrefix.c_str(), sizeof(xFilePrefix)-1, m_sResultsFilePrefix.length()));
 	}

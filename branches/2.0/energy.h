@@ -11,7 +11,7 @@ public:
 
 	virtual bool setup() = 0;
 	virtual bool execute(Structure &structure) = 0;
-	virtual bool clear() = 0;
+	virtual bool cleanup() = 0;
 };
 
 #endif
