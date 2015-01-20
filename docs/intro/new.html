@@ -17,19 +17,19 @@
     <br/>
 Below is a description of current software development.  This is provided as information and also with the hope of attracting volunteers.  As an open-source project, this software supports fundamental chemistry research and is provided free of charge.  We therefore encourage those who can to contribute.
     <br/><br/>
-1. A 2.0 version of this project has been started with an xml input file.  An example of LJ7_Sim.inp converted to XML can be found <a href="LJ7_Sim.xml">here</a>.  This format will be much more intuitive and easy to work with.  Using xml also makes it easier to send information across the network via MPI messages for development of more advanced algorithms.
+1. A 2.0 version of this project has been started with an xml input file.  An example of LJ7_Sim.inp converted to XML can be found <a href="LJ7_Sim.xml">here</a>.  This format will be more intuitive and easy to work with.  Using xml also makes it easier to send information across the network via MPI messages for more efficient cluster utilization.
     <br/><br/>
-The new project is being developed in a subversion branch which you can download by typing the following Linux command:
+A beta version of the batch calculator has been completed and works with the Lennard Jones potential and Gaussian. Other external packages can be added on request. The new project is being developed in a subversion branch which you can download by typing the following Linux command:
     <br/><br/>
-&#160;&#160;&#160;&#160;&#160;svn co https://atomicglobalmin.svn.sourceforge.net/svnroot/atomicglobalmin/branches/2.0 agml2
+&#160;&#160;&#160;&#160;&#160;svn checkout http://svn.code.sf.net/p/atomicglobalmin/code/branches/2.0 agml2
     <br/><br/>
-This will create a folder called agml2.  To compile the program, install the standard 'scons' compiler tool via the Synaptic Package Manager or by typing 'sudo apt-get install scons'.  Type 'cd agml2' to navigate inside the agml2 directory.  Compile the program by typing 'scons'.  Run the program by typing './agml xml/LJ7_Sim.xml'.  This reads xml/LJ7_Sim.xml and copies part of it to output.xml.  Help is needed making the program read and write more of the xml structure.
+This will create a folder called agml2.  To compile the program, install the standard 'scons' compiler tool via the Synaptic Package Manager or by typing 'sudo apt-get install scons'.  Type 'cd agml2' to navigate inside the agml2 directory.  Compile the program by typing 'scons'.  Run the program by typing './agml xml/LJ7_Batch.xml'. This generates 100 random LJ7 structures, calculates their energy values, and stores them back in the xml file. In addition to generating random structures, the batch calculator can also read structures from directories or pull them from other batch xml files. The batch calculator has also been tested with MPI and runs pretty efficiently on a cluster.
     <br/><br/>
-The xml folder contains more example xml files.  The xsd/agml.xsd file contains the xml schema in <a href="http://www.w3schools.com/schema/schema_intro.asp">xsd format</a>.  The xml is read by a fast, light-weight <a href="http://www.grinninglizard.com/tinyxmldocs/tutorial0.html">tinyxml</a> parser with some xsd libraries built on top.
+The xml folder contains more example xml files.  The xsd/agml.xsd file contains the xml schema in <a href="http://www.w3schools.com/schema/schema_intro.asp">xsd format</a>.  The xml is read by a fast, light-weight <a href="http://rapidxml.sourceforge.net/">rapidxml</a> parser with some xsd libraries built on top.
     <br/><br/>
 2. As discussed in a previous section, the program needs methods that create input files for additional quantum chemistry packages.  The program currently can create input files for GAMESS AND Gaussian.
     <br/><br/>
-3. Recently work has been started to make the program work in different languages.  An initial beta version of the program with this language support has been released as version 1.6.  Currently the program only has an English translation.  Please help translate messages into other languages.  The program supports translation with the assistance of Google translate.  Please see the previous section for more information.
+3. Work has been started to make the program work in different languages.  An initial beta version of the program with this language support has been released as version 1.6.  Currently the program only has an English translation.  Please help translate messages into other languages.  The program supports translation with the assistance of Google translate.  Please see the previous section for more information.
     <br/><br/>
 If you would like to work with some great technologies and build your resume or CV, helping with this project could be a great opportunity!  To volunteer, please contact us by visiting <a href="https://sourceforge.net/projects/atomicglobalmin/support">support</a> and clicking 'creating a new item'.  Select 'New Feature' for the category, enter a subject and description, and click 'Add Artifact'.  Thank you for helping us make this software great!
     <br/><br/>
