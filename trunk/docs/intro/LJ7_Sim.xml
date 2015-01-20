@@ -7,7 +7,7 @@
 		<setup saveFrequency="10">
 			<structuresTemplate constraints="myConstraints">
 				<structureTemplate>
-					<atomTemplate number="7" z="2" />
+					<atomTemplate number="7" Z="2" />
 				</structureTemplate>
 				<threeD number="32"/>
 			</structuresTemplate>
