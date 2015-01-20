@@ -7,7 +7,6 @@
 
 class Batch : public Action {
 public:
-	unsigned int m_targetQueueSize;
 	Batch(Input* input);
 	~Batch();
 	bool loadSetup(const rapidxml::xml_node<>* pSetupElem);
@@ -18,10 +17,17 @@ public:
 	bool runMaster();
 	bool runSlave();
 
-protected:
-	void getInitialAssignments(std::list<Structure*> &unassigned, std::map<int,Structure*>* assignments, unsigned int &iAssignments);
-	void getInitialAssignment(std::list<int> &queue);
+	// These methods are public for testing purposes
 	void processResult(Structure* structure);
+
+protected:
+	void getInitialAssignments(std::map<int,Structure*>* assignments, std::list<int> &queue, std::map<int,Structure*> &structureMap);
+
+	static const int DIE_TAG;
+	static const int WORK_TAG;
+	static const int ENERGY_CAL_FAILURE_TAG;
+	static const int NO_MORE_STRUCTURES_TAG;
+	static const int FINISH_TAG;
 
 	static const char* s_elementNames[];
 	static const unsigned int s_minOccurs[];

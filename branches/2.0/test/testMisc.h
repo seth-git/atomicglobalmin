@@ -10,4 +10,6 @@ const char* gaussianTest();
 
 const char* testChangeFilePrefix();
 
+const char* testSortResults();
+
 #endif

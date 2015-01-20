@@ -1,9 +1,9 @@
 
 #include "externalEnergyXml.h"
 
-const char*      ExternalEnergyXml::s_attributeNames[] = {strings::xMethod, strings::xTransitionStateSearch};
-const bool         ExternalEnergyXml::s_required[]     = {true            , false };
-const char*      ExternalEnergyXml::s_defaultValues[]  = {""              , strings::pFalse};
+const char*      ExternalEnergyXml::s_attributeNames[] = {strings::xMethod, strings::xTransitionStateSearch, strings::xWallTime};
+const bool         ExternalEnergyXml::s_required[]     = {true            , false                          , false };
+const char*      ExternalEnergyXml::s_defaultValues[]  = {""              , strings::pFalse                , ""};
 
 const char* ExternalEnergyXml::s_elementNames[] = {strings::xTemporaryDirectory, strings::xResultsDirectory, strings::xHeader};
 const unsigned int ExternalEnergyXml::s_minOccurs[] = {0                       , 0                         , 1};
@@ -18,9 +18,11 @@ ExternalEnergyXml::~ExternalEnergyXml() {
 void ExternalEnergyXml::clear() {
 	m_sTemporaryDir = "";
 	m_sResultsDir = "";
-	m_iMaxResultFiles = 0;
+	m_iMaxResultFiles = -1;
 	m_sResultsFilePrefix = "";
 	m_sHeader = "";
+	m_sWallTime = "";
+	m_tWallTime = 0;
 }
 
 bool ExternalEnergyXml::load(const rapidxml::xml_node<>* pExternalElem)
@@ -40,7 +42,17 @@ bool ExternalEnergyXml::load(const rapidxml::xml_node<>* pExternalElem)
 
 	if (!XsdTypeUtil::getBoolValue(s_attributeNames[1], values[1], m_bTransitionStateSearch, pExternalElem))
 		return false;
-	
+
+	if (NULL != values[2]) {
+		m_sWallTime = values[2];
+		unsigned int hours, minutes, seconds;
+		if (sscanf(m_sWallTime.c_str(), "%u:%u:%u", &hours, &minutes, &seconds) != 3) {
+			printf(WallTimeError, m_sWallTime.c_str());
+			return false;
+		}
+		m_tWallTime = (hours*3600) + (minutes*60) + seconds;
+	}
+
 	XsdElementUtil extUtil(XSD_ALL, s_elementNames, s_minOccurs);
 	if (!extUtil.process(pExternalElem))
 		return false;
@@ -67,14 +79,14 @@ bool ExternalEnergyXml::load(const rapidxml::xml_node<>* pExternalElem)
 
 const char* ExternalEnergyXml::s_resAttributeNames[] = {strings::xPath, strings::xMaxFiles, strings::xFilePrefix};
 const bool  ExternalEnergyXml::s_resRequired[]       = {true          , false             , false};
-const char* ExternalEnergyXml::s_resDefaultValues[]  = {""            , "1"               , strings::pBest};
+const char* ExternalEnergyXml::s_resDefaultValues[]  = {""            , "-1"               , strings::pBest};
 
 bool ExternalEnergyXml::readResultsDir(const rapidxml::xml_node<>* pElem) {
 	using namespace strings;
 	
 	if (pElem == NULL) {
 		m_sResultsDir == "";
-		m_iMaxResultFiles = 0;
+		m_iMaxResultFiles = -1;
 		m_sResultsFilePrefix = "";
 		return true;
 	}
@@ -86,7 +98,7 @@ bool ExternalEnergyXml::readResultsDir(const rapidxml::xml_node<>* pElem) {
 
 	if (!XsdTypeUtil::checkDirectoryOrFileName(values[0], m_sResultsDir, s_resAttributeNames[0], pElem))
 		return false;
-	if (!XsdTypeUtil::getPositiveInt(values[1], m_iMaxResultFiles, s_resAttributeNames[1], pElem))
+	if (!XsdTypeUtil::getInteger(values[1], m_iMaxResultFiles, s_resAttributeNames[1], pElem))
 		return false;
 	m_sResultsFilePrefix = values[2];
 	return true;
@@ -99,6 +111,8 @@ bool ExternalEnergyXml::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>
 	pExternalElem->append_attribute(doc.allocate_attribute(xMethod, ExternalEnergy::getEnumString(m_method)));
 	if (m_bTransitionStateSearch)
 		pExternalElem->append_attribute(doc.allocate_attribute(xTransitionStateSearch, XsdTypeUtil::getTrueFalseParam(m_bTransitionStateSearch)));
+	if (m_sWallTime.length() > 0)
+		pExternalElem->append_attribute(doc.allocate_attribute(xWallTime, m_sWallTime.c_str(), sizeof(xWallTime)-1, m_sWallTime.length()));
 	
 	if (m_sTemporaryDir.length() > 0) {
 		xml_node<>* temporaryDir = doc.allocate_node(node_element, xTemporaryDirectory, NULL, sizeof(xTemporaryDirectory)-1);
@@ -109,8 +123,7 @@ bool ExternalEnergyXml::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>
 		xml_node<>* resultsDir = doc.allocate_node(node_element, xResultsDirectory, NULL, sizeof(xResultsDirectory)-1);
 		pExternalElem->append_node(resultsDir);
 		resultsDir->append_attribute(doc.allocate_attribute(xPath, m_sResultsDir.c_str(), sizeof(xPath)-1, m_sResultsDir.length()));
-		if (m_iMaxResultFiles != 1)
-			XsdTypeUtil::setAttribute(doc, resultsDir, xMaxFiles, m_iMaxResultFiles);
+		XsdTypeUtil::setAttribute(doc, resultsDir, xMaxFiles, m_iMaxResultFiles);
 		if (m_sResultsFilePrefix.compare(pBest) != 0)
 			resultsDir->append_attribute(doc.allocate_attribute(xFilePrefix, m_sResultsFilePrefix.c_str(), sizeof(xFilePrefix)-1, m_sResultsFilePrefix.length()));
 	}

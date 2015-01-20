@@ -16,6 +16,8 @@ class Input; // Forward declaration
 #include "rmsDistance.h"
 #include <list>
 
+#define ACTION_DEBUG false
+
 class Action {
 public:
 	std::list<Structure*> m_structures;
@@ -54,11 +56,13 @@ public:
 	virtual bool runMaster() = 0;
 	virtual bool runSlave() = 0;
 
-protected:
+	// These are public for testing purposes
+	void renameResultsFiles();
 	void updateResults(Structure &structure);
 	void updateResults(Structure* pStructure);
+
+protected:
 	void checkResults(Structure* pStructure, std::list<Structure*>::iterator resultsIt, unsigned int insertionIndex);
-	void renameResultsFiles();
 	void deleteStructureFiles(Structure &structure);
 
 	Input* m_pInput;
@@ -66,6 +70,8 @@ protected:
 	unsigned int m_iMpiProcesses;
 
 	time_t getTotalElapsedSeconds();
+
+	bool calculateTimeToQuit();
 
 	static unsigned int s_iMaxEnergyCalcFailures;
 	static FLOAT s_fMaxMPIProcessFailures;

@@ -26,6 +26,8 @@ Structure::~Structure() {
 void Structure::clear() {
 	unsigned int i;
 
+	m_sFilePrefix = "";
+
 	if (m_atomDistanceMatrix != NULL) {
 		for (i = 0; i < m_iNumberOfAtoms; ++i)
 			delete[] m_atomDistanceMatrix[i];
@@ -94,6 +96,8 @@ bool Structure::load(const rapidxml::xml_node<>* pStructureElem) {
 		return false;
 	if (!XsdTypeUtil::getInteger(structureAttValues[2], m_id, s_structureAttNames[2], pStructureElem))
 		return false;
+	if (NULL != structureAttValues[3])
+		m_sFilePrefix = structureAttValues[3];
 
 	const char* structureElemNames[] = {xAtomGroup};
 	XsdElementUtil structureElemUtil(XSD_SEQUENCE, structureElemNames, s_structureMinOccurs, s_structureMaxOccurs);
@@ -157,7 +161,7 @@ rapidxml::xml_node<>* Structure::save(rapidxml::xml_document<> &doc) const {
 	if (0 != m_fEnergy)
 		XsdTypeUtil::setAttribute(doc, structure, xEnergy, m_fEnergy);
 	if (m_bIsTransitionState)
-		structure->append_attribute(doc.allocate_attribute(xIsTransitionState, pTrue));
+		structure->append_attribute(doc.allocate_attribute(xIsTransitionState, pTrue, sizeof(xIsTransitionState)-1, sizeof(pTrue)-1));
 	if (0 != m_id)
 		XsdTypeUtil::setAttribute(doc, structure, xId, m_id);
 	if (0 != m_sFilePrefix.length())
@@ -175,6 +179,7 @@ void Structure::copy(Structure &structure) {
 	unsigned int i;
 	clear();
 
+	m_sFilePrefix = structure.m_sFilePrefix;
 	m_iNumberOfAtomGroups = structure.m_iNumberOfAtomGroups;
 	m_atomGroups = new AtomGroup[m_iNumberOfAtomGroups];
 	for (unsigned int i = 0; i < m_iNumberOfAtomGroups; ++i)

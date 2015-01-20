@@ -5,12 +5,6 @@
 #include <mpi.h>
 #include <list>
 
-#define DIE_TAG                   1
-#define WORK_TAG                  2
-#define FINISH_TAG                3
-#define ENERGY_CAL_FAILURE_TAG    4
-#define WALL_TIME_TAG             5
-
 #define MPI_DEBUG	false
 
 class MpiUtil {
@@ -32,6 +26,16 @@ public:
 	static int receiveString(int source, char* &char_buf, MPI_Status& status, bool blocking);
 
 	/**************************************************************************
+	 * Purpose: to receive an integer
+	 * Parameters: source: rank of the sending process or MPI_ANY_SOURCE
+	 *             int_ptr: where the int should be stored
+	 *             status: contains information about the message
+	 *             blocking: if true, waits until a message is received.
+	 * Returns: 1 if a message was received (always the case for blocking)
+	 */
+	static int receiveInt(int source, int* int_ptr, MPI_Status& status, bool blocking);
+
+	/**************************************************************************
 	 * Purpose: to receive an integer array
 	 * Parameters: source: rank of the sending process or MPI_ANY_SOURCE
 	 *             int_buf: where the array should be stored
@@ -39,7 +43,7 @@ public:
 	 *             blocking: if true, waits until a message is received.
 	 * Returns: 1 if a message was received (always the case for blocking)
 	 */
-	static int receiveArray(int source, int* &int_buf, int &buffer_size, MPI_Status& status, bool blocking);
+	static int receiveInts(int source, int* &int_buf, int &buffer_size, MPI_Status& status, bool blocking);
 
 protected:
 	typedef std::pair<int*,MPI_Request*> IntSendRequestPair;

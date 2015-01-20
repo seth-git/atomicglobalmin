@@ -45,8 +45,8 @@
 		<xs:element name="min" minOccurs="0" maxOccurs="unbounded">
 			<xs:complexType>
 				<xs:attribute name="value" type="positiveDecimal" use="required"/>
-				<xs:attribute name="z1" type="xs:string"/>
-				<xs:attribute name="z2" type="xs:string"/>
+				<xs:attribute name="Z1" type="xs:string"/>
+				<xs:attribute name="Z2" type="xs:string"/>
 			</xs:complexType>
 		</xs:element>
 		<xs:element name="max" minOccurs="0" maxOccurs="1">
@@ -77,7 +77,7 @@
 		<xs:element name="resultsDirectory" minOccurs="0">
 			<xs:complexType>
 				<xs:attribute name="path" type="xs:string" use="required"/>
-				<xs:attribute name="maxFiles" type="xs:positiveInteger" default="1"/>
+				<xs:attribute name="maxFiles" type="xs:nonNegativeInteger" default="1"/>
 				<xs:attribute name="filePrefix" type="xs:string" default="best"/>
 			</xs:complexType>
 		</xs:element>
@@ -85,6 +85,7 @@
 	</xs:all>
 	<xs:attribute name="method" type="externalEnergyMethods" use="required"/>
 	<xs:attribute name="transitionStateSearch" type="xs:boolean" default="false"/>
+	<xs:attribute name="wallTime" type="xs:string"/> <!-- Format: HH:MM:SS -->
 </xs:complexType>
 <xs:simpleType name="internalEnergyMethods">
 	<xs:restriction base="xs:string">
@@ -181,7 +182,7 @@
 		</xs:element>
 		<xs:element name="translationVector" minOccurs="0">
 			<xs:complexType>
-				<xs:attribute name="length" type="positiveDecimal" use="required"/>
+				<xs:attribute name="value" type="positiveDecimal" use="required"/>
 			</xs:complexType>
 		</xs:element>
 		<xs:element name="rotationAngle" minOccurs="0">
@@ -299,7 +300,7 @@
 
 <xs:complexType name="structuresType">
 	<xs:sequence>
-		<xs:element name="structure" type="structureType" minOccurs="1" maxOccurs="unbounded"/>
+		<xs:element name="structure" type="structureType" minOccurs="0" maxOccurs="unbounded"/>
 	</xs:sequence>
 </xs:complexType>
 
@@ -318,7 +319,7 @@
 					<xs:element name="radianAngles" minOccurs="0" maxOccurs="1">
 						<xs:complexType>
 							<xs:attribute name="x" type="nonNegativeDecimal" use="required"/>
-							<xs:attribute name="y" type="nonNegativeDecimal" use="required"/>
+							<xs:attribute name="y" type="xs:double" use="required"/>
 							<xs:attribute name="z" type="nonNegativeDecimal" use="required"/>
 						</xs:complexType>
 					</xs:element>
@@ -607,7 +608,6 @@
 					<xs:element name="structuresTemplate" type="structuresTemplateType"/>
 				</xs:all>
 				<xs:attribute name="saveFrequency" type="xs:positiveInteger" default="1"/>
-				<xs:attribute name="queueSize" type="xs:positiveInteger" default="3"/>
 			</xs:complexType>
 		</xs:element>
 		<xs:element name="constraints" type="constraintsType" minOccurs="0" maxOccurs="unbounded"/>

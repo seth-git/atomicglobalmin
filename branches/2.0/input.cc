@@ -26,7 +26,18 @@ void Input::clear() {
 bool Input::load(const char* pFilename) {
 	using namespace rapidxml;
 	using namespace strings;
-	m_sFileName = pFilename;
+	if (pFilename[0] ==  '/')
+		m_sFileName = pFilename;
+	else {
+		char dir[500];
+		if (getcwd(dir, sizeof(dir)) != NULL) {
+			m_sFileName = dir;
+			m_sFileName.append("/").append(pFilename);
+		} else {
+			puts("Cannot get the current working directory.");
+			return false;
+		}
+	}
 	printf(ReadingFile, pFilename);
 	file<> xmlFile(pFilename);
 	return loadStr(xmlFile.data());
@@ -178,19 +189,26 @@ bool Input::run(const char* fileName) {
 	MPI_Comm_size(MPI_COMM_WORLD, &iMpiProcesses);
 	bool normalTermination = false;
 	if (0 == iRank) {
+		int size = 0;
 		if (!load(fileName)) {
-			int size = 0;
+			MPI_Bcast(&size, 1, MPI_INT, 0, MPI_COMM_WORLD);
+			return false;
+		}
+		if (0 == m_pAction->m_iEnergyCalculations && m_pAction->energyXml.m_bExternalEnergy
+				&& m_pAction->energyXml.m_externalEnergyXml.m_sResultsDir.length() > 0
+				&& !FileUtils::directoryEmpty(m_pAction->energyXml.m_externalEnergyXml.m_sResultsDir.c_str())) {
+			printf(strings::ResultsShouldBeEmpty, m_pAction->energyXml.m_externalEnergyXml.m_sResultsDir.c_str());
 			MPI_Bcast(&size, 1, MPI_INT, 0, MPI_COMM_WORLD);
 			return false;
 		}
 		if (iMpiProcesses >= 2) {
 			#if MPI_DEBUG
-				printf("Master process 0 sending the loaded xml to %d other slave mpi processes.\n", (iMpiProcesses-1));
+				printf("Master sending the loaded xml to %d other slave mpi processes.\n", (iMpiProcesses-1));
 			#endif
 			std::string xml;
 			save(xml);
-			int temp = xml.length()+1;
-			MPI_Bcast(&temp, 1, MPI_INT, 0, MPI_COMM_WORLD);
+			size = xml.length()+1;
+			MPI_Bcast(&size, 1, MPI_INT, 0, MPI_COMM_WORLD);
 			MPI_Bcast((void*)xml.c_str(), xml.length()+1, MPI_CHAR, 0, MPI_COMM_WORLD);
 		}
 		normalTermination = m_pAction->runMaster();
@@ -206,7 +224,7 @@ bool Input::run(const char* fileName) {
 		#if MPI_DEBUG
 			int iRank;
 			MPI_Comm_rank(MPI_COMM_WORLD, &iRank);
-			printf("Slave process %d received loaded xml from process 0.\n", iRank);
+			printf("Slave %d received loaded xml from process 0.\n", iRank);
 		#endif
 		bool success = loadStr(xml);
 		delete[] xml; // Always delete

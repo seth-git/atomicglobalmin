@@ -15,7 +15,6 @@
 const char* ExternalEnergy::cclibPythonScript = "/path/to/cclib/atomicGlobalMin.py";
 unsigned int ExternalEnergy::s_iMaxEnergyCalcFailuresOnStructure = 2;
 
-bool ExternalEnergy::s_bReadGeometry = true;
 
 ExternalEnergy::ExternalEnergy(const ExternalEnergyXml* pExternalEnergyXml) : Energy() {
 	m_pExternalEnergyXml = pExternalEnergyXml;
@@ -250,7 +249,21 @@ bool ExternalEnergy::setup() {
 		printf("Couldn't cd to directory: '%s'.\n", m_sCalcDirectory.c_str());
 		return false;
 	}
+	m_bReadGeometry = true;
+	m_tLongestExecutionTime = 0;
+	if (m_pExternalEnergyXml->m_sResultsDir.length() > 0)
+		m_sStopFile = m_pExternalEnergyXml->m_sResultsDir;
+	else
+		m_sStopFile = m_pExternalEnergyXml->m_sTemporaryDir;
+	m_sStopFile.append("/").append(strings::pStop, sizeof(strings::pStop)-1);
 	return true;
+}
+
+bool ExternalEnergy::stopFileExists() {
+	if (m_sStopFile.length() > 0)
+		if (FileUtils::exists(m_sStopFile.c_str()))
+			return true;
+	return false;
 }
 
 bool ExternalEnergy::cleanup() {
@@ -259,8 +272,13 @@ bool ExternalEnergy::cleanup() {
 			printf("Couldn't cd out of directory: '%s'.\n", m_sCalcDirectory.c_str());
 			return false;
 		}
-		return FileUtils::deleteFile(m_sCalcDirectory.c_str());
+		if (!FileUtils::deleteFile(m_sCalcDirectory.c_str()))
+			return false;
 	}
+	int rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	if (0 == rank && stopFileExists())
+		if (!FileUtils::deleteFile(m_sStopFile.c_str()))
+			return false;
 	return true;
 }
-

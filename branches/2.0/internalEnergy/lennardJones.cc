@@ -14,6 +14,7 @@ LennardJones::~LennardJones() {
 }
 
 bool LennardJones::calculateEnergy(Structure &structure) {
+	structure.updateAtomDistanceMatrix();
 	unsigned int iAtoms = structure.getNumberOfAtoms();
 	unsigned int iAtomsM1 = iAtoms - 1;
 	const FLOAT* const* distances = structure.getAtomDistanceMatrix();

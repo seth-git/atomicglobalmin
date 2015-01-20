@@ -58,19 +58,17 @@
 		</constraints>
 		<energy>
         	        <external method="Gaussian">
-        	                <sharedDirectory path="path"/>
+        	                <temporaryDirectory path="path"/>
         	                <resultsDirectory path="path" maxFiles="100" filePrefix="res"/>
-        	                <multiplicity value="2"/>
-        	                <charge value="0"/>
         	                <header>
 % mem=2000MB
 # B3LYP/6-311++G(d,p) scfcon=4 scfcyc=300 scf=direct
+
+0 2
+!atoms
         	                </header>
-				<mpi master="true"/>
         	        </external>
 		</energy>
-		<results maxSize="20000">
-			<history save="false"/>
-		</results>
+		<results maxSize="20000"/>
 	</simulatedAnnealing>
 </agml>

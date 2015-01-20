@@ -14,6 +14,7 @@ public:
 	static bool changeFilePrefix(const std::string &currentPrefix, const std::string &newPrefix, const std::string &directory);
 	static bool deletePrefixFiles(const std::string &prefix);
 	static bool executeCommand(const char* command);
+	static bool directoryEmpty(const char* dir);
 };
 
 #endif

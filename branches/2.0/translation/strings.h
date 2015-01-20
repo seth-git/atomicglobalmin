@@ -30,6 +30,7 @@ namespace strings {
 	const char xZ2[] = "Z2";
 	const char xMethod[] = "method";
 	const char xTransitionStateSearch[] = "transitionStateSearch";
+	const char xWallTime[] = "wallTime";
 	const char xTemporaryDirectory[] = "temporaryDirectory";
 	const char xResultsDirectory[] = "resultsDirectory";
 	const char xHeader[] = "header";
@@ -50,7 +51,6 @@ namespace strings {
 	const char xMaxAcceptedPerturbations[] = "maxAcceptedPerturbations";
 	const char xMinIterations[] = "minIterations";
 	const char xSaveFrequency[] = "saveFrequency";
-	const char xQueueSize[] = "queueSize";
 
 	const char xStructureTemplate[] = "structureTemplate";
 	const char xLinear[] = "linear";
@@ -138,6 +138,7 @@ namespace strings {
 	const char pResults[] = "results";
 	const char pInput[] = "input";
 	const char pResult[] = "result";
+	const char pStop[] = "stop";
 
 	// Error messages in xsdAttributeUtil.cc
 	const char DuplicateAttributes[] = "Duplicate attribute '%1$s' found for element '%2$s' with values '%3$s' and '%4$s'.\n";
@@ -183,6 +184,7 @@ namespace strings {
 
 	// Error messages in action.cc
 	const char ConstraintNameMisMatch[] = "On the %1$s element with %2$s '%3$s', the %4$s %1$s '%5$s' have not been defined.\n";
+	const char RunCompleted[] = "This run has already been completed.";
 
 	// Error messages in constraints.cc
 	const char ErrorZ1Z2[] = "In the element '%1$s', '%2$s' and '%3$s' must both be included or both must be excluded.\n";
@@ -191,6 +193,7 @@ namespace strings {
 
 	// Error messages in structuresTemplate.cc
 	const char ConstraintNotDefined[] = "On the element %1$s, the %2$s '%3$s' have not been defined.\n";
+	const char ResultsShouldBeEmpty[] = "The results directory (%1$s) should be empty at the start of a run.\n";
 	const char EmptyStructureTemplate[] = "The '%1$s' element must contain one or more '%2$s' or '%3$s' elements.\n";
 	const char SeededStructureDoesntMatchTemplate[] = "Seeded structure %u is not compatible with the structuresTemplate.\n";
 	const char SeededStructureDoesntMatchConstraints[] = "Seeded structure %u does not meet the constraints.\n";
@@ -204,6 +207,7 @@ namespace strings {
 
 	// Error messages in externalEnergyXml.cc
 	const char ErrorMissingEnergyDir[] = "In the '%1$s' element, please specify either a '%2$s' or a '%3$s'.\n";
+	const char WallTimeError[] = "Error reading wall time: '%1$s'\n";
 
 	const char UnableToExecuteCommand[] = "Unable to execute command: '%1$s'.\n";
 }

@@ -36,7 +36,7 @@
 			</structuresTemplate>
 			<perturbations>
 				<translationVector startLength="0.25" minLength="0.05" probability="0.5" />
-				<rotationAngle degrees="25.0" minDegrees="3.0" probability="0.5" />
+				<rotationAngle startDegrees="25.0" minDegrees="3.0" probability="0.5" />
 			</perturbations>
 			<stop iteration="500"/>
 		</setup>
@@ -49,18 +49,17 @@
 		</constraints>
 		<energy>
 			<external method="Gaussian" transitionStateSearch="true">
-				<sharedDirectory path="path"/>
+				<temporaryDirectory path="path"/>
 				<resultsDirectory path="path" maxFiles="100" filePrefix="res"/>
-				<multiplicity value="2"/>
-				<charge value="0"/>
 				<header>
 % mem=2000MB
 # B3LYP/6-311++G(d,p) scfcon=4 scfcyc=300 scf=direct
+
+0 2
+!atoms
 				</header>
 			</external>
 		</energy>
-		<results maxSize="20000">
-			<history save="false"/>
-		</results>
+		<results maxSize="20000"/>
 	</randomSearch>
 </agml>

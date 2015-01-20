@@ -20,7 +20,8 @@ class ExternalEnergy : public Energy {
 public:
 	enum Impl {ADF, GAMESS, GAMESS_UK, GAUSSIAN, FIREFLY, JAGUAR, MOLPRO, ORCA};
 
-	static bool s_bReadGeometry;
+	bool m_bReadGeometry;
+	time_t m_tLongestExecutionTime;
 
 	ExternalEnergy(const ExternalEnergyXml* pExternalEnergyXml);
 	virtual ~ExternalEnergy() {};
@@ -43,6 +44,7 @@ public:
 
 	virtual bool setup(); // Call this in preparation for calling execute
 	virtual bool execute(Structure &structure) = 0;
+	bool stopFileExists();
 	virtual bool cleanup(); // Call this when execute will no longer be called and before the process terminates
 
 	static const char* getOutputFileExtension(Impl impl);
@@ -69,6 +71,7 @@ protected:
 	const ExternalEnergyXml* m_pExternalEnergyXml;
 	std::string m_sCalcDirectory;
 	bool m_bMoveFilesToResultsDir;
+	std::string m_sStopFile; // If this file exists, it's a message from the user that the program should terminate.
 
 private:
 	static const char* cclibPythonScript;

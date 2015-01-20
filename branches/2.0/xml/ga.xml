@@ -52,12 +52,13 @@
 		</constraints>
 		<energy>
 			<external method="Gaussian">
-				<sharedDirectory path="path"/>
-				<multiplicity value="2"/>
-				<charge value="0"/>
+				<resultsDirectory path="path"/>
 				<header>
 % mem=2000MB
 # B3LYP/6-311++G(d,p) scfcon=4 scfcyc=300 scf=direct
+
+0 2
+!atoms
 				</header>
 			</external>
 		</energy>

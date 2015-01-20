@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <string>
+#include <unistd.h>
 #include "action.h"
 #include "simulatedAnnealing/simulatedAnnealing.h"
 #include "batch.h"

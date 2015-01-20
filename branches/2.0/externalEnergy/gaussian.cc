@@ -248,6 +248,7 @@ bool Gaussian::readOutputFile(const char* outputFile, Structure &structure, bool
 
 bool Gaussian::execute(Structure &structure) {
 	using namespace std;
+	time_t start = time(NULL);
 	std::string id = ToString(structure.getId());
 	std::string filePrefix = strings::pResult + id;
 	std::string inputFileName = strings::pInput + id + "." + s_sInputFileExtension;
@@ -273,7 +274,7 @@ bool Gaussian::execute(Structure &structure) {
 		return false;
 	if (!FileUtils::executeCommand(runCommand.c_str()))
 		return false;
-	if (!readOutputFile(outputFileName.c_str(), structure, s_bReadGeometry))
+	if (!readOutputFile(outputFileName.c_str(), structure, m_bReadGeometry))
 		return false;
 	if (m_bMoveFilesToResultsDir)
 		if (!FileUtils::changeDirectory(filePrefix, m_pExternalEnergyXml->m_sResultsDir))
@@ -282,6 +283,10 @@ bool Gaussian::execute(Structure &structure) {
 		structure.m_sFilePrefix = filePrefix;
 	if (m_pExternalEnergyXml->m_sTemporaryDir.length() == 0)
 		FileUtils::deleteFile(inputFileName.c_str());
+
+	time_t elapsed = time(NULL) - start;
+	if (elapsed > m_tLongestExecutionTime)
+		m_tLongestExecutionTime = elapsed;
 
 	return true;
 }

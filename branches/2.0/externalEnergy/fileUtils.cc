@@ -6,6 +6,8 @@
 #include <string>
 #include <stdlib.h>
 #include <stdio.h>
+#include <dirent.h>
+#include <errno.h>
 
 bool FileUtils::exists(const char* fileOrDirectory) {
 	struct stat fileStatistics;
@@ -50,3 +52,25 @@ bool FileUtils::executeCommand(const char* command) {
 	}
 	return true;
 }
+
+bool FileUtils::directoryEmpty(const char* dir) {
+	DIR *dp;
+	struct dirent *dirp;
+	if ((dp = opendir(dir)) == NULL) {
+		printf("Error(%1$d) opening directory: %2$s.\n", errno, dir);
+		return false;
+	}
+	bool empty = true;
+	while (NULL != (dirp = readdir(dp))) {
+		if (strcmp(".", dirp->d_name) == 0)
+			continue;
+		if (strcmp("..", dirp->d_name) == 0)
+			continue;
+		empty = false;
+		break;
+	}
+	closedir(dp);
+
+	return empty;
+}
+

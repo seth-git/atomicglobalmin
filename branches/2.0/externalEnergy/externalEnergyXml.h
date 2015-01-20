@@ -11,12 +11,14 @@
 
 class ExternalEnergyXml {
 public:
-	bool m_bTransitionStateSearch;
 	ExternalEnergy::Impl m_method;
 	ExternalEnergy* m_pMethodImpl;
+	bool m_bTransitionStateSearch;
+	std::string m_sWallTime; // HH:MM:SS representation
+	time_t m_tWallTime; // Seconds representation
 	std::string m_sTemporaryDir;
 	std::string m_sResultsDir;
-	unsigned int m_iMaxResultFiles;
+	int m_iMaxResultFiles;
 	std::string m_sResultsFilePrefix;
 	std::string m_sHeader;
 
