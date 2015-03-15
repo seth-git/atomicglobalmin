@@ -86,7 +86,7 @@ const char* testSortResults() {
 	}
 
 	for (list<Structure*>::iterator it = structures.begin(); it != structures.end(); ++it) {
-		(*it)->m_sFilePrefix = strings::pResult + ExternalEnergy::ToString((*it)->getId());
+		(*it)->m_sFilePrefix = strings::pStructure + ExternalEnergy::ToString((*it)->getId());
 		command = "touch " + resultsDir + "/" + (*it)->m_sFilePrefix + "." + Gaussian::s_sOutputFileExtension;
 		if (!FileUtils::executeCommand(command.c_str())) {
 			puts(failMessage);

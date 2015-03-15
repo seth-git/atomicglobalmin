@@ -18,7 +18,7 @@ class ExternalEnergyXml; // Forward declaration
 
 class ExternalEnergy : public Energy {
 public:
-	enum Impl {ADF, GAMESS, GAMESS_UK, GAUSSIAN, FIREFLY, JAGUAR, MOLPRO, ORCA};
+	enum Impl {ADF, GAMESS_UK, GAMESS_US, GAUSSIAN, FIREFLY, JAGUAR, MOLPRO, NWCHEM, ORCA};
 
 	bool m_bReadGeometry;
 	time_t m_tLongestExecutionTime;
@@ -30,15 +30,11 @@ public:
 
 	virtual bool createInputFile(const char* inputFileName, const Structure &structure) = 0;
 
-	static void readOutputFile(const char* outputFile, FLOAT &energy,
-			Structure* pStructure, bool &openedFile, bool &readEnergy,
-			bool &obtainedGeometry);
+	static bool readOutputFile(const char* outputFile, Structure &structure, bool readGeometry);
 
 	static bool readOutputFile(Impl impl, const char* outputFile, Structure &structure, bool readGeometry);
 
 	static bool isCCLibInstalled(std::string &error);
-
-	static bool readOutputFileWithCCLib(const char* fileName, Structure &structure, bool readGeometry);
 
 	static bool fileExists(const char* fileName);
 
@@ -70,11 +66,11 @@ public:
 protected:
 	const ExternalEnergyXml* m_pExternalEnergyXml;
 	std::string m_sCalcDirectory;
-	bool m_bMoveFilesToResultsDir;
 	std::string m_sStopFile; // If this file exists, it's a message from the user that the program should terminate.
 
 private:
 	static const char* cclibPythonScript;
+	static const char* s_methods[];
 };
 
 #endif /* EXTERNAL_ENERGY_H_ */

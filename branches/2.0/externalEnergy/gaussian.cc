@@ -7,10 +7,12 @@
 const char Gaussian::s_sPathToExecutable[] = "/Full/path/to/Gaussian/executable";
 const char Gaussian::s_sInputFileExtension[] = "com";
 const char Gaussian::s_sOutputFileExtension[] = "log";
-const char* Gaussian::s_optionalOutputFileExtensions[] = {"chk"};
 
 bool Gaussian::s_bGetStandardOrientation = false;
 bool Gaussian::s_bRequireNormalTermination = false;
+
+bool Gaussian::m_sRenameCheckpointFile = true;
+const std::string Gaussian::s_sAtomsReplacement = "!atoms";
 
 Gaussian::Gaussian(const ExternalEnergyXml* pExternalEnergyXml) : ExternalEnergy(pExternalEnergyXml) {
 	searchForCheckPointFile();
@@ -60,35 +62,26 @@ bool Gaussian::isFileCharacter(char character)
 		    (character == '.') || (character == ',') || (character == '_'));
 }
 
-bool Gaussian::m_sRenameCheckpointFile = true;
-const std::string Gaussian::s_sAtomsReplacement = "!atoms";
-
 bool Gaussian::createInputFile(const char* inputFileName, const Structure &structure) {
 	std::string atoms;
-	unsigned int i, j;
+	unsigned int i;
 	unsigned int n = structure.getNumberOfAtoms();
 	const unsigned int* atomicNumbers = structure.getAtomicNumbers();
 	const COORDINATE4* const* coordinates = structure.getAtomCoordinates();
 	const FLOAT* coordinate;
 	char buffer[100];
-	size_t len;
 	atoms.reserve(n*80);
 	for (i = 0; i < n; ++i) {
-		snprintf(buffer, sizeof(buffer), "%u", atomicNumbers[i]);
-		atoms.append(buffer);
 		coordinate = *coordinates[i];
-		for (j = 0; j < 3; ++j) {
-			len = XsdTypeUtil::createFloat(coordinate[j], buffer, sizeof(buffer));
-			atoms.append(" ").append(buffer, len);
-		}
-		atoms.append("\n");
+		snprintf(buffer, sizeof(buffer), "%u %0.6lf %0.6lf %0.6lf\n", atomicNumbers[i], coordinate[0], coordinate[1], coordinate[2]);
+		atoms.append(buffer);
 	}
 
 	std::string header = m_pExternalEnergyXml->m_sHeader;
-	replace(header, s_sAtomsReplacement, atoms.c_str());
+	replace(header, s_sAtomsReplacement, atoms);
 	if (m_sRenameCheckpointFile && m_sCheckPointFileExpression.length() > 0) {
 		std::string replacement;
-		replacement.append("%chk=").append(strings::pResult).append(ToString(structure.getId()));
+		replacement.append("%chk=").append(structure.m_sFilePrefix);
 		replace(header, m_sCheckPointFileExpression, replacement);
 	}
 
@@ -249,39 +242,37 @@ bool Gaussian::readOutputFile(const char* outputFile, Structure &structure, bool
 bool Gaussian::execute(Structure &structure) {
 	using namespace std;
 	time_t start = time(NULL);
-	std::string id = ToString(structure.getId());
-	std::string filePrefix = strings::pResult + id;
-	std::string inputFileName = strings::pInput + id + "." + s_sInputFileExtension;
-	std::string outputFileName = filePrefix + "." + s_sOutputFileExtension;
+	std::string inputFileName = structure.m_sFilePrefix + "." + s_sInputFileExtension;
+	std::string outputFileName = structure.m_sFilePrefix + "." + s_sOutputFileExtension;
+	bool haveTempDir = m_pExternalEnergyXml->m_sTemporaryDir.length() > 0;
+	bool haveResultsDir = m_pExternalEnergyXml->m_sResultsDir.length() > 0;
 
 	std::string cleanCommand, runCommand;
-	if (m_pExternalEnergyXml->m_sTemporaryDir.length() > 0) {
+	if (haveTempDir) {
 		cleanCommand = "rm -f *.*";
 		runCommand.append("export GAUSS_SCRDIR=").append(m_sCalcDirectory)
 			.append(" && ").append(s_sPathToExecutable, sizeof(s_sPathToExecutable)-1)
 			.append(" < ").append(inputFileName).append(" > ").append(outputFileName);
 	} else {
-		if (!m_bMoveFilesToResultsDir)
-			cleanCommand.append("rm -f ").append(filePrefix).append(".*");
+		cleanCommand.append("rm -f ").append(structure.m_sFilePrefix).append(".*");
 		runCommand.append(s_sPathToExecutable, sizeof(s_sPathToExecutable)-1)
 			.append(" < ").append(inputFileName).append(" > ").append(outputFileName);
 	}
 
-	if (cleanCommand.length() > 0)
-		if (!FileUtils::executeCommand(cleanCommand.c_str()))
-			return false;
+	if (!FileUtils::executeCommand(cleanCommand.c_str()))
+		return false;
 	if (!createInputFile(inputFileName.c_str(), structure))
 		return false;
 	if (!FileUtils::executeCommand(runCommand.c_str()))
 		return false;
 	if (!readOutputFile(outputFileName.c_str(), structure, m_bReadGeometry))
 		return false;
-	if (m_bMoveFilesToResultsDir)
-		if (!FileUtils::changeDirectory(filePrefix, m_pExternalEnergyXml->m_sResultsDir))
+	if (haveTempDir && haveResultsDir) {
+		if (!FileUtils::changeDirectory(structure.m_sFilePrefix, m_pExternalEnergyXml->m_sResultsDir))
 			return false;
-	if (m_pExternalEnergyXml->m_sResultsDir.length() > 0)
-		structure.m_sFilePrefix = filePrefix;
-	if (m_pExternalEnergyXml->m_sTemporaryDir.length() == 0)
+	} else if (haveTempDir)
+		structure.m_sFilePrefix = "";
+	else if (haveResultsDir)
 		FileUtils::deleteFile(inputFileName.c_str());
 
 	time_t elapsed = time(NULL) - start;

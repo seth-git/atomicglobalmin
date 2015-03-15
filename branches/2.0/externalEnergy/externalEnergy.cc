@@ -7,14 +7,27 @@
 
 #include "externalEnergy.h"
 #include "externalEnergyXml.h"
+#include "gamessUK.h"
+#include "gamessUS.h"
 #include "gaussian.h"
-#include "gamess.h"
+#include "nwchem.h"
 #include <mpi.h>
 #include <unistd.h>
 
 const char* ExternalEnergy::cclibPythonScript = "/path/to/cclib/atomicGlobalMin.py";
 unsigned int ExternalEnergy::s_iMaxEnergyCalcFailuresOnStructure = 2;
 
+const char* ExternalEnergy::s_methods[] = {
+	strings::pADF,
+	strings::pGAMESSUK,
+	strings::pGAMESSUS,
+	strings::pGaussian,
+	strings::pFirefly,
+	strings::pJaguar,
+	strings::pMolpro,
+	strings::pNWChem,
+	strings::pORCA
+};
 
 ExternalEnergy::ExternalEnergy(const ExternalEnergyXml* pExternalEnergyXml) : Energy() {
 	m_pExternalEnergyXml = pExternalEnergyXml;
@@ -23,10 +36,14 @@ ExternalEnergy::ExternalEnergy(const ExternalEnergyXml* pExternalEnergyXml) : En
 ExternalEnergy* ExternalEnergy::instance(Impl impl,
 		const ExternalEnergyXml* pExternalEnergyXml) {
 	switch(impl) {
+	case GAMESS_UK:
+		return new GamessUK(pExternalEnergyXml);
+	case GAMESS_US:
+		return new GamessUS(pExternalEnergyXml);
 	case GAUSSIAN:
 		return new Gaussian(pExternalEnergyXml);
-	case GAMESS:
-		return new Gamess(pExternalEnergyXml);
+	case NWCHEM:
+		return new Nwchem(pExternalEnergyXml);
 	default:
 		printf("There is no method for creating '%1$s' input files. ", getEnumString(impl));
 		printf("Please create a new class for this method that extends ExternalEnergyMethod.\n");
@@ -40,7 +57,7 @@ bool ExternalEnergy::readOutputFile(Impl impl, const char* outputFile,
 	case GAUSSIAN:
 		return Gaussian::readOutputFile(outputFile, structure, readGeometry);
 	default:
-		return readOutputFileWithCCLib(outputFile, structure, readGeometry);
+		return readOutputFile(outputFile, structure, readGeometry);
 	}
 }
 
@@ -62,7 +79,7 @@ bool ExternalEnergy::isCCLibInstalled(std::string &error) {
 	return error.length() == 0;
 }
 
-bool ExternalEnergy::readOutputFileWithCCLib(const char* fileName,
+bool ExternalEnergy::readOutputFile(const char* fileName,
 		Structure &structure, bool readGeometry) {
 	char cmd[500];
 	char line[500];
@@ -150,7 +167,7 @@ bool ExternalEnergy::readOutputFileWithCCLib(const char* fileName,
 				}
 			}
 			if (i != numAtoms)
-				throw "Failed to read the atomic numbers in ExternalEnergyMethod::readOutputFileWithCCLib.";
+				throw "Failed to read the atomic numbers in ExternalEnergyMethod::readOutputFile.";
 
 			cartesianPoints = new COORDINATE4[numAtoms];
 			for (i = 0; i < numAtoms; ++i) {
@@ -170,7 +187,7 @@ bool ExternalEnergy::readOutputFileWithCCLib(const char* fileName,
 					line[lineLength-3] = ' ';
 				cartesianPoint = cartesianPoints[i];
 				if (sscanf(line, "%lf %lf %lf", &cartesianPoint[0], &cartesianPoint[1], &cartesianPoint[2]) != 3)
-					throw "Error reading Cartesian coordinates in ExternalEnergyMethod::readOutputFileWithCCLib";
+					throw "Error reading Cartesian coordinates in ExternalEnergyMethod::readOutputFile";
 				cartesianPoint[3] = 1;
 			}
 			structure.setAtoms(numAtoms, cartesianPoints, atomicNumbers);
@@ -193,10 +210,14 @@ bool ExternalEnergy::readOutputFileWithCCLib(const char* fileName,
 
 const char* ExternalEnergy::getOutputFileExtension(Impl impl) {
 	switch (impl) {
+	case GAMESS_UK:
+		return GamessUK::s_sOutputFileExtension;
+	case GAMESS_US:
+		return GamessUS::s_sOutputFileExtension;
 	case GAUSSIAN:
 		return Gaussian::s_sOutputFileExtension;
-	case GAMESS:
-		return Gamess::s_sOutputFileExtension;
+	case NWCHEM:
+		return Nwchem::s_sOutputFileExtension;
 	default:
 		printf("Unknown output file extension for method: %s. ", getEnumString(impl));
 		printf("Please create a new class for this method that extends ExternalEnergyMethod.\n");
@@ -205,17 +226,11 @@ const char* ExternalEnergy::getOutputFileExtension(Impl impl) {
 }
 
 bool ExternalEnergy::getEnum(const char* attributeName, const char* stringValue, Impl &result, const rapidxml::xml_node<>* pElem) {
-	using namespace strings;
-	const char* methods[] = {pADF, pGAMESS, pGAMESSUK, pGaussian,
-			pFirefly, pJaguar, pMolpro, pORCA};
-	return XsdTypeUtil::getEnumValue(attributeName, stringValue, result, pElem, methods);
+	return XsdTypeUtil::getEnumValue(attributeName, stringValue, result, pElem, s_methods);
 }
 
 const char* ExternalEnergy::getEnumString(Impl enumValue) {
-	using namespace strings;
-	const char* methods[] = {pADF, pGAMESS, pGAMESSUK, pGaussian,
-			pFirefly, pJaguar, pMolpro, pORCA};
-	return methods[enumValue];
+	return s_methods[enumValue];
 }
 
 void ExternalEnergy::replace(std::string &str, const std::string &find, const std::string &replace) {
@@ -241,9 +256,6 @@ bool ExternalEnergy::setup() {
 	} else {
 		m_sCalcDirectory = m_pExternalEnergyXml->m_sResultsDir;
 	}
-	m_bMoveFilesToResultsDir =
-			m_pExternalEnergyXml->m_sTemporaryDir.length() > 0 &&
-			m_pExternalEnergyXml->m_sResultsDir.length() > 0;
 
 	if (chdir(m_sCalcDirectory.c_str()) == -1) {
 		printf("Couldn't cd to directory: '%s'.\n", m_sCalcDirectory.c_str());
@@ -254,7 +266,7 @@ bool ExternalEnergy::setup() {
 	if (m_pExternalEnergyXml->m_sResultsDir.length() > 0)
 		m_sStopFile = m_pExternalEnergyXml->m_sResultsDir;
 	else
-		m_sStopFile = m_pExternalEnergyXml->m_sTemporaryDir;
+		m_sStopFile = m_sCalcDirectory;
 	m_sStopFile.append("/").append(strings::pStop, sizeof(strings::pStop)-1);
 	return true;
 }
@@ -275,10 +287,12 @@ bool ExternalEnergy::cleanup() {
 		if (!FileUtils::deleteFile(m_sCalcDirectory.c_str()))
 			return false;
 	}
-	int rank;
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-	if (0 == rank && stopFileExists())
-		if (!FileUtils::deleteFile(m_sStopFile.c_str()))
-			return false;
+	if (m_pExternalEnergyXml->m_sResultsDir.length() > 0) {
+		int rank;
+		MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+		if (0 == rank && stopFileExists())
+			if (!FileUtils::deleteFile(m_sStopFile.c_str()))
+				return false;
+	}
 	return true;
 }

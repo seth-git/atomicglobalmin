@@ -1,4 +1,5 @@
 #include "saPerturbations.h"
+#include <cmath>
 
 SAPerturbations::SAPerturbations()
 {
@@ -149,3 +150,125 @@ bool SAPerturbations::saveSetup(rapidxml::xml_document<> &doc, rapidxml::xml_nod
 
 	return true;
 }
+
+const unsigned int SAPerturbations::s_maxPerturbationTries = 500;
+
+bool SAPerturbations::perturb(const Constraints &constraints,
+		FLOAT fTranslationVectorLength, FLOAT fRotationRadians,
+		Structure &structure) const {
+	Structure original;
+	FLOAT random;
+	unsigned int count = 0;
+
+	original.copy(structure);
+	do {
+		try {
+			random = Random::getFloat(0,1);
+			if (random <= m_fTranslationVectorProbability) {
+				if (!translate(fTranslationVectorLength, structure))
+					return false;
+				if (constraints.validate(structure))
+					return true;
+				else
+					throw 1;
+			} else
+				random -= m_fTranslationVectorProbability;
+			if (random <= m_fRotationProbability) {
+				if (!rotate(fRotationRadians, structure))
+					return false;
+				if (constraints.validate(structure))
+					return true;
+				else
+					throw 2;
+			} else
+				random -= m_fRotationProbability;
+		} catch (unsigned int e) {
+			structure.copy(original);
+			++count;
+		}
+	} while (count < s_maxPerturbationTries);
+
+	return false;
+}
+
+bool SAPerturbations::translate(FLOAT fVectorLength, Structure &structure) {
+	unsigned int i;
+	unsigned int iNumberOfAtomGroups = structure.getNumberOfAtomGroups();
+	const AtomGroup* atomGroups = structure.getAtomGroups();
+	std::vector<unsigned int> translatable(iNumberOfAtomGroups);
+
+	for (i = 0; i < iNumberOfAtomGroups; ++i)
+		if (!atomGroups[i].getFrozen())
+			translatable.push_back(i);
+	if (0 == translatable.size()) {
+		printf("Error: There are no translatable atom groups in SAPerturbations::translate.");
+		return false;
+	}
+
+	AtomGroup* atomGroup = structure.getAtomGroup(translatable[Random::getInt(0, translatable.size()-1)]);
+	FLOAT angleX = Random::getFloat(-PIE_OVER_2,PIE_OVER_2);
+	FLOAT angleY = Random::getFloat(0,PIE_X_2);
+	COORDINATE4 vector;
+	StructuresTemplate::getVectorInDirection(angleX, angleY, fVectorLength, vector);
+	const FLOAT* center = atomGroup->getCenter();
+	COORDINATE3 newCenter = {
+		center[0] + vector[0],
+		center[1] + vector[1],
+		center[2] + vector[2]
+	};
+	atomGroup->setCenter(newCenter);
+	atomGroup->initRotationMatrix();
+	atomGroup->localToGlobal();
+	structure.updateAtomDistanceMatrix();
+	return true;
+}
+
+bool SAPerturbations::rotate(FLOAT fRadianAngle, Structure &structure) {
+	unsigned int i;
+	unsigned int iNumberOfAtomGroups = structure.getNumberOfAtomGroups();
+	const AtomGroup* atomGroups = structure.getAtomGroups();
+	std::vector<unsigned int> rotatable(iNumberOfAtomGroups);
+
+	for (i = 0; i < iNumberOfAtomGroups; ++i)
+		if (atomGroups[i].getNumberOfAtoms() > 1 && !atomGroups[i].getFrozen())
+			rotatable.push_back(i);
+	if (0 == rotatable.size()) {
+		printf("Error: There are no rotatable atom groups in SAPerturbations::rotate. Exiting.");
+		return false;
+	}
+
+	AtomGroup* atomGroup = structure.getAtomGroup(rotatable[Random::getInt(0, rotatable.size()-1)]);
+	FLOAT angles[3];
+	memcpy(angles, atomGroup->getAngles(), SIZEOF_COORDINATE3);
+	i = Random::getInt(0,2);
+	if (Random::getInt(0,1))
+		angles[i] -= fRadianAngle;
+	else
+		angles[i] += fRadianAngle;
+	if (1 == i) {
+		if (std::abs(angles[i]) > PIE_OVER_2) {
+			if (angles[i] > 0)
+				angles[i] = PIE_OVER_2 - (angles[i] - PIE_OVER_2);
+			else
+				angles[i] = -PIE_OVER_2 + (-PIE_OVER_2 - angles[i]);
+			angles[0] += PIE;
+			if (angles[0] >= PIE_X_2)
+				angles[0] -= PIE_X_2;
+			angles[2] += PIE;
+			if (angles[2] >= PIE_X_2)
+				angles[2] -= PIE_X_2;
+		}
+	} else {
+		if (angles[i] < 0)
+			angles[i] += PIE_X_2;
+		else if (angles[i] >= PIE_X_2)
+			angles[i] -= PIE_X_2;
+	}
+	atomGroup->setAngles(angles);
+	atomGroup->initRotationMatrix();
+	atomGroup->localToGlobal();
+	structure.updateAtomDistanceMatrix();
+	return true;
+}
+
+

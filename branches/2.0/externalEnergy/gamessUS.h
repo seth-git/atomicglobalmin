@@ -1,10 +1,3 @@
-/*
- * gaussian.h
- *
- *  Created on: Jan 18, 2012
- *      Author: sethcall
- */
-
 #ifndef GAMESS_H_
 #define GAMESS_H_
 
@@ -13,21 +6,21 @@
 #include <string>
 #include <stdio.h>
 
-class Gamess : public ExternalEnergy {
+class GamessUS : public ExternalEnergy {
 public:
 	static const char s_sPathToExecutable[];
 	static const char s_sInputFileExtension[];
 	static const char s_sOutputFileExtension[];
-	static const char* s_optionalOutputFileExtensions[];
 
-	Gamess(const ExternalEnergyXml* pExternalEnergyXml);
-	~Gamess();
+	GamessUS(const ExternalEnergyXml* pExternalEnergyXml);
+	~GamessUS();
 
 	bool createInputFile(const char* inputFileName, const Structure &structure);
 
-	bool setup() { return true; }
 	bool execute(Structure &structure);
-	bool cleanup() { return true; }
+
+private:
+	static const std::string s_sAtomsReplacement;
 };
 
 #endif /* GAMESS_H_ */

@@ -66,7 +66,7 @@ public:
 	const unsigned int* getAtomicNumbers() const { return m_atomicNumbers; }
 
 	void setFrozen(bool newValue) { m_bFrozen = newValue; }
-	bool getFrozen() { return m_bFrozen; }
+	bool getFrozen() const { return m_bFrozen; }
 
 	/////////////////////////////////////////////////////////////////////
 	// Purpose: This function initializes the rotation and translation matrix.

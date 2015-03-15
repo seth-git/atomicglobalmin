@@ -45,7 +45,17 @@ public:
 	bool load(const rapidxml::xml_node<>* pStructuresTemplateElem, std::map<std::string,Constraints*> &constraintsMap);
 	bool save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem);
 
-	bool initializeStructures(std::list<Structure*> &structures, const Constraints* pActionConstraints);
+	/**************************************************************************
+	 * Purpose: This method initializes structures according to the object's
+	 *    input parameters.
+	 * Parameters: structures - an empty list where the structures will be stored.
+	 *             pActionConstraints - min and max distances, container, etc.
+	 *             bFreezeSeededGroups - if true, marks seeded atom groups as frozen
+	 *                when there is one atom group being added to the seeded structure.
+	 * Returns: true if the process was successful
+	 */
+	bool initializeStructures(std::list<Structure*> &structures,
+			const Constraints* pActionConstraints, bool bFreezeSeededGroups);
 
 	/**************************************************************************
 	 * Purpose: This method performs random initialization by performing
@@ -144,7 +154,7 @@ protected:
 			unsigned int &firstDiffStructureIndex, bool &firstDiffMissing);
 
 	bool ensureCompatibile(Structure &structure, unsigned int structureNumber,
-			const Constraints &constraints);
+			const Constraints &constraints, bool bFreezeSeededGroups);
 
 	static const bool         s_attRequired[];
 	static const char*        s_attDefaults[];

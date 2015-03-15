@@ -12,7 +12,6 @@ public:
 	static const char s_sPathToExecutable[];
 	static const char s_sInputFileExtension[];
 	static const char s_sOutputFileExtension[];
-	static const char* s_optionalOutputFileExtensions[];
 
 	Gaussian(const ExternalEnergyXml* pExternalEnergyXml);
 	~Gaussian();

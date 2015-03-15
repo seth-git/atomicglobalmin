@@ -79,7 +79,7 @@ const char* ccLibReadTest()
 	printf("\nTesting cclib...\n");
 
 	printf("Reading the energy only from file: %s\n", unitTestFile.c_str());
-	success = ExternalEnergy::readOutputFileWithCCLib(unitTestFile.c_str(), structure, false);
+	success = ExternalEnergy::readOutputFile(unitTestFile.c_str(), structure, false);
 
 	if (!success) {
 		printf("Testing of cclib failed!\n");
@@ -96,7 +96,7 @@ const char* ccLibReadTest()
 	printf("Energy: %0.7lf au\n", structure.getEnergy());
 
 	printf("Reading energy and geometry from file: %s\n", unitTestFile.c_str());
-	success = ExternalEnergy::readOutputFileWithCCLib(unitTestFile.c_str(), structure, true);
+	success = ExternalEnergy::readOutputFile(unitTestFile.c_str(), structure, true);
 	if (!success) {
 		printf("Testing of cclib failed!\n");
 		printf("\tReason: cclib is not installed correctly!\n");
@@ -120,7 +120,7 @@ const char* ccLibReadTest()
 	printf("Is a transition state: %d\n", structure.getIsTransitionState());
 
 	std::cout << "Reading energy and geometry from file: " << unitTestFile2.c_str() << std::endl;
-	success = ExternalEnergy::readOutputFileWithCCLib(unitTestFile2.c_str(), structure, true);
+	success = ExternalEnergy::readOutputFile(unitTestFile2.c_str(), structure, true);
 	if (!success) {
 		printf("Testing of cclib failed!\n");
 		std::cout << "\tReason: Unable to open test file: " << unitTestFile2 << std::endl;

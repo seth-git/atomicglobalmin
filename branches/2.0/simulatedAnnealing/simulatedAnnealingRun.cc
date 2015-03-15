@@ -150,5 +150,17 @@ time_t SimulatedAnnealingRun::getTotalElapsedSeconds() {
 }
 
 bool SimulatedAnnealingRun::performIteration() {
+	const Constraints* pConstraints = m_sharedData->m_pConstraints;
+	Structure saved, temp;
+	unsigned int count = (unsigned int)m_fPerturbationsPerIteration;
+
+	saved.copy(*m_pStructure);
+	while (count) {
+		if (!m_sharedData->m_perturbations.perturb(*pConstraints,
+				m_fTranslationVectorLength, m_fRotationRadians, *m_pStructure))
+			return false;
+		--count;
+	}
+
 	return true;
 }

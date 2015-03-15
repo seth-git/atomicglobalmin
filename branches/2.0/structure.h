@@ -51,7 +51,7 @@ public:
 	bool save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem) const;
 	bool save(std::string &buffer) const;
 
-	void copy(Structure &structure);
+	void copy(const Structure &structure);
 
 	void setAtoms(unsigned int numAtoms, const COORDINATE4 *cartesianPoints,
 			const unsigned int* atomicNumbers);
@@ -125,6 +125,11 @@ public:
 		applyOperations();
 		updateAtomDistanceMatrix();
 		updateAtomGroupDistanceMatrix();
+	}
+
+	void setFrozen(bool bFrozen) {
+		for (unsigned int i = 0; i < m_iNumberOfAtomGroups; ++i)
+			m_atomGroups[i].setFrozen(bFrozen);
 	}
 
 	void setAtomToCenterRanks(unsigned int* atomToCenterRanks) {

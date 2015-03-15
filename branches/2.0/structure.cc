@@ -175,7 +175,7 @@ rapidxml::xml_node<>* Structure::save(rapidxml::xml_document<> &doc) const {
 	return structure;
 }
 
-void Structure::copy(Structure &structure) {
+void Structure::copy(const Structure &structure) {
 	unsigned int i;
 	clear();
 

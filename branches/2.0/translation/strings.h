@@ -116,12 +116,13 @@ namespace strings {
 	const char xRmsDistance[] = "rmsDistance";
 
 	const char pADF[] = "ADF";
-	const char pGAMESS[] = "GAMESS";
 	const char pGAMESSUK[] = "GAMESS-UK";
+	const char pGAMESSUS[] = "GAMESS-US";
 	const char pGaussian[] = "Gaussian";
 	const char pFirefly[] = "Firefly";
 	const char pJaguar[] = "Jaguar";
 	const char pMolpro[] = "Molpro";
+	const char pNWChem[] = "NWChem";
 	const char pORCA[] = "ORCA";
 	const char pBest[] = "best";
 	const char pTrue[] = "true";
@@ -137,7 +138,7 @@ namespace strings {
 	const char pTemp[] = "temp";
 	const char pResults[] = "results";
 	const char pInput[] = "input";
-	const char pResult[] = "result";
+	const char pStructure[] = "structure";
 	const char pStop[] = "stop";
 
 	// Error messages in xsdAttributeUtil.cc
@@ -210,6 +211,9 @@ namespace strings {
 	const char WallTimeError[] = "Error reading wall time: '%1$s'\n";
 
 	const char UnableToExecuteCommand[] = "Unable to execute command: '%1$s'.\n";
+
+	// Simulated Annealing messages
+	const char AllRunsCompleted[] = "All runs have been completed.";
 }
 
 #endif

@@ -61,8 +61,12 @@ bool Batch::loadResume(const rapidxml::xml_node<>* pResumeElem)
 	using namespace rapidxml;
 	using namespace strings;
 	if (pResumeElem == NULL) {
-		if (!m_structuresTemplate.initializeStructures(m_structures, m_pConstraints))
+		if (!m_structuresTemplate.initializeStructures(m_structures, m_pConstraints, false))
 			return false;
+		for (std::list<Structure*>::iterator it = m_structures.begin(); it != m_structures.end(); ++it) {
+			std::string id = ExternalEnergy::ToString((*it)->getId());
+			(*it)->m_sFilePrefix = pStructure + id;
+		}
 		m_tPrevElapsedSeconds = 0;
 		m_bRunComplete = false;
 	} else {

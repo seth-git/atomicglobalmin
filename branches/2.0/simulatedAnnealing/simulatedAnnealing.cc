@@ -233,7 +233,7 @@ bool SimulatedAnnealing::saveSetup(rapidxml::xml_document<> &doc, rapidxml::xml_
 bool SimulatedAnnealing::loadResume(const rapidxml::xml_node<>* pResumeElem)
 {
 	if (pResumeElem == NULL) {
-		if (!m_structuresTemplate.initializeStructures(m_structures, m_pConstraints))
+		if (!m_structuresTemplate.initializeStructures(m_structures, m_pConstraints, true))
 			return false;
 		for (std::list<Structure*>::iterator it = m_structures.begin(); it != m_structures.end(); it++) {
 			SimulatedAnnealingRun* run = new SimulatedAnnealingRun(this, *it);
@@ -269,9 +269,10 @@ void SimulatedAnnealing::calculateRunComplete() {
 }
 
 bool SimulatedAnnealing::runMaster() {
+	using namespace strings;
 	calculateRunComplete();
 	if (m_bRunComplete) {
-		puts("All runs have been completed.");
+		puts(AllRunsCompleted);
 		return false;
 	}
 	if (!Action::run())

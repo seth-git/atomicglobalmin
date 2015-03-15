@@ -379,11 +379,13 @@ unsigned int StructuresTemplate::checkCompatabilityWithoutGroups(const Structure
  *    structure - the structure
  *    structureNumber - needed for printing error messages
  *    constraints - used for adding new atom groups
+ *    bFreezeSeededGroups - if true, marks seeded atom groups as frozen.
  * Returns: true if the structure is or was made to be compatible with the
  *    template, and if the structure meets the constraints.
  *************************************************************************/
 bool StructuresTemplate::ensureCompatibile(Structure &structure,
-		unsigned int structureNumber, const Constraints &constraints) {
+		unsigned int structureNumber, const Constraints &constraints,
+		bool bFreezeSeededGroups) {
 	unsigned int numDifferences;
 	unsigned int firstDiffTemplateIndex;
 	unsigned int firstDiffAtomGroupIndex;
@@ -399,6 +401,7 @@ bool StructuresTemplate::ensureCompatibile(Structure &structure,
 		return true;
 	} else if (numDifferences == 1) {
 		if (firstDiffMissing) {
+			structure.setFrozen(bFreezeSeededGroups);
 			structure.insertAtomGroup(m_atomGroupTemplates[firstDiffTemplateIndex], firstDiffAtomGroupIndex);
 
 			InitResult result = initializeAtomGroup(structure, firstDiffAtomGroupIndex, StructuresTemplate::ThreeD, constraints);
@@ -424,6 +427,7 @@ bool StructuresTemplate::ensureCompatibile(Structure &structure,
 		if (firstDiffMissing) {
 			--agt->m_iNumber;
 			structure.setAtomGroups(m_iAtomGroupTemplates, m_atomGroupTemplates);
+			structure.setFrozen(bFreezeSeededGroups);
 			++agt->m_iNumber;
 			structure.insertAtomGroup(*agt, firstDiffAtomGroupIndex);
 
@@ -439,6 +443,7 @@ bool StructuresTemplate::ensureCompatibile(Structure &structure,
 			structure.deleteAtomGroup(firstDiffAtomGroupIndex);
 			structure.update();
 		}
+		structure.setFrozen(bFreezeSeededGroups);
 		return true;
 	} else {
 		printf(strings::SeededStructureDoesntMatchTemplate, structureNumber);
@@ -449,7 +454,7 @@ bool StructuresTemplate::ensureCompatibile(Structure &structure,
 }
 
 bool StructuresTemplate::initializeStructures(std::list<Structure*> &structures,
-		const Constraints* pActionConstraints) {
+		const Constraints* pActionConstraints, bool bFreezeSeededGroups) {
 	using namespace strings;
 	unsigned int i;
 	Constraints combinedConstraints;
@@ -473,7 +478,7 @@ bool StructuresTemplate::initializeStructures(std::list<Structure*> &structures,
 			Structure* pStructure = new Structure();
 			pStructure->copy(**it);
 			structures.push_back(pStructure);
-			if (!ensureCompatibile(*pStructure, i, combinedConstraints))
+			if (!ensureCompatibile(*pStructure, i, combinedConstraints, bFreezeSeededGroups))
 				return false;
 			if (!combinedConstraints.validate(*pStructure)) {
 				printf(SeededStructureDoesntMatchConstraints, i);
