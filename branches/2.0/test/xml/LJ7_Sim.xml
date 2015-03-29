@@ -1019,7 +1019,7 @@
 				</atomGroup>
 			</structure>
 		</resume>
-		<results/>
+		<results maxSize="1"/>
 	</simulatedAnnealing>
 </agml>
 

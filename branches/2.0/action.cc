@@ -1,21 +1,27 @@
 
 #include "action.h"
 
-//const char* Action::s_attributeNames[] = {"constraints"};
-const bool    Action::s_required[]       = {false};
-const char*   Action::s_defaultValues[]  = {""};
+const char* Action::s_attributeNames[] = {strings::xConstraints};
+const bool  Action::s_required[]       = {false};
+const char* Action::s_defaultValues[]  = {""};
 
-//const char*      Action::s_elementNames[] = {"setup", "constraints", "energy", "resume"     , "results"};
-const unsigned int Action::s_minOccurs[]    = {1      , 0            , 1       , 0            , 0        };
-const unsigned int Action::s_maxOccurs[]    = {1      , XSD_UNLIMITED, 1       , XSD_UNLIMITED, 1        };
+const char* Action::s_elementNames[]     = {strings::xSetup, strings::xConstraints, strings::xEnergy, strings::xResume, strings::xResults};
+const unsigned int Action::s_minOccurs[] = {1              , 0                    , 1               , 0               , 0        };
+const unsigned int Action::s_maxOccurs[] = {1              , XSD_UNLIMITED        , 1               , XSD_UNLIMITED   , 1        };
 
-//const char*      Action::s_resultsElementNames[] = {"structure"};
-const unsigned int Action::s_resultsMinOccurs[]    = {0};
-const unsigned int Action::s_resultsMaxOccurs[]    = {XSD_UNLIMITED};
+const char* Action::s_resultsElementNames[]     = {strings::xStructure};
+const unsigned int Action::s_resultsMinOccurs[] = {0};
+const unsigned int Action::s_resultsMaxOccurs[] = {XSD_UNLIMITED};
 
-//const char* Action::s_resultsAttributeNames[] = {"maxSize", "rmsDistance"};
-const bool    Action::s_resultsRequired[]       = {false    , false};
-const char*   Action::s_resultsDefaultValues[]  = {"0"      , "0"};
+const char* Action::s_resultsAttributeNames[]  = {strings::xMaxSize, strings::xRmsDistance, strings::xOrderBy};
+const bool    Action::s_resultsRequired[]      = {false            , false                , false};
+const char*   Action::s_resultsDefaultValues[] = {"0"              , "0"                  , strings::pEnergy};
+
+const char* Action::s_orderByOptions[] = {
+	strings::pEnergy,
+	strings::pFile,
+	strings::pId
+};
 
 Action::Action(Input* input)
 {
@@ -53,6 +59,7 @@ void Action::clear() {
 		delete *it;
 	m_results.clear();
 	m_fResultsRmsDistance = 0;
+	m_orderBy = ENERGY;
 }
 
 bool Action::load(const rapidxml::xml_node<>* pActionElem)
@@ -61,9 +68,8 @@ bool Action::load(const rapidxml::xml_node<>* pActionElem)
 	using namespace strings;
 	clear();
 	
-	const char* attributeNames[] = {xConstraints};
 	const char** attributeValues;
-	XsdAttributeUtil attUtil(attributeNames, s_required, s_defaultValues);
+	XsdAttributeUtil attUtil(s_attributeNames, s_required, s_defaultValues);
 	if (!attUtil.process(pActionElem)) {
 		return false;
 	}
@@ -71,8 +77,7 @@ bool Action::load(const rapidxml::xml_node<>* pActionElem)
 	const char* constraintsName = attributeValues[0];
 	
 	unsigned int i, j;
-	const char* elementNames[] = {xSetup, xConstraints, xEnergy, xResume, xResults};
-	XsdElementUtil actionUtil(XSD_SEQUENCE, elementNames, s_minOccurs, s_maxOccurs);
+	XsdElementUtil actionUtil(XSD_SEQUENCE, s_elementNames, s_minOccurs, s_maxOccurs);
 	if (!actionUtil.process(pActionElem))
 		return false;
 	std::vector<const xml_node<>*>* actionElements = actionUtil.getSequenceElements();
@@ -86,7 +91,7 @@ bool Action::load(const rapidxml::xml_node<>* pActionElem)
 		}
 		for (j = 0; j < m_constraints.size(); ++j) {
 			if (m_constraints[j]->m_sName == pConstraints->m_sName) {
-				printf(TwoElementsWithSameName, elementNames[1], pConstraints->m_sName.c_str());
+				printf(TwoElementsWithSameName, s_elementNames[1], pConstraints->m_sName.c_str());
 				delete pConstraints;
 				return false;
 			}
@@ -107,24 +112,10 @@ bool Action::load(const rapidxml::xml_node<>* pActionElem)
 	
 	if (!energyXml.load(actionElements[2][0]))
 		return false;
-
-	if (actionElements[3].size() > 0) {
-		for (i = 0; i < actionElements[3].size(); ++i)
-			if (!loadResume(actionElements[3][i]))
-				return false;
-	} else {
-		if (!loadResume(NULL))
-			return false;
-		if (energyXml.m_bExternalEnergy
-				&& energyXml.m_externalEnergyXml.m_sResultsDir.length() > 0
-				&& energyXml.m_externalEnergyXml.m_iMaxResultFiles < 0)
-			energyXml.m_externalEnergyXml.m_iMaxResultFiles = m_structures.size();
-	}
 	
 	if (actionElements[4].size() > 0) {
 		const xml_node<>* resultsElem = actionElements[4][0];
-		const char* resultsElementNames[] = {xStructure};
-		XsdElementUtil resultsUtil(XSD_SEQUENCE, resultsElementNames, s_resultsMinOccurs, s_resultsMaxOccurs);
+		XsdElementUtil resultsUtil(XSD_SEQUENCE, s_resultsElementNames, s_resultsMinOccurs, s_resultsMaxOccurs);
 		if (!resultsUtil.process(resultsElem))
 			return false;
 		std::vector<const xml_node<>*>* structureElements = &(resultsUtil.getSequenceElements()[0]);
@@ -136,25 +127,42 @@ bool Action::load(const rapidxml::xml_node<>* pActionElem)
 				return false;
 		}
 
-		const char* resultsAttributeNames[] = {xMaxSize, xRmsDistance};
-		XsdAttributeUtil resultsAttUtil(resultsAttributeNames, s_resultsRequired, s_resultsDefaultValues);
+		XsdAttributeUtil resultsAttUtil(s_resultsAttributeNames, s_resultsRequired, s_resultsDefaultValues);
 		if (!resultsAttUtil.process(resultsElem))
 			return false;
 		const char** resultsAttributeValues = resultsAttUtil.getAllAttributes();
-		if (!XsdTypeUtil::getNonNegativeInt(resultsAttributeValues[0], m_iMaxResults, resultsAttributeNames[0], resultsElem))
+		if (!XsdTypeUtil::getNonNegativeInt(resultsAttributeValues[0], m_iMaxResults, s_resultsAttributeNames[0], resultsElem))
 			return false;
-		if (0 == m_iMaxResults)
-			m_iMaxResults = m_structures.size();
-		if (!XsdTypeUtil::getNonNegativeFloat(resultsAttributeValues[1], m_fResultsRmsDistance, resultsAttributeNames[1], resultsElem))
+		if (!XsdTypeUtil::getNonNegativeFloat(resultsAttributeValues[1], m_fResultsRmsDistance, s_resultsAttributeNames[1], resultsElem))
 			return false;
 		if (0 != m_fResultsRmsDistance)
 			for (std::list<Structure*>::iterator it = m_results.begin(); it != m_results.end(); ++it) {
 				(*it)->updateAtomDistanceMatrix();
 				RmsDistance::updateAtomToCenterRanks(**it);
 			}
+		if (!XsdTypeUtil::getEnumValue(s_resultsAttributeNames[2], resultsAttributeValues[2], m_orderBy, resultsElem, s_orderByOptions))
+			return false;
 	} else {
-		m_iMaxResults = m_structures.size();
+		m_iMaxResults = 0;
 		m_fResultsRmsDistance = 0;
+	}
+
+	if (actionElements[3].size() > 0) {
+		for (i = 0; i < actionElements[3].size(); ++i)
+			if (!loadResume(actionElements[3][i]))
+				return false;
+	} else {
+		if (!loadResume(NULL))
+			return false;
+		if (0 == m_iMaxResults)
+			m_iMaxResults = m_structures.size();
+		if (energyXml.m_bExternalEnergy
+				&& energyXml.m_externalEnergyXml.m_sResultsDir.length() > 0) {
+			if (energyXml.m_externalEnergyXml.m_iMaxResultFiles < 0)
+				energyXml.m_externalEnergyXml.m_iMaxResultFiles = m_iMaxResults;
+			else if ((unsigned int)energyXml.m_externalEnergyXml.m_iMaxResultFiles > m_iMaxResults)
+				energyXml.m_externalEnergyXml.m_iMaxResultFiles = m_iMaxResults;
+		}
 	}
 
 	return true;
@@ -190,10 +198,11 @@ bool Action::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pActionEl
 	xml_node<>* results = doc.allocate_node(node_element, xResults);
 	pActionElem->append_node(results);
 	
-	if (m_structures.size() != m_iMaxResults)
-		XsdTypeUtil::setAttribute(doc, results, xMaxSize, m_iMaxResults);
+	XsdTypeUtil::setAttribute(doc, results, xMaxSize, m_iMaxResults);
 	if (0 != m_fResultsRmsDistance)
 		XsdTypeUtil::setAttribute(doc, results, xRmsDistance, m_fResultsRmsDistance);
+	if (ENERGY != m_orderBy)
+		results->append_attribute(doc.allocate_attribute(xOrderBy, s_orderByOptions[m_orderBy], sizeof(xOrderBy)-1));
 	for (std::list<Structure*>::iterator it = m_results.begin(); it != m_results.end(); it++)
 		if (!(*it)->save(doc, results))
 			return false;
@@ -266,8 +275,25 @@ void Action::updateResults(Structure* pStructure) {
 		pStructure->updateAtomDistanceMatrix();
 		RmsDistance::updateAtomToCenterRanks(*pStructure);
 	}
+	bool before;
+	int diff;
 	for (std::list<Structure*>::iterator it = m_results.begin(); it != m_results.end(); it++) {
-		if (pStructure->getEnergy() < (*it)->getEnergy()) {
+		switch (m_orderBy) {
+		case ENERGY:
+			before = pStructure->getEnergy() < (*it)->getEnergy();
+			break;
+		case ID:
+			diff = pStructure->getId() - (*it)->getId();
+			if (diff != 0) {
+				before = diff < 0;
+				break;
+			}
+			// don't break
+		case FILE:
+			before = pStructure->m_sFilePrefix.compare((*it)->m_sFilePrefix) < 0;
+			break;
+		}
+		if (before) {
 			#if ACTION_DEBUG
 				printf("In Action::updateResults, inserting structure %d at index %u.\n", pStructure->getId(), index);
 			#endif

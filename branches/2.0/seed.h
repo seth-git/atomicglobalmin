@@ -50,7 +50,6 @@ public:
 	/**************************************************************************
 	 * Purpose: Call this function to read the seeded structures.
 	 * Parameters: structures - destination structures
-	 *             constraints - array of constraints (may be NULL)
 	 *************************************************************************/
 	bool readStructures(std::list<Structure*> &structures);
 

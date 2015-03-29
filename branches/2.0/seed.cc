@@ -116,7 +116,7 @@ bool Seed::load(const rapidxml::xml_node<>* pSeedElem)
 	if (!XsdTypeUtil::getNonNegativeInt(values[0], m_iFreezingIterations, attNames[0], pSeedElem))
 		return false;
 	
-	const char* elementNames[] = {xAgmlFile, xDirectory, xEnergyFile};
+	const char* elementNames[] = {xAgmlFile, xDirectory, xFile};
 	XsdElementUtil elemUtil(XSD_SEQUENCE, elementNames, s_minOccurs, s_maxOccurs);
 	if (!elemUtil.process(pSeedElem))
 		return false;
@@ -211,7 +211,7 @@ bool Seed::load(const rapidxml::xml_node<>* pSeedElem)
 		printf(MissingChildElements3,
 				pSeedElem->name(), xAgmlFile,
 				xDirectory,
-				xEnergyFile);
+				xFile);
 		return false;
 	}
 	
@@ -255,7 +255,7 @@ bool Seed::save(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pParentElem
 	}
 	
 	for (i = 0; i < m_iEnergyFiles; ++i) {
-		xml_node<>* pEnergyFile = doc.allocate_node(node_element, xEnergyFile);
+		xml_node<>* pEnergyFile = doc.allocate_node(node_element, xFile);
 		pSeed->append_node(pEnergyFile);
 		
 		pEnergyFile->append_attribute(doc.allocate_attribute(xPath, m_energyFilePaths[i].c_str()));
@@ -272,9 +272,11 @@ bool Seed::readStructures(std::list<Structure*> &structures) {
 	DIR *dp = NULL;
 	struct dirent *dirp;
 	const char* outputExt;
-	unsigned int outputExtLen;
+	unsigned int outputExtLen, length;
+	size_t start, end;
 	bool exception = false;
 	std::string fullPathFileName;
+	std::string* fileName;
 
 	Input input;
 	for (i = 0; i < m_iAgmlFiles; ++i) {
@@ -301,6 +303,7 @@ bool Seed::readStructures(std::list<Structure*> &structures) {
 			for (count = 0; count < numFromFile; ++count) {
 				pStructure = new Structure();
 				pStructure->copy(**it);
+				pStructure->m_sFilePrefix = "";
 				structures.push_back(pStructure);
 				++it;
 			}
@@ -321,7 +324,8 @@ bool Seed::readStructures(std::list<Structure*> &structures) {
 
 			count = 0;
 			while ((dirp = readdir(dp)) != NULL) {
-				if (strncmp(outputExt, dirp->d_name + strlen(dirp->d_name) - outputExtLen, outputExtLen) != 0)
+				length = strlen(dirp->d_name);
+				if (strncmp(outputExt, dirp->d_name + length - outputExtLen, outputExtLen) != 0)
 					continue;
 
 				fullPathFileName = m_dirPaths[i] + "/" + dirp->d_name;
@@ -329,6 +333,7 @@ bool Seed::readStructures(std::list<Structure*> &structures) {
 				pStructure = new Structure();
 				printf("Reading file: %1$s\n", fullPathFileName.c_str());
 				if (ExternalEnergy::readOutputFile(m_dirFileTypes[i], fullPathFileName.c_str(), *pStructure, true)) {
+					pStructure->m_sFilePrefix.append(dirp->d_name, length-outputExtLen-1);
 					structures.push_back(pStructure);
 				} else {
 					delete pStructure;
@@ -349,10 +354,23 @@ bool Seed::readStructures(std::list<Structure*> &structures) {
 	}
 
 	for (i = 0; i < m_iEnergyFiles; ++i) {
-		printf("Reading file: %1$s\n", m_energyFilePaths[i].c_str());
+		fileName = &(m_energyFilePaths[i]);
+		printf("Reading file: %1$s\n", fileName->c_str());
 
 		pStructure = new Structure();
-		if (ExternalEnergy::readOutputFile(m_energyFileTypes[i], m_energyFilePaths[i].c_str(), *pStructure, true)) {
+		if (ExternalEnergy::readOutputFile(m_energyFileTypes[i], fileName->c_str(), *pStructure, true)) {
+			start = fileName->rfind("/");
+			if (std::string::npos == start)
+				start = 0;
+			else
+				++start;
+			end = fileName->rfind(".");
+			if (std::string::npos == end)
+				end = fileName->length()-1;
+			else
+				--end;
+			pStructure->m_sFilePrefix.append(fileName->c_str() + start, end-start+1);
+
 			structures.push_back(pStructure);
 		} else {
 			delete pStructure;

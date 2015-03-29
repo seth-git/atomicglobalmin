@@ -2,6 +2,7 @@
 #include "batch.h"
 #include "input.h"
 #include "xsd/mpiUtils.h"
+#include <set>
 
 Batch::Batch(Input* input) : Action(input)
 {
@@ -63,10 +64,10 @@ bool Batch::loadResume(const rapidxml::xml_node<>* pResumeElem)
 	if (pResumeElem == NULL) {
 		if (!m_structuresTemplate.initializeStructures(m_structures, m_pConstraints, false))
 			return false;
-		for (std::list<Structure*>::iterator it = m_structures.begin(); it != m_structures.end(); ++it) {
-			std::string id = ExternalEnergy::ToString((*it)->getId());
-			(*it)->m_sFilePrefix = pStructure + id;
-		}
+		if (energyXml.m_bExternalEnergy
+				&& energyXml.m_externalEnergyXml.m_sResultsDir.length() > 0
+				&& (FILE != m_orderBy || !structuresHaveUniquePrefixes()))
+			assignUniquePrefixes();
 		m_tPrevElapsedSeconds = 0;
 		m_bRunComplete = false;
 	} else {
@@ -96,6 +97,33 @@ bool Batch::loadResume(const rapidxml::xml_node<>* pResumeElem)
 		}
 	}
 	return true;
+}
+
+bool Batch::structuresHaveUniquePrefixes() {
+	using namespace strings;
+	using namespace std;
+
+	std::string* resultsFilePrefix = &(energyXml.m_externalEnergyXml.m_sResultsFilePrefix);
+	set<string> prefixes;
+	string* prefix;
+	for (list<Structure*>::iterator it = m_structures.begin(); it != m_structures.end(); ++it) {
+		prefix = &((*it)->m_sFilePrefix);
+		if (0 == prefix->length() || prefixes.find(*prefix) != prefixes.end() || 0 == prefix->find(*resultsFilePrefix))
+			return false;
+		else
+			prefixes.insert(*prefix);
+	}
+
+	return true;
+}
+
+void Batch::assignUniquePrefixes() {
+	using namespace strings;
+	std::string id;
+	for (std::list<Structure*>::iterator it = m_structures.begin(); it != m_structures.end(); ++it) {
+		id = ExternalEnergy::ToString((*it)->getId());
+		(*it)->m_sFilePrefix = pStructure + id;
+	}
 }
 
 bool Batch::saveResume(rapidxml::xml_document<> &doc, rapidxml::xml_node<>* pBatchElem)
@@ -132,11 +160,13 @@ const int Batch::FINISH_TAG = 3;
 
 bool Batch::runMaster() {
 	if (m_bRunComplete) {
-		puts(strings::RunCompleted);
+		puts(strings::BatchAlreadyCompleted);
 		return true;
 	}
 	if (!Action::run())
 		return false;
+
+	puts(strings::ProcessingBatch);
 
 	std::map<int,Structure*> assignments[m_iMpiProcesses];
 	std::list<int> queue;
@@ -277,7 +307,8 @@ bool Batch::runMaster() {
 		m_bRunComplete = m_structures.empty();
 		if ((!bTimeToQuit && iStructuresToSave >= m_iSaveFrequency) ||
 				((bTimeToQuit || m_bRunComplete) && iStructuresToSave > 0)) {
-			renameResultsFiles();
+			if (ENERGY == m_orderBy)
+				renameResultsFiles();
 			if (!m_pInput->save())
 				return false;
 			iStructuresToSave = 0;
@@ -296,6 +327,7 @@ bool Batch::runMaster() {
 		}
 	} while (!(iSlavesFinished >= m_iMpiProcesses-1 && (m_bRunComplete || bTimeToQuit)));
 
+	puts(strings::BatchComplete);
 	return true;
 }
 

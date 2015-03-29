@@ -24,7 +24,7 @@
 					</moleculeTemplate>
 				</structureTemplate>
 				<seed>
-					<energyFile path="test/testinit/seed.log" type="Gaussian" />
+					<file path="test/testinit/seed.log" type="Gaussian" />
 				</seed>
 			</structuresTemplate>
 		</setup>

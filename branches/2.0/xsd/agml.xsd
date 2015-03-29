@@ -110,9 +110,17 @@
 		<xs:extension base="structuresType">
 			<xs:attribute name="maxSize" type="xs:positiveInteger"/>
 			<xs:attribute name="rmsDistance" type="nonNegativeDecimal"/>
+			<xs:attribute name="orderBy" type="orderByType" default="energy"/>
 		</xs:extension>
 	</xs:complexContent>
 </xs:complexType>
+<xs:simpleType name="orderByType">
+	<xs:restriction base="xs:string">
+		<xs:enumeration value="energy"/>
+		<xs:enumeration value="filePrefix"/>
+		<xs:enumeration value="id"/>
+	</xs:restriction>
+</xs:simpleType>
 
 <xs:complexType name="simulatedAnnealingSetupType">
 	<xs:all>
@@ -244,7 +252,7 @@
 				<xs:sequence>
 					<xs:element name="agmlFile" type="seedFileType" minOccurs="0" maxOccurs="unbounded"/>
 					<xs:element name="directory" type="seedDirType" minOccurs="0" maxOccurs="unbounded"/>
-					<xs:element name="energyFile" type="energyFileType" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="file" type="energyFileType" minOccurs="0" maxOccurs="unbounded"/>
 				</xs:sequence>
 				<xs:attribute name="freezingIterations" type="xs:nonNegativeInteger" default="0"/>
 			</xs:complexType>

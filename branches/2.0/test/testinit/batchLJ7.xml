@@ -3,7 +3,7 @@
       xmlns="http://sourceforge.net/projects/atomicglobalmin/"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation= "http://sourceforge.net/projects/atomicglobalmin/ agml.xsd">
-	<batch constraints="const">
+	<batch>
 		<setup>
 			<structuresTemplate constraints="const">
 				<structureTemplate>

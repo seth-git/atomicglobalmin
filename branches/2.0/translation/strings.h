@@ -68,7 +68,7 @@ namespace strings {
 
 	const char xAgmlFile[] = "agmlFile";
 	const char xDirectory[] = "directory";
-	const char xEnergyFile[] = "energyFile";
+	const char xFile[] = "file";
 	const char xFreezingIterations[] = "freezingIterations";
 
 	const char xSource[] = "source";
@@ -114,6 +114,7 @@ namespace strings {
 
 	const char xMaxSize[] = "maxSize";
 	const char xRmsDistance[] = "rmsDistance";
+	const char xOrderBy[] = "orderBy";
 
 	const char pADF[] = "ADF";
 	const char pGAMESSUK[] = "GAMESS-UK";
@@ -131,15 +132,19 @@ namespace strings {
 	const char pCartesian[] = "Cartesian";
 	const char pAll[] = "All";
 
+	const char pTemp[] = "temp";
+	const char pResults[] = "results";
+	const char pStructure[] = "structure";
+	const char pStop[] = "stop";
+
+	const char pEnergy[] = "energy";
+	const char pFile[] = "file";
+	const char pId[] = "id";
+
 	const char ReadingFile[] = "Reading file: %1$s\n";
 	const char WritingFile[] = "Writing file: %1$s\n";
 	const char ErrorOpeningFile[] = "Error opening file: %1$s\n";
 	const char ErrorWritingFile[] = "Error writing file: %1$s\n";
-	const char pTemp[] = "temp";
-	const char pResults[] = "results";
-	const char pInput[] = "input";
-	const char pStructure[] = "structure";
-	const char pStop[] = "stop";
 
 	// Error messages in xsdAttributeUtil.cc
 	const char DuplicateAttributes[] = "Duplicate attribute '%1$s' found for element '%2$s' with values '%3$s' and '%4$s'.\n";
@@ -185,7 +190,6 @@ namespace strings {
 
 	// Error messages in action.cc
 	const char ConstraintNameMisMatch[] = "On the %1$s element with %2$s '%3$s', the %4$s %1$s '%5$s' have not been defined.\n";
-	const char RunCompleted[] = "This run has already been completed.";
 
 	// Error messages in constraints.cc
 	const char ErrorZ1Z2[] = "In the element '%1$s', '%2$s' and '%3$s' must both be included or both must be excluded.\n";
@@ -211,6 +215,11 @@ namespace strings {
 	const char WallTimeError[] = "Error reading wall time: '%1$s'\n";
 
 	const char UnableToExecuteCommand[] = "Unable to execute command: '%1$s'.\n";
+
+	// Batch messages
+	const char ProcessingBatch[] = "Processing batch...";
+	const char BatchComplete[] = "Batch complete!";
+	const char BatchAlreadyCompleted[] = "This batch has already been completed.";
 
 	// Simulated Annealing messages
 	const char AllRunsCompleted[] = "All runs have been completed.";

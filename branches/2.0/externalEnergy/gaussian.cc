@@ -270,10 +270,10 @@ bool Gaussian::execute(Structure &structure) {
 	if (haveTempDir && haveResultsDir) {
 		if (!FileUtils::changeDirectory(structure.m_sFilePrefix, m_pExternalEnergyXml->m_sResultsDir))
 			return false;
-	} else if (haveTempDir)
-		structure.m_sFilePrefix = "";
-	else if (haveResultsDir)
+	} else if (haveResultsDir)
 		FileUtils::deleteFile(inputFileName.c_str());
+	else
+		structure.m_sFilePrefix = "";
 
 	time_t elapsed = time(NULL) - start;
 	if (elapsed > m_tLongestExecutionTime)

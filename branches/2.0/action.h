@@ -32,6 +32,10 @@ public:
 
 	unsigned int m_iMaxResults;
 	FLOAT m_fResultsRmsDistance;
+
+	enum OrderBy {ENERGY, FILE, ID};
+	OrderBy m_orderBy;
+
 	std::list<Structure*> m_results;
 
 	bool m_bRunComplete;
@@ -77,17 +81,23 @@ protected:
 	static FLOAT s_fMaxMPIProcessFailures;
 
 private:
+	static const char* s_attributeNames[];
 	static const unsigned int s_minOccurs[];
 	static const unsigned int s_maxOccurs[];
 
+	static const char* s_elementNames[];
 	static const bool  s_required[];
 	static const char* s_defaultValues[];
 
+	static const char* s_resultsElementNames[];
 	static const unsigned int s_resultsMinOccurs[];
 	static const unsigned int s_resultsMaxOccurs[];
 
+	static const char* s_resultsAttributeNames[];
 	static const bool  s_resultsRequired[];
 	static const char* s_resultsDefaultValues[];
+
+	static const char* s_orderByOptions[];
 };
 
 #endif

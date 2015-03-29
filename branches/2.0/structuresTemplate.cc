@@ -477,7 +477,9 @@ bool StructuresTemplate::initializeStructures(std::list<Structure*> &structures,
 		for (std::list<Structure*>::iterator it = seededStructures.begin(); it != seededStructures.end(); ++it) {
 			Structure* pStructure = new Structure();
 			pStructure->copy(**it);
+			pStructure->updateAtomDistanceMatrix();
 			structures.push_back(pStructure);
+
 			if (!ensureCompatibile(*pStructure, i, combinedConstraints, bFreezeSeededGroups))
 				return false;
 			if (!combinedConstraints.validate(*pStructure)) {

@@ -22,6 +22,8 @@ public:
 
 protected:
 	void getInitialAssignments(std::map<int,Structure*>* assignments, std::list<int> &queue, std::map<int,Structure*> &structureMap);
+	bool structuresHaveUniquePrefixes();
+	void assignUniquePrefixes();
 
 	static const int DIE_TAG;
 	static const int WORK_TAG;
