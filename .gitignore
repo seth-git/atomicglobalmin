@@ -1,0 +1,8 @@
+*.o
+*.out
+*.res
+*.opt
+.metadata/
+helper
+pso
+unit
