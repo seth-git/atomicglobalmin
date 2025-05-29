@@ -30,7 +30,7 @@ public:
 	*******************************************************************************/
 	static bool initializePopulation(Input &input, vector<MoleculeSet*> &moleculeSets);
 	
-	static bool initProgram(int mpiRank);
+	static bool initProgram();
 
 	static bool initLinearMoleculeSet(MoleculeSet &moleculeSet, Point3D &boxDimensions);
 	

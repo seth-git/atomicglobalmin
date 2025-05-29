@@ -183,7 +183,7 @@ bool Init::initializePopulation(Input &input, vector<MoleculeSet*> &moleculeSets
 	return true;
 }
 
-bool Init::initProgram(int mpiRank)
+bool Init::initProgram()
 {
 	char fileName[500];
 	
@@ -191,7 +191,6 @@ bool Init::initProgram(int mpiRank)
 		return false;
 	if (!Bond::readBondDistanceFile("bondLengths.txt"))
 		return false;
-	Molecule::initRandoms(mpiRank);
 	
 	if ((getcwd(fileName, sizeof(fileName)) == NULL) && (errno != ERANGE))
 		return false;
@@ -206,4 +205,3 @@ bool Init::initProgram(int mpiRank)
 	
 	return true;
 }
-

@@ -1819,7 +1819,7 @@ int main(int argc, char *argv[])
 	try {
 		/* Find out my identity in the default communicator */
 		MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-		if (!Init::initProgram(myrank))
+		if (!Init::initProgram())
 			throw "Failed to init program.";
 		
 		if (!initCommandLineArguments(argc, argv))

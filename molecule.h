@@ -19,7 +19,9 @@
 #include "bond.h"
 #include "ringSet.h"
 #include <sys/time.h>
+#include "effolkronium/random.hpp"
 
+using Random = effolkronium::random_static;
 using namespace std;
 
 // Using aviation terms, three angles are necessary for representing the orientation of molecules: roll, pitch, and yaw.  Rotation around the x axis, the line from the nose of the plane to the tail, is called roll (m_angles.x).  Rotation around the lateral or y axis, the line from wingtip to wingtip, is called pitch (m_angles.y).  Rotation around the vertical axis, the line from beneath to above the plane, is called yaw (m_angles.z).  Unique values of roll and yaw, (m_angles.x and m_angles.z) are in the range [0,2*PIE), while unique values of pitch (m_angles.y) are in the range [-PIE/2,PIE/2].  This is a standard right-handed coordinate system.
@@ -224,7 +226,6 @@ public:
 	//       I made these functions static, so I don't have to have a copy of these functions inside main, moleculeSet, and molecule.
 	static int randomInt(int lo, int hi);
 	static FLOAT randomFloat(FLOAT lo, FLOAT hi);
-	static void initRandoms(int mpiRank);
 
 	/////////////////////////////////////////////////////////////////////
 	// Purpose: This function determines if this and another molecule has

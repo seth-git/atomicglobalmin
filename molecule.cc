@@ -1423,20 +1423,12 @@ void Molecule::getClosestAtoms(Molecule &otherMolecule, Point3D &atomInThisMolec
 
 int Molecule::randomInt(int lo, int hi)
 {
-	return (random() % (hi-lo+1)) + lo;
+	return Random::get<int>(lo, hi);
 }
 
 FLOAT Molecule::randomFloat(FLOAT lo, FLOAT hi)
 {
-	return (((FLOAT)random() / (FLOAT)RAND_MAX) * (FLOAT)(hi-lo)) + (FLOAT)lo;
-}
-
-void Molecule::initRandoms(int mpiRank)
-{
-	struct timeval time;
-	gettimeofday(&time, NULL);
-	srandom(time.tv_sec*time.tv_usec*(mpiRank+1));
-//	srandom(1);
+	return Random::get<FLOAT>(lo, hi);
 }
 
 bool Molecule::haveSameAtoms(Molecule &otherMolecule)
@@ -1448,4 +1440,3 @@ bool Molecule::haveSameAtoms(Molecule &otherMolecule)
 			return false;
 	return true;
 }
-

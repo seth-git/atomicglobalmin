@@ -385,7 +385,7 @@ int main(int argc, char *argv[])
 	const char* failedTestName;
 	const unsigned int totalTests = sizeof(tests)/sizeof(tests[0]);
 	
-	if (!Init::initProgram(0)) {
+	if (!Init::initProgram()) {
 		cout << "Failed to initialize program." << endl;
 		return 0;
 	}

@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 	int numOptionArguments;
 	char** optionArguments;
 	
-	if (!Init::initProgram(1)) {
+	if (!Init::initProgram()) {
 		return 0;
 	}
 	
