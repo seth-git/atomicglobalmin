@@ -2537,7 +2537,7 @@ bool MoleculeSet::performBondRotations(FLOAT angleInRad, vector<MoleculeSet*> &m
 bool MoleculeSet::moveOrCopyInputEnergyFile(const char* newDirectory, bool moveOrCopy)
 {
 	char fileName[500];
-	char commandLine[500];
+	char commandLine[510];
 	bool success = true;
 
 	if (m_inputEnergyFile.m_sFullPathName.length() == 0)
